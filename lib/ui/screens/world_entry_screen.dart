@@ -365,13 +365,13 @@ class _GalaxyPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Dark gradient background
     final bgPaint = Paint()
-      ..shader = LinearGradient(
+      ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          const Color(0xFF0D1B2A),
-          const Color(0xFF1B263B),
-          const Color(0xFF2D3A4A),
+          Color(0xFF0D1B2A),
+          Color(0xFF1B263B),
+          Color(0xFF2D3A4A),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     

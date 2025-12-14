@@ -1,3 +1,4 @@
+export 'animated_character.dart';
 export 'avatar_widgets.dart';
 export 'fantasy_map.dart';
 export 'graphics_helpers.dart';

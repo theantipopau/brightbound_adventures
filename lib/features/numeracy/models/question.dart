@@ -1,0 +1,886 @@
+/// Question model for numeracy activities
+class NumeracyQuestion {
+  final String id;
+  final String skillId;
+  final String question;
+  final List<String> options;
+  final int correctIndex;
+  final String? hint;
+  final String? explanation;
+  final int difficulty; // 1-5
+  final NumeracyQuestionType type;
+  final String? imageAsset; // Optional visual for the question
+
+  const NumeracyQuestion({
+    required this.id,
+    required this.skillId,
+    required this.question,
+    required this.options,
+    required this.correctIndex,
+    this.hint,
+    this.explanation,
+    this.difficulty = 1,
+    this.type = NumeracyQuestionType.multipleChoice,
+    this.imageAsset,
+  });
+
+  String get correctAnswer => options[correctIndex];
+
+  bool isCorrect(int selectedIndex) => selectedIndex == correctIndex;
+}
+
+/// Types of numeracy questions
+enum NumeracyQuestionType {
+  multipleChoice,
+  counting,
+  numberLine,
+  visualMath,
+  patternRecognition,
+}
+
+/// Question bank for counting skill (ages 4-6)
+class CountingQuestions {
+  static const List<NumeracyQuestion> questions = [
+    // Level 1 - Counting to 10
+    NumeracyQuestion(
+      id: 'count_1',
+      skillId: 'skill_counting',
+      question: 'How many stars? ⭐⭐⭐',
+      options: ['2', '3', '4', '5'],
+      correctIndex: 1,
+      hint: 'Count each star one by one',
+      explanation: 'There are 3 stars! ⭐⭐⭐ = 1, 2, 3',
+      difficulty: 1,
+      type: NumeracyQuestionType.counting,
+    ),
+    NumeracyQuestion(
+      id: 'count_2',
+      skillId: 'skill_counting',
+      question: 'How many apples? 🍎🍎🍎🍎🍎',
+      options: ['3', '4', '5', '6'],
+      correctIndex: 2,
+      hint: 'Touch each apple as you count',
+      explanation: 'There are 5 apples! Count: 1, 2, 3, 4, 5',
+      difficulty: 1,
+      type: NumeracyQuestionType.counting,
+    ),
+    NumeracyQuestion(
+      id: 'count_3',
+      skillId: 'skill_counting',
+      question: 'What number comes after 5?',
+      options: ['4', '5', '6', '7'],
+      correctIndex: 2,
+      hint: 'Count: 4, 5, ...',
+      explanation: 'After 5 comes 6! The counting sequence is: 4, 5, 6, 7',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'count_4',
+      skillId: 'skill_counting',
+      question: 'How many fingers on one hand? 🖐️',
+      options: ['3', '4', '5', '6'],
+      correctIndex: 2,
+      hint: 'Look at your own hand!',
+      explanation: 'One hand has 5 fingers!',
+      difficulty: 1,
+      type: NumeracyQuestionType.counting,
+    ),
+    NumeracyQuestion(
+      id: 'count_5',
+      skillId: 'skill_counting',
+      question: 'What number comes before 3?',
+      options: ['1', '2', '3', '4'],
+      correctIndex: 1,
+      hint: 'Count backwards: 3, ...',
+      explanation: 'Before 3 comes 2! The sequence is: 1, 2, 3',
+      difficulty: 1,
+    ),
+    // Level 2 - Counting to 20
+    NumeracyQuestion(
+      id: 'count_6',
+      skillId: 'skill_counting',
+      question: 'How many hearts?\n❤️❤️❤️❤️❤️❤️❤️❤️',
+      options: ['6', '7', '8', '9'],
+      correctIndex: 2,
+      hint: 'Count carefully, there are quite a few!',
+      explanation: 'There are 8 hearts!',
+      difficulty: 2,
+      type: NumeracyQuestionType.counting,
+    ),
+    NumeracyQuestion(
+      id: 'count_7',
+      skillId: 'skill_counting',
+      question: 'What number comes after 9?',
+      options: ['8', '9', '10', '11'],
+      correctIndex: 2,
+      hint: 'This is a special two-digit number!',
+      explanation: 'After 9 comes 10! We write it with a 1 and a 0.',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'count_8',
+      skillId: 'skill_counting',
+      question: 'What number is between 14 and 16?',
+      options: ['13', '14', '15', '17'],
+      correctIndex: 2,
+      hint: 'Count: 14, ?, 16',
+      explanation: '15 is between 14 and 16! The sequence is 14, 15, 16.',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'count_9',
+      skillId: 'skill_counting',
+      question: 'Count by 2s: 2, 4, 6, ?',
+      options: ['7', '8', '9', '10'],
+      correctIndex: 1,
+      hint: 'Add 2 to 6',
+      explanation: 'Counting by 2s: 2, 4, 6, 8, 10! We skip a number each time.',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'count_10',
+      skillId: 'skill_counting',
+      question: 'How many 🌟 in two rows?\n🌟🌟🌟🌟🌟\n🌟🌟🌟🌟🌟',
+      options: ['8', '9', '10', '11'],
+      correctIndex: 2,
+      hint: '5 + 5 = ?',
+      explanation: '5 stars + 5 stars = 10 stars total!',
+      difficulty: 2,
+      type: NumeracyQuestionType.counting,
+    ),
+    // Level 3 - Counting patterns
+    NumeracyQuestion(
+      id: 'count_11',
+      skillId: 'skill_counting',
+      question: 'Count by 5s: 5, 10, 15, ?',
+      options: ['16', '18', '20', '25'],
+      correctIndex: 2,
+      hint: 'Add 5 to 15',
+      explanation: 'Counting by 5s: 5, 10, 15, 20, 25! Add 5 each time.',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'count_12',
+      skillId: 'skill_counting',
+      question: 'Count backwards: 10, 9, 8, ?',
+      options: ['5', '6', '7', '9'],
+      correctIndex: 2,
+      hint: 'Subtract 1 from 8',
+      explanation: 'Counting backwards: 10, 9, 8, 7! Subtract 1 each time.',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'count_13',
+      skillId: 'skill_counting',
+      question: 'Count by 10s: 10, 20, 30, ?',
+      options: ['31', '35', '40', '50'],
+      correctIndex: 2,
+      hint: 'Add 10 to 30',
+      explanation: 'Counting by 10s: 10, 20, 30, 40, 50! Add 10 each time.',
+      difficulty: 3,
+    ),
+  ];
+
+  static List<NumeracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for addition skill (ages 5-8)
+class AdditionQuestions {
+  static const List<NumeracyQuestion> questions = [
+    // Level 1 - Adding within 10
+    NumeracyQuestion(
+      id: 'add_1',
+      skillId: 'skill_addition',
+      question: '2 + 3 = ?',
+      options: ['4', '5', '6', '7'],
+      correctIndex: 1,
+      hint: 'Start at 2 and count 3 more',
+      explanation: '2 + 3 = 5. Start at 2, then count: 3, 4, 5!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'add_2',
+      skillId: 'skill_addition',
+      question: '🍎🍎 + 🍎🍎🍎 = ?',
+      options: ['4', '5', '6', '7'],
+      correctIndex: 1,
+      hint: 'Count all the apples together',
+      explanation: '2 apples + 3 apples = 5 apples total!',
+      difficulty: 1,
+      type: NumeracyQuestionType.visualMath,
+    ),
+    NumeracyQuestion(
+      id: 'add_3',
+      skillId: 'skill_addition',
+      question: '4 + 1 = ?',
+      options: ['3', '4', '5', '6'],
+      correctIndex: 2,
+      hint: 'One more than 4',
+      explanation: '4 + 1 = 5. Adding 1 gives you the next number!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'add_4',
+      skillId: 'skill_addition',
+      question: '1 + 1 = ?',
+      options: ['1', '2', '3', '4'],
+      correctIndex: 1,
+      hint: 'Count: 1 and 1 more',
+      explanation: '1 + 1 = 2. The simplest addition!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'add_5',
+      skillId: 'skill_addition',
+      question: '5 + 0 = ?',
+      options: ['0', '4', '5', '6'],
+      correctIndex: 2,
+      hint: 'Adding zero doesn\'t change the number',
+      explanation: '5 + 0 = 5. Adding zero keeps the number the same!',
+      difficulty: 1,
+    ),
+    // Level 2 - Adding within 20
+    NumeracyQuestion(
+      id: 'add_6',
+      skillId: 'skill_addition',
+      question: '7 + 5 = ?',
+      options: ['10', '11', '12', '13'],
+      correctIndex: 2,
+      hint: 'Try making 10 first: 7 + 3 = 10, then add 2 more',
+      explanation: '7 + 5 = 12. You can count on or make a 10!',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'add_7',
+      skillId: 'skill_addition',
+      question: '8 + 6 = ?',
+      options: ['12', '13', '14', '15'],
+      correctIndex: 2,
+      hint: '8 + 2 = 10, then add 4 more',
+      explanation: '8 + 6 = 14. Making 10 helps: 8 + 2 = 10, 10 + 4 = 14!',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'add_8',
+      skillId: 'skill_addition',
+      question: '9 + 9 = ?',
+      options: ['16', '17', '18', '19'],
+      correctIndex: 2,
+      hint: 'Double 9!',
+      explanation: '9 + 9 = 18. This is a doubles fact!',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'add_9',
+      skillId: 'skill_addition',
+      question: '10 + 6 = ?',
+      options: ['14', '15', '16', '17'],
+      correctIndex: 2,
+      hint: 'Adding to 10 is easy - just put them together!',
+      explanation: '10 + 6 = 16. Adding to 10 gives us teen numbers!',
+      difficulty: 2,
+    ),
+    // Level 3 - Adding larger numbers
+    NumeracyQuestion(
+      id: 'add_10',
+      skillId: 'skill_addition',
+      question: '15 + 8 = ?',
+      options: ['21', '22', '23', '24'],
+      correctIndex: 2,
+      hint: '15 + 5 = 20, then add 3 more',
+      explanation: '15 + 8 = 23. Break it up: 15 + 5 = 20, 20 + 3 = 23!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'add_11',
+      skillId: 'skill_addition',
+      question: '24 + 13 = ?',
+      options: ['35', '36', '37', '38'],
+      correctIndex: 2,
+      hint: 'Add the tens: 20 + 10 = 30. Add the ones: 4 + 3 = 7',
+      explanation: '24 + 13 = 37. Add tens and ones separately!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'add_12',
+      skillId: 'skill_addition',
+      question: '35 + 27 = ?',
+      options: ['52', '62', '63', '72'],
+      correctIndex: 1,
+      hint: '30 + 20 = 50, 5 + 7 = 12, 50 + 12 = ?',
+      explanation: '35 + 27 = 62. Add tens: 50, add ones: 12, total: 62!',
+      difficulty: 3,
+    ),
+  ];
+
+  static List<NumeracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for subtraction skill (ages 5-8)
+class SubtractionQuestions {
+  static const List<NumeracyQuestion> questions = [
+    // Level 1 - Subtracting within 10
+    NumeracyQuestion(
+      id: 'sub_1',
+      skillId: 'skill_subtraction',
+      question: '5 - 2 = ?',
+      options: ['2', '3', '4', '5'],
+      correctIndex: 1,
+      hint: 'Start at 5 and count back 2',
+      explanation: '5 - 2 = 3. Count back: 5, 4, 3!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'sub_2',
+      skillId: 'skill_subtraction',
+      question: '🍪🍪🍪🍪🍪 - 🍪🍪 = ?',
+      options: ['2', '3', '4', '5'],
+      correctIndex: 1,
+      hint: 'Take away 2 cookies from 5',
+      explanation: '5 cookies - 2 cookies = 3 cookies left!',
+      difficulty: 1,
+      type: NumeracyQuestionType.visualMath,
+    ),
+    NumeracyQuestion(
+      id: 'sub_3',
+      skillId: 'skill_subtraction',
+      question: '7 - 1 = ?',
+      options: ['5', '6', '7', '8'],
+      correctIndex: 1,
+      hint: 'One less than 7',
+      explanation: '7 - 1 = 6. Subtracting 1 gives the number before!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'sub_4',
+      skillId: 'skill_subtraction',
+      question: '4 - 0 = ?',
+      options: ['0', '3', '4', '5'],
+      correctIndex: 2,
+      hint: 'Taking away nothing changes nothing!',
+      explanation: '4 - 0 = 4. Subtracting zero keeps the number the same!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'sub_5',
+      skillId: 'skill_subtraction',
+      question: '6 - 6 = ?',
+      options: ['0', '1', '6', '12'],
+      correctIndex: 0,
+      hint: 'Any number minus itself equals...',
+      explanation: '6 - 6 = 0. Taking away all leaves nothing!',
+      difficulty: 1,
+    ),
+    // Level 2 - Subtracting within 20
+    NumeracyQuestion(
+      id: 'sub_6',
+      skillId: 'skill_subtraction',
+      question: '12 - 5 = ?',
+      options: ['5', '6', '7', '8'],
+      correctIndex: 2,
+      hint: 'Count back from 12: 11, 10, 9, 8, 7',
+      explanation: '12 - 5 = 7. You can count back or think: 5 + ? = 12',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'sub_7',
+      skillId: 'skill_subtraction',
+      question: '15 - 8 = ?',
+      options: ['5', '6', '7', '8'],
+      correctIndex: 2,
+      hint: '15 - 5 = 10, then subtract 3 more',
+      explanation: '15 - 8 = 7. Break it up: 15 - 5 = 10, 10 - 3 = 7!',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'sub_8',
+      skillId: 'skill_subtraction',
+      question: '18 - 9 = ?',
+      options: ['7', '8', '9', '10'],
+      correctIndex: 2,
+      hint: 'Half of 18!',
+      explanation: '18 - 9 = 9. This is a doubles fact in reverse!',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'sub_9',
+      skillId: 'skill_subtraction',
+      question: '16 - 7 = ?',
+      options: ['7', '8', '9', '10'],
+      correctIndex: 2,
+      hint: '16 - 6 = 10, then subtract 1 more',
+      explanation: '16 - 7 = 9. Make a 10: 16 - 6 = 10, 10 - 1 = 9!',
+      difficulty: 2,
+    ),
+    // Level 3 - Larger numbers
+    NumeracyQuestion(
+      id: 'sub_10',
+      skillId: 'skill_subtraction',
+      question: '25 - 12 = ?',
+      options: ['11', '12', '13', '14'],
+      correctIndex: 2,
+      hint: 'Subtract tens: 20 - 10 = 10. Subtract ones: 5 - 2 = 3',
+      explanation: '25 - 12 = 13. Subtract tens and ones separately!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'sub_11',
+      skillId: 'skill_subtraction',
+      question: '43 - 18 = ?',
+      options: ['23', '24', '25', '26'],
+      correctIndex: 2,
+      hint: '43 - 20 = 23, then add 2 back (since we took 2 extra)',
+      explanation: '43 - 18 = 25. Use friendly numbers: 43 - 20 + 2 = 25!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'sub_12',
+      skillId: 'skill_subtraction',
+      question: '50 - 27 = ?',
+      options: ['21', '22', '23', '24'],
+      correctIndex: 2,
+      hint: '50 - 30 = 20, then add 3 back',
+      explanation: '50 - 27 = 23. Round to 30: 50 - 30 = 20, 20 + 3 = 23!',
+      difficulty: 3,
+    ),
+  ];
+
+  static List<NumeracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for multiplication skill (ages 7-10)
+class MultiplicationQuestions {
+  static const List<NumeracyQuestion> questions = [
+    // Level 1 - 2s, 5s, 10s tables
+    NumeracyQuestion(
+      id: 'mult_1',
+      skillId: 'skill_multiplication',
+      question: '2 × 3 = ?',
+      options: ['5', '6', '7', '8'],
+      correctIndex: 1,
+      hint: '2 + 2 + 2 = ?',
+      explanation: '2 × 3 = 6. That\'s 3 groups of 2: 2 + 2 + 2 = 6!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'mult_2',
+      skillId: 'skill_multiplication',
+      question: '5 × 2 = ?',
+      options: ['7', '8', '9', '10'],
+      correctIndex: 3,
+      hint: 'Count by 5s twice: 5, 10',
+      explanation: '5 × 2 = 10. Two groups of 5: 5 + 5 = 10!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'mult_3',
+      skillId: 'skill_multiplication',
+      question: '10 × 3 = ?',
+      options: ['13', '20', '30', '40'],
+      correctIndex: 2,
+      hint: 'Count by 10s: 10, 20, 30',
+      explanation: '10 × 3 = 30. Three 10s make 30!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'mult_4',
+      skillId: 'skill_multiplication',
+      question: '2 × 5 = ?',
+      options: ['7', '8', '9', '10'],
+      correctIndex: 3,
+      hint: 'Same as 5 × 2!',
+      explanation: '2 × 5 = 10. Multiplication works both ways!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'mult_5',
+      skillId: 'skill_multiplication',
+      question: '1 × 7 = ?',
+      options: ['1', '6', '7', '8'],
+      correctIndex: 2,
+      hint: 'One group of 7',
+      explanation: '1 × 7 = 7. Any number times 1 equals itself!',
+      difficulty: 1,
+    ),
+    // Level 2 - 3s, 4s tables
+    NumeracyQuestion(
+      id: 'mult_6',
+      skillId: 'skill_multiplication',
+      question: '3 × 4 = ?',
+      options: ['10', '11', '12', '13'],
+      correctIndex: 2,
+      hint: '3 + 3 + 3 + 3 = ?',
+      explanation: '3 × 4 = 12. Four groups of 3: 3 + 3 + 3 + 3 = 12!',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'mult_7',
+      skillId: 'skill_multiplication',
+      question: '4 × 5 = ?',
+      options: ['16', '18', '20', '22'],
+      correctIndex: 2,
+      hint: 'Count by 4s five times, or by 5s four times',
+      explanation: '4 × 5 = 20. That\'s half of 4 × 10!',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'mult_8',
+      skillId: 'skill_multiplication',
+      question: '6 × 2 = ?',
+      options: ['10', '11', '12', '14'],
+      correctIndex: 2,
+      hint: 'Double 6!',
+      explanation: '6 × 2 = 12. Multiplying by 2 is the same as doubling!',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'mult_9',
+      skillId: 'skill_multiplication',
+      question: '7 × 3 = ?',
+      options: ['18', '19', '20', '21'],
+      correctIndex: 3,
+      hint: '7 + 7 + 7 = ?',
+      explanation: '7 × 3 = 21. Three 7s: 7 + 7 + 7 = 21!',
+      difficulty: 2,
+    ),
+    // Level 3 - 6s, 7s, 8s, 9s tables
+    NumeracyQuestion(
+      id: 'mult_10',
+      skillId: 'skill_multiplication',
+      question: '6 × 6 = ?',
+      options: ['32', '34', '36', '38'],
+      correctIndex: 2,
+      hint: 'A square number!',
+      explanation: '6 × 6 = 36. Six groups of six!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'mult_11',
+      skillId: 'skill_multiplication',
+      question: '7 × 8 = ?',
+      options: ['54', '55', '56', '57'],
+      correctIndex: 2,
+      hint: '5, 6, 7, 8 → 56 = 7 × 8',
+      explanation: '7 × 8 = 56. A tricky one! Remember: 56 = 7 × 8!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'mult_12',
+      skillId: 'skill_multiplication',
+      question: '9 × 7 = ?',
+      options: ['61', '62', '63', '64'],
+      correctIndex: 2,
+      hint: '10 × 7 = 70, subtract 7',
+      explanation: '9 × 7 = 63. Use the 10s trick: 70 - 7 = 63!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'mult_13',
+      skillId: 'skill_multiplication',
+      question: '8 × 8 = ?',
+      options: ['62', '64', '66', '68'],
+      correctIndex: 1,
+      hint: 'Another square number!',
+      explanation: '8 × 8 = 64. Eight eights are sixty-four!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'mult_14',
+      skillId: 'skill_multiplication',
+      question: '9 × 9 = ?',
+      options: ['79', '80', '81', '82'],
+      correctIndex: 2,
+      hint: 'The largest single-digit square!',
+      explanation: '9 × 9 = 81. Nine nines are eighty-one!',
+      difficulty: 3,
+    ),
+  ];
+
+  static List<NumeracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for number patterns skill (ages 6-10)
+class PatternQuestions {
+  static const List<NumeracyQuestion> questions = [
+    // Level 1 - Simple patterns
+    NumeracyQuestion(
+      id: 'pat_1',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 1, 2, 3, 4, ?',
+      options: ['4', '5', '6', '7'],
+      correctIndex: 1,
+      hint: 'Add 1 each time',
+      explanation: 'The pattern adds 1 each time. Next is 5!',
+      difficulty: 1,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    NumeracyQuestion(
+      id: 'pat_2',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 2, 4, 6, 8, ?',
+      options: ['9', '10', '11', '12'],
+      correctIndex: 1,
+      hint: 'Skip counting by 2s',
+      explanation: 'The pattern adds 2 each time. 8 + 2 = 10!',
+      difficulty: 1,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    NumeracyQuestion(
+      id: 'pat_3',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 5, 10, 15, 20, ?',
+      options: ['21', '22', '25', '30'],
+      correctIndex: 2,
+      hint: 'Skip counting by 5s',
+      explanation: 'The pattern adds 5 each time. 20 + 5 = 25!',
+      difficulty: 1,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    NumeracyQuestion(
+      id: 'pat_4',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 10, 20, 30, 40, ?',
+      options: ['45', '50', '55', '60'],
+      correctIndex: 1,
+      hint: 'Skip counting by 10s',
+      explanation: 'The pattern adds 10 each time. 40 + 10 = 50!',
+      difficulty: 1,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    // Level 2 - More complex patterns
+    NumeracyQuestion(
+      id: 'pat_5',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 1, 3, 5, 7, ?',
+      options: ['8', '9', '10', '11'],
+      correctIndex: 1,
+      hint: 'Odd numbers!',
+      explanation: 'These are odd numbers. Add 2 to get 9!',
+      difficulty: 2,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    NumeracyQuestion(
+      id: 'pat_6',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 10, 9, 8, 7, ?',
+      options: ['5', '6', '7', '8'],
+      correctIndex: 1,
+      hint: 'Counting backwards!',
+      explanation: 'The pattern subtracts 1 each time. 7 - 1 = 6!',
+      difficulty: 2,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    NumeracyQuestion(
+      id: 'pat_7',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 2, 4, 8, 16, ?',
+      options: ['18', '24', '30', '32'],
+      correctIndex: 3,
+      hint: 'Each number doubles!',
+      explanation: 'The pattern doubles each time. 16 × 2 = 32!',
+      difficulty: 2,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    NumeracyQuestion(
+      id: 'pat_8',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 1, 4, 9, 16, ?',
+      options: ['20', '23', '25', '27'],
+      correctIndex: 2,
+      hint: 'These are square numbers: 1², 2², 3², 4², ?²',
+      explanation: '1, 4, 9, 16, 25 are squares: 1×1, 2×2, 3×3, 4×4, 5×5!',
+      difficulty: 2,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    // Level 3 - Advanced patterns
+    NumeracyQuestion(
+      id: 'pat_9',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 1, 1, 2, 3, 5, 8, ?',
+      options: ['10', '11', '12', '13'],
+      correctIndex: 3,
+      hint: 'Add the two previous numbers!',
+      explanation: 'This is the Fibonacci sequence! 5 + 8 = 13',
+      difficulty: 3,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    NumeracyQuestion(
+      id: 'pat_10',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 3, 6, 12, 24, ?',
+      options: ['36', '42', '48', '50'],
+      correctIndex: 2,
+      hint: 'Each number doubles!',
+      explanation: 'The pattern doubles each time. 24 × 2 = 48!',
+      difficulty: 3,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    NumeracyQuestion(
+      id: 'pat_11',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 100, 90, 80, 70, ?',
+      options: ['50', '55', '60', '65'],
+      correctIndex: 2,
+      hint: 'Subtract 10 each time',
+      explanation: 'The pattern subtracts 10 each time. 70 - 10 = 60!',
+      difficulty: 3,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+    NumeracyQuestion(
+      id: 'pat_12',
+      skillId: 'skill_patterns',
+      question: 'What comes next? 1, 2, 4, 7, 11, ?',
+      options: ['14', '15', '16', '17'],
+      correctIndex: 2,
+      hint: 'The gap increases: +1, +2, +3, +4, +?',
+      explanation: 'Add increasing amounts: 1+1=2, 2+2=4, 4+3=7, 7+4=11, 11+5=16!',
+      difficulty: 3,
+      type: NumeracyQuestionType.patternRecognition,
+    ),
+  ];
+
+  static List<NumeracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for place value skill (ages 6-9)
+class PlaceValueQuestions {
+  static const List<NumeracyQuestion> questions = [
+    // Level 1 - Tens and ones
+    NumeracyQuestion(
+      id: 'pv_1',
+      skillId: 'skill_place_value',
+      question: 'In the number 23, what digit is in the tens place?',
+      options: ['2', '3', '23', '5'],
+      correctIndex: 0,
+      hint: 'The tens place is on the left',
+      explanation: 'In 23, the 2 is in the tens place (worth 20) and 3 is in the ones place.',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'pv_2',
+      skillId: 'skill_place_value',
+      question: 'In the number 45, what digit is in the ones place?',
+      options: ['4', '5', '45', '9'],
+      correctIndex: 1,
+      hint: 'The ones place is on the right',
+      explanation: 'In 45, the 5 is in the ones place (worth 5) and 4 is in the tens place.',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'pv_3',
+      skillId: 'skill_place_value',
+      question: 'What is 30 + 7?',
+      options: ['10', '37', '73', '307'],
+      correctIndex: 1,
+      hint: '3 tens and 7 ones',
+      explanation: '30 + 7 = 37. Three tens plus seven ones equals 37!',
+      difficulty: 1,
+    ),
+    NumeracyQuestion(
+      id: 'pv_4',
+      skillId: 'skill_place_value',
+      question: 'How many tens are in 60?',
+      options: ['0', '6', '60', '600'],
+      correctIndex: 1,
+      hint: '60 = ? × 10',
+      explanation: '60 has 6 tens. 6 × 10 = 60!',
+      difficulty: 1,
+    ),
+    // Level 2 - Hundreds
+    NumeracyQuestion(
+      id: 'pv_5',
+      skillId: 'skill_place_value',
+      question: 'In the number 256, what digit is in the hundreds place?',
+      options: ['2', '5', '6', '256'],
+      correctIndex: 0,
+      hint: 'The hundreds place is furthest left',
+      explanation: 'In 256, the 2 is in the hundreds place (worth 200).',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'pv_6',
+      skillId: 'skill_place_value',
+      question: 'What is 300 + 40 + 8?',
+      options: ['3408', '348', '3048', '384'],
+      correctIndex: 1,
+      hint: '3 hundreds, 4 tens, 8 ones',
+      explanation: '300 + 40 + 8 = 348. Three hundreds, four tens, eight ones!',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'pv_7',
+      skillId: 'skill_place_value',
+      question: 'What is the value of the 5 in 527?',
+      options: ['5', '50', '500', '5000'],
+      correctIndex: 2,
+      hint: 'The 5 is in the hundreds place',
+      explanation: 'In 527, the 5 is in the hundreds place, so its value is 500!',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'pv_8',
+      skillId: 'skill_place_value',
+      question: 'Which number has 4 hundreds, 0 tens, and 3 ones?',
+      options: ['43', '304', '403', '430'],
+      correctIndex: 2,
+      hint: '4 in hundreds, 0 in tens, 3 in ones',
+      explanation: '4 hundreds, 0 tens, 3 ones = 403!',
+      difficulty: 2,
+    ),
+    // Level 3 - Thousands
+    NumeracyQuestion(
+      id: 'pv_9',
+      skillId: 'skill_place_value',
+      question: 'In 3,456, what is the value of the 4?',
+      options: ['4', '40', '400', '4000'],
+      correctIndex: 2,
+      hint: 'The 4 is in the hundreds place',
+      explanation: 'In 3,456, the 4 is in the hundreds place, worth 400!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'pv_10',
+      skillId: 'skill_place_value',
+      question: 'What number is 2,000 + 500 + 30 + 6?',
+      options: ['2536', '25036', '2563', '20536'],
+      correctIndex: 0,
+      hint: '2 thousands, 5 hundreds, 3 tens, 6 ones',
+      explanation: '2,000 + 500 + 30 + 6 = 2,536!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'pv_11',
+      skillId: 'skill_place_value',
+      question: 'Which digit is in the thousands place in 7,892?',
+      options: ['2', '8', '9', '7'],
+      correctIndex: 3,
+      hint: 'The leftmost digit',
+      explanation: 'In 7,892, the 7 is in the thousands place (worth 7,000)!',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'pv_12',
+      skillId: 'skill_place_value',
+      question: 'Round 4,567 to the nearest thousand.',
+      options: ['4,000', '4,500', '5,000', '4,600'],
+      correctIndex: 2,
+      hint: 'Look at the hundreds digit (5). Is it 5 or more?',
+      explanation: '4,567 rounds to 5,000. The hundreds digit (5) means round up!',
+      difficulty: 3,
+    ),
+  ];
+
+  static List<NumeracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}

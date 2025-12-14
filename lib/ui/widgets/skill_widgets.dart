@@ -9,11 +9,11 @@ class SkillCard extends StatelessWidget {
   final bool showLockOverlay;
 
   const SkillCard({
-    Key? key,
+    super.key,
     required this.skill,
     this.onTap,
     this.showLockOverlay = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -175,11 +175,11 @@ class SkillListView extends StatelessWidget {
   final bool showLocked;
 
   const SkillListView({
-    Key? key,
+    super.key,
     required this.skills,
     this.onSkillTap,
     this.showLocked = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -229,12 +229,12 @@ class ProgressionStatusWidget extends StatelessWidget {
   final int locked;
 
   const ProgressionStatusWidget({
-    Key? key,
+    super.key,
     required this.mastered,
     required this.practising,
     required this.introduced,
     required this.locked,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -340,13 +340,13 @@ class ZoneProgressCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const ZoneProgressCard({
-    Key? key,
+    super.key,
     required this.zoneName,
     required this.masteredSkills,
     required this.totalSkills,
     required this.averageAccuracy,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -369,7 +369,7 @@ class ZoneProgressCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                  Icon(
+                  const Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
                     color: AppColors.textSecondary,
@@ -400,7 +400,7 @@ class ZoneProgressCard extends StatelessWidget {
                   value: completionPercentage / 100,
                   minHeight: 6,
                   backgroundColor: AppColors.divider,
-                  valueColor: AlwaysStoppedAnimation(AppColors.success),
+                  valueColor: const AlwaysStoppedAnimation(AppColors.success),
                 ),
               ),
               const SizedBox(height: 8),

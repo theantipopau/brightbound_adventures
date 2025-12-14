@@ -5,6 +5,10 @@ import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/index.dart';
 import 'package:brightbound_adventures/features/literacy/screens/skill_practice_screen.dart';
+import 'package:brightbound_adventures/features/numeracy/screens/numeracy_practice_screen.dart';
+import 'package:brightbound_adventures/features/storytelling/screens/story_practice_screen.dart';
+import 'package:brightbound_adventures/features/logic/screens/logic_practice_screen.dart';
+import 'package:brightbound_adventures/features/motor/screens/motor_practice_screen.dart';
 
 class ZoneDetailScreen extends StatefulWidget {
   final String zoneId;
@@ -363,14 +367,40 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   }
 
   void _launchSkillPractice(BuildContext context, Skill skill) {
+    // Choose the appropriate practice screen based on zone
+    Widget practiceScreen;
+    
+    if (widget.zoneId == 'number_nebula') {
+      practiceScreen = NumeracyPracticeScreen(
+        skill: skill,
+        themeColor: widget.zoneColor,
+      );
+    } else if (widget.zoneId == 'story_springs') {
+      practiceScreen = StoryPracticeScreen(
+        skillId: skill.id,
+        skillName: skill.name,
+      );
+    } else if (widget.zoneId == 'puzzle_peaks') {
+      practiceScreen = LogicPracticeScreen(
+        skillId: skill.id,
+        skillName: skill.name,
+      );
+    } else if (widget.zoneId == 'adventure_arena') {
+      practiceScreen = MotorPracticeScreen(
+        skillId: skill.id,
+        skillName: skill.name,
+      );
+    } else {
+      // Default to literacy practice screen for other zones (Word Woods)
+      practiceScreen = SkillPracticeScreen(
+        skill: skill,
+        themeColor: widget.zoneColor,
+      );
+    }
+
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => SkillPracticeScreen(
-          skill: skill,
-          themeColor: widget.zoneColor,
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => practiceScreen),
     );
   }
 }

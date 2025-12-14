@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 
 class AvatarCreatorScreen extends StatefulWidget {
   const AvatarCreatorScreen({super.key});
@@ -17,19 +18,47 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   late TextEditingController _nameController;
   late PageController _pageController;
   late AnimationController _backgroundController;
-  late AnimationController _characterBounceController;
   late AnimationController _sparkleController;
-  late Animation<double> _characterBounce;
+  late AnimationController _characterShowcaseController;
 
   String _selectedCharacter = 'bear';
   String _selectedColor = '#E8C4A0';
   int _currentStep = 0;
+  CharacterAnimation _previewAnimation = CharacterAnimation.idle;
 
   final List<Map<String, dynamic>> _characters = [
-    {'id': 'bear', 'emoji': '🐻', 'name': 'Benny Bear', 'trait': 'Brave & Strong'},
-    {'id': 'fox', 'emoji': '🦊', 'name': 'Fiona Fox', 'trait': 'Clever & Quick'},
-    {'id': 'rabbit', 'emoji': '🐰', 'name': 'Ruby Rabbit', 'trait': 'Kind & Fast'},
-    {'id': 'deer', 'emoji': '🦌', 'name': 'Danny Deer', 'trait': 'Wise & Gentle'},
+    {
+      'id': 'bear',
+      'emoji': '🐻',
+      'name': 'Benny Bear',
+      'trait': 'Brave & Strong',
+      'description': 'A friendly bear who loves to explore and help others!',
+      'color': Color(0xFF8B4513),
+    },
+    {
+      'id': 'fox',
+      'emoji': '🦊',
+      'name': 'Fiona Fox',
+      'trait': 'Clever & Quick',
+      'description': 'A smart fox who solves puzzles with ease!',
+      'color': Color(0xFFFF6B35),
+    },
+    {
+      'id': 'rabbit',
+      'emoji': '🐰',
+      'name': 'Ruby Rabbit',
+      'trait': 'Kind & Fast',
+      'description': 'A gentle rabbit who makes friends everywhere!',
+      'color': Color(0xFFE8B4D4),
+    },
+    {
+      'id': 'deer',
+      'emoji': '🦌',
+      'name': 'Danny Deer',
+      'trait': 'Wise & Gentle',
+      'description': 'A thoughtful deer who loves learning new things!',
+      'color': Color(0xFFD2691E),
+    },
   ];
 
   @override
@@ -37,27 +66,24 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     super.initState();
     _nameController = TextEditingController();
     _pageController = PageController();
-    
+
     _backgroundController = AnimationController(
       duration: const Duration(seconds: 20),
       vsync: this,
     )..repeat();
-    
-    _characterBounceController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    )..repeat(reverse: true);
-    
-    _characterBounce = Tween<double>(begin: 0, end: 10).animate(
-      CurvedAnimation(parent: _characterBounceController, curve: Curves.easeInOut),
-    );
-    
+
     _sparkleController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat();
-    
-    _selectedColor = CosmeticsLibrary.getSkinColorsForCharacter(_selectedCharacter)[0];
+
+    _characterShowcaseController = AnimationController(
+      duration: const Duration(seconds: 4),
+      vsync: this,
+    )..repeat();
+
+    _selectedColor =
+        CosmeticsLibrary.getSkinColorsForCharacter(_selectedCharacter)[0];
   }
 
   @override
@@ -65,8 +91,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     _nameController.dispose();
     _pageController.dispose();
     _backgroundController.dispose();
-    _characterBounceController.dispose();
     _sparkleController.dispose();
+    _characterShowcaseController.dispose();
     super.dispose();
   }
 
@@ -83,7 +109,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
           ),
           backgroundColor: AppColors.tertiary,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -91,13 +118,12 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
 
     try {
       await context.read<AvatarProvider>().createAvatar(
-        name: _nameController.text,
-        baseCharacter: _selectedCharacter,
-        skinColor: _selectedColor,
-      );
+            name: _nameController.text,
+            baseCharacter: _selectedCharacter,
+            skinColor: _selectedColor,
+          );
 
       if (mounted) {
-        // Show celebration then navigate
         await _showCelebration();
       }
     } catch (e) {
@@ -114,7 +140,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       context: context,
       barrierDismissible: false,
       builder: (context) => _CelebrationDialog(
-        characterEmoji: _getCharacterEmoji(_selectedCharacter),
+        character: _selectedCharacter,
+        skinColor: _selectedColor,
         name: _nameController.text,
         onComplete: () {
           Navigator.of(context).pop();
@@ -135,7 +162,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       );
       return;
     }
-    
+
     if (_currentStep < 3) {
       setState(() => _currentStep++);
       _pageController.animateToPage(
@@ -176,13 +203,14 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                       _getStepColor(_currentStep).withOpacity(0.1),
                       Colors.white,
                     ],
-                    transform: GradientRotation(_backgroundController.value * 2 * math.pi),
+                    transform: GradientRotation(
+                        _backgroundController.value * 2 * math.pi),
                   ),
                 ),
               );
             },
           ),
-          
+
           // Floating particles
           AnimatedBuilder(
             animation: _sparkleController,
@@ -196,18 +224,13 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               );
             },
           ),
-          
+
           // Main content
           SafeArea(
             child: Column(
               children: [
-                // Custom app bar
                 _buildAppBar(),
-                
-                // Progress indicator
                 _buildProgressBar(),
-                
-                // Page content
                 Expanded(
                   child: PageView(
                     controller: _pageController,
@@ -220,8 +243,6 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     ],
                   ),
                 ),
-                
-                // Navigation buttons
                 _buildNavigationButtons(),
               ],
             ),
@@ -233,18 +254,28 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
 
   Color _getStepColor(int step) {
     switch (step) {
-      case 0: return AppColors.primary;
-      case 1: return AppColors.secondary;
-      case 2: return AppColors.tertiary;
-      case 3: return AppColors.success;
-      default: return AppColors.primary;
+      case 0:
+        return AppColors.primary;
+      case 1:
+        return AppColors.secondary;
+      case 2:
+        return AppColors.tertiary;
+      case 3:
+        return AppColors.success;
+      default:
+        return AppColors.primary;
     }
   }
 
   Widget _buildAppBar() {
-    final titles = ['Welcome!', 'Choose Character', 'Pick Colors', 'Ready to Go!'];
+    final titles = [
+      'Welcome!',
+      'Choose Character',
+      'Pick Colors',
+      'Ready to Go!'
+    ];
     final emojis = ['👋', '🎭', '🎨', '🚀'];
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -265,8 +296,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               Text(
                 titles[_currentStep],
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
             ],
           ),
@@ -282,25 +313,27 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
         children: List.generate(4, (index) {
           final isActive = index <= _currentStep;
           final isCompleted = index < _currentStep;
-          
+
           return Expanded(
             child: Row(
               children: [
-                // Step circle
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isActive ? _getStepColor(index) : Colors.grey.shade300,
-                    boxShadow: isActive ? [
-                      BoxShadow(
-                        color: _getStepColor(index).withOpacity(0.4),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                    ] : null,
+                    color:
+                        isActive ? _getStepColor(index) : Colors.grey.shade300,
+                    boxShadow: isActive
+                        ? [
+                            BoxShadow(
+                              color: _getStepColor(index).withOpacity(0.4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ]
+                        : null,
                   ),
                   child: Center(
                     child: isCompleted
@@ -314,7 +347,6 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                           ),
                   ),
                 ),
-                // Connector line
                 if (index < 3)
                   Expanded(
                     child: AnimatedContainer(
@@ -343,43 +375,30 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       child: Column(
         children: [
           const SizedBox(height: 20),
-          // Animated mascot
-          AnimatedBuilder(
-            animation: _characterBounce,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, -_characterBounce.value),
-                child: Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.primary,
-                        AppColors.primary.withOpacity(0.7),
-                      ],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.3),
-                        blurRadius: 20,
-                        spreadRadius: 5,
-                      ),
-                    ],
+          // Animated character showcase
+          SizedBox(
+            height: 180,
+            child: AnimatedBuilder(
+              animation: _characterShowcaseController,
+              builder: (context, child) {
+                final index =
+                    (_characterShowcaseController.value * 4).floor() % 4;
+                final char = _characters[index];
+                return AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 500),
+                  child: AnimatedCharacter(
+                    key: ValueKey(char['id']),
+                    character: char['id'],
+                    size: 100,
+                    animation: CharacterAnimation.celebrating,
+                    showParticles: true,
                   ),
-                  child: const Center(
-                    child: Text('🌟', style: TextStyle(fontSize: 70)),
-                  ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-          const SizedBox(height: 32),
-          
-          // Welcome text
+          const SizedBox(height: 24),
+
           ShaderMask(
             shaderCallback: (bounds) => LinearGradient(
               colors: [AppColors.primary, AppColors.secondary],
@@ -398,14 +417,14 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
           Text(
             'Your learning journey begins here.\nFirst, tell us your name!',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 40),
-          
-          // Name input with fancy styling
+
+          // Name input
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
@@ -446,19 +465,22 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide(color: AppColors.primary.withOpacity(0.3), width: 2),
+                  borderSide: BorderSide(
+                      color: AppColors.primary.withOpacity(0.3), width: 2),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: AppColors.primary, width: 3),
+                  borderSide:
+                      const BorderSide(color: AppColors.primary, width: 3),
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
               ),
               onSubmitted: (_) => _nextStep(),
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Fun tip
           Container(
             padding: const EdgeInsets.all(16),
@@ -473,10 +495,10 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Your name will appear on the world map and when you earn rewards!',
+                    'Your character will walk around the world map!',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.secondary,
-                    ),
+                          color: AppColors.secondary,
+                        ),
                   ),
                 ),
               ],
@@ -495,21 +517,34 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
           Text(
             'Choose Your Companion! 🎭',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            'This friend will join you on all your adventures',
+            'Tap a character to see them in action!',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
-          
-          // Character grid
+          const SizedBox(height: 24),
+
+          // Animation control buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildAnimationButton('Idle', CharacterAnimation.idle, '😊'),
+              _buildAnimationButton('Walk', CharacterAnimation.walking, '🚶'),
+              _buildAnimationButton('Jump', CharacterAnimation.jumping, '🦘'),
+              _buildAnimationButton(
+                  'Celebrate', CharacterAnimation.celebrating, '🎉'),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Character grid with animated previews
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -517,18 +552,19 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.85,
+              childAspectRatio: 0.75,
             ),
             itemCount: _characters.length,
             itemBuilder: (context, index) {
               final character = _characters[index];
               final isSelected = _selectedCharacter == character['id'];
-              
+
               return GestureDetector(
                 onTap: () {
                   setState(() {
                     _selectedCharacter = character['id'];
-                    _selectedColor = CosmeticsLibrary.getSkinColorsForCharacter(character['id'])[0];
+                    _selectedColor = CosmeticsLibrary.getSkinColorsForCharacter(
+                        character['id'])[0];
                   });
                 },
                 child: AnimatedContainer(
@@ -537,26 +573,30 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                      color: isSelected ? AppColors.secondary : Colors.grey.shade200,
+                      color: isSelected
+                          ? character['color']
+                          : Colors.grey.shade200,
                       width: isSelected ? 4 : 2,
                     ),
-                    boxShadow: isSelected ? [
-                      BoxShadow(
-                        color: AppColors.secondary.withOpacity(0.3),
-                        blurRadius: 16,
-                        spreadRadius: 2,
-                      ),
-                    ] : [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color:
+                                  (character['color'] as Color).withOpacity(0.3),
+                              blurRadius: 16,
+                              spreadRadius: 2,
+                            ),
+                          ]
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                   ),
                   child: Stack(
                     children: [
-                      // Selection indicator
                       if (isSelected)
                         Positioned(
                           top: 8,
@@ -564,46 +604,43 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                           child: Container(
                             width: 28,
                             height: 28,
-                            decoration: const BoxDecoration(
-                              color: AppColors.secondary,
+                            decoration: BoxDecoration(
+                              color: character['color'],
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.check, color: Colors.white, size: 18),
+                            child: const Icon(Icons.check,
+                                color: Colors.white, size: 18),
                           ),
                         ),
-                      
-                      // Character content
                       Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Animated character
-                            AnimatedBuilder(
-                              animation: _characterBounce,
-                              builder: (context, child) {
-                                return Transform.translate(
-                                  offset: Offset(0, isSelected ? -_characterBounce.value * 0.5 : 0),
-                                  child: Text(
-                                    character['emoji'],
-                                    style: TextStyle(fontSize: isSelected ? 64 : 56),
-                                  ),
-                                );
-                              },
+                            // Animated character preview
+                            AnimatedCharacter(
+                              character: character['id'],
+                              size: isSelected ? 70 : 60,
+                              animation: isSelected
+                                  ? _previewAnimation
+                                  : CharacterAnimation.idle,
+                              showParticles:
+                                  isSelected && _previewAnimation == CharacterAnimation.celebrating,
                             ),
                             const SizedBox(height: 8),
                             Text(
                               character['name'],
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: isSelected ? AppColors.secondary : AppColors.textPrimary,
+                                color: isSelected
+                                    ? character['color']
+                                    : AppColors.textPrimary,
                               ),
                             ),
-                            const SizedBox(height: 4),
                             Text(
                               character['trait'],
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -616,66 +653,111 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               );
             },
           ),
+
+          // Selected character description
+          const SizedBox(height: 16),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Container(
+              key: ValueKey(_selectedCharacter),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _characters
+                    .firstWhere((c) => c['id'] == _selectedCharacter)['color']
+                    .withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                _characters.firstWhere(
+                    (c) => c['id'] == _selectedCharacter)['description'],
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
+  Widget _buildAnimationButton(
+      String label, CharacterAnimation animation, String emoji) {
+    final isSelected = _previewAnimation == animation;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: GestureDetector(
+        onTap: () => setState(() => _previewAnimation = animation),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.secondary : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? AppColors.secondary : Colors.grey.shade300,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.secondary.withOpacity(0.3),
+                      blurRadius: 8,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildColorStep() {
-    final colors = CosmeticsLibrary.getSkinColorsForCharacter(_selectedCharacter);
-    
+    final colors =
+        CosmeticsLibrary.getSkinColorsForCharacter(_selectedCharacter);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          // Preview
-          AnimatedBuilder(
-            animation: _characterBounce,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, -_characterBounce.value * 0.5),
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(int.parse('0xFF${_selectedColor.replaceFirst('#', '')}')),
-                    border: Border.all(color: Colors.white, width: 6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(int.parse('0xFF${_selectedColor.replaceFirst('#', '')}')).withOpacity(0.4),
-                        blurRadius: 24,
-                        spreadRadius: 4,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      _getCharacterEmoji(_selectedCharacter),
-                      style: const TextStyle(fontSize: 80),
-                    ),
-                  ),
-                ),
-              );
-            },
+          // Large animated preview
+          AnimatedCharacter(
+            character: _selectedCharacter,
+            skinColor: _selectedColor,
+            size: 120,
+            animation: CharacterAnimation.celebrating,
+            showParticles: true,
           ),
-          const SizedBox(height: 32),
-          
+          const SizedBox(height: 24),
+
           Text(
             'Pick Your Style! 🎨',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             'Choose a color for your ${_selectedCharacter}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
           ),
           const SizedBox(height: 32),
-          
+
           // Color options
           Wrap(
             spacing: 16,
@@ -683,8 +765,9 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             alignment: WrapAlignment.center,
             children: colors.map((color) {
               final isSelected = _selectedColor == color;
-              final colorValue = Color(int.parse('0xFF${color.replaceFirst('#', '')}'));
-              
+              final colorValue =
+                  Color(int.parse('0xFF${color.replaceFirst('#', '')}'));
+
               return GestureDetector(
                 onTap: () => setState(() => _selectedColor = color),
                 child: AnimatedContainer(
@@ -723,39 +806,16 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          // Large preview
-          AnimatedBuilder(
-            animation: _characterBounce,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, -_characterBounce.value * 0.7),
-                child: Container(
-                  width: 160,
-                  height: 160,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(int.parse('0xFF${_selectedColor.replaceFirst('#', '')}')),
-                    border: Border.all(color: Colors.white, width: 6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.success.withOpacity(0.3),
-                        blurRadius: 30,
-                        spreadRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      _getCharacterEmoji(_selectedCharacter),
-                      style: const TextStyle(fontSize: 100),
-                    ),
-                  ),
-                ),
-              );
-            },
+          // Large animated preview
+          AnimatedCharacter(
+            character: _selectedCharacter,
+            skinColor: _selectedColor,
+            size: 140,
+            animation: CharacterAnimation.celebrating,
+            showParticles: true,
           ),
-          const SizedBox(height: 24),
-          
+          const SizedBox(height: 16),
+
           // Name badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -781,8 +841,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               ),
             ),
           ),
-          const SizedBox(height: 32),
-          
+          const SizedBox(height: 24),
+
           // Summary card
           Container(
             padding: const EdgeInsets.all(20),
@@ -801,14 +861,22 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               children: [
                 _buildSummaryRow('🏷️', 'Name', _nameController.text),
                 const Divider(height: 24),
-                _buildSummaryRow('🎭', 'Character', _characters.firstWhere((c) => c['id'] == _selectedCharacter)['name']),
+                _buildSummaryRow(
+                    '🎭',
+                    'Character',
+                    _characters.firstWhere(
+                        (c) => c['id'] == _selectedCharacter)['name']),
                 const Divider(height: 24),
-                _buildSummaryRow('✨', 'Trait', _characters.firstWhere((c) => c['id'] == _selectedCharacter)['trait']),
+                _buildSummaryRow(
+                    '✨',
+                    'Trait',
+                    _characters.firstWhere(
+                        (c) => c['id'] == _selectedCharacter)['trait']),
               ],
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Ready message
           Container(
             padding: const EdgeInsets.all(20),
@@ -829,16 +897,16 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 Text(
                   'Your adventure awaits!',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.success,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.success,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Tap "Start Adventure" to begin exploring\nWord Woods, Number Nebula, and more!',
+                  'Your character will explore the world map\nand learn amazing things!',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                        color: AppColors.textSecondary,
+                      ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -900,7 +968,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 onPressed: _previousStep,
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: _getStepColor(_currentStep), width: 2),
+                  side:
+                      BorderSide(color: _getStepColor(_currentStep), width: 2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -924,7 +993,6 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             ),
           if (_currentStep > 0) const SizedBox(width: 16),
           Expanded(
-            flex: _currentStep == 0 ? 1 : 1,
             child: ElevatedButton(
               onPressed: _currentStep < 3 ? _nextStep : _createAvatar,
               style: ElevatedButton.styleFrom(
@@ -959,26 +1027,18 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       ),
     );
   }
-
-  String _getCharacterEmoji(String character) {
-    switch (character.toLowerCase()) {
-      case 'bear': return '🐻';
-      case 'fox': return '🦊';
-      case 'rabbit': return '🐰';
-      case 'deer': return '🦌';
-      default: return '🐻';
-    }
-  }
 }
 
-// Celebration dialog shown after avatar creation
+// Celebration dialog with animated character
 class _CelebrationDialog extends StatefulWidget {
-  final String characterEmoji;
+  final String character;
+  final String skinColor;
   final String name;
   final VoidCallback onComplete;
 
   const _CelebrationDialog({
-    required this.characterEmoji,
+    required this.character,
+    required this.skinColor,
     required this.name,
     required this.onComplete,
   });
@@ -1000,17 +1060,17 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    _scale = CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut);
-    
+    _scale =
+        CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut);
+
     _confettiController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
     );
-    
+
     _scaleController.forward();
     _confettiController.forward();
-    
-    // Auto navigate after delay
+
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) widget.onComplete();
     });
@@ -1030,7 +1090,6 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Confetti
           AnimatedBuilder(
             animation: _confettiController,
             builder: (context, child) {
@@ -1040,8 +1099,6 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
               );
             },
           ),
-          
-          // Card
           ScaleTransition(
             scale: _scale,
             child: Container(
@@ -1060,11 +1117,14 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('🎉', style: TextStyle(fontSize: 60)),
+                  const Text('🎉', style: TextStyle(fontSize: 50)),
                   const SizedBox(height: 16),
-                  Text(
-                    widget.characterEmoji,
-                    style: const TextStyle(fontSize: 80),
+                  AnimatedCharacter(
+                    character: widget.character,
+                    skinColor: widget.skinColor,
+                    size: 80,
+                    animation: CharacterAnimation.celebrating,
+                    showParticles: true,
                   ),
                   const SizedBox(height: 16),
                   ShaderMask(
@@ -1123,7 +1183,8 @@ class _FloatingParticlesPainter extends CustomPainter {
     for (int i = 0; i < 15; i++) {
       final x = (i * 73 + animation * 50) % size.width;
       final y = size.height * (0.2 + 0.6 * math.sin(i * 0.5 + animation * 2));
-      final opacity = (0.2 + 0.3 * math.sin(animation * math.pi * 2 + i)).clamp(0.0, 1.0);
+      final opacity =
+          (0.2 + 0.3 * math.sin(animation * math.pi * 2 + i)).clamp(0.0, 1.0);
       final particleSize = 4.0 + (i % 4) * 2;
 
       paint.color = color.withOpacity(opacity);
@@ -1153,7 +1214,7 @@ class _ConfettiPainter extends CustomPainter {
       Colors.purple,
       Colors.orange,
     ];
-    
+
     final paint = Paint()..style = PaintingStyle.fill;
     final random = math.Random(42);
 
@@ -1162,19 +1223,18 @@ class _ConfettiPainter extends CustomPainter {
       final startY = -50.0;
       final endX = startX + (random.nextDouble() - 0.5) * 100;
       final endY = size.height + 50;
-      
+
       final x = startX + (endX - startX) * animation;
       final y = startY + (endY - startY) * animation;
       final rotation = animation * math.pi * 4 + i;
       final opacity = (1.0 - animation * 0.5).clamp(0.0, 1.0);
-      
+
       paint.color = colors[i % colors.length].withOpacity(opacity);
-      
+
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(rotation);
-      
-      // Draw confetti shapes
+
       if (i % 3 == 0) {
         canvas.drawRect(const Rect.fromLTWH(-4, -8, 8, 16), paint);
       } else if (i % 3 == 1) {
@@ -1187,7 +1247,7 @@ class _ConfettiPainter extends CustomPainter {
           ..close();
         canvas.drawPath(path, paint);
       }
-      
+
       canvas.restore();
     }
   }

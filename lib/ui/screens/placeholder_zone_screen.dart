@@ -4,9 +4,9 @@ class PlaceholderZoneScreen extends StatelessWidget {
   final String zoneName;
 
   const PlaceholderZoneScreen({
-    Key? key,
+    super.key,
     required this.zoneName,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

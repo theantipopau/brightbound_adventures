@@ -190,7 +190,6 @@ class _CharacterOption extends StatelessWidget {
   final VoidCallback onTap;
 
   const _CharacterOption({
-    super.key,
     required this.character,
     required this.isSelected,
     required this.onTap,
@@ -305,7 +304,6 @@ class _ColorOption extends StatelessWidget {
   final VoidCallback onTap;
 
   const _ColorOption({
-    super.key,
     required this.color,
     required this.isSelected,
     required this.onTap,
