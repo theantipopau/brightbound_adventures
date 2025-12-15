@@ -2,9 +2,12 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
+import 'package:brightbound_adventures/ui/widgets/daily_challenge_card.dart';
+import 'package:brightbound_adventures/ui/widgets/achievement_card.dart';
 
 /// Enhanced World Map with 3D-style visuals and progressive unlocking
 class WorldMapScreen extends StatefulWidget {
@@ -33,52 +36,52 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   // Zone definitions with progression order
   final List<ZoneData> _zones = [
-    ZoneData(
+    const ZoneData(
       id: 'word-woods',
       name: 'Word Woods',
       emoji: '🌲',
       color: AppColors.wordWoodsColor,
-      position: const Offset(0.15, 0.40),
+      position: Offset(0.15, 0.40),
       description: 'Master letters & reading!',
       order: 0,
       requiredStars: 0, // First zone - always unlocked
     ),
-    ZoneData(
+    const ZoneData(
       id: 'number-nebula',
       name: 'Number Nebula',
       emoji: '🌌',
       color: AppColors.numberNebulaColor,
-      position: const Offset(0.50, 0.25),
+      position: Offset(0.50, 0.25),
       description: 'Explore math & numbers!',
       order: 1,
       requiredStars: 3, // Need 3 stars to unlock
     ),
-    ZoneData(
+    const ZoneData(
       id: 'story-springs',
       name: 'Story Springs',
       emoji: '📖',
       color: AppColors.storyspringsColor,
-      position: const Offset(0.85, 0.40),
+      position: Offset(0.85, 0.40),
       description: 'Create amazing stories!',
       order: 2,
       requiredStars: 8,
     ),
-    ZoneData(
+    const ZoneData(
       id: 'puzzle-peaks',
       name: 'Puzzle Peaks',
       emoji: '🧩',
       color: AppColors.puzzlePeaksColor,
-      position: const Offset(0.65, 0.65),
+      position: Offset(0.65, 0.65),
       description: 'Solve tricky puzzles!',
       order: 3,
       requiredStars: 15,
     ),
-    ZoneData(
+    const ZoneData(
       id: 'adventure-arena',
       name: 'Adventure Arena',
       emoji: '🏆',
       color: AppColors.adventureArenaColor,
-      position: const Offset(0.30, 0.75),
+      position: Offset(0.30, 0.75),
       description: 'Ultimate challenges!',
       order: 4,
       requiredStars: 25,
@@ -482,7 +485,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [AppColors.primary, AppColors.secondary],
                       ),
                       borderRadius: BorderRadius.circular(8),
@@ -583,14 +586,14 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   const SizedBox(width: 4),
                   Text(
                     avatar.name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                       color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 2),
-                  Icon(Icons.swap_horiz, size: 16, color: AppColors.primary),
+                  const Icon(Icons.swap_horiz, size: 16, color: AppColors.primary),
                 ],
               ),
             ),
@@ -668,7 +671,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             icon: '🎯',
             label: 'Daily\nChallenge',
             color: Colors.orange,
-            onTap: () => _showComingSoon('Daily Challenges'),
+            onTap: () => _showDailyChallenges(),
           ),
           const SizedBox(width: 12),
           
@@ -686,7 +689,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             icon: '🏆',
             label: 'My\nTrophies',
             color: Colors.amber,
-            onTap: () => _showComingSoon('Achievements'),
+            onTap: () => _showAchievements(),
           ),
         ],
       ),
@@ -1054,6 +1057,266 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
   
+  void _showDailyChallenges() {
+    final challenges = DailyChallengeGenerator.generateDailyChallenges(DateTime.now());
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.indigo.shade900,
+              Colors.purple.shade900,
+            ],
+          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text('🎯', style: TextStyle(fontSize: 28)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Daily Challenges',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Complete challenges for bonus XP!',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Timer until reset
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.timer,
+                          color: Colors.white.withOpacity(0.8),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _getTimeUntilReset(),
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Challenge cards
+            Flexible(
+              child: DailyChallengesList(
+                challenges: challenges,
+                onChallengeTap: (challenge) {
+                  Navigator.pop(context);
+                  // Navigate to the zone
+                  Navigator.pushNamed(
+                    context, 
+                    '/${challenge.zoneId.replaceAll('_', '-')}',
+                  );
+                },
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  String _getTimeUntilReset() {
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    final difference = tomorrow.difference(now);
+    
+    final hours = difference.inHours;
+    final minutes = difference.inMinutes % 60;
+    
+    return '${hours}h ${minutes}m';
+  }
+  
+  void _showAchievements() {
+    // Get sample achievements with some progress
+    final achievements = AchievementDatabase.allAchievements.map((a) {
+      // Add some sample progress for demo
+      final progress = switch (a.id) {
+        'avatar_created' => a.requirement,
+        'first_question' => a.requirement,
+        'first_zone' => a.requirement,
+        'ten_correct' => 7,
+        'streak_3' => 2,
+        _ => 0,
+      };
+      
+      return a.copyWith(
+        currentProgress: progress,
+        isUnlocked: progress >= a.requirement,
+        unlockedAt: progress >= a.requirement ? DateTime.now().subtract(const Duration(days: 1)) : null,
+      );
+    }).toList();
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.amber.shade800,
+              Colors.orange.shade900,
+            ],
+          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            // Handle
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text('🏆', style: TextStyle(fontSize: 28)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'My Trophies',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '${achievements.where((a) => a.isUnlocked).length}/${achievements.length} Unlocked',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Achievements list
+            Expanded(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: AchievementsList(
+                  achievements: achievements,
+                  onAchievementTap: (achievement) {
+                    if (achievement.isUnlocked) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AchievementShowcase(
+                          achievement: achievement,
+                          onDismiss: () => Navigator.pop(context),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showPlayerSwitcher(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -1704,7 +1967,7 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     
-    final shadowOffset = const Offset(4, 4);
+    const shadowOffset = Offset(4, 4);
     _drawCloudShape(canvas, center + shadowOffset, size, shadowPaint);
     
     // Main cloud (white with gradient feel)
