@@ -5,3 +5,6 @@ export 'daily_challenge_card.dart';
 export 'fantasy_map.dart';
 export 'graphics_helpers.dart';
 export 'skill_widgets.dart';
+export 'xp_widgets.dart';
+export 'level_up_dialog.dart';
+export 'rpg_character.dart';

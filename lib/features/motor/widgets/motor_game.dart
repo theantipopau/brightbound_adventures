@@ -39,7 +39,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
   late Animation<double> _pulseAnimation;
   
   // For tap feedback
-  List<_TapFeedback> _tapFeedbacks = [];
+  final List<_TapFeedback> _tapFeedbacks = [];
 
   @override
   void initState() {
@@ -166,7 +166,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
     if (!mounted) return;
     
     final screenSize = MediaQuery.of(context).size;
-    final dt = 0.016; // ~60fps
+    const dt = 0.016; // ~60fps
     
     setState(() {
       _targets = _targets.map((target) {

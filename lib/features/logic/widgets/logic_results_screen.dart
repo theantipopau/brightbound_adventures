@@ -321,7 +321,7 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
                     widthFactor: _percentage * _scoreAnimation.value,
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [Colors.teal, Colors.tealAccent],
                         ),
                         borderRadius: BorderRadius.circular(6),

@@ -206,7 +206,7 @@ class TargetGenerator {
     double? sizeOverride,
     double difficultyMultiplier = 1.0,
   }) {
-    final padding = 60.0;
+    const padding = 60.0;
     final size = sizeOverride ?? (80 - (20 * difficultyMultiplier)).clamp(30, 80);
     
     final x = padding + _random.nextDouble() * (screenSize.width - 2 * padding - size);

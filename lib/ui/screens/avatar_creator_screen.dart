@@ -33,7 +33,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       'name': 'Benny Bear',
       'trait': 'Brave & Strong',
       'description': 'A friendly bear who loves to explore and help others!',
-      'color': Color(0xFF8B4513),
+      'color': const Color(0xFF8B4513),
     },
     {
       'id': 'fox',
@@ -41,7 +41,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       'name': 'Fiona Fox',
       'trait': 'Clever & Quick',
       'description': 'A smart fox who solves puzzles with ease!',
-      'color': Color(0xFFFF6B35),
+      'color': const Color(0xFFFF6B35),
     },
     {
       'id': 'rabbit',
@@ -49,7 +49,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       'name': 'Ruby Rabbit',
       'trait': 'Kind & Fast',
       'description': 'A gentle rabbit who makes friends everywhere!',
-      'color': Color(0xFFE8B4D4),
+      'color': const Color(0xFFE8B4D4),
     },
     {
       'id': 'deer',
@@ -57,7 +57,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       'name': 'Danny Deer',
       'trait': 'Wise & Gentle',
       'description': 'A thoughtful deer who loves learning new things!',
-      'color': Color(0xFFD2691E),
+      'color': const Color(0xFFD2691E),
     },
   ];
 
@@ -154,8 +154,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   void _nextStep() {
     if (_currentStep == 0 && _nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please enter your name first! ✏️'),
+        const SnackBar(
+          content: Text('Please enter your name first! ✏️'),
           backgroundColor: AppColors.tertiary,
           behavior: SnackBarBehavior.floating,
         ),
@@ -400,7 +400,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
           const SizedBox(height: 24),
 
           ShaderMask(
-            shaderCallback: (bounds) => LinearGradient(
+            shaderCallback: (bounds) => const LinearGradient(
               colors: [AppColors.primary, AppColors.secondary],
             ).createShader(bounds),
             child: const Text(
@@ -639,7 +639,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                             ),
                             Text(
                               character['trait'],
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 11,
                                 color: AppColors.textSecondary,
                               ),
@@ -751,7 +751,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'Choose a color for your ${_selectedCharacter}',
+            'Choose a color for your $_selectedCharacter',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -820,7 +820,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [AppColors.primary, AppColors.secondary],
               ),
               borderRadius: BorderRadius.circular(30),
@@ -928,7 +928,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             children: [
               Text(
                 label,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
                 ),
@@ -1128,7 +1128,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
                   ),
                   const SizedBox(height: 16),
                   ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(
+                    shaderCallback: (bounds) => const LinearGradient(
                       colors: [AppColors.primary, AppColors.secondary],
                     ).createShader(bounds),
                     child: const Text(
@@ -1150,7 +1150,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
+                  const Text(
                     'Your adventure begins now!',
                     style: TextStyle(
                       fontSize: 14,
@@ -1220,7 +1220,7 @@ class _ConfettiPainter extends CustomPainter {
 
     for (int i = 0; i < 40; i++) {
       final startX = random.nextDouble() * size.width;
-      final startY = -50.0;
+      const startY = -50.0;
       final endX = startX + (random.nextDouble() - 0.5) * 100;
       final endY = size.height + 50;
 

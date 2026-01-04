@@ -5,3 +5,4 @@ export 'game_progress.dart';
 export 'cosmetics.dart';
 export 'skill_database.dart';
 export 'daily_challenge.dart';
+export 'player_stats.dart';
