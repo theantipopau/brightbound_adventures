@@ -38,6 +38,9 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   late AnimationController _feedbackController;
   late Animation<double> _feedbackAnimation;
   late AnimationController _progressController;
+  late AnimationController _sparkleController;
+  late AnimationController _bounceController;
+  late Animation<double> _bounceAnimation;
 
   @override
   void initState() {
@@ -47,6 +50,23 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
     _feedbackController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
+    );
+    
+    _sparkleController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+    
+    _bounceController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    _bounceAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(
+        parent: _bounceController,
+        curve: Curves.elasticOut,
+      ),
     );
     _feedbackAnimation = CurvedAnimation(
       parent: _feedbackController,
@@ -63,6 +83,8 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   void dispose() {
     _feedbackController.dispose();
     _progressController.dispose();
+    _sparkleController.dispose();
+    _bounceController.dispose();
     super.dispose();
   }
 
@@ -122,22 +144,43 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
         backgroundColor: widget.themeColor,
         foregroundColor: Colors.white,
         title: Text(widget.skillName),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            _showExitConfirmation();
-          },
+        leading: Tooltip(
+          message: '🚪 Go Back',
+          textStyle: const TextStyle(fontSize: 16, color: Colors.white),
+          decoration: BoxDecoration(
+            color: Colors.black87,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              _showExitConfirmation();
+            },
+          ),
         ),
         actions: [
           // Hint button
           if (_currentQuestion.hint != null && !_answered)
-            IconButton(
-              icon: Icon(
-                _showHint ? Icons.lightbulb : Icons.lightbulb_outline,
-                color: _showHint ? Colors.yellow : Colors.white,
+            Tooltip(
+              message: _hintUsed ? '💡 Hint Used!' : '💡 Need Help? Tap for a Hint!',
+              textStyle: const TextStyle(fontSize: 16, color: Colors.white),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(8),
               ),
-              onPressed: _hintUsed ? null : _showHintDialog,
-              tooltip: 'Show Hint',
+              child: ScaleTransition(
+                scale: _hintUsed ? const AlwaysStoppedAnimation(1.0) : _bounceAnimation,
+                child: IconButton(
+                  icon: Icon(
+                    _showHint ? Icons.lightbulb : Icons.lightbulb_outline,
+                    color: _showHint ? Colors.yellow : Colors.white,
+                  ),
+                  onPressed: _hintUsed ? null : () {
+                    _bounceController.forward(from: 0);
+                    _showHintDialog();
+                  },
+                ),
+              ),
             ),
           // Progress indicator
           Padding(
@@ -157,8 +200,8 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final isCompact = constraints.maxHeight < 600;
-            final spacing = isCompact ? 8.0 : 16.0;
+            final isCompact = constraints.maxHeight < 700;
+            final spacing = isCompact ? 6.0 : 12.0;
             
             return Column(
               children: [
@@ -167,12 +210,12 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                   value: _progress,
                   backgroundColor: widget.themeColor.withOpacity(0.2),
                   valueColor: AlwaysStoppedAnimation(widget.themeColor),
-                  minHeight: 6,
+                  minHeight: 4,
                 ),
 
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(isCompact ? 12 : 20),
+                  child: Padding(
+                    padding: EdgeInsets.all(isCompact ? 8 : 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -181,16 +224,26 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                         SizedBox(height: spacing),
 
                         // Question card
-                        _buildQuestionCard(isCompact),
+                        Flexible(
+                          flex: 2,
+                          child: _buildQuestionCard(isCompact),
+                        ),
                         SizedBox(height: spacing),
 
                         // Hint display
-                        if (_showHint && _currentQuestion.hint != null)
+                        if (_showHint && _currentQuestion.hint != null) ...[
                           _buildHintCard(),
-                        if (_showHint) SizedBox(height: spacing),
+                          SizedBox(height: spacing),
+                        ],
 
-                        // Options
-                        ..._buildOptions(isCompact),
+                        // Options - scrollable if needed but constrained
+                        Flexible(
+                          flex: 3,
+                          child: ListView(
+                            shrinkWrap: true,
+                            children: _buildOptions(isCompact),
+                          ),
+                        ),
 
                         // Feedback and explanation
                         if (_answered) ...[
@@ -213,37 +266,60 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   }
 
   Widget _buildScoreCard(bool isCompact) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isCompact ? 12 : 16,
-        vertical: isCompact ? 8 : 12,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: widget.themeColor.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return AnimatedBuilder(
+      animation: _sparkleController,
+      builder: (context, child) {
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isCompact ? 8 : 16,
+            vertical: isCompact ? 6 : 12,
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatColumn(
-            icon: Icons.check_circle,
-            color: AppColors.success,
-            value: '$_correctCount',
-            label: 'Correct',
-            isCompact: isCompact,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white,
+                widget.themeColor.withOpacity(0.05),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: widget.themeColor.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+                spreadRadius: 1,
+              ),
+            ],
+            border: Border.all(
+              color: widget.themeColor.withOpacity(0.3),
+              width: 2,
+            ),
           ),
-          Container(
-            width: 1,
-            height: isCompact ? 30 : 40,
-            color: Colors.grey.shade300,
-          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatColumn(
+                icon: Icons.check_circle,
+                color: AppColors.success,
+                value: '$_correctCount',
+                label: 'Correct',
+                isCompact: isCompact,
+              ),
+              Container(
+                width: 1,
+                height: isCompact ? 30 : 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.grey.shade300,
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
           _buildStatColumn(
             icon: Icons.lightbulb,
             color: Colors.amber,
@@ -254,7 +330,17 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
           Container(
             width: 1,
             height: isCompact ? 30 : 40,
-            color: Colors.grey.shade300,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.grey.shade300,
+                  Colors.transparent,
+                ],
+              ),
+            ),
           ),
           _buildStatColumn(
             icon: Icons.star,
@@ -265,6 +351,8 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
           ),
         ],
       ),
+        );
+      },
     );
   }
 
@@ -277,12 +365,12 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   }) {
     return Column(
       children: [
-        Icon(icon, color: color, size: isCompact ? 20 : 24),
+        Icon(icon, color: color, size: isCompact ? 18 : 24),
         SizedBox(height: isCompact ? 2 : 4),
         Text(
           value,
           style: TextStyle(
-            fontSize: isCompact ? 16 : 18,
+            fontSize: isCompact ? 14 : 18,
             fontWeight: FontWeight.bold,
             color: color,
           ),
@@ -290,7 +378,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
         Text(
           label,
           style: TextStyle(
-            fontSize: isCompact ? 10 : 11,
+            fontSize: isCompact ? 9 : 11,
             color: Colors.grey.shade600,
           ),
         ),
@@ -300,46 +388,82 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
 
   Widget _buildQuestionCard(bool isCompact) {
     return Container(
-      padding: EdgeInsets.all(isCompact ? 16 : 24),
+      padding: EdgeInsets.all(isCompact ? 12 : 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            widget.themeColor.withOpacity(0.03),
+          ],
+        ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: widget.themeColor.withOpacity(0.3),
-          width: 2,
+          color: widget.themeColor.withOpacity(0.4),
+          width: 3,
         ),
         boxShadow: [
           BoxShadow(
-            color: widget.themeColor.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: widget.themeColor.withOpacity(0.25),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.8),
+            blurRadius: 10,
+            offset: const Offset(-2, -2),
           ),
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Question icon
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: widget.themeColor.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.help_outline,
-              size: 32,
-              color: widget.themeColor,
-            ),
+          // Question icon with animation
+          AnimatedBuilder(
+            animation: _sparkleController,
+            builder: (context, child) {
+              return Container(
+                padding: EdgeInsets.all(isCompact ? 8 : 12),
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    colors: [
+                      widget.themeColor.withOpacity(0.3 + _sparkleController.value * 0.2),
+                      widget.themeColor.withOpacity(0.1),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.themeColor.withOpacity(0.3),
+                      blurRadius: 8 + _sparkleController.value * 4,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.help_outline,
+                  size: isCompact ? 24 : 32,
+                  color: widget.themeColor,
+                ),
+              );
+            },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isCompact ? 8 : 16),
           // Question text
-          Text(
-            _currentQuestion.question,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              height: 1.4,
+          Flexible(
+            child: SingleChildScrollView(
+              child: Text(
+                _currentQuestion.question,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: isCompact ? 16 : 20,
+                  fontWeight: FontWeight.bold,
+                  height: 1.3,
+                ),
+              ),
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -347,29 +471,81 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   }
 
   Widget _buildHintCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.amber.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.shade300),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.lightbulb, color: Colors.amber, size: 28),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              _currentQuestion.hint!,
-              style: TextStyle(
-                color: Colors.amber.shade900,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
+    return AnimatedBuilder(
+      animation: _bounceController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: 1.0 + (_bounceController.value * 0.05),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.amber.shade50,
+                  Colors.amber.shade100,
+                ],
               ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.amber.shade400,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.amber.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.amber,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.amber.withOpacity(0.5),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.lightbulb, color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '💡 Hint:',
+                        style: TextStyle(
+                          color: Colors.amber.shade900,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _currentQuestion.hint!,
+                        style: TextStyle(
+                          color: Colors.amber.shade900,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -435,8 +611,8 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                   children: [
                     // Option letter
                     Container(
-                      width: 36,
-                      height: 36,
+                      width: isCompact ? 28 : 36,
+                      height: isCompact ? 28 : 36,
                       decoration: BoxDecoration(
                         color: _answered
                             ? (isCorrect
@@ -450,21 +626,21 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                       child: Center(
                         child: Text(
                           String.fromCharCode(65 + index), // A, B, C, D...
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: isCompact ? 14 : 16,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: isCompact ? 12 : 16),
                     // Option text
                     Expanded(
                       child: Text(
                         option,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: isCompact ? 14 : 16,
                           fontWeight: FontWeight.w500,
                           color: textColor,
                         ),
@@ -477,7 +653,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                         child: Icon(
                           trailingIcon,
                           color: isCorrect ? AppColors.success : AppColors.error,
-                          size: 28,
+                          size: isCompact ? 22 : 28,
                         ),
                       ),
                   ],
