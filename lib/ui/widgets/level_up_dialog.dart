@@ -6,9 +6,9 @@ class LevelUpDialog extends StatefulWidget {
   final LevelUpResult result;
 
   const LevelUpDialog({
-    Key? key,
+    super.key,
     required this.result,
-  }) : super(key: key);
+  });
 
   @override
   State<LevelUpDialog> createState() => _LevelUpDialogState();

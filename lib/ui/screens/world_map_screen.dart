@@ -189,12 +189,22 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   bool _isZoneUnlocked(int zoneIndex, int totalStars) {
-    return totalStars >= _zones[zoneIndex].requiredStars;
+    final isUnlocked = totalStars >= _zones[zoneIndex].requiredStars;
+    print('Zone ${_zones[zoneIndex].name}: totalStars=$totalStars, required=${_zones[zoneIndex].requiredStars}, unlocked=$isUnlocked');
+    return isUnlocked;
   }
 
   void _moveToZone(int targetIndex) {
-    if (_isMoving || targetIndex == _currentZoneIndex) return;
+    if (_isMoving) return;
     
+    // If already at this zone, navigate directly without animation
+    if (targetIndex == _currentZoneIndex) {
+      print('Already at zone $targetIndex - navigating directly');
+      Navigator.pushNamed(context, '/${_zones[targetIndex].id}');
+      return;
+    }
+    
+    print('Moving avatar from zone $_currentZoneIndex to zone $targetIndex');
     setState(() {
       _targetZoneIndex = targetIndex;
       _isMoving = true;
@@ -406,7 +416,15 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                 starsEarned: zoneStats.masteredSkills,
                 totalSkills: zoneStats.totalSkills,
                 floatAnimation: _floatController,
-                onTap: isUnlocked ? () => _moveToZone(index) : () => _showLockedDialog(zone, totalStars),
+                onTap: isUnlocked 
+                    ? () {
+                        print('Tapped zone ${zone.name} - moving to index $index');
+                        _moveToZone(index);
+                      }
+                    : () {
+                        print('Tapped locked zone ${zone.name}');
+                        _showLockedDialog(zone, totalStars);
+                      },
               ),
             ),
           );

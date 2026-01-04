@@ -7,11 +7,11 @@ class XpBar extends StatelessWidget {
   final double height;
 
   const XpBar({
-    Key? key,
+    super.key,
     required this.stats,
     this.showLabel = true,
     this.height = 24,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -112,10 +112,10 @@ class LevelBadge extends StatelessWidget {
   final double size;
 
   const LevelBadge({
-    Key? key,
+    super.key,
     required this.level,
     this.size = 48,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -170,10 +170,10 @@ class XpGainAnimation extends StatefulWidget {
   final VoidCallback onComplete;
 
   const XpGainAnimation({
-    Key? key,
+    super.key,
     required this.xpGained,
     required this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<XpGainAnimation> createState() => _XpGainAnimationState();
