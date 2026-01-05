@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= it.title ? it.title + ' - ' : '' %><%= it.siteName %></title>
+  <link rel="stylesheet" href="/css/classic.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-top">
+        <div class="logo">
+          <h1><a href="/"><%= it.siteName %></a></h1>
+        </div>
+        <div class="user-nav">
+          <% if (it.user) { %>
+            <span>Welcome, <a href="/user/<%= it.user.id %>/<%= it.user.username %>"><strong><%= it.user.username %></strong></a></span>
+            <% if (it.user.role === 'admin') { %>
+              <a href="/admin">Admin Panel</a>
+            <% } %>
+            <a href="/messages">Messages</a>
+            <a href="/logout">Logout</a>
+          <% } else { %>
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+          <% } %>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/">Forum Home</a>
+        <a href="/search">Search</a>
+        <a href="/members">Members</a>
+        <% if (it.user) { %>
+          <a href="/user/<%= it.user.id %>/<%= it.user.username %>">Profile</a>
+        <% } %>
+      </nav>
+    </header>
+
+    <% if (it.breadcrumbs && it.breadcrumbs.length > 0) { %>
+      <div class="breadcrumbs">
+        <% it.breadcrumbs.forEach((crumb, index) => { %>
+          <% if (index > 0) { %> &raquo; <% } %>
+          <% if (crumb.url) { %>
+            <a href="<%= crumb.url %>"><%= crumb.title %></a>
+          <% } else { %>
+            <span><%= crumb.title %></span>
+          <% } %>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <main class="content">
+      <%~ it.body %>
+    </main>
+
+    <footer class="footer">
+      <p>&copy; <%= it.year %> <%= it.siteName %>. All rights reserved.</p>
+      <p class="footer-links">
+        <a href="/">Home</a> |
+        <a href="/search">Search</a> |
+        <a href="/members">Members</a>
+      </p>
+    </footer>
+  </div>
+</body>
+</html>

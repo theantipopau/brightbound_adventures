@@ -1,0 +1,89 @@
+<% layout('./layout.eta') %>
+
+<div class="forum-index">
+  <% it.categories.forEach(category => { %>
+    <div class="category">
+      <div class="category-header">
+        <h2><%= category.title %></h2>
+      </div>
+      
+      <table class="forum-list">
+        <thead>
+          <tr>
+            <th class="forum-title">Forum</th>
+            <th class="forum-stats">Topics</th>
+            <th class="forum-stats">Posts</th>
+            <th class="forum-last-post">Last Post</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% const categoryForums = it.forums.filter(f => f.categoryId === category.id); %>
+          <% if (categoryForums.length === 0) { %>
+            <tr>
+              <td colspan="4" class="no-forums">No forums in this category</td>
+            </tr>
+          <% } else { %>
+            <% categoryForums.forEach(forum => { %>
+              <tr class="forum-row">
+                <td class="forum-title">
+                  <div class="forum-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                  </div>
+                  <div class="forum-info">
+                    <h3><a href="/forum/<%= forum.id %>/<%= encodeURIComponent(forum.title.toLowerCase().replace(/\s+/g, '-')) %>"><%= forum.title %></a></h3>
+                    <% if (forum.description) { %>
+                      <p class="forum-description"><%= forum.description %></p>
+                    <% } %>
+                  </div>
+                </td>
+                <td class="forum-stats"><%= forum.threadCount %></td>
+                <td class="forum-stats"><%= forum.postCount %></td>
+                <td class="forum-last-post">
+                  <% if (forum.lastPostAt) { %>
+                    <div class="last-post-info">
+                      <div><%= new Date(forum.lastPostAt).toLocaleString() %></div>
+                      <% if (forum.lastPostUser) { %>
+                        <div>by <a href="/user/<%= forum.lastPostUser.id %>/<%= forum.lastPostUser.username %>"><%= forum.lastPostUser.username %></a></div>
+                      <% } %>
+                    </div>
+                  <% } else { %>
+                    <span class="no-posts">No posts yet</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  <% }); %>
+
+  <% if (it.onlineUsers) { %>
+    <div class="whos-online">
+      <h3>Who's Online</h3>
+      <p><strong><%= it.onlineUsers.count %></strong> users active in the last 15 minutes: 
+        <% if (it.onlineUsers.users.length > 0) { %>
+          <%= it.onlineUsers.users.map(u => `<a href="/user/${u.id}/${u.username}">${u.username}</a>`).join(', ') %>
+        <% } else { %>
+          No members online
+        <% } %>
+      </p>
+    </div>
+  <% } %>
+
+  <% if (it.stats) { %>
+    <div class="forum-stats">
+      <h3>Forum Statistics</h3>
+      <p>
+        <strong><%= it.stats.totalThreads %></strong> topics |
+        <strong><%= it.stats.totalPosts %></strong> posts |
+        <strong><%= it.stats.totalMembers %></strong> members
+      </p>
+      <% if (it.stats.newestMember) { %>
+        <p>Welcome to our newest member, <a href="/user/<%= it.stats.newestMember.id %>/<%= it.stats.newestMember.username %>"><strong><%= it.stats.newestMember.username %></strong></a></p>
+      <% } %>
+    </div>
+  <% } %>
+</div>
