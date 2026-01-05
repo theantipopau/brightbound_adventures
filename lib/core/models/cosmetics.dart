@@ -168,6 +168,10 @@ class CosmeticsLibrary {
     'fox': ['#FF6B35', '#C85A23', '#FF8A50', '#D9553E'],
     'rabbit': ['#FFB6C1', '#FFC0CB', '#F0F8FF', '#E6F3FF'],
     'deer': ['#8B5A3C', '#A0682A', '#B8860B', '#CD853F'],
+    'cat': ['#FF8C94', '#FFA07A', '#FFD700', '#D3D3D3'],
+    'penguin': ['#4A90E2', '#87CEEB', '#000000', '#708090'],
+    'koala': ['#9E9E9E', '#BDBDBD', '#757575', '#607D8B'],
+    'panda': ['#000000', '#333333', '#FFFFFF', '#F5F5F5'],
   };
 
   static List<String> getSkinColorsForCharacter(String character) {

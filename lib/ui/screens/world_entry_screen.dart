@@ -149,14 +149,14 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: _getPortalColor(index).withOpacity(
-                                        ((0.6 - index * 0.15) * progress).clamp(0.0, 1.0),
+                                      color: _getPortalColor(index).withValues(
+                                        alpha: ((0.6 - index * 0.15) * progress).clamp(0.0, 1.0),
                                       ),
                                       width: 4 - index.toDouble(),
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: _getPortalColor(index).withOpacity((0.3 * progress).clamp(0.0, 1.0)),
+                                        color: _getPortalColor(index).withValues(alpha: (0.3 * progress).clamp(0.0, 1.0)),
                                         blurRadius: 20,
                                         spreadRadius: 5,
                                       ),
@@ -173,14 +173,14 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                                   shape: BoxShape.circle,
                                   gradient: RadialGradient(
                                   colors: [
-                                    AppColors.primary.withOpacity(0.9),
-                                    AppColors.secondary.withOpacity(0.7),
-                                    Colors.purple.withOpacity(0.5),
+                                    AppColors.primary.withValues(alpha: 0.9),
+                                    AppColors.secondary.withValues(alpha: 0.7),
+                                    Colors.purple.withValues(alpha: 0.5),
                                   ],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primary.withOpacity(0.5),
+                                    color: AppColors.primary.withValues(alpha: 0.5),
                                     blurRadius: 40,
                                     spreadRadius: 10,
                                   ),
@@ -208,18 +208,28 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                   child: Column(
                     children: [
                       ShaderMask(
-                        shaderCallback: (bounds) => LinearGradient(
+                        shaderCallback: (bounds) => const LinearGradient(
                           colors: [
-                            Colors.white,
-                            Colors.white.withOpacity(0.8),
+                            AppColors.primary,
+                            AppColors.secondary,
+                            Colors.purpleAccent,
                           ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ).createShader(bounds),
                         child: Text(
                           'Welcome, ${avatar?.name ?? 'Adventurer'}!',
                           style: const TextStyle(
-                            fontSize: 32,
+                            fontSize: 36,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            shadows: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -235,10 +245,10 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(30),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -250,7 +260,7 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white.withOpacity(0.8),
+                                    Colors.white.withValues(alpha: 0.8),
                                   ),
                                 ),
                               ),
@@ -277,12 +287,22 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                   opacity: _textOpacity,
                   child: Column(
                     children: [
-                      const Text(
-                        'Discover Amazing Worlds',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          letterSpacing: 2,
+                      AnimatedBuilder(
+                        animation: _zoneController,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: 0.7 + (math.sin(_zoneStagger.value * math.pi * 2) + 1) * 0.15,
+                            child: child,
+                          );
+                        },
+                        child: const Text(
+                          'Discover Amazing Worlds',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            letterSpacing: 3,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -304,10 +324,10 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                                   width: 50,
                                   height: 50,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: Colors.white.withValues(alpha: 0.4),
                                     ),
                                   ),
                                   child: Center(
@@ -387,7 +407,7 @@ class _GalaxyPainter extends CustomPainter {
       final twinkle = (math.sin(animation * math.pi * 2 + i * 0.5) + 1) / 2;
       final starSize = 1.0 + random.nextDouble() * 2;
       
-      starPaint.color = Colors.white.withOpacity((0.3 + twinkle * 0.7).clamp(0.0, 1.0));
+      starPaint.color = Colors.white.withValues(alpha: (0.3 + twinkle * 0.7).clamp(0.0, 1.0));
       canvas.drawCircle(Offset(x, y), starSize, starPaint);
     }
     
@@ -401,10 +421,10 @@ class _GalaxyPainter extends CustomPainter {
       final centerY = size.height * (0.3 + math.sin(animation * math.pi + i) * 0.1);
       
       final colors = [
-        AppColors.primary.withOpacity(0.15),
-        AppColors.secondary.withOpacity(0.1),
-        Colors.purple.withOpacity(0.12),
-        AppColors.tertiary.withOpacity(0.08),
+        AppColors.primary.withValues(alpha: 0.15),
+        AppColors.secondary.withValues(alpha: 0.1),
+        Colors.purple.withValues(alpha: 0.12),
+        AppColors.tertiary.withValues(alpha: 0.08),
       ];
       
       nebulaPaint.color = colors[i % colors.length];
@@ -427,8 +447,8 @@ class _GalaxyPainter extends CustomPainter {
         
         final gradient = LinearGradient(
           colors: [
-            Colors.white.withOpacity((1 - progress * 3).clamp(0.0, 1.0)),
-            Colors.white.withOpacity(0),
+            Colors.white.withValues(alpha: (1 - progress * 3).clamp(0.0, 1.0)),
+            Colors.white.withValues(alpha: 0),
           ],
         );
         

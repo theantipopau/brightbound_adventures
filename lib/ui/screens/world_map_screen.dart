@@ -7,7 +7,7 @@ import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:brightbound_adventures/ui/widgets/daily_challenge_card.dart';
-import 'package:brightbound_adventures/ui/widgets/achievement_card.dart';
+import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
 
 /// Enhanced World Map with 3D-style visuals and progressive unlocking
 class WorldMapScreen extends StatefulWidget {
@@ -57,14 +57,24 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       requiredStars: 3, // Need 3 stars to unlock
     ),
     const ZoneData(
+      id: 'math-facts',
+      name: 'Math Facts',
+      emoji: '🔢',
+      color: Color(0xFFFF6B6B),
+      position: Offset(0.25, 0.55),
+      description: 'Master multiplication & addition!',
+      order: 2,
+      requiredStars: 6,
+    ),
+    const ZoneData(
       id: 'story-springs',
       name: 'Story Springs',
       emoji: '📖',
       color: AppColors.storyspringsColor,
       position: Offset(0.85, 0.40),
       description: 'Create amazing stories!',
-      order: 2,
-      requiredStars: 8,
+      order: 3,
+      requiredStars: 10,
     ),
     const ZoneData(
       id: 'puzzle-peaks',
@@ -73,7 +83,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       color: AppColors.puzzlePeaksColor,
       position: Offset(0.65, 0.65),
       description: 'Solve tricky puzzles!',
-      order: 3,
+      order: 4,
       requiredStars: 15,
     ),
     const ZoneData(
@@ -83,7 +93,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       color: AppColors.adventureArenaColor,
       position: Offset(0.30, 0.75),
       description: 'Ultimate challenges!',
-      order: 4,
+      order: 5,
       requiredStars: 25,
     ),
   ];
@@ -190,7 +200,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   bool _isZoneUnlocked(int zoneIndex, int totalStars) {
     final isUnlocked = totalStars >= _zones[zoneIndex].requiredStars;
-    print('Zone ${_zones[zoneIndex].name}: totalStars=$totalStars, required=${_zones[zoneIndex].requiredStars}, unlocked=$isUnlocked');
+    debugPrint('Zone ${_zones[zoneIndex].name}: totalStars=$totalStars, required=${_zones[zoneIndex].requiredStars}, unlocked=$isUnlocked');
     return isUnlocked;
   }
 
@@ -199,12 +209,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     
     // If already at this zone, navigate directly without animation
     if (targetIndex == _currentZoneIndex) {
-      print('Already at zone $targetIndex - navigating directly');
+      debugPrint('Already at zone $targetIndex - navigating directly');
       Navigator.pushNamed(context, '/${_zones[targetIndex].id}');
       return;
     }
     
-    print('Moving avatar from zone $_currentZoneIndex to zone $targetIndex');
+    debugPrint('Moving avatar from zone $_currentZoneIndex to zone $targetIndex');
     setState(() {
       _targetZoneIndex = targetIndex;
       _isMoving = true;
@@ -308,8 +318,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.primary.withOpacity(0.3),
-            AppColors.secondary.withOpacity(0.3),
+            AppColors.primary.withValues(alpha: 0.3),
+            AppColors.secondary.withValues(alpha: 0.3),
           ],
         ),
       ),
@@ -418,11 +428,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                 floatAnimation: _floatController,
                 onTap: isUnlocked 
                     ? () {
-                        print('Tapped zone ${zone.name} - moving to index $index');
+                        debugPrint('Tapped zone ${zone.name} - moving to index $index');
                         _moveToZone(index);
                       }
                     : () {
-                        print('Tapped locked zone ${zone.name}');
+                        debugPrint('Tapped locked zone ${zone.name}');
                         _showLockedDialog(zone, totalStars);
                       },
               ),
@@ -433,7 +443,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     }).toList();
   }
 
-  Widget _buildMovingAvatar(BoxConstraints constraints, avatar) {
+  Widget _buildMovingAvatar(BoxConstraints constraints, Avatar avatar) {
     return AnimatedBuilder(
       animation: _avatarMoveController,
       builder: (context, child) {
@@ -468,7 +478,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
-  Widget _build3DAvatar(avatar, bool isMoving) {
+  Widget _build3DAvatar(Avatar avatar, bool isMoving) {
     return AnimatedBuilder(
       animation: _floatController,
       builder: (context, child) {
@@ -509,7 +519,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -534,7 +544,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
-  Widget _buildTopHUD(avatar, int totalStars) {
+  Widget _buildTopHUD(Avatar avatar, int totalStars) {
     return Positioned(
       top: 10,
       left: 16,
@@ -545,11 +555,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.95),
+              color: Colors.white.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -587,12 +597,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.95),
+                color: Colors.white.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 2),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                   ),
                 ],
@@ -629,7 +639,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.amber.withOpacity(0.4),
+                  color: Colors.amber.withValues(alpha: 0.4),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -657,11 +667,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           // Settings button
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.95),
+              color: Colors.white.withValues(alpha: 0.95),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                 ),
               ],
@@ -726,12 +736,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         width: 80,
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.95),
+          color: Colors.white.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3), width: 2),
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -775,7 +785,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: zone.color.withOpacity(0.2),
+                    color: zone.color.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -888,12 +898,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [color.withOpacity(0.7), color],
+            colors: [color.withValues(alpha: 0.7), color],
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.3),
+              color: color.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -973,9 +983,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1106,7 +1116,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1119,7 +1129,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.2),
+                      color: Colors.orange.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text('🎯', style: TextStyle(fontSize: 28)),
@@ -1140,7 +1150,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         Text(
                           'Complete challenges for bonus XP!',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 14,
                           ),
                         ),
@@ -1154,7 +1164,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -1162,14 +1172,14 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       children: [
                         Icon(
                           Icons.timer,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           size: 16,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           _getTimeUntilReset(),
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1215,122 +1225,10 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
   
   void _showAchievements() {
-    // Get sample achievements with some progress
-    final achievements = AchievementDatabase.allAchievements.map((a) {
-      // Add some sample progress for demo
-      final progress = switch (a.id) {
-        'avatar_created' => a.requirement,
-        'first_question' => a.requirement,
-        'first_zone' => a.requirement,
-        'ten_correct' => 7,
-        'streak_3' => 2,
-        _ => 0,
-      };
-      
-      return a.copyWith(
-        currentProgress: progress,
-        isUnlocked: progress >= a.requirement,
-        unlockedAt: progress >= a.requirement ? DateTime.now().subtract(const Duration(days: 1)) : null,
-      );
-    }).toList();
-    
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.amber.shade800,
-              Colors.orange.shade900,
-            ],
-          ),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            // Handle
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text('🏆', style: TextStyle(fontSize: 28)),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'My Trophies',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '${achievements.where((a) => a.isUnlocked).length}/${achievements.length} Unlocked',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Achievements list
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                child: AchievementsList(
-                  achievements: achievements,
-                  onAchievementTap: (achievement) {
-                    if (achievement.isUnlocked) {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AchievementShowcase(
-                          achievement: achievement,
-                          onDismiss: () => Navigator.pop(context),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const TrophyRoomScreen(),
       ),
     );
   }
@@ -1379,7 +1277,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [AppColors.primary.withOpacity(0.1), AppColors.secondary.withOpacity(0.1)],
+                      colors: [AppColors.primary.withValues(alpha: 0.1), AppColors.secondary.withValues(alpha: 0.1)],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.primary, width: 2),
@@ -1390,7 +1288,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.2),
+                          color: AppColors.primary.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
@@ -1492,7 +1390,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
+          color: Colors.black.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(12),
         ),
         child: const Row(
@@ -1581,7 +1479,7 @@ class _ZoneIsland extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: zone.color.withOpacity(0.6),
+                    color: zone.color.withValues(alpha: 0.6),
                     blurRadius: 15,
                     spreadRadius: 3,
                   ),
@@ -1597,7 +1495,7 @@ class _ZoneIsland extends StatelessWidget {
                       width: 90,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.15),
+                        color: Colors.black.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(45),
                       ),
                     ),
@@ -1615,11 +1513,11 @@ class _ZoneIsland extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: [
                             isUnlocked 
-                                ? zone.color.withOpacity(0.6)
-                                : Colors.grey.withOpacity(0.4),
+                                ? zone.color.withValues(alpha: 0.6)
+                                : Colors.grey.withValues(alpha: 0.4),
                             isUnlocked
-                                ? zone.color.withOpacity(0.3)
-                                : Colors.grey.withOpacity(0.2),
+                                ? zone.color.withValues(alpha: 0.3)
+                                : Colors.grey.withValues(alpha: 0.2),
                           ],
                         ),
                         borderRadius: const BorderRadius.vertical(
@@ -1640,7 +1538,7 @@ class _ZoneIsland extends StatelessWidget {
                           center: const Alignment(0, -0.5),
                           colors: isUnlocked
                               ? [
-                                  zone.color.withOpacity(0.9),
+                                  zone.color.withValues(alpha: 0.9),
                                   zone.color,
                                 ]
                               : [
@@ -1652,13 +1550,13 @@ class _ZoneIsland extends StatelessWidget {
                         border: Border.all(
                           color: isCurrentZone 
                               ? Colors.white 
-                              : Colors.white.withOpacity(0.5),
+                              : Colors.white.withValues(alpha: 0.5),
                           width: isCurrentZone ? 4 : 2,
                         ),
                         boxShadow: [
                           BoxShadow(
                             color: (isUnlocked ? zone.color : Colors.grey)
-                                .withOpacity(0.4),
+                                .withValues(alpha: 0.4),
                             blurRadius: isCurrentZone ? 20 : 12,
                             spreadRadius: isCurrentZone ? 4 : 2,
                           ),
@@ -1686,7 +1584,7 @@ class _ZoneIsland extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.black.withOpacity(0.3),
+                                    color: Colors.black.withValues(alpha: 0.3),
                                     blurRadius: 4,
                                   ),
                                 ],
@@ -1728,7 +1626,7 @@ class _ZoneIsland extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 4,
                             ),
                           ],
@@ -1805,8 +1703,8 @@ class _PathPainter extends CustomPainter {
       // Draw path
       final pathPaint = Paint()
         ..color = isUnlocked 
-            ? Colors.amber.withOpacity(0.6)
-            : Colors.grey.withOpacity(0.3)
+            ? Colors.amber.withValues(alpha: 0.6)
+            : Colors.grey.withValues(alpha: 0.3)
         ..strokeWidth = 8
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
@@ -1880,10 +1778,22 @@ class _EnhancedBackgroundPainter extends CustomPainter {
     // Layer 2: Rolling hills
     _drawRollingHills(canvas, size);
     
-    // Layer 3: Puffy clouds with depth
+    // Layer 3: Water features (rivers/streams)
+    _drawWaterFeatures(canvas, size);
+    
+    // Layer 4: Trees and foliage
+    _drawTrees(canvas, size);
+    
+    // Layer 5: Grass patches
+    _drawGrassPatches(canvas, size);
+    
+    // Layer 6: Puffy clouds with depth
     _drawClouds(canvas, size);
     
-    // Layer 4: Floating particles/sparkles
+    // Layer 7: Flying birds
+    _drawBirds(canvas, size);
+    
+    // Layer 8: Floating particles/sparkles
     _drawSparkles(canvas, size);
   }
   
@@ -1893,8 +1803,8 @@ class _EnhancedBackgroundPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Colors.blue.shade200.withOpacity(0.3),
-          Colors.blue.shade100.withOpacity(0.2),
+          Colors.blue.shade200.withValues(alpha: 0.3),
+          Colors.blue.shade100.withValues(alpha: 0.2),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     
@@ -1927,8 +1837,8 @@ class _EnhancedBackgroundPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Colors.green.shade200.withOpacity(0.25),
-          Colors.green.shade100.withOpacity(0.15),
+          Colors.green.shade200.withValues(alpha: 0.25),
+          Colors.green.shade100.withValues(alpha: 0.15),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     
@@ -1981,7 +1891,7 @@ class _EnhancedBackgroundPainter extends CustomPainter {
   void _draw3DCloud(Canvas canvas, Offset center, double size, double opacity) {
     // Shadow layer (offset and darker)
     final shadowPaint = Paint()
-      ..color = Colors.blueGrey.withOpacity(opacity * 0.15)
+      ..color = Colors.blueGrey.withValues(alpha: opacity * 0.15)
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     
@@ -1990,14 +1900,14 @@ class _EnhancedBackgroundPainter extends CustomPainter {
     
     // Main cloud (white with gradient feel)
     final mainPaint = Paint()
-      ..color = Colors.white.withOpacity(opacity * 0.85)
+      ..color = Colors.white.withValues(alpha: opacity * 0.85)
       ..style = PaintingStyle.fill;
     
     _drawCloudShape(canvas, center, size, mainPaint);
     
     // Highlight layer (top portion, brighter)
     final highlightPaint = Paint()
-      ..color = Colors.white.withOpacity(opacity * 0.4)
+      ..color = Colors.white.withValues(alpha: opacity * 0.4)
       ..style = PaintingStyle.fill;
     
     canvas.drawCircle(center + Offset(-size * 0.2, -size * 0.3), size * 0.4, highlightPaint);
@@ -2010,6 +1920,210 @@ class _EnhancedBackgroundPainter extends CustomPainter {
     canvas.drawCircle(center + Offset(size * 0.7, size * 0.1), size * 0.75, paint);
     canvas.drawCircle(center + Offset(-size * 0.35, -size * 0.35), size * 0.65, paint);
     canvas.drawCircle(center + Offset(size * 0.35, -size * 0.35), size * 0.65, paint);
+  }
+  
+  void _drawWaterFeatures(Canvas canvas, Size size) {
+    // Winding river/stream
+    final waterPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          Colors.blue.shade200.withValues(alpha: 0.4),
+          Colors.blue.shade300.withValues(alpha: 0.5),
+          Colors.lightBlue.shade100.withValues(alpha: 0.35),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..style = PaintingStyle.fill;
+    
+    final waterPath = Path();
+    final float = math.sin(animation * math.pi * 0.4) * 8;
+    
+    waterPath.moveTo(0, size.height * 0.75);
+    waterPath.quadraticBezierTo(
+      size.width * 0.15 + float, size.height * 0.72,
+      size.width * 0.3, size.height * 0.78,
+    );
+    waterPath.quadraticBezierTo(
+      size.width * 0.5 + float, size.height * 0.74,
+      size.width * 0.7, size.height * 0.8,
+    );
+    waterPath.quadraticBezierTo(
+      size.width * 0.85 + float, size.height * 0.77,
+      size.width, size.height * 0.79,
+    );
+    waterPath.lineTo(size.width, size.height * 0.85);
+    waterPath.quadraticBezierTo(
+      size.width * 0.85, size.height * 0.83,
+      size.width * 0.7, size.height * 0.86,
+    );
+    waterPath.quadraticBezierTo(
+      size.width * 0.5, size.height * 0.8,
+      size.width * 0.3, size.height * 0.84,
+    );
+    waterPath.quadraticBezierTo(
+      size.width * 0.15, size.height * 0.78,
+      0, size.height * 0.81,
+    );
+    waterPath.close();
+    
+    canvas.drawPath(waterPath, waterPaint);
+    
+    // Water shimmer
+    final shimmerPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.2 + math.sin(animation * math.pi * 3) * 0.1)
+      ..style = PaintingStyle.fill;
+    
+    for (int i = 0; i < 5; i++) {
+      final shimmerX = size.width * (0.15 + i * 0.15) + math.sin(animation * math.pi * 2 + i) * 10;
+      final shimmerY = size.height * 0.77 + math.sin(animation * math.pi + i) * 3;
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(shimmerX, shimmerY),
+          width: 15,
+          height: 5,
+        ),
+        shimmerPaint,
+      );
+    }
+  }
+  
+  void _drawTrees(Canvas canvas, Size size) {
+    final trees = [
+      _TreeData(Offset(size.width * 0.08, size.height * 0.68), 35, Colors.green.shade700),
+      _TreeData(Offset(size.width * 0.22, size.height * 0.58), 42, Colors.green.shade600),
+      _TreeData(Offset(size.width * 0.35, size.height * 0.72), 38, Colors.green.shade700),
+      _TreeData(Offset(size.width * 0.62, size.height * 0.55), 45, Colors.green.shade800),
+      _TreeData(Offset(size.width * 0.78, size.height * 0.7), 40, Colors.green.shade700),
+      _TreeData(Offset(size.width * 0.92, size.height * 0.62), 36, Colors.green.shade600),
+    ];
+    
+    for (final tree in trees) {
+      final sway = math.sin(animation * math.pi * 0.5) * 2;
+      _drawTree(canvas, tree.position + Offset(sway, 0), tree.size, tree.color);
+    }
+  }
+  
+  void _drawTree(Canvas canvas, Offset position, double size, Color leafColor) {
+    // Tree trunk
+    final trunkPaint = Paint()
+      ..color = Colors.brown.shade700
+      ..style = PaintingStyle.fill;
+    
+    final trunkRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: position + Offset(0, size * 0.3),
+        width: size * 0.15,
+        height: size * 0.5,
+      ),
+      Radius.circular(size * 0.05),
+    );
+    canvas.drawRRect(trunkRect, trunkPaint);
+    
+    // Tree leaves (3 circles)
+    final leafPaint = Paint()
+      ..color = leafColor
+      ..style = PaintingStyle.fill;
+    
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.15)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    
+    canvas.drawCircle(position + Offset(2, 2), size * 0.4, shadowPaint);
+    canvas.drawCircle(position, size * 0.4, leafPaint);
+    canvas.drawCircle(position + Offset(-size * 0.2, -size * 0.15), size * 0.35, leafPaint);
+    canvas.drawCircle(position + Offset(size * 0.2, -size * 0.15), size * 0.35, leafPaint);
+    
+    // Highlight
+    final highlightPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.3)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(position + Offset(-size * 0.15, -size * 0.2), size * 0.15, highlightPaint);
+  }
+  
+  void _drawGrassPatches(Canvas canvas, Size size) {
+    final patches = [
+      Offset(size.width * 0.12, size.height * 0.73),
+      Offset(size.width * 0.28, size.height * 0.65),
+      Offset(size.width * 0.45, size.height * 0.78),
+      Offset(size.width * 0.58, size.height * 0.61),
+      Offset(size.width * 0.73, size.height * 0.75),
+      Offset(size.width * 0.88, size.height * 0.68),
+    ];
+    
+    for (int i = 0; i < patches.length; i++) {
+      final sway = math.sin(animation * math.pi * 0.7 + i * 0.5) * 1.5;
+      final center = patches[i] + Offset(sway, 0);
+      
+      // Draw grass blades
+      for (int j = 0; j < 8; j++) {
+        final angle = (j / 8) * math.pi * 2;
+        final bladeHeight = 8 + math.sin(animation * math.pi + j) * 2;
+        final bladeEnd = center + Offset(
+          math.cos(angle) * 12,
+          -bladeHeight + math.sin(angle) * 3,
+        );
+        
+        final bladePath = Path()
+          ..moveTo(center.dx, center.dy)
+          ..quadraticBezierTo(
+            center.dx + math.cos(angle) * 6,
+            center.dy - bladeHeight * 0.5,
+            bladeEnd.dx,
+            bladeEnd.dy,
+          );
+        
+        final bladePaint = Paint()
+          ..color = Colors.green.shade400.withValues(alpha: 0.5 + j * 0.05)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..strokeCap = StrokeCap.round;
+        
+        canvas.drawPath(bladePath, bladePaint);
+      }
+    }
+  }
+  
+  void _drawBirds(Canvas canvas, Size size) {
+    final birds = [
+      Offset(size.width * 0.2, size.height * 0.18),
+      Offset(size.width * 0.5, size.height * 0.22),
+      Offset(size.width * 0.75, size.height * 0.13),
+    ];
+    
+    for (int i = 0; i < birds.length; i++) {
+      final flyOffset = math.sin(animation * math.pi * 2 + i * 1.5) * 30;
+      final bobOffset = math.sin(animation * math.pi * 4 + i) * 5;
+      final position = birds[i] + Offset(flyOffset, bobOffset);
+      
+      _drawBird(canvas, position, animation + i * 0.5);
+    }
+  }
+  
+  void _drawBird(Canvas canvas, Offset position, double animPhase) {
+    final wingFlap = math.sin(animPhase * math.pi * 8);
+    
+    final birdPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    
+    // Left wing
+    final leftWing = Path()
+      ..moveTo(position.dx, position.dy)
+      ..quadraticBezierTo(
+        position.dx - 8, position.dy - 6 * wingFlap,
+        position.dx - 12, position.dy - 4 * wingFlap,
+      );
+    canvas.drawPath(leftWing, birdPaint);
+    
+    // Right wing
+    final rightWing = Path()
+      ..moveTo(position.dx, position.dy)
+      ..quadraticBezierTo(
+        position.dx + 8, position.dy - 6 * wingFlap,
+        position.dx + 12, position.dy - 4 * wingFlap,
+      );
+    canvas.drawPath(rightWing, birdPaint);
   }
   
   void _drawSparkles(Canvas canvas, Size size) {
@@ -2029,7 +2143,7 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       final sparkleSize = 2 + twinkle * 3;
       
       final paint = Paint()
-        ..color = Colors.white.withOpacity(sparkleOpacity)
+        ..color = Colors.white.withValues(alpha: sparkleOpacity)
         ..style = PaintingStyle.fill;
       
       canvas.drawCircle(sparkles[i], sparkleSize, paint);
@@ -2071,4 +2185,12 @@ class _CloudData {
   final double opacity;
   
   _CloudData(this.position, this.size, this.opacity);
+}
+
+class _TreeData {
+  final Offset position;
+  final double size;
+  final Color color;
+  
+  _TreeData(this.position, this.size, this.color);
 }

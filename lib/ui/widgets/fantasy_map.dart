@@ -67,7 +67,7 @@ class FantasyMapPainter extends CustomPainter {
           const Color(0xFF87CEEB), // Sky blue
           const Color(0xFFB4E7F8), // Light blue
           const Color(0xFFFFF8DC), // Cornsilk (warm horizon)
-          const Color(0xFF90EE90).withOpacity(0.5), // Light green (grass blend)
+          const Color(0xFF90EE90).withValues(alpha: 0.5), // Light green (grass blend)
         ],
         stops: const [0.0, 0.3, 0.6, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -76,7 +76,7 @@ class FantasyMapPainter extends CustomPainter {
 
   void _drawDistantMountains(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFB8A9C9).withOpacity(0.4)
+      ..color = const Color(0xFFB8A9C9).withValues(alpha: 0.4)
       ..style = PaintingStyle.fill;
 
     final path = Path();
@@ -123,7 +123,7 @@ class FantasyMapPainter extends CustomPainter {
 
     // Add grass texture
     final grassStrokePaint = Paint()
-      ..color = const Color(0xFF228B22).withOpacity(0.3)
+      ..color = const Color(0xFF228B22).withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
@@ -141,9 +141,9 @@ class FantasyMapPainter extends CustomPainter {
     final riverPaint = Paint()
       ..shader = LinearGradient(
         colors: [
-          const Color(0xFF4169E1).withOpacity(0.7),
-          const Color(0xFF00BFFF).withOpacity(0.8),
-          const Color(0xFF87CEEB).withOpacity(0.7),
+          const Color(0xFF4169E1).withValues(alpha: 0.7),
+          const Color(0xFF00BFFF).withValues(alpha: 0.8),
+          const Color(0xFF87CEEB).withValues(alpha: 0.7),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
@@ -184,7 +184,7 @@ class FantasyMapPainter extends CustomPainter {
 
     // Animated water sparkles
     final sparklePaint = Paint()
-      ..color = Colors.white.withOpacity(0.6 + 0.3 * math.sin(animation * math.pi * 4));
+      ..color = Colors.white.withValues(alpha: 0.6 + 0.3 * math.sin(animation * math.pi * 4));
     
     for (int i = 0; i < 8; i++) {
       final x = size.width * (0.2 + 0.2 * (i / 8)) + math.sin(animation * math.pi * 2 + i) * 10;
@@ -291,7 +291,7 @@ class FantasyMapPainter extends CustomPainter {
 
     final snowPaint = Paint()..color = Colors.white;
     final magicGlowPaint = Paint()
-      ..color = const Color(0xFFE6E6FA).withOpacity(0.5);
+      ..color = const Color(0xFFE6E6FA).withValues(alpha: 0.5);
 
     // Draw magic mountains
     final mountains = [
@@ -336,9 +336,9 @@ class FantasyMapPainter extends CustomPainter {
     final pondPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          const Color(0xFF87CEEB).withOpacity(0.9),
-          const Color(0xFF4169E1).withOpacity(0.8),
-          const Color(0xFF1E90FF).withOpacity(0.7),
+          const Color(0xFF87CEEB).withValues(alpha: 0.9),
+          const Color(0xFF4169E1).withValues(alpha: 0.8),
+          const Color(0xFF1E90FF).withValues(alpha: 0.7),
         ],
       ).createShader(Rect.fromCenter(center: Offset(pondX, pondY), width: 100, height: 60));
 
@@ -372,7 +372,7 @@ class FantasyMapPainter extends CustomPainter {
       final sx = pondX + math.cos(angle) * r * 0.8;
       final sy = pondY + math.sin(angle) * r * 0.4;
       final opacity = (0.3 + 0.5 * math.sin(animation * math.pi * 4 + i)).clamp(0.0, 1.0);
-      canvas.drawCircle(Offset(sx, sy), 2, sparklePaint..color = Colors.white.withOpacity(opacity));
+      canvas.drawCircle(Offset(sx, sy), 2, sparklePaint..color = Colors.white.withValues(alpha: opacity));
     }
   }
 
@@ -381,7 +381,7 @@ class FantasyMapPainter extends CustomPainter {
     final centerY = size.height * 0.52;
 
     final pathPaint = Paint()
-      ..color = const Color(0xFFDEB887).withOpacity(0.8)
+      ..color = const Color(0xFFDEB887).withValues(alpha: 0.8)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 12
       ..strokeCap = StrokeCap.round;
@@ -483,12 +483,12 @@ class FantasyMapPainter extends CustomPainter {
   void _drawRainbow(Canvas canvas, Size size, double animation) {
     final rainbowOpacity = (0.4 + 0.2 * math.sin(animation * math.pi * 2)).clamp(0.0, 1.0);
     final colors = [
-      Colors.red.withOpacity(rainbowOpacity),
-      Colors.orange.withOpacity(rainbowOpacity),
-      Colors.yellow.withOpacity(rainbowOpacity),
-      Colors.green.withOpacity(rainbowOpacity),
-      Colors.blue.withOpacity(rainbowOpacity),
-      Colors.purple.withOpacity(rainbowOpacity),
+      Colors.red.withValues(alpha: rainbowOpacity),
+      Colors.orange.withValues(alpha: rainbowOpacity),
+      Colors.yellow.withValues(alpha: rainbowOpacity),
+      Colors.green.withValues(alpha: rainbowOpacity),
+      Colors.blue.withValues(alpha: rainbowOpacity),
+      Colors.purple.withValues(alpha: rainbowOpacity),
     ];
 
     final centerX = size.width * 0.6;
@@ -556,12 +556,12 @@ class FantasyMapPainter extends CustomPainter {
       final sparkleSize = 2 + math.sin(animation * math.pi * 4 + i) * 1.5;
       
       // Draw 4-point star sparkle
-      final paint = Paint()..color = Colors.white.withOpacity(opacity);
+      final paint = Paint()..color = Colors.white.withValues(alpha: opacity);
       canvas.drawCircle(Offset(x, y), sparkleSize, paint);
       
       // Cross lines for sparkle effect
       final linePaint = Paint()
-        ..color = Colors.white.withOpacity((opacity * 0.6).clamp(0.0, 1.0))
+        ..color = Colors.white.withValues(alpha: (opacity * 0.6).clamp(0.0, 1.0))
         ..strokeWidth = 1;
       canvas.drawLine(Offset(x - sparkleSize * 2, y), Offset(x + sparkleSize * 2, y), linePaint);
       canvas.drawLine(Offset(x, y - sparkleSize * 2), Offset(x, y + sparkleSize * 2), linePaint);
@@ -576,7 +576,7 @@ class FantasyMapPainter extends CustomPainter {
       final y = size.height * (0.05 + 0.15 * math.sin(i * 1.3));
       final twinkle = (0.5 + 0.5 * math.sin(animation * math.pi * 4 + i * 0.7)).clamp(0.0, 1.0);
       
-      _drawStar(canvas, x, y, 4 + twinkle * 2, starPaint..color = const Color(0xFFFFD700).withOpacity(twinkle));
+      _drawStar(canvas, x, y, 4 + twinkle * 2, starPaint..color = const Color(0xFFFFD700).withValues(alpha: twinkle));
     }
   }
 
@@ -603,8 +603,8 @@ class FantasyMapPainter extends CustomPainter {
   }
 
   void _drawClouds(Canvas canvas, Size size, double animation) {
-    final cloudPaint = Paint()..color = Colors.white.withOpacity(0.85);
-    final shadowPaint = Paint()..color = Colors.grey.withOpacity(0.2);
+    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
+    final shadowPaint = Paint()..color = Colors.grey.withValues(alpha: 0.2);
 
     final cloudPositions = [
       [size.width * 0.15 + animation * 80, size.height * 0.06, 1.2],
@@ -899,7 +899,7 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
                       child: CustomPaint(
                         size: const Size(72, 72),
                         painter: _MagicRingPainter(
-                          color: widget.color.withOpacity(0.7),
+                          color: widget.color.withValues(alpha: 0.7),
                           opacity: _glowAnimation.value * 0.6,
                           starCount: 4,
                         ),
@@ -913,12 +913,12 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: widget.color.withOpacity(_glowAnimation.value),
+                            color: widget.color.withValues(alpha: _glowAnimation.value),
                             blurRadius: 20,
                             spreadRadius: 8,
                           ),
                           BoxShadow(
-                            color: Colors.white.withOpacity(_glowAnimation.value * 0.5),
+                            color: Colors.white.withValues(alpha: _glowAnimation.value * 0.5),
                             blurRadius: 10,
                             spreadRadius: 2,
                           ),
@@ -935,8 +935,8 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              Colors.white.withOpacity(0.95),
-                              widget.color.withOpacity(0.85),
+                              Colors.white.withValues(alpha: 0.95),
+                              widget.color.withValues(alpha: 0.85),
                               widget.color,
                             ],
                             stops: const [0.0, 0.5, 1.0],
@@ -947,17 +947,19 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: widget.color.withOpacity(0.6),
+                              color: widget.color.withValues(alpha: 0.6),
                               blurRadius: 12,
                               spreadRadius: 2,
                             ),
                           ],
                         ),
                         child: Center(
-                          child: Text(
-                            widget.emoji,
-                            style: const TextStyle(fontSize: 26),
-                          ),
+                          child: widget.isUnlocked 
+                            ? Text(
+                                widget.emoji,
+                                style: const TextStyle(fontSize: 26),
+                              )
+                            : const Icon(Icons.lock, color: Colors.white54, size: 24),
                         ),
                       ),
                     ),
@@ -982,7 +984,7 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
                   border: Border.all(color: const Color(0xFF8B4513), width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
+                      color: Colors.black.withValues(alpha: 0.25),
                       blurRadius: 6,
                       offset: const Offset(2, 3),
                     ),
@@ -1068,10 +1070,10 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
             height: 8,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(opacity),
+              color: Colors.white.withValues(alpha: opacity),
               boxShadow: [
                 BoxShadow(
-                  color: widget.color.withOpacity((opacity * 0.8).clamp(0.0, 1.0)),
+                  color: widget.color.withValues(alpha: (opacity * 0.8).clamp(0.0, 1.0)),
                   blurRadius: 4,
                   spreadRadius: 1,
                 ),
@@ -1105,13 +1107,13 @@ class _MagicRingPainter extends CustomPainter {
 
     // Draw ring
     final ringPaint = Paint()
-      ..color = color.withOpacity((safeOpacity * 0.5).clamp(0.0, 1.0))
+      ..color = color.withValues(alpha: (safeOpacity * 0.5).clamp(0.0, 1.0))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
     canvas.drawCircle(center, radius, ringPaint);
 
     // Draw small stars/dots around the ring
-    final starPaint = Paint()..color = Colors.white.withOpacity(safeOpacity);
+    final starPaint = Paint()..color = Colors.white.withValues(alpha: safeOpacity);
     for (int i = 0; i < starCount; i++) {
       final angle = (i / starCount) * 2 * math.pi;
       final x = center.dx + math.cos(angle) * radius;
@@ -1119,7 +1121,7 @@ class _MagicRingPainter extends CustomPainter {
       canvas.drawCircle(Offset(x, y), 3, starPaint);
       
       // Small glow
-      final glowPaint = Paint()..color = color.withOpacity((safeOpacity * 0.5).clamp(0.0, 1.0));
+      final glowPaint = Paint()..color = color.withValues(alpha: (safeOpacity * 0.5).clamp(0.0, 1.0));
       canvas.drawCircle(Offset(x, y), 5, glowPaint);
     }
   }
@@ -1210,8 +1212,8 @@ class _CentralHubState extends State<CentralHub> with TickerProviderStateMixin {
                       gradient: RadialGradient(
                         colors: [
                           Colors.transparent,
-                          AppColors.primary.withOpacity(0.2 + 0.1 * math.sin(_sparkleController.value * math.pi * 2)),
-                          AppColors.secondary.withOpacity(0.3),
+                          AppColors.primary.withValues(alpha: 0.2 + 0.1 * math.sin(_sparkleController.value * math.pi * 2)),
+                          AppColors.secondary.withValues(alpha: 0.3),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.5, 0.7, 1.0],
@@ -1236,12 +1238,12 @@ class _CentralHubState extends State<CentralHub> with TickerProviderStateMixin {
                       border: Border.all(color: Colors.white, width: 4),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFFD700).withOpacity(0.6),
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.6),
                           blurRadius: 20,
                           spreadRadius: 5,
                         ),
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.4),
+                          color: AppColors.primary.withValues(alpha: 0.4),
                           blurRadius: 30,
                           spreadRadius: 10,
                         ),
@@ -1272,12 +1274,12 @@ class _CentralHubState extends State<CentralHub> with TickerProviderStateMixin {
                 border: Border.all(color: Colors.white, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFFD700).withOpacity(0.5),
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.5),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(2, 4),
                   ),
@@ -1313,7 +1315,7 @@ class _CentralHubState extends State<CentralHub> with TickerProviderStateMixin {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -1367,7 +1369,7 @@ class _CentralHubState extends State<CentralHub> with TickerProviderStateMixin {
           child: Icon(
             Icons.star,
             size: 10,
-            color: colors[i % colors.length].withOpacity(opacity),
+            color: colors[i % colors.length].withValues(alpha: opacity),
           ),
         ),
       );
@@ -1401,12 +1403,12 @@ class _MagicCrownPainter extends CustomPainter {
       final opacity = (0.3 + 0.7 * math.sin(phase * 2)).clamp(0.0, 1.0);
       final sparkleSize = 3 + math.sin(phase) * 2;
       
-      final paint = Paint()..color = const Color(0xFFFFD700).withOpacity(opacity);
+      final paint = Paint()..color = const Color(0xFFFFD700).withValues(alpha: opacity);
       canvas.drawCircle(pos, sparkleSize, paint);
       
       // Cross lines for sparkle effect
       final linePaint = Paint()
-        ..color = Colors.white.withOpacity((opacity * 0.6).clamp(0.0, 1.0))
+        ..color = Colors.white.withValues(alpha: (opacity * 0.6).clamp(0.0, 1.0))
         ..strokeWidth = 1;
       canvas.drawLine(
         Offset(pos.dx - sparkleSize * 1.5, pos.dy),

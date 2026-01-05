@@ -70,7 +70,7 @@ class BrightBoundGraphics {
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: backgroundColor.withOpacity(0.1),
+              color: backgroundColor.withValues(alpha: 0.1),
               border: Border.all(
                 color: backgroundColor,
                 width: 3,
@@ -145,7 +145,7 @@ class BrightBoundGraphics {
   /// Lockable skill card (shows lock if not available)
   static Widget buildLockedOverlay() {
     return Container(
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.black.withValues(alpha: 0.4),
       child: const Center(
         child: Icon(
           Icons.lock,
@@ -200,22 +200,22 @@ Map<String, Color> _getMasteryColors(SkillState state) {
   switch (state) {
     case SkillState.locked:
       return {
-        'bg': Colors.grey.withOpacity(0.2),
+        'bg': Colors.grey.withValues(alpha: 0.2),
         'color': Colors.grey,
       };
     case SkillState.introduced:
       return {
-        'bg': const Color(0xFF4ECDC4).withOpacity(0.2),
+        'bg': const Color(0xFF4ECDC4).withValues(alpha: 0.2),
         'color': const Color(0xFF4ECDC4),
       };
     case SkillState.practising:
       return {
-        'bg': const Color(0xFFFFA500).withOpacity(0.2),
+        'bg': const Color(0xFFFFA500).withValues(alpha: 0.2),
         'color': const Color(0xFFFFA500),
       };
     case SkillState.mastered:
       return {
-        'bg': const Color(0xFF06A77D).withOpacity(0.2),
+        'bg': const Color(0xFF06A77D).withValues(alpha: 0.2),
         'color': const Color(0xFF06A77D),
       };
   }

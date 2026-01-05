@@ -24,8 +24,8 @@ class DailyChallengeCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              zoneColor.withOpacity(challenge.isCompleted ? 0.5 : 0.9),
-              zoneColor.withOpacity(challenge.isCompleted ? 0.3 : 0.7),
+              zoneColor.withValues(alpha: challenge.isCompleted ? 0.5 : 0.9),
+              zoneColor.withValues(alpha: challenge.isCompleted ? 0.3 : 0.7),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -35,13 +35,13 @@ class DailyChallengeCard extends StatelessWidget {
               ? []
               : [
                   BoxShadow(
-                    color: zoneColor.withOpacity(0.4),
+                    color: zoneColor.withValues(alpha: 0.4),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
                 ],
           border: Border.all(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             width: 1.5,
           ),
         ),
@@ -54,9 +54,9 @@ class DailyChallengeCard extends StatelessWidget {
               children: [
                 Text(
                   challenge.emoji,
-                  style: const TextStyle(fontSize: 24),
+                  style: const TextStyle(fontSize: 20),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +66,7 @@ class DailyChallengeCard extends StatelessWidget {
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 13,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -74,8 +74,8 @@ class DailyChallengeCard extends StatelessWidget {
                       Text(
                         DailyChallengeGenerator.getZoneName(challenge.zoneId),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
-                          fontSize: 10,
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 9,
                         ),
                       ),
                     ],
@@ -84,24 +84,24 @@ class DailyChallengeCard extends StatelessWidget {
                 // Reward badge
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                    horizontal: 6,
+                    vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.amber.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('⭐', style: TextStyle(fontSize: 12)),
+                      const Text('⭐', style: TextStyle(fontSize: 10)),
                       const SizedBox(width: 2),
                       Text(
                         '${challenge.xpReward}',
                         style: const TextStyle(
                           color: Colors.black87,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -109,33 +109,33 @@ class DailyChallengeCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             
             // Description
             Text(
               challenge.description,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
-                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 11,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
 
             // Progress bar
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: challenge.progressPercent,
-                backgroundColor: Colors.white.withOpacity(0.2),
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(
                   challenge.isCompleted ? Colors.greenAccent : Colors.white,
                 ),
-                minHeight: 6,
+                minHeight: 5,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
 
             // Progress text
             Row(
@@ -144,8 +144,8 @@ class DailyChallengeCard extends StatelessWidget {
                 Text(
                   '${challenge.currentProgress}/${challenge.targetScore}',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 10,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -179,7 +179,7 @@ class DailyChallengeCard extends StatelessWidget {
                   Text(
                     'TAP TO PLAY',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 10,
                     ),
                   ),
@@ -229,7 +229,7 @@ class DailyChallengesList extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(

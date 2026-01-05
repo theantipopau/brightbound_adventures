@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/widgets/index.dart';
 import 'package:brightbound_adventures/ui/screens/index.dart';
 
 void main() async {
@@ -11,10 +12,25 @@ void main() async {
   final storageService = LocalStorageService();
   await storageService.initializeHive();
 
+  // Initialize achievement service
+  final achievementService = AchievementService();
+  await achievementService.initialize();
+
+  // Initialize shop service
+  final shopService = ShopService();
+  await shopService.initialize();
+
+  // Initialize adaptive difficulty service
+  final adaptiveDifficultyService = AdaptiveDifficultyService();
+  await adaptiveDifficultyService.initialize();
+
   runApp(
     MultiProvider(
       providers: [
         Provider<LocalStorageService>(create: (_) => storageService),
+        ChangeNotifierProvider<AchievementService>.value(value: achievementService),
+        ChangeNotifierProvider<ShopService>.value(value: shopService),
+        ChangeNotifierProvider<AdaptiveDifficultyService>.value(value: adaptiveDifficultyService),
         ChangeNotifierProvider<AvatarProvider>(
           create: (_) {
             final provider = AvatarProvider();
@@ -43,6 +59,14 @@ class BrightBoundApp extends StatelessWidget {
     return MaterialApp(
       title: 'BrightBound Adventures',
       theme: AppTheme.lightTheme(),
+      builder: (context, child) {
+        return ResponsiveWrapper(
+          designSize: const Size(1280, 800), // Target desktop/tablet landscape
+          minWidth: true,
+          minHeight: true,
+          child: child!,
+        );
+      },
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
       routes: {
@@ -233,7 +257,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFFF6B9D).withOpacity(0.5),
+                                    color: const Color(0xFFFF6B9D).withValues(alpha: 0.5),
                                     blurRadius: 30,
                                     spreadRadius: 5,
                                   ),
@@ -249,7 +273,7 @@ class _SplashScreenState extends State<SplashScreen>
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: Colors.white.withOpacity(0.3),
+                                        color: Colors.white.withValues(alpha: 0.3),
                                         width: 3,
                                       ),
                                     ),
@@ -271,7 +295,7 @@ class _SplashScreenState extends State<SplashScreen>
                                           color: Colors.white,
                                           shadows: [
                                             Shadow(
-                                              color: Colors.black.withOpacity(0.3),
+                                              color: Colors.black.withValues(alpha: 0.3),
                                               blurRadius: 4,
                                               offset: const Offset(2, 2),
                                             ),
@@ -328,7 +352,7 @@ class _SplashScreenState extends State<SplashScreen>
                               'Learn • Play • Grow',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withValues(alpha: 0.7),
                                 letterSpacing: 3,
                               ),
                             ),
@@ -348,7 +372,7 @@ class _SplashScreenState extends State<SplashScreen>
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: LinearProgressIndicator(
-                                backgroundColor: Colors.white.withOpacity(0.2),
+                                backgroundColor: Colors.white.withValues(alpha: 0.2),
                                 valueColor: const AlwaysStoppedAnimation(
                                   Color(0xFF4ECDC4),
                                 ),
@@ -360,7 +384,7 @@ class _SplashScreenState extends State<SplashScreen>
                           Text(
                             'Loading your adventure...',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                               fontSize: 14,
                             ),
                           ),
@@ -408,7 +432,7 @@ class _SplashScreenState extends State<SplashScreen>
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 10,
             ),
           ),
@@ -434,7 +458,7 @@ class _StarFieldPainter extends CustomPainter {
       final twinkle = (0.3 + 0.7 * ((animation * 3 + i * 0.1) % 1.0)).clamp(0.0, 1.0);
       final starSize = 1.0 + (i % 3);
       
-      paint.color = Colors.white.withOpacity(twinkle);
+      paint.color = Colors.white.withValues(alpha: twinkle);
       canvas.drawCircle(Offset(x, y), starSize, paint);
     }
     
@@ -445,11 +469,11 @@ class _StarFieldPainter extends CustomPainter {
       final glow = (0.4 + 0.6 * ((animation * 2 + i * 0.3) % 1.0)).clamp(0.0, 1.0);
       
       // Glow effect
-      paint.color = const Color(0xFFFFD93D).withOpacity(glow * 0.3);
+      paint.color = const Color(0xFFFFD93D).withValues(alpha: glow * 0.3);
       canvas.drawCircle(Offset(x, y), 8, paint);
       
       // Core
-      paint.color = Colors.white.withOpacity(glow);
+      paint.color = Colors.white.withValues(alpha: glow);
       canvas.drawCircle(Offset(x, y), 3, paint);
     }
   }

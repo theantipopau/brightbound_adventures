@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
+import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
 import 'package:brightbound_adventures/features/numeracy/widgets/numeracy_game.dart';
 import 'package:brightbound_adventures/features/numeracy/widgets/numeracy_results_screen.dart';
@@ -27,20 +29,24 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
   int _hintsUsed = 0;
 
   List<NumeracyQuestion> _getQuestionsForSkill() {
+    // Get adaptive difficulty level
+    final adaptiveDifficulty = context.read<AdaptiveDifficultyService>();
+    final difficulty = adaptiveDifficulty.getDifficultyForSkill(widget.skill.id);
+    
     switch (widget.skill.id) {
       case 'skill_counting':
       case 'skill_number_recognition':
-        return CountingQuestions.getByDifficulty(widget.skill.difficulty);
+        return CountingQuestions.getByDifficulty(difficulty);
       case 'skill_addition':
-        return AdditionQuestions.getByDifficulty(widget.skill.difficulty);
+        return AdditionQuestions.getByDifficulty(difficulty);
       case 'skill_subtraction':
-        return SubtractionQuestions.getByDifficulty(widget.skill.difficulty);
+        return SubtractionQuestions.getByDifficulty(difficulty);
       case 'skill_multiplication':
-        return MultiplicationQuestions.getByDifficulty(widget.skill.difficulty);
+        return MultiplicationQuestions.getByDifficulty(difficulty);
       case 'skill_patterns':
-        return PatternQuestions.getByDifficulty(widget.skill.difficulty);
+        return PatternQuestions.getByDifficulty(difficulty);
       case 'skill_place_value':
-        return PlaceValueQuestions.getByDifficulty(widget.skill.difficulty);
+        return PlaceValueQuestions.getByDifficulty(difficulty);
       default:
         // Return generic questions for skills without specific question banks
         return _getGenericQuestions();

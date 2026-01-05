@@ -56,6 +56,11 @@ class SkillProvider extends ChangeNotifier {
                 skill.strand == Constants.strandCommunication;
           } else if (zoneId == 'number_nebula') {
             return skill.strand == Constants.strandNumeracy;
+          } else if (zoneId == 'math_facts') {
+            return skill.strand == Constants.strandNumeracy && 
+                (skill.id.contains('multiplication') || 
+                 skill.id.contains('addition') || 
+                 skill.id.contains('subtraction'));
           } else if (zoneId == 'story_springs') {
             return skill.strand == Constants.strandCommunication;
           } else if (zoneId == 'puzzle_peaks') {

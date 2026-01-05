@@ -4,3 +4,6 @@ export 'local_storage_service.dart';
 export 'avatar_provider.dart';
 export 'skill_provider.dart';
 export 'stats_service.dart';
+export 'achievement_service.dart';
+export 'shop_service.dart';
+export 'adaptive_difficulty_service.dart';

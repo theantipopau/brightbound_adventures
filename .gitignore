@@ -91,7 +91,6 @@ app.*.map.json
 **/ios/**/Flutter/Flutter.podspec
 
 # Web
-lib/generated_plugin_registrant.dart
 
 # Symbolication related
 app.*.symbols

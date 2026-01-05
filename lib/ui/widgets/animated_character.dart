@@ -190,7 +190,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                       width: widget.size * 0.6 * shadowScale,
                       height: widget.size * 0.15,
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(widget.size),
                       ),
                     );
@@ -252,12 +252,12 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                   color: skinColor,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: skinColor.withOpacity(0.7),
+                    color: skinColor.withValues(alpha: 0.7),
                     width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: skinColor.withOpacity(0.3),
+                      color: skinColor.withValues(alpha: 0.3),
                       blurRadius: 6,
                       spreadRadius: 1,
                     ),
@@ -296,7 +296,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                         width: widget.size * 0.1,
                         height: widget.size * 0.15,
                         decoration: BoxDecoration(
-                          color: _getCharacterColor().withOpacity(0.8),
+                          color: _getCharacterColor().withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(widget.size * 0.03),
                         ),
                       ),
@@ -308,7 +308,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                         width: widget.size * 0.1,
                         height: widget.size * 0.15,
                         decoration: BoxDecoration(
-                          color: _getCharacterColor().withOpacity(0.8),
+                          color: _getCharacterColor().withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(widget.size * 0.03),
                         ),
                       ),
@@ -325,7 +325,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                   width: widget.size * 0.1,
                   height: widget.size * 0.12,
                   decoration: BoxDecoration(
-                    color: _getCharacterColor().withOpacity(0.8),
+                    color: _getCharacterColor().withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(widget.size * 0.03),
                   ),
                 ),
@@ -334,7 +334,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                   width: widget.size * 0.1,
                   height: widget.size * 0.12,
                   decoration: BoxDecoration(
-                    color: _getCharacterColor().withOpacity(0.8),
+                    color: _getCharacterColor().withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(widget.size * 0.03),
                   ),
                 ),
@@ -382,7 +382,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
           ),
         ],
@@ -397,6 +397,10 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
       case 'fox': return '🦊';
       case 'rabbit': return '🐰';
       case 'deer': return '🦌';
+      case 'cat': return '🐱';
+      case 'penguin': return '🐧';
+      case 'koala': return '🐨';
+      case 'panda': return '🐼';
       default: return '🐻';
     }
   }
@@ -407,6 +411,10 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
       case 'fox': return const Color(0xFFFF6B35);
       case 'rabbit': return const Color(0xFFE0E0E0);
       case 'deer': return const Color(0xFFD2691E);
+      case 'cat': return const Color(0xFFFF8C94);
+      case 'penguin': return const Color(0xFF4A90E2);
+      case 'koala': return const Color(0xFF9E9E9E);
+      case 'panda': return const Color(0xFF000000);
       default: return const Color(0xFF8B4513);
     }
   }
@@ -438,7 +446,7 @@ class _ParticlePainter extends CustomPainter {
         AppColors.tertiary,
         Colors.purple,
       ];
-      paint.color = colors[i % colors.length].withOpacity(opacity);
+      paint.color = colors[i % colors.length].withValues(alpha: opacity);
       canvas.drawCircle(Offset(x, y), particleSize, paint);
     }
   }

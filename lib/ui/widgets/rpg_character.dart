@@ -18,13 +18,13 @@ class RpgCharacter extends StatefulWidget {
   final Color? backgroundColor;
 
   const RpgCharacter({
-    Key? key,
+    super.key,
     required this.emoji,
     this.size = 64,
     this.direction = CharacterDirection.down,
     this.isWalking = false,
     this.backgroundColor,
-  }) : super(key: key);
+  });
 
   @override
   State<RpgCharacter> createState() => _RpgCharacterState();
@@ -89,11 +89,11 @@ class _RpgCharacterState extends State<RpgCharacter>
               width: widget.size,
               height: widget.size,
               decoration: BoxDecoration(
-                color: widget.backgroundColor ?? Colors.white.withOpacity(0.9),
+                color: widget.backgroundColor ?? Colors.white.withValues(alpha: 0.9),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -104,7 +104,7 @@ class _RpgCharacterState extends State<RpgCharacter>
                   scale: widget.size / 64, // Scale emoji relative to size
                   child: Text(
                     widget.emoji,
-                    style: TextStyle(fontSize: 40),
+                    style: const TextStyle(fontSize: 40),
                   ),
                 ),
               ),
@@ -196,14 +196,14 @@ class RpgMovementWidget extends StatefulWidget {
   final Size mapSize;
 
   const RpgMovementWidget({
-    Key? key,
+    super.key,
     required this.characterEmoji,
     required this.waypoints,
     required this.currentWaypointIndex,
     required this.onWaypointReached,
     this.characterSize = 64,
     required this.mapSize,
-  }) : super(key: key);
+  });
 
   @override
   State<RpgMovementWidget> createState() => _RpgMovementWidgetState();

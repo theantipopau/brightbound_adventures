@@ -65,7 +65,7 @@ class SkillCard extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: BrightBoundGraphics.buildSkillBadge(
                         label: '⚠️ NAPLAN Focus',
-                        backgroundColor: AppColors.warning.withOpacity(0.2),
+                        backgroundColor: AppColors.warning.withValues(alpha: 0.2),
                         textColor: AppColors.warning,
                         padding: 6,
                       ),

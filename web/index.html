@@ -31,20 +31,8 @@
         height: 100%;
       }
     </style>
+    <script src="flutter_bootstrap.js" async></script>
   </head>
   <body>
-    <div id="app-container"></div>
-    
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('flutter_service_worker.js').then(function(reg) {
-          console.log('Service Worker registered successfully:', reg);
-        }).catch(function(error) {
-          console.log('Service Worker registration failed:', error);
-        });
-      }
-    </script>
-
-    <script src="main.dart.js" type="application/javascript"></script>
   </body>
 </html>

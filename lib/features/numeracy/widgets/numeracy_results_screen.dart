@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
+import 'package:brightbound_adventures/ui/widgets/achievement_notification.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Quiz results screen for numeracy games
@@ -63,8 +64,10 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
     _recordProgress();
   }
 
-  void _recordProgress() {
+  void _recordProgress() async {
     final skillProvider = context.read<SkillProvider>();
+    final achievementService = AchievementService();
+    final shopService = ShopService();
 
     // Record practice session and update skill progress
     skillProvider.updateSkillProgress(
@@ -72,6 +75,29 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
       sessionAccuracy: widget.accuracy,
       sessionHints: widget.hintsUsed,
     );
+
+    // Award stars
+    await shopService.awardStarsForActivity(
+      score: widget.correctAnswers,
+      maxScore: widget.totalQuestions,
+      accuracy: widget.accuracy,
+    );
+
+    // Track achievements
+    await achievementService.trackQuestionAnswered(true); // Track correct answers
+    
+    // Check for perfect score
+    if (widget.accuracy >= 1.0) {
+      await achievementService.trackPerfectScore();
+    }
+    
+    // Show any newly unlocked achievements
+    if (mounted) {
+      for (final achievement in achievementService.recentlyUnlocked) {
+        AchievementNotificationManager.show(context, achievement);
+      }
+      achievementService.clearRecentlyUnlocked();
+    }
   }
 
   @override
@@ -118,8 +144,8 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              widget.themeColor.withOpacity(0.8),
-              widget.themeColor.withOpacity(0.4),
+              widget.themeColor.withValues(alpha: 0.8),
+              widget.themeColor.withValues(alpha: 0.4),
               Colors.white,
             ],
           ),
@@ -170,7 +196,7 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                   _getPerformanceSubtext(),
                   style: TextStyle(
                     fontSize: 18,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -194,7 +220,7 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                             child: Icon(
                               earned ? Icons.star : Icons.star_border,
                               size: 60,
-                              color: earned ? Colors.amber : Colors.white.withOpacity(0.5),
+                              color: earned ? Colors.amber : Colors.white.withValues(alpha: 0.5),
                             ),
                           );
                         },
@@ -214,7 +240,7 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: widget.themeColor.withOpacity(0.3),
+                          color: widget.themeColor.withValues(alpha: 0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),

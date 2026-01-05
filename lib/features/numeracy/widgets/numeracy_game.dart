@@ -327,45 +327,89 @@ class _NumeracyGameState extends State<NumeracyGame>
   }
 
   Widget _buildQuestionCard() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: widget.themeColor.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Space-themed decoration
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: widget.themeColor.withOpacity(0.1),
-              shape: BoxShape.circle,
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 700),
+      tween: Tween(begin: 0.0, end: 1.0),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: 0.9 + (value * 0.1),
+          child: Opacity(
+            opacity: value,
+            child: Container(
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white,
+                    widget.themeColor.withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: widget.themeColor.withOpacity(0.3),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.themeColor.withOpacity(0.15),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                    spreadRadius: 5,
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.8),
+                    blurRadius: 15,
+                    offset: const Offset(-5, -5),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Animated icon with glow
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          widget.themeColor.withOpacity(0.25),
+                          widget.themeColor.withOpacity(0.1),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: widget.themeColor.withOpacity(0.3),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      _getQuestionTypeEmoji(),
+                      style: const TextStyle(fontSize: 40),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    _currentQuestion.question,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      height: 1.5,
+                      color: Colors.grey[900],
+                      letterSpacing: 0.3,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
-            child: Text(
-              _getQuestionTypeEmoji(),
-              style: const TextStyle(fontSize: 32),
-            ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            _currentQuestion.question,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              height: 1.4,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

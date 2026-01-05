@@ -41,7 +41,7 @@ class XpBar extends StatelessWidget {
                   '$currentLevelXp / $xpNeeded XP',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -50,10 +50,10 @@ class XpBar extends StatelessWidget {
         Container(
           height: height,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(height / 2),
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               width: 2,
             ),
           ),
@@ -90,7 +90,7 @@ class XpBar extends StatelessWidget {
                       color: Colors.white,
                       shadows: [
                         Shadow(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withValues(alpha: 0.5),
                           offset: const Offset(1, 1),
                           blurRadius: 2,
                         ),
@@ -138,7 +138,7 @@ class LevelBadge extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -153,7 +153,7 @@ class LevelBadge extends StatelessWidget {
             color: Colors.white,
             shadows: [
               Shadow(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 offset: const Offset(1, 1),
                 blurRadius: 2,
               ),
@@ -237,7 +237,7 @@ class _XpGainAnimationState extends State<XpGainAnimation>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),

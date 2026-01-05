@@ -415,3 +415,234 @@ class PunctuationQuestions {
     return questions.where((q) => q.difficulty <= level).toList();
   }
 }
+
+/// Question bank for rhyming words skill
+class RhymingQuestions {
+  static const List<LiteracyQuestion> questions = [
+    LiteracyQuestion(
+      id: 'rhyme_1',
+      skillId: 'skill_rhyming',
+      question: 'Which word rhymes with "cat"?',
+      options: ['dog', 'bat', 'car', 'cup'],
+      correctIndex: 1,
+      hint: 'Listen to the ending sounds',
+      explanation: '"Cat" and "bat" both end with "-at"!',
+      difficulty: 1,
+    ),
+    LiteracyQuestion(
+      id: 'rhyme_2',
+      skillId: 'skill_rhyming',
+      question: 'Which word rhymes with "fun"?',
+      options: ['fan', 'run', 'fly', 'fox'],
+      correctIndex: 1,
+      hint: 'Think about words ending in "-un"',
+      explanation: '"Fun" and "run" both end with "-un"!',
+      difficulty: 1,
+    ),
+    LiteracyQuestion(
+      id: 'rhyme_3',
+      skillId: 'skill_rhyming',
+      question: 'Which word rhymes with "tree"?',
+      options: ['bee', 'tea', 'toe', 'try'],
+      correctIndex: 0,
+      hint: 'Which word sounds like "ree"?',
+      explanation: '"Tree" and "bee" both have the long "ee" sound!',
+      difficulty: 1,
+    ),
+    LiteracyQuestion(
+      id: 'rhyme_4',
+      skillId: 'skill_rhyming',
+      question: 'Which word rhymes with "light"?',
+      options: ['let', 'night', 'long', 'look'],
+      correctIndex: 1,
+      hint: 'Listen for the "-ight" sound',
+      explanation: '"Light" and "night" both end with "-ight"!',
+      difficulty: 2,
+    ),
+    LiteracyQuestion(
+      id: 'rhyme_5',
+      skillId: 'skill_rhyming',
+      question: 'Which word rhymes with "make"?',
+      options: ['milk', 'bake', 'more', 'mark'],
+      correctIndex: 1,
+      hint: 'Think of words ending in "-ake"',
+      explanation: '"Make" and "bake" both end with "-ake"!',
+      difficulty: 2,
+    ),
+    LiteracyQuestion(
+      id: 'rhyme_6',
+      skillId: 'skill_rhyming',
+      question: 'Which word rhymes with "brain"?',
+      options: ['train', 'brown', 'bring', 'brand'],
+      correctIndex: 0,
+      hint: 'Listen for the "-ain" sound',
+      explanation: '"Brain" and "train" both end with "-ain"!',
+      difficulty: 2,
+    ),
+    LiteracyQuestion(
+      id: 'rhyme_7',
+      skillId: 'skill_rhyming',
+      question: 'Which word does NOT rhyme with "blue"?',
+      options: ['flew', 'shoe', 'blow', 'true'],
+      correctIndex: 2,
+      hint: 'One ending sounds different',
+      explanation: '"Blue", "flew", "shoe", and "true" rhyme. "Blow" ends differently!',
+      difficulty: 3,
+    ),
+    LiteracyQuestion(
+      id: 'rhyme_8',
+      skillId: 'skill_rhyming',
+      question: 'Which word rhymes with "strong"?',
+      options: ['song', 'stone', 'stand', 'story'],
+      correctIndex: 0,
+      hint: 'Listen for the "-ong" sound',
+      explanation: '"Strong" and "song" both end with "-ong"!',
+      difficulty: 2,
+    ),
+  ];
+
+  static List<LiteracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for syllable counting skill
+class SyllableQuestions {
+  static const List<LiteracyQuestion> questions = [
+    LiteracyQuestion(
+      id: 'syll_1',
+      skillId: 'skill_syllables',
+      question: 'How many syllables in "cat"?',
+      options: ['1', '2', '3', '4'],
+      correctIndex: 0,
+      hint: 'Clap it out: cat',
+      explanation: '"Cat" has 1 syllable: cat',
+      difficulty: 1,
+    ),
+    LiteracyQuestion(
+      id: 'syll_2',
+      skillId: 'skill_syllables',
+      question: 'How many syllables in "happy"?',
+      options: ['1', '2', '3', '4'],
+      correctIndex: 1,
+      hint: 'Clap it out: hap-py',
+      explanation: '"Happy" has 2 syllables: hap-py',
+      difficulty: 1,
+    ),
+    LiteracyQuestion(
+      id: 'syll_3',
+      skillId: 'skill_syllables',
+      question: 'How many syllables in "dinosaur"?',
+      options: ['2', '3', '4', '5'],
+      correctIndex: 1,
+      hint: 'Clap it out: di-no-saur',
+      explanation: '"Dinosaur" has 3 syllables: di-no-saur',
+      difficulty: 2,
+    ),
+    LiteracyQuestion(
+      id: 'syll_4',
+      skillId: 'skill_syllables',
+      question: 'How many syllables in "butterfly"?',
+      options: ['2', '3', '4', '5'],
+      correctIndex: 1,
+      hint: 'Clap it out: but-ter-fly',
+      explanation: '"Butterfly" has 3 syllables: but-ter-fly',
+      difficulty: 2,
+    ),
+    LiteracyQuestion(
+      id: 'syll_5',
+      skillId: 'skill_syllables',
+      question: 'How many syllables in "education"?',
+      options: ['3', '4', '5', '6'],
+      correctIndex: 1,
+      hint: 'Clap it out: ed-u-ca-tion',
+      explanation: '"Education" has 4 syllables: ed-u-ca-tion',
+      difficulty: 3,
+    ),
+    LiteracyQuestion(
+      id: 'syll_6',
+      skillId: 'skill_syllables',
+      question: 'How many syllables in "elephant"?',
+      options: ['2', '3', '4', '5'],
+      correctIndex: 1,
+      hint: 'Clap it out: el-e-phant',
+      explanation: '"Elephant" has 3 syllables: el-e-phant',
+      difficulty: 2,
+    ),
+  ];
+
+  static List<LiteracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for spelling patterns skill
+class SpellingQuestions {
+  static const List<LiteracyQuestion> questions = [
+    LiteracyQuestion(
+      id: 'spell_1',
+      skillId: 'skill_spelling',
+      question: 'Which spelling is correct?',
+      options: ['freind', 'friend', 'frend', 'friand'],
+      correctIndex: 1,
+      hint: 'Remember: "i before e"',
+      explanation: '"Friend" is spelled with "ie": f-r-i-e-n-d',
+      difficulty: 1,
+    ),
+    LiteracyQuestion(
+      id: 'spell_2',
+      skillId: 'skill_spelling',
+      question: 'Which spelling is correct?',
+      options: ['because', 'becuase', 'becaus', 'becase'],
+      correctIndex: 0,
+      hint: 'Think: "Big Elephants Can Always Understand Small Elephants"',
+      explanation: '"Because" is spelled: b-e-c-a-u-s-e',
+      difficulty: 1,
+    ),
+    LiteracyQuestion(
+      id: 'spell_3',
+      skillId: 'skill_spelling',
+      question: 'Which spelling is correct?',
+      options: ['separate', 'seperate', 'separete', 'seprate'],
+      correctIndex: 0,
+      hint: 'There\'s "a rat" in separate!',
+      explanation: '"Separate" has an "a" in the middle: sep-a-rate',
+      difficulty: 2,
+    ),
+    LiteracyQuestion(
+      id: 'spell_4',
+      skillId: 'skill_spelling',
+      question: 'Which spelling is correct?',
+      options: ['recieve', 'receive', 'receve', 'receeve'],
+      correctIndex: 1,
+      hint: '"i before e except after c"',
+      explanation: '"Receive" follows the rule: e-i after c',
+      difficulty: 2,
+    ),
+    LiteracyQuestion(
+      id: 'spell_5',
+      skillId: 'skill_spelling',
+      question: 'Which spelling is correct?',
+      options: ['necessary', 'neccessary', 'necesary', 'neccesary'],
+      correctIndex: 0,
+      hint: 'One collar (c) and two sleeves (ss)',
+      explanation: '"Necessary" has 1 c and 2 s\'s: n-e-c-e-s-s-a-r-y',
+      difficulty: 3,
+    ),
+    LiteracyQuestion(
+      id: 'spell_6',
+      skillId: 'skill_spelling',
+      question: 'Which spelling is correct?',
+      options: ['tommorrow', 'tomorrow', 'tomorow', 'tommorow'],
+      correctIndex: 1,
+      hint: 'One "m", two "r"s',
+      explanation: '"Tomorrow" is spelled: t-o-m-o-r-r-o-w',
+      difficulty: 2,
+    ),
+  ];
+
+  static List<LiteracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+

@@ -387,86 +387,100 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   }
 
   Widget _buildQuestionCard(bool isCompact) {
-    return Container(
-      padding: EdgeInsets.all(isCompact ? 12 : 20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            widget.themeColor.withOpacity(0.03),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: widget.themeColor.withOpacity(0.4),
-          width: 3,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: widget.themeColor.withOpacity(0.25),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-            spreadRadius: 2,
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.8),
-            blurRadius: 10,
-            offset: const Offset(-2, -2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Question icon with animation
-          AnimatedBuilder(
-            animation: _sparkleController,
-            builder: (context, child) {
-              return Container(
-                padding: EdgeInsets.all(isCompact ? 8 : 12),
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    colors: [
-                      widget.themeColor.withOpacity(0.3 + _sparkleController.value * 0.2),
-                      widget.themeColor.withOpacity(0.1),
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.themeColor.withOpacity(0.3),
-                      blurRadius: 8 + _sparkleController.value * 4,
-                      spreadRadius: 1,
-                    ),
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 600),
+      tween: Tween(begin: 0.0, end: 1.0),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: 0.9 + (value * 0.1),
+          child: Opacity(
+            opacity: value,
+            child: Container(
+              padding: EdgeInsets.all(isCompact ? 16 : 28),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white,
+                    widget.themeColor.withOpacity(0.05),
                   ],
                 ),
-                child: Icon(
-                  Icons.help_outline,
-                  size: isCompact ? 24 : 32,
-                  color: widget.themeColor,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: widget.themeColor.withOpacity(0.3),
+                  width: 2,
                 ),
-              );
-            },
-          ),
-          SizedBox(height: isCompact ? 8 : 16),
-          // Question text
-          Flexible(
-            child: SingleChildScrollView(
-              child: Text(
-                _currentQuestion.question,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: isCompact ? 16 : 20,
-                  fontWeight: FontWeight.bold,
-                  height: 1.3,
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.themeColor.withOpacity(0.15),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                    spreadRadius: 5,
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.8),
+                    blurRadius: 15,
+                    offset: const Offset(-5, -5),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Question icon with animation
+                  AnimatedBuilder(
+                    animation: _sparkleController,
+                    builder: (context, child) {
+                      return Container(
+                        padding: EdgeInsets.all(isCompact ? 12 : 16),
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            colors: [
+                              widget.themeColor.withOpacity(0.25 + _sparkleController.value * 0.15),
+                              widget.themeColor.withOpacity(0.1),
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: widget.themeColor.withOpacity(0.3),
+                              blurRadius: 15 + _sparkleController.value * 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          '📚',
+                          style: TextStyle(fontSize: isCompact ? 32 : 40),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: isCompact ? 12 : 20),
+                  // Question text
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Text(
+                        _currentQuestion.question,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: isCompact ? 18 : 24,
+                          fontWeight: FontWeight.w700,
+                          height: 1.5,
+                          color: Colors.grey[900],
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

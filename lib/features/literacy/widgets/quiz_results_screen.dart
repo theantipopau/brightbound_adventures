@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
+import 'package:brightbound_adventures/ui/widgets/achievement_notification.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Results screen shown after completing a quiz
@@ -74,7 +75,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
     super.dispose();
   }
 
-  void _processResults() {
+  void _processResults() async {
     // Calculate XP based on performance
     _xpAwarded = (widget.accuracy * 100).round();
     if (widget.accuracy >= 0.85) {
@@ -98,6 +99,31 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
       _previousLevel = avatarProvider.avatar!.level;
       avatarProvider.addExperience(_xpAwarded);
       _leveledUp = avatarProvider.avatar!.level > _previousLevel!;
+    }
+
+    // Award stars
+    final shopService = ShopService();
+    await shopService.awardStarsForActivity(
+      score: widget.correctAnswers,
+      maxScore: widget.totalQuestions,
+      accuracy: widget.accuracy,
+    );
+
+    // Track achievements
+    final achievementService = AchievementService();
+    await achievementService.trackQuestionAnswered(true); // Track correct answers
+    
+    // Check for perfect score
+    if (widget.accuracy >= 1.0) {
+      await achievementService.trackPerfectScore();
+    }
+    
+    // Show any newly unlocked achievements
+    if (mounted) {
+      for (final achievement in achievementService.recentlyUnlocked) {
+        AchievementNotificationManager.show(context, achievement);
+      }
+      achievementService.clearRecentlyUnlocked();
     }
   }
 
@@ -127,7 +153,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: widget.themeColor.withOpacity(0.05),
+      backgroundColor: widget.themeColor.withValues(alpha: 0.05),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -198,7 +224,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: widget.themeColor.withOpacity(0.2),
+                      color: widget.themeColor.withValues(alpha: 0.2),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),

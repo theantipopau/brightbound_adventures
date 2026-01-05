@@ -5,9 +5,9 @@ class OnboardingScreen extends StatefulWidget {
   final VoidCallback onComplete;
 
   const OnboardingScreen({
-    Key? key,
+    super.key,
     required this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -70,7 +70,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -125,7 +125,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     decoration: BoxDecoration(
                       color: _currentPage == index
                           ? Colors.white
-                          : Colors.white.withOpacity(0.4),
+                          : Colors.white.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -174,11 +174,11 @@ class OnboardingPage extends StatelessWidget {
   final String description;
 
   const OnboardingPage({
-    Key? key,
+    super.key,
     required this.emoji,
     required this.title,
     required this.description,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +215,7 @@ class OnboardingPage extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 18,
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               height: 1.5,
             ),
           ),

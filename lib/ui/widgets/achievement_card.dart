@@ -33,7 +33,7 @@ class AchievementCard extends StatelessWidget {
               ? []
               : [
                   BoxShadow(
-                    color: tierColor.withOpacity(0.3),
+                    color: tierColor.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -48,7 +48,7 @@ class AchievementCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isLocked 
                     ? Colors.grey[400] 
-                    : tierColor.withOpacity(0.2),
+                    : tierColor.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isLocked ? Colors.grey[500]! : tierColor,
@@ -239,18 +239,18 @@ class AchievementShowcase extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              tierColor.withOpacity(0.9),
-              tierColor.withOpacity(0.7),
+              tierColor.withValues(alpha: 0.9),
+              tierColor.withValues(alpha: 0.7),
             ],
           ),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             width: 3,
           ),
           boxShadow: [
             BoxShadow(
-              color: tierColor.withOpacity(0.5),
+              color: tierColor.withValues(alpha: 0.5),
               blurRadius: 20,
               spreadRadius: 5,
             ),
@@ -268,7 +268,7 @@ class AchievementShowcase extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             ),
             const SizedBox(height: 16),
@@ -286,7 +286,7 @@ class AchievementShowcase extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 10,
                   ),
                 ],
@@ -317,7 +317,7 @@ class AchievementShowcase extends StatelessWidget {
               achievement.description,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
               textAlign: TextAlign.center,
             ),
