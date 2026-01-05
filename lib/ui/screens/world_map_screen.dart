@@ -1772,63 +1772,229 @@ class _EnhancedBackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Layer 1: Distant mountains (slowest parallax)
+    // Layer 0: Sky gradient with sun/moon
+    _drawSky(canvas, size);
+    
+    // Layer 1: Distant castles and buildings
+    _drawDistantStructures(canvas, size);
+    
+    // Layer 2: Distant mountains with snow caps
     _drawDistantMountains(canvas, size);
     
-    // Layer 2: Rolling hills
+    // Layer 3: Rolling hills with more detail
     _drawRollingHills(canvas, size);
     
-    // Layer 3: Water features (rivers/streams)
-    _drawWaterFeatures(canvas, size);
-    
-    // Layer 4: Trees and foliage
-    _drawTrees(canvas, size);
-    
-    // Layer 5: Grass patches
-    _drawGrassPatches(canvas, size);
-    
-    // Layer 6: Puffy clouds with depth
+    // Layer 4: Puffy clouds with depth
     _drawClouds(canvas, size);
     
-    // Layer 7: Flying birds
+    // Layer 5: Flying birds
     _drawBirds(canvas, size);
     
-    // Layer 8: Floating particles/sparkles
+    // Layer 6: Butterflies
+    _drawButterflies(canvas, size);
+    
+    // Layer 7: Water features with reflections
+    _drawWaterFeatures(canvas, size);
+    
+    // Layer 8: Trees and foliage
+    _drawTrees(canvas, size);
+    
+    // Layer 9: Bushes
+    _drawBushes(canvas, size);
+    
+    // Layer 10: Grass patches
+    _drawGrassPatches(canvas, size);
+    
+    // Layer 11: Flowers
+    _drawFlowers(canvas, size);
+    
+    // Layer 12: Floating particles/sparkles
     _drawSparkles(canvas, size);
   }
   
-  void _drawDistantMountains(Canvas canvas, Size size) {
-    final paint = Paint()
+  void _drawSky(Canvas canvas, Size size) {
+    // Beautiful gradient sky
+    final skyPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Colors.blue.shade200.withValues(alpha: 0.3),
-          Colors.blue.shade100.withValues(alpha: 0.2),
+          const Color(0xFF87CEEB), // Sky blue
+          const Color(0xFFB0E0E6), // Powder blue
+          const Color(0xFFFFF8DC), // Cornsilk (horizon)
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     
-    final path = Path();
-    final float = math.sin(animation * math.pi * 0.3) * 3; // Slow parallax
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), skyPaint);
     
-    path.moveTo(0, size.height * 0.5);
-    path.quadraticBezierTo(
+    // Sun with glow
+    final sunPosition = Offset(size.width * 0.85, size.height * 0.12);
+    
+    // Outer glow
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.orange.withValues(alpha: 0.3),
+          Colors.orange.withValues(alpha: 0.1),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: sunPosition, radius: 60));
+    canvas.drawCircle(sunPosition, 60, glowPaint);
+    
+    // Sun body
+    final sunPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFFFFF00), // Bright yellow
+          const Color(0xFFFFA500), // Orange
+        ],
+      ).createShader(Rect.fromCircle(center: sunPosition, radius: 30));
+    canvas.drawCircle(sunPosition, 30, sunPaint);
+    
+    // Sun rays
+    final rayPaint = Paint()
+      ..color = Colors.yellow.withValues(alpha: 0.3)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    
+    for (int i = 0; i < 12; i++) {
+      final angle = (i * math.pi / 6) + animation * math.pi * 0.2;
+      final start = sunPosition + Offset(math.cos(angle) * 35, math.sin(angle) * 35);
+      final end = sunPosition + Offset(math.cos(angle) * 50, math.sin(angle) * 50);
+      canvas.drawLine(start, end, rayPaint);
+    }
+  }
+  
+  void _drawDistantStructures(Canvas canvas, Size size) {
+    // Distant castle/buildings on horizon
+    final structures = [
+      Offset(size.width * 0.15, size.height * 0.42),
+      Offset(size.width * 0.45, size.height * 0.38),
+      Offset(size.width * 0.72, size.height * 0.4),
+    ];
+    
+    for (final structure in structures) {
+      _drawCastle(canvas, structure, 25.0);
+    }
+  }
+  
+  void _drawCastle(Canvas canvas, Offset position, double size) {
+    final castlePaint = Paint()
+      ..color = Colors.purple.shade900.withValues(alpha: 0.25)
+      ..style = PaintingStyle.fill;
+    
+    // Main tower
+    canvas.drawRect(
+      Rect.fromCenter(center: position, width: size, height: size * 1.5),
+      castlePaint,
+    );
+    
+    // Side towers
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: position + Offset(-size * 0.7, size * 0.2),
+        width: size * 0.6,
+        height: size * 1.2,
+      ),
+      castlePaint,
+    );
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: position + Offset(size * 0.7, size * 0.2),
+        width: size * 0.6,
+        height: size * 1.2,
+      ),
+      castlePaint,
+    );
+    
+    // Cone roofs
+    final roofPath = Path()
+      ..moveTo(position.dx - size * 0.6, position.dy - size * 0.75)
+      ..lineTo(position.dx, position.dy - size * 1.2)
+      ..lineTo(position.dx + size * 0.6, position.dy - size * 0.75)
+      ..close();
+    canvas.drawPath(roofPath, castlePaint);
+  }
+  
+  void _drawDistantMountains(Canvas canvas, Size size) {
+    final float = math.sin(animation * math.pi * 0.3) * 3;
+    
+    // Back mountain range (bluish)
+    final backPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.indigo.shade300.withValues(alpha: 0.4),
+          Colors.blue.shade200.withValues(alpha: 0.3),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    
+    final backPath = Path();
+    backPath.moveTo(0, size.height * 0.52);
+    backPath.quadraticBezierTo(
+      size.width * 0.2 + float, size.height * 0.38,
+      size.width * 0.4, size.height * 0.48,
+    );
+    backPath.quadraticBezierTo(
+      size.width * 0.6 + float, size.height * 0.32,
+      size.width * 0.8, size.height * 0.45,
+    );
+    backPath.lineTo(size.width, size.height * 0.45);
+    backPath.lineTo(size.width, size.height);
+    backPath.lineTo(0, size.height);
+    backPath.close();
+    canvas.drawPath(backPath, backPaint);
+    
+    // Front mountain range with snow caps
+    final frontPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.blueGrey.shade400.withValues(alpha: 0.5),
+          Colors.blueGrey.shade300.withValues(alpha: 0.4),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    
+    final frontPath = Path();
+    frontPath.moveTo(0, size.height * 0.5);
+    frontPath.quadraticBezierTo(
       size.width * 0.15 + float, size.height * 0.35,
       size.width * 0.3, size.height * 0.45,
     );
-    path.quadraticBezierTo(
+    frontPath.quadraticBezierTo(
       size.width * 0.45 + float, size.height * 0.3,
       size.width * 0.6, size.height * 0.42,
     );
-    path.quadraticBezierTo(
+    frontPath.quadraticBezierTo(
       size.width * 0.8 + float, size.height * 0.28,
       size.width, size.height * 0.4,
     );
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
-    path.close();
+    frontPath.lineTo(size.width, size.height);
+    frontPath.lineTo(0, size.height);
+    frontPath.close();
+    canvas.drawPath(frontPath, frontPaint);
     
-    canvas.drawPath(path, paint);
+    // Snow caps on peaks
+    final snowPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.7)
+      ..style = PaintingStyle.fill;
+    
+    final snowCaps = [
+      Offset(size.width * 0.15 + float, size.height * 0.35),
+      Offset(size.width * 0.45 + float, size.height * 0.3),
+      Offset(size.width * 0.8 + float, size.height * 0.28),
+    ];
+    
+    for (final cap in snowCaps) {
+      final snowPath = Path()
+        ..moveTo(cap.dx - 15, cap.dy + 8)
+        ..lineTo(cap.dx, cap.dy)
+        ..lineTo(cap.dx + 15, cap.dy + 8)
+        ..close();
+      canvas.drawPath(snowPath, snowPaint);
+    }
   }
   
   void _drawRollingHills(Canvas canvas, Size size) {
@@ -1923,20 +2089,20 @@ class _EnhancedBackgroundPainter extends CustomPainter {
   }
   
   void _drawWaterFeatures(Canvas canvas, Size size) {
-    // Winding river/stream
+    final float = math.sin(animation * math.pi * 0.4) * 8;
+    
+    // Winding river/stream with depth
     final waterPaint = Paint()
       ..shader = LinearGradient(
         colors: [
-          Colors.blue.shade200.withValues(alpha: 0.4),
           Colors.blue.shade300.withValues(alpha: 0.5),
-          Colors.lightBlue.shade100.withValues(alpha: 0.35),
+          Colors.blue.shade400.withValues(alpha: 0.6),
+          Colors.cyan.shade200.withValues(alpha: 0.4),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill;
     
     final waterPath = Path();
-    final float = math.sin(animation * math.pi * 0.4) * 8;
-    
     waterPath.moveTo(0, size.height * 0.75);
     waterPath.quadraticBezierTo(
       size.width * 0.15 + float, size.height * 0.72,
@@ -1964,24 +2130,65 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       0, size.height * 0.81,
     );
     waterPath.close();
-    
     canvas.drawPath(waterPath, waterPaint);
     
-    // Water shimmer
+    // Water edge highlights
+    final edgePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    
+    final edgePath = Path();
+    edgePath.moveTo(0, size.height * 0.75);
+    edgePath.quadraticBezierTo(
+      size.width * 0.15 + float, size.height * 0.72,
+      size.width * 0.3, size.height * 0.78,
+    );
+    edgePath.quadraticBezierTo(
+      size.width * 0.5 + float, size.height * 0.74,
+      size.width * 0.7, size.height * 0.8,
+    );
+    edgePath.quadraticBezierTo(
+      size.width * 0.85 + float, size.height * 0.77,
+      size.width, size.height * 0.79,
+    );
+    canvas.drawPath(edgePath, edgePaint);
+    
+    // Water shimmer with more sparkle
     final shimmerPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.2 + math.sin(animation * math.pi * 3) * 0.1)
+      ..color = Colors.white.withValues(alpha: 0.3 + math.sin(animation * math.pi * 3) * 0.2)
       ..style = PaintingStyle.fill;
     
-    for (int i = 0; i < 5; i++) {
-      final shimmerX = size.width * (0.15 + i * 0.15) + math.sin(animation * math.pi * 2 + i) * 10;
-      final shimmerY = size.height * 0.77 + math.sin(animation * math.pi + i) * 3;
+    for (int i = 0; i < 8; i++) {
+      final shimmerX = size.width * (0.1 + i * 0.11) + math.sin(animation * math.pi * 2 + i) * 12;
+      final shimmerY = size.height * 0.77 + math.sin(animation * math.pi + i) * 4;
       canvas.drawOval(
         Rect.fromCenter(
           center: Offset(shimmerX, shimmerY),
-          width: 15,
-          height: 5,
+          width: 18 + math.sin(animation * math.pi * 2 + i) * 5,
+          height: 6,
         ),
         shimmerPaint,
+      );
+    }
+    
+    // Water ripples
+    final ripplePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.15)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    
+    for (int i = 0; i < 4; i++) {
+      final ripplePhase = (animation * 2 + i * 0.5) % 1;
+      final rippleX = size.width * (0.2 + i * 0.2);
+      final rippleY = size.height * 0.78;
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(rippleX, rippleY),
+          width: 20 * ripplePhase,
+          height: 10 * ripplePhase,
+        ),
+        ripplePaint..color = Colors.white.withValues(alpha: 0.2 * (1 - ripplePhase)),
       );
     }
   }
@@ -2080,6 +2287,173 @@ class _EnhancedBackgroundPainter extends CustomPainter {
         canvas.drawPath(bladePath, bladePaint);
       }
     }
+  }
+  
+  void _drawBushes(Canvas canvas, Size size) {
+    final bushes = [
+      Offset(size.width * 0.05, size.height * 0.72),
+      Offset(size.width * 0.18, size.height * 0.67),
+      Offset(size.width * 0.32, size.height * 0.75),
+      Offset(size.width * 0.55, size.height * 0.64),
+      Offset(size.width * 0.68, size.height * 0.72),
+      Offset(size.width * 0.82, size.height * 0.68),
+      Offset(size.width * 0.95, size.height * 0.71),
+    ];
+    
+    for (int i = 0; i < bushes.length; i++) {
+      final sway = math.sin(animation * math.pi * 0.3 + i * 0.8) * 1;
+      _drawBush(canvas, bushes[i] + Offset(sway, 0), 15.0 + (i % 3) * 5);
+    }
+  }
+  
+  void _drawBush(Canvas canvas, Offset position, double size) {
+    final bushPaint = Paint()
+      ..color = Colors.green.shade700.withValues(alpha: 0.6)
+      ..style = PaintingStyle.fill;
+    
+    // Multiple overlapping circles for fluffy bush
+    canvas.drawCircle(position, size, bushPaint);
+    canvas.drawCircle(position + Offset(-size * 0.5, size * 0.2), size * 0.8, bushPaint);
+    canvas.drawCircle(position + Offset(size * 0.5, size * 0.2), size * 0.8, bushPaint);
+    canvas.drawCircle(position + Offset(0, -size * 0.4), size * 0.7, bushPaint);
+    
+    // Highlight
+    final highlightPaint = Paint()
+      ..color = Colors.green.shade300.withValues(alpha: 0.3)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(position + Offset(-size * 0.3, -size * 0.3), size * 0.4, highlightPaint);
+  }
+  
+  void _drawFlowers(Canvas canvas, Size size) {
+    final flowers = [
+      _FlowerData(Offset(size.width * 0.12, size.height * 0.74), Colors.pink, 6),
+      _FlowerData(Offset(size.width * 0.16, size.height * 0.71), Colors.yellow, 5),
+      _FlowerData(Offset(size.width * 0.29, size.height * 0.68), Colors.purple, 6),
+      _FlowerData(Offset(size.width * 0.33, size.height * 0.76), Colors.red, 5),
+      _FlowerData(Offset(size.width * 0.46, size.height * 0.79), Colors.orange, 6),
+      _FlowerData(Offset(size.width * 0.59, size.height * 0.63), Colors.pink, 5),
+      _FlowerData(Offset(size.width * 0.65, size.height * 0.73), Colors.yellow, 6),
+      _FlowerData(Offset(size.width * 0.74, size.height * 0.76), Colors.purple, 5),
+      _FlowerData(Offset(size.width * 0.83, size.height * 0.69), Colors.red, 6),
+      _FlowerData(Offset(size.width * 0.89, size.height * 0.72), Colors.orange, 5),
+    ];
+    
+    for (int i = 0; i < flowers.length; i++) {
+      final bob = math.sin(animation * math.pi * 1.5 + i * 0.7) * 2;
+      _drawFlower(canvas, flowers[i].position + Offset(0, bob), flowers[i].color, flowers[i].petalCount);
+    }
+  }
+  
+  void _drawFlower(Canvas canvas, Offset position, Color color, int petalCount) {
+    // Stem
+    final stemPaint = Paint()
+      ..color = Colors.green.shade600
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawLine(position, position + const Offset(0, 12), stemPaint);
+    
+    // Petals
+    final petalPaint = Paint()
+      ..color = color.withValues(alpha: 0.8)
+      ..style = PaintingStyle.fill;
+    
+    for (int i = 0; i < petalCount; i++) {
+      final angle = (i * 2 * math.pi / petalCount);
+      final petalPos = position + Offset(
+        math.cos(angle) * 4,
+        math.sin(angle) * 4,
+      );
+      canvas.drawCircle(petalPos, 3, petalPaint);
+    }
+    
+    // Center
+    final centerPaint = Paint()
+      ..color = Colors.yellow.shade700
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(position, 2.5, centerPaint);
+  }
+  
+  void _drawButterflies(Canvas canvas, Size size) {
+    final butterflies = [
+      Offset(size.width * 0.25, size.height * 0.35),
+      Offset(size.width * 0.6, size.height * 0.45),
+      Offset(size.width * 0.8, size.height * 0.28),
+    ];
+    
+    for (int i = 0; i < butterflies.length; i++) {
+      final flyX = math.sin(animation * math.pi * 1.5 + i * 2) * 40;
+      final flyY = math.sin(animation * math.pi * 2 + i) * 20;
+      final position = butterflies[i] + Offset(flyX, flyY);
+      
+      _drawButterfly(canvas, position, animation + i * 0.5);
+    }
+  }
+  
+  void _drawButterfly(Canvas canvas, Offset position, double animPhase) {
+    final wingFlap = math.sin(animPhase * math.pi * 12) * 0.3 + 0.7;
+    
+    // Body
+    final bodyPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.7)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromCenter(center: position, width: 3, height: 8),
+      bodyPaint,
+    );
+    
+    // Left wings
+    final leftWingPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.purple.shade300,
+          Colors.pink.shade200,
+          Colors.white.withValues(alpha: 0.8),
+        ],
+      ).createShader(Rect.fromCircle(center: position + Offset(-5 * wingFlap, -3), radius: 8));
+    
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: position + Offset(-5 * wingFlap, -3),
+        width: 8 * wingFlap,
+        height: 10,
+      ),
+      leftWingPaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: position + Offset(-4 * wingFlap, 3),
+        width: 6 * wingFlap,
+        height: 8,
+      ),
+      leftWingPaint,
+    );
+    
+    // Right wings
+    final rightWingPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.purple.shade300,
+          Colors.pink.shade200,
+          Colors.white.withValues(alpha: 0.8),
+        ],
+      ).createShader(Rect.fromCircle(center: position + Offset(5 * wingFlap, -3), radius: 8));
+    
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: position + Offset(5 * wingFlap, -3),
+        width: 8 * wingFlap,
+        height: 10,
+      ),
+      rightWingPaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: position + Offset(4 * wingFlap, 3),
+        width: 6 * wingFlap,
+        height: 8,
+      ),
+      rightWingPaint,
+    );
   }
   
   void _drawBirds(Canvas canvas, Size size) {
@@ -2193,4 +2567,12 @@ class _TreeData {
   final Color color;
   
   _TreeData(this.position, this.size, this.color);
+}
+
+class _FlowerData {
+  final Offset position;
+  final Color color;
+  final int petalCount;
+  
+  _FlowerData(this.position, this.color, this.petalCount);
 }
