@@ -1,21 +1,66 @@
-# Deploying BrightBound Adventures to Cloudflare Pages
+# Deploying BrightBound Adventures to Cloudflare
 
 ## Overview
-This guide will help you deploy the Flutter web app to Cloudflare Pages as a separate project named "brightbound" accessible at `playbrightbound.matthurley.dev`.
+This project has two deployments:
+1. **Marketing Website**: Deployed via Wrangler from `/website/` folder
+2. **Flutter App**: Deployed to Cloudflare Pages as "brightbound" project
 
-## Prerequisites
-- GitHub repository: `theantipopau/brightbound_adventures`
+## Deployment 1: Marketing Website (Wrangler)
+
+The marketing website in the `/website/` folder is already configured with Wrangler.
+
+### Prerequisites
 - Cloudflare account
-- Domain: `matthurley.dev` (already in Cloudflare)
+- Wrangler CLI installed: `npm install -g wrangler`
+- Authenticated: `wrangler login`
 
-## Step 1: Prepare the Build
+### Deploy the Website
 
-The Flutter web build is already compiled and ready in the `build/web` directory.
+```bash
+# Navigate to the website folder
+cd website
 
-To rebuild if needed:
+# Deploy to production
+wrangler deploy
+
+# Deploy to dev environment (optional)
+wrangler deploy --env dev
+```
+
+### Configure Custom Domain (if needed)
+
+Edit `website/wrangler.toml` and uncomment the routes section:
+
+```toml
+routes = [
+  { pattern = "brightbound.matthurley.dev", custom_domain = true }
+]
+```
+
+Then deploy again:
+```bash
+wrangler deploy
+```
+
+Cloudflare will automatically:
+- Create the DNS records
+- Provision SSL certificate
+- Route traffic to your worker
+
+---
+
+## Deployment 2: Flutter App (Cloudflare Pages)
+
+Deploy the actual game/app to Cloudflare Pages for `playbrightbound.matthurley.dev`.
+
+### Step 1: Prepare the Build
+
+Build the Flutter web app:
 ```bash
 flutter build web --release
 ```
+
+The build output will be in `build/web/`.
 
 ## Step 2: Create Cloudflare Pages Project
 
@@ -177,31 +222,68 @@ Cloudflare Pages automatically provides:
 
 ## Current Website vs App
 
-- **Website**: `website/` folder (marketing site)
-- **Flutter App**: `build/web/` folder (actual game)
-- **Deployment**: Flutter app to Cloudflare Pages
-- **Marketing site**: Can stay on Cloudflare Workers or separate deployment
+- **Marketing Website** (`website/` folder): Deployed via Wrangler to `brightbound.matthurley.dev` (or custom domain)
+  - Static marketing pages (Home, About, Features, FAQ)
+  - Deployed with: `cd website && wrangler deploy`
+  
+- **Flutter App** (`build/web/` folder): Deployed to Cloudflare Pages at `playbrightbound.matthurley.dev`
+  - The actual game/app
+  - Auto-deploys from GitHub on push to `main`
 
 ## Cost
 
-- **Cloudflare Pages**: FREE
-  - Unlimited bandwidth
-  - Unlimited requests
-  - 500 builds/month
-  - 20,000 files per deployment
+Both deployments are **FREE**:
+
+**Cloudflare Workers (Website)**:
+- 100,000 requests/day free
+- More than enough for a marketing site
+
+**Cloudflare Pages (Flutter App)**:
+- Unlimited bandwidth
+- Unlimited requests
+- 500 builds/month
+- 20,000 files per deployment
 
 Perfect for this project! 🚀
 
+## Quick Deploy Commands
+
+### Deploy Website Only
+```bash
+cd website
+wrangler deploy
+```
+
+### Deploy Flutter App
+Push to GitHub - automatic deployment via Cloudflare Pages
+
+### Deploy Both
+```bash
+# Deploy website
+cd website
+wrangler deploy
+
+# Flutter app deploys automatically on git push
+cd ..
+git push origin main
+```
+
 ## URLs After Deployment
 
-- **Production**: https://playbrightbound.matthurley.dev
-- **Cloudflare default**: https://brightbound.pages.dev
-- **Preview deployments**: https://[commit-hash].brightbound.pages.dev
+- **Marketing Website**: https://brightbound.matthurley.dev (via Wrangler)
+- **Flutter App (Game)**: https://playbrightbound.matthurley.dev (via Cloudflare Pages)
+- **App Cloudflare default**: https://brightbound.pages.dev
+- **App Preview deployments**: https://[commit-hash].brightbound.pages.dev
 
 ## Next Steps
 
-1. Push this guide to your repository
-2. Go to Cloudflare Dashboard
-3. Create the Pages project
-4. Configure the custom domain
-5. Start playing! 🎮
+### For Marketing Website:
+1. `cd website`
+2. `wrangler deploy`
+3. Done! ✅
+
+### For Flutter App:
+1. Go to Cloudflare Dashboard
+2. Create the Pages project (follow steps above)
+3. Configure the custom domain: `playbrightbound.matthurley.dev`
+4. Push to GitHub - automatic deployments! 🎮
