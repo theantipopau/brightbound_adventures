@@ -1,66 +1,75 @@
 # Deploying BrightBound Adventures to Cloudflare
 
 ## Overview
-This project has two deployments:
-1. **Marketing Website**: Deployed via Wrangler from `/website/` folder
-2. **Flutter App**: Deployed to Cloudflare Pages as "brightbound" project
+This project has two separate Cloudflare Pages deployments:
 
-## Deployment 1: Marketing Website (Wrangler)
+1. **Marketing Website** (`/website/` folder)
+   - Domain: `brightbound.matthurley.dev`
+   - Deployed via: Wrangler CLI
+   - Project: Static marketing site
 
-The marketing website in the `/website/` folder is already configured with Wrangler.
+2. **Flutter Game App** (`/build/web/` folder)
+   - Domain: `playbrightbound.matthurley.dev`
+   - Deployed via: Wrangler CLI or GitHub
+   - Project: The actual playable game
 
-### Prerequisites
-- Cloudflare account
-- Wrangler CLI installed: `npm install -g wrangler`
-- Authenticated: `wrangler login`
+---
 
-### Deploy the Website
+## Deployment 1: Marketing Website
+
+The marketing website in the `/website/` folder.
+
+### Deploy via Wrangler
 
 ```bash
 # Navigate to the website folder
 cd website
 
 # Deploy to production
-wrangler deploy
+wrangler pages deploy . --project-name=brightbound
 
-# Deploy to dev environment (optional)
-wrangler deploy --env dev
-```
-
-### Configure Custom Domain (if needed)
-
-Edit `website/wrangler.toml` and uncomment the routes section:
-
-```toml
-routes = [
-  { pattern = "brightbound.matthurley.dev", custom_domain = true }
-]
-```
-
-Then deploy again:
-```bash
+# Or if already configured
 wrangler deploy
 ```
 
-Cloudflare will automatically:
-- Create the DNS records
-- Provision SSL certificate
-- Route traffic to your worker
+### Configure Custom Domain
+
+After first deployment:
+1. Go to Cloudflare Pages dashboard
+2. Select the `brightbound` project
+3. Go to "Custom domains"
+4. Add: `brightbound.matthurley.dev`
 
 ---
 
-## Deployment 2: Flutter App (Cloudflare Pages)
+## Deployment 2: Flutter Game App
 
-Deploy the actual game/app to Cloudflare Pages for `playbrightbound.matthurley.dev`.
+### Option A: Deploy via Wrangler CLI (Recommended - Fastest!)
 
-### Step 1: Prepare the Build
-
-Build the Flutter web app:
 ```bash
+# Build the Flutter app first
 flutter build web --release
+
+# Deploy directly to Cloudflare Pages
+wrangler pages deploy build/web --project-name=playbrightbound
+
+# On first run, it will:
+# - Create the "playbrightbound" project
+# - Deploy the app
+# - Give you a URL like playbrightbound.pages.dev
 ```
 
-The build output will be in `build/web/`.
+### Configure Custom Domain
+
+After first deployment:
+1. Go to Cloudflare Pages dashboard
+2. Select the `playbrightbound` project
+3. Go to "Custom domains"
+4. Add: `playbrightbound.matthurley.dev`
+
+### Option B: Deploy via GitHub (Automatic)
+
+If you prefer automatic deployments on git push:
 
 ## Step 2: Create Cloudflare Pages Project
 
@@ -232,58 +241,91 @@ Cloudflare Pages automatically provides:
 
 ## Cost
 
-Both deployments are **FREE**:
+Both Cloudflare Pages deployments are **FREE**:
 
-**Cloudflare Workers (Website)**:
-- 100,000 requests/day free
-- More than enough for a marketing site
-
-**Cloudflare Pages (Flutter App)**:
 - Unlimited bandwidth
-- Unlimited requests
-- 500 builds/month
+- Unlimited requests  
+- 500 builds/month per project
 - 20,000 files per deployment
 
 Perfect for this project! 🚀
 
 ## Quick Deploy Commands
 
-### Deploy Website Only
+### Deploy Marketing Website
 ```bash
 cd website
-wrangler deploy
+wrangler pages deploy . --project-name=brightbound
 ```
 
-### Deploy Flutter App
-Push to GitHub - automatic deployment via Cloudflare Pages
+### Deploy Flutter Game
+```bash
+flutter build web --release
+wrangler pages deploy build/web --project-name=playbrightbound
+```
 
 ### Deploy Both
 ```bash
 # Deploy website
 cd website
-wrangler deploy
+wrangler pages deploy . --project-name=brightbound
 
-# Flutter app deploys automatically on git push
+# Deploy Flutter app
 cd ..
-git push origin main
+flutter build web --release
+wrangler pages deploy build/web --project-name=playbrightbound
 ```
+
+---
+
+## Prerequisites
+
+- Cloudflare account
+- Wrangler CLI installed: `npm install -g wrangler`
+- Authenticated: `wrangler login`
+
+---
+
+## Current Website vs App
+
+- **Marketing Website** (`/website/` folder)
+  - Cloudflare Pages project: `brightbound`
+  - Domain: `brightbound.matthurley.dev`
+  - Deploy: `cd website && wrangler pages deploy . --project-name=brightbound`
+  
+- **Flutter Game** (`/build/web/` folder)
+  - Cloudflare Pages project: `playbrightbound`
+  - Domain: `playbrightbound.matthurley.dev`
+  - Deploy: `flutter build web --release && wrangler pages deploy build/web --project-name=playbrightbound`
 
 ## URLs After Deployment
 
-- **Marketing Website**: https://brightbound.matthurley.dev (via Wrangler)
-- **Flutter App (Game)**: https://playbrightbound.matthurley.dev (via Cloudflare Pages)
-- **App Cloudflare default**: https://brightbound.pages.dev
-- **App Preview deployments**: https://[commit-hash].brightbound.pages.dev
+- **Marketing Website**: https://brightbound.matthurley.dev
+  - Cloudflare default: https://brightbound.pages.dev
+  
+- **Flutter Game**: https://playbrightbound.matthurley.dev
+  - Cloudflare default: https://playbrightbound.pages.dev
 
-## Next Steps
+---
 
-### For Marketing Website:
-1. `cd website`
-2. `wrangler deploy`
-3. Done! ✅
+## Next Steps - Quickstart! 🚀
 
-### For Flutter App:
-1. Go to Cloudflare Dashboard
-2. Create the Pages project (follow steps above)
-3. Configure the custom domain: `playbrightbound.matthurley.dev`
-4. Push to GitHub - automatic deployments! 🎮
+### 1. Deploy Marketing Website (30 seconds)
+```bash
+cd website
+wrangler pages deploy . --project-name=brightbound
+```
+
+Then add custom domain `brightbound.matthurley.dev` in Cloudflare dashboard.
+
+### 2. Deploy Flutter Game (2 minutes)
+```bash
+flutter build web --release
+wrangler pages deploy build/web --project-name=playbrightbound
+```
+
+Then add custom domain `playbrightbound.matthurley.dev` in Cloudflare dashboard.
+
+### 3. Done! ✅
+
+Both sites are now live and will have Cloudflare's global CDN, SSL, and all the benefits!

@@ -1,0 +1,21 @@
+name = "brightbound-forum"
+compatibility_date = "2024-01-01"
+
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "brightbound-forum-db"
+database_id = "YOUR_D1_DATABASE_ID"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "YOUR_SESSIONS_KV_ID"
+
+[[kv_namespaces]]
+binding = "RATELIMIT"
+id = "YOUR_RATELIMIT_KV_ID"
+
+[vars]
+DEPLOY_TARGET = "cloudflare"
+SESSION_SECRET = "change-this-in-production-min-32-chars-long"

@@ -1,0 +1,34 @@
+{
+  "name": "brightbound-forum",
+  "version": "1.0.0",
+  "description": "Classic bulletin board forum for BrightBound Adventures",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev --port 8788",
+    "deploy": "wrangler pages deploy public",
+    "build": "tsc",
+    "db:create": "wrangler d1 create brightbound-forum-db",
+    "db:migrate": "wrangler d1 migrations apply brightbound-forum-db",
+    "db:migrate:local": "wrangler d1 migrations apply brightbound-forum-db --local",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:seed:local": "DEPLOY_TARGET=node tsx scripts/seed-local.ts",
+    "start:node": "tsx node-server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^1.8.0",
+    "drizzle-orm": "^0.30.4",
+    "eta": "^3.2.0",
+    "hono": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240117.0",
+    "@types/better-sqlite3": "^7.6.9",
+    "@types/node": "^20.11.0",
+    "better-sqlite3": "^9.3.0",
+    "drizzle-kit": "^0.20.14",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.25.0"
+  }
+}
