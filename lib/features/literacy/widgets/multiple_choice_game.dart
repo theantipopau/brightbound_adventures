@@ -434,7 +434,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                     animation: _sparkleController,
                     builder: (context, child) {
                       return Container(
-                        padding: EdgeInsets.all(isCompact ? 12 : 16),
+                        padding: EdgeInsets.all(isCompact ? 10 : 14),
                         decoration: BoxDecoration(
                           gradient: RadialGradient(
                             colors: [
@@ -453,12 +453,12 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                         ),
                         child: Text(
                           '📚',
-                          style: TextStyle(fontSize: isCompact ? 32 : 40),
+                          style: TextStyle(fontSize: isCompact ? 28 : 36),
                         ),
                       );
                     },
                   ),
-                  SizedBox(height: isCompact ? 12 : 20),
+                  SizedBox(height: isCompact ? 8 : 16),
                   // Question text
                   Flexible(
                     child: SingleChildScrollView(
@@ -466,9 +466,9 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                         _currentQuestion.question,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: isCompact ? 18 : 24,
+                          fontSize: isCompact ? 18 : 22,
                           fontWeight: FontWeight.w700,
-                          height: 1.5,
+                          height: 1.4,
                           color: Colors.grey[900],
                           letterSpacing: 0.3,
                         ),
