@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
+import 'package:brightbound_adventures/core/utils/isometric_engine.dart';
+import 'package:brightbound_adventures/core/utils/world_map_isometric_helper.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:brightbound_adventures/ui/widgets/daily_challenge_card.dart';
@@ -37,6 +39,10 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   int _currentZoneIndex = 0;
   int? _targetZoneIndex;
   bool _isMoving = false;
+
+  // Isometric 3D state
+  late Map<String, IsometricPosition> _zoneIsometricPositions;
+  IsometricMovementController? _isometricMoveController;
 
   // Zone definitions with progression order
   final List<ZoneData> _zones = [
@@ -107,6 +113,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     super.initState();
     _detectDevice();
     _initAnimations();
+    _initIsometricPositions();
+  }
+
+  void _initIsometricPositions() {
+    // Convert all zones to isometric grid positions
+    _zoneIsometricPositions = WorldMapIsometricHelper.getZonePositions(_zones);
   }
 
   Future<void> _detectDevice() async {
@@ -158,6 +170,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     _floatController.dispose();
     _pathController.dispose();
     _avatarMoveController.dispose();
+    _isometricMoveController?.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -416,15 +429,24 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     int totalStars,
     SkillProvider skillProvider,
   ) {
-    return _zones.asMap().entries.map((entry) {
-      final index = entry.key;
-      final zone = entry.value;
+    // Sort zones by depth for proper 3D layering
+    final sortedZones = WorldMapIsometricHelper.sortByDepth(
+      _zones,
+      (zone) => _zoneIsometricPositions[zone.id]!,
+    );
+    
+    return sortedZones.map((zone) {
+      final index = _zones.indexOf(zone);
       final isUnlocked = _isZoneUnlocked(index, totalStars);
       final isCurrentZone = _currentZoneIndex == index;
       final zoneStats = skillProvider.getZoneStats(zone.id.replaceAll('-', '_'));
 
-      final x = constraints.maxWidth * zone.position.dx;
-      final y = constraints.maxHeight * zone.position.dy;
+      // Use isometric position instead of normalized 2D position
+      final isoPos = _zoneIsometricPositions[zone.id]!;
+      final screenPos = WorldMapIsometricHelper.gridToScreen(
+        isoPos,
+        Size(constraints.maxWidth, constraints.maxHeight),
+      );
 
       return AnimatedBuilder(
         animation: _entranceController,
@@ -434,8 +456,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           final progress = ((_entranceController.value - delay) / 0.4).clamp(0.0, 1.0);
           
           return Positioned(
-            left: x - 60,
-            top: y - 70 + (1 - progress) * 50,
+            left: screenPos.dx - 60,
+            top: screenPos.dy - 70 + (1 - progress) * 50,
             child: Opacity(
               opacity: progress,
               child: _ZoneIsland(
@@ -470,13 +492,17 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         final currentZone = _zones[_currentZoneIndex];
         final targetZone = _targetZoneIndex != null ? _zones[_targetZoneIndex!] : currentZone;
         
-        final startPos = Offset(
-          constraints.maxWidth * currentZone.position.dx,
-          constraints.maxHeight * currentZone.position.dy,
+        // Use isometric positions
+        final currentIsoPos = _zoneIsometricPositions[currentZone.id]!;
+        final targetIsoPos = _zoneIsometricPositions[targetZone.id]!;
+        
+        final startPos = WorldMapIsometricHelper.gridToScreen(
+          currentIsoPos,
+          Size(constraints.maxWidth, constraints.maxHeight),
         );
-        final endPos = Offset(
-          constraints.maxWidth * targetZone.position.dx,
-          constraints.maxHeight * targetZone.position.dy,
+        final endPos = WorldMapIsometricHelper.gridToScreen(
+          targetIsoPos,
+          Size(constraints.maxWidth, constraints.maxHeight),
         );
 
         // Curved path with bounce
