@@ -310,6 +310,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       builder: (context, constraints) {
                         return Stack(
                           children: [
+                            // Terrain patches showing biome regions under each zone
+                            CustomPaint(
+                              painter: _TerrainPainter(zones: _zones),
+                              size: Size(constraints.maxWidth, constraints.maxHeight),
+                            ),
+
                             // Animated paths between zones
                             CustomPaint(
                               painter: _PathPainter(
