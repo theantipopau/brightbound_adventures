@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'dart:async';
+import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import '../models/motor_game.dart';
 
 /// Interactive motor skills game with tap/drag gameplay
@@ -31,6 +32,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
   Timer? _gameTimer;
   Timer? _targetSpawnTimer;
   Timer? _movementTimer;
+  final AudioManager _audioManager = AudioManager();
   
   final List<Duration> _reactionTimes = [];
   DateTime? _targetSpawnTime;
@@ -203,6 +205,9 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
     if (_targetSpawnTime != null) {
       _reactionTimes.add(DateTime.now().difference(_targetSpawnTime!));
     }
+    
+    // Play correct answer sound
+    _audioManager.playCorrectAnswer();
     
     // Add tap feedback
     setState(() {

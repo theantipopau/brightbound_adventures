@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
+import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Multiple choice quiz game for numeracy skills
@@ -29,10 +30,12 @@ class _NumeracyGameState extends State<NumeracyGame>
   late List<NumeracyQuestion> _shuffledQuestions;
   int _currentIndex = 0;
   int _correctCount = 0;
+  int _currentStreak = 0;
   int? _selectedIndex;
   bool _answered = false;
   bool _showHint = false;
   bool _hintUsed = false;
+  final AudioManager _audioManager = AudioManager();
   
   late AnimationController _feedbackController;
   late Animation<double> _feedbackAnimation;
@@ -87,9 +90,22 @@ class _NumeracyGameState extends State<NumeracyGame>
     setState(() {
       _selectedIndex = index;
       _answered = true;
-      if (_currentQuestion.isCorrect(index)) {
+      final isCorrect = _currentQuestion.isCorrect(index);
+      
+      if (isCorrect) {
         _correctCount++;
+        _currentStreak++;
         _starController.forward(from: 0);
+        
+        // Play appropriate celebration sound based on streak
+        if (_currentStreak >= 3) {
+          _audioManager.playStreak(_currentStreak);
+        } else {
+          _audioManager.playCorrectAnswer();
+        }
+      } else {
+        _currentStreak = 0;
+        _audioManager.playIncorrectAnswer();
       }
     });
     
@@ -113,6 +129,12 @@ class _NumeracyGameState extends State<NumeracyGame>
 
   void _completeGame() {
     final accuracy = _correctCount / _shuffledQuestions.length;
+    
+    // Play celebration sound for perfect score
+    if (accuracy == 1.0) {
+      _audioManager.playPerfectScore();
+    }
+    
     widget.onComplete?.call(accuracy, _correctCount, _shuffledQuestions.length);
   }
 

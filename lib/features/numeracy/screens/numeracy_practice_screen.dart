@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
+import 'package:brightbound_adventures/core/utils/number_nebula_generator.dart';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
 import 'package:brightbound_adventures/features/numeracy/widgets/numeracy_game.dart';
 import 'package:brightbound_adventures/features/numeracy/widgets/numeracy_results_screen.dart';
@@ -54,19 +55,31 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
   }
 
   List<NumeracyQuestion> _getGenericQuestions() {
-    // Generate placeholder questions for skills that don't have specific banks yet
-    return [
-      NumeracyQuestion(
-        id: '${widget.skill.id}_1',
-        skillId: widget.skill.id,
-        question: 'This skill is coming soon!\nWould you like to practice anyway?',
-        options: ['Yes, let\'s practice!', 'I\'ll wait', 'Tell me more'],
-        correctIndex: 0,
-        hint: 'The first option is always ready to go!',
-        explanation: 'More questions for ${widget.skill.name} are being added.',
-        difficulty: 1,
-      ),
-    ];
+    // Use question generator for skills without specific banks
+    final adaptiveDifficulty = context.read<AdaptiveDifficultyService>();
+    final difficulty = adaptiveDifficulty.getDifficultyForSkill(widget.skill.id);
+    
+    try {
+      return NumberNebulaQuestionGenerator.generate(
+        skill: widget.skill.name,
+        difficulty: difficulty,
+        count: 10,
+      );
+    } catch (e) {
+      // Fallback to placeholder if generator fails
+      return [
+        NumeracyQuestion(
+          id: '${widget.skill.id}_1',
+          skillId: widget.skill.id,
+          question: 'This skill is coming soon!\nWould you like to practice anyway?',
+          options: ['Yes, let\'s practice!', 'I\'ll wait', 'Tell me more'],
+          correctIndex: 0,
+          hint: 'The first option is always ready to go!',
+          explanation: 'More questions for ${widget.skill.name} are being added.',
+          difficulty: 1,
+        ),
+      ];
+    }
   }
 
   void _onGameComplete(double accuracy, int correct, int total) {

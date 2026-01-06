@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import '../models/question.dart';
 
 /// Interactive storytelling game with book/story theme
@@ -24,9 +25,11 @@ class StoryGame extends StatefulWidget {
 class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   int _currentIndex = 0;
   int _correctAnswers = 0;
+  int _currentStreak = 0;
   int? _selectedAnswer;
   bool _showFeedback = false;
   bool _isCorrect = false;
+  final AudioManager _audioManager = AudioManager();
   
   late AnimationController _pageController;
   late AnimationController _sparkleController;
@@ -106,7 +109,18 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       
       if (_isCorrect) {
         _correctAnswers++;
+        _currentStreak++;
         _sparkleController.forward(from: 0);
+        
+        // Play appropriate celebration sound based on streak
+        if (_currentStreak >= 3) {
+          _audioManager.playStreak(_currentStreak);
+        } else {
+          _audioManager.playCorrectAnswer();
+        }
+      } else {
+        _currentStreak = 0;
+        _audioManager.playIncorrectAnswer();
       }
     });
     
@@ -131,6 +145,12 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       // Game complete
       final xpEarned = _correctAnswers * 15 + 
           (_correctAnswers == widget.questions.length ? 25 : 0);
+      
+      // Play celebration sound for perfect score
+      if (_correctAnswers == widget.questions.length) {
+        _audioManager.playPerfectScore();
+      }
+      
       widget.onFinish(_correctAnswers, widget.questions.length, xpEarned);
     }
   }

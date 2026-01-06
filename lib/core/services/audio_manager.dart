@@ -66,9 +66,13 @@ class AudioManager extends ChangeNotifier {
   
   /// Play zone-specific background music
   Future<void> playZoneMusic(String zoneId) async {
-    final musicPath = 'sounds/zones/$zoneId-bg.mp3';
+    final musicPath = 'sounds/music/zones/$zoneId.mp3';
     await playMusic(musicPath);
   }
+  
+  /// Play menu/world map music
+  Future<void> playMenuMusic() => playMusic('sounds/music/menu.mp3');
+  Future<void> playSplashMusic() => playMusic('sounds/music/splash.mp3');
   
   Future<void> stopMusic() async {
     await _musicPlayer.stop();
@@ -93,12 +97,36 @@ class AudioManager extends ChangeNotifier {
   }
   
   /// Play UI feedback sounds
-  Future<void> playButtonClick() => playSfx('sounds/sfx/click.wav');
-  Future<void> playCorrectAnswer() => playSfx('sounds/sfx/correct.wav');
-  Future<void> playIncorrectAnswer() => playSfx('sounds/sfx/incorrect.wav');
-  Future<void> playCelebration() => playSfx('sounds/sfx/celebration.wav');
-  Future<void> playLevelUp() => playSfx('sounds/sfx/levelup.wav');
-  Future<void> playZoneUnlock() => playSfx('sounds/sfx/unlock.wav');
+  Future<void> playButtonClick() => playSfx('sounds/sfx/ui/click.mp3');
+  Future<void> playWhoosh() => playSfx('sounds/sfx/ui/whoosh.mp3');
+  Future<void> playPopup() => playSfx('sounds/sfx/ui/popup.mp3');
+  
+  /// Play answer feedback sounds
+  Future<void> playCorrectAnswer([int? variation]) {
+    final num = variation ?? (DateTime.now().millisecond % 3) + 1;
+    return playSfx('sounds/sfx/correct/correct$num.mp3');
+  }
+  
+  Future<void> playIncorrectAnswer([int? variation]) {
+    final num = variation ?? (DateTime.now().millisecond % 2) + 1;
+    return playSfx('sounds/sfx/incorrect/wrong$num.mp3');
+  }
+  
+  /// Play celebration sounds for achievements
+  Future<void> playPerfectScore() => playSfx('sounds/sfx/celebration/perfect.mp3');
+  Future<void> playStreak(int streakCount) {
+    if (streakCount >= 10) {
+      return playSfx('sounds/sfx/celebration/streak10.mp3');
+    } else if (streakCount >= 5) {
+      return playSfx('sounds/sfx/celebration/streak5.mp3');
+    } else if (streakCount >= 3) {
+      return playSfx('sounds/sfx/celebration/streak3.mp3');
+    }
+    return Future.value();
+  }
+  
+  Future<void> playLevelUp() => playSfx('sounds/sfx/celebration/levelup.mp3');
+  Future<void> playUnlock() => playSfx('sounds/sfx/celebration/unlock.mp3');
 
   void _updateVolumes() {
     _musicPlayer.setVolume(_musicVolume);
