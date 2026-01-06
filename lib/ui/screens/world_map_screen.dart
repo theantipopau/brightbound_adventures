@@ -50,8 +50,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Word Woods',
       emoji: '🌲',
       color: AppColors.wordWoodsColor,
-      // Isometric: Front Left (Start)
-      position: Offset(0.2, 0.8), 
+      // Isometric: Start (Bottom Center-Left)
+      position: Offset(0.5, 0.9), 
       description: 'Master letters & reading!',
       order: 0,
       requiredStars: 0,
@@ -61,8 +61,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Number Nebula',
       emoji: '🌌',
       color: AppColors.numberNebulaColor,
-      // Isometric: Front Right
-      position: Offset(0.8, 0.7),
+      // Isometric: Middle Left
+      position: Offset(0.1, 0.6),
       description: 'Explore math & numbers!',
       order: 1,
       requiredStars: 3,
@@ -72,8 +72,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Math Facts',
       emoji: '🔢',
       color: Color(0xFFFF6B6B),
-      // Isometric: Middle Center (elevated visually via grid)
-      position: Offset(0.5, 0.5),
+      // Isometric: Bottom Right
+      position: Offset(0.9, 0.7),
       description: 'Master multiplication & addition!',
       order: 2,
       requiredStars: 6,
@@ -83,8 +83,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Story Springs',
       emoji: '📖',
       color: AppColors.storyspringsColor,
-      // Isometric: Middle Left
-      position: Offset(0.2, 0.35),
+      // Isometric: Upper Left (Back Left)
+      position: Offset(0.2, 0.2),
       description: 'Create amazing stories!',
       order: 3,
       requiredStars: 10,
@@ -94,8 +94,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Puzzle Peaks',
       emoji: '🧩',
       color: AppColors.puzzlePeaksColor,
-      // Isometric: Back Right
-      position: Offset(0.8, 0.25),
+      // Isometric: Upper  Right (Back Right)
+      position: Offset(0.8, 0.3),
       description: 'Solve tricky puzzles!',
       order: 4,
       requiredStars: 15,
@@ -105,8 +105,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Adventure Arena',
       emoji: '🏆',
       color: AppColors.adventureArenaColor,
-      // Isometric: Far Back Center
-      position: Offset(0.5, 0.1),
+      // Isometric: Top Center (Far Back)
+      position: Offset(0.5, 0.05),
       description: 'Ultimate challenges!',
       order: 5,
       requiredStars: 25,
@@ -1909,6 +1909,67 @@ class _ZoneIsland extends StatelessWidget {
       },
     );
   }
+}
+
+/// Animated path painter connecting zones
+class _TerrainPainter extends CustomPainter {
+  final List<ZoneData> zones;
+  
+  _TerrainPainter({required this.zones});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final zone in zones) {
+      final isoPos = WorldMapIsometricHelper.offsetToIsometric(zone.position);
+      final screenPos = WorldMapIsometricHelper.gridToScreen(isoPos, size);
+      
+      _drawBiomePatch(canvas, screenPos, zone.color, zone.id);
+    }
+  }
+
+  void _drawBiomePatch(Canvas canvas, Offset center, Color color, String zoneId) {
+    // 1. Large soft glow for ambient biome color
+    final glowPaint = Paint()
+      ..color = color.withValues(alpha: 0.25)
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30); 
+
+    // Visual center adjusted for the 3D 'floor' (below where the island floats)
+    final floorCenter = center + const Offset(0, 40);
+
+    canvas.drawOval(
+      Rect.fromCenter(center: floorCenter, width: 350, height: 200),
+      glowPaint,
+    );
+    
+    // 2. Isometric Terrain Base (Rhombus shape to suggest grid/land)
+    final terrainPaint = Paint()
+      ..color = color.withValues(alpha: 0.15)
+      ..style = PaintingStyle.fill;
+      
+    final path = Path();
+    const double width = 140; // Half width magnitude
+    const double height = 70;  // Half height magnitude
+    
+    path.moveTo(floorCenter.dx, floorCenter.dy - height); // Top
+    path.lineTo(floorCenter.dx + width, floorCenter.dy);    // Right
+    path.lineTo(floorCenter.dx, floorCenter.dy + height);   // Bottom
+    path.lineTo(floorCenter.dx - width, floorCenter.dy);    // Left
+    path.close();
+    
+    canvas.drawPath(path, terrainPaint);
+
+    // 3. Terrain Detail Rings (Ripples)
+    final ringPaint = Paint()
+      ..color = color.withValues(alpha: 0.3)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+      
+    canvas.drawPath(path, ringPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Animated path painter connecting zones
