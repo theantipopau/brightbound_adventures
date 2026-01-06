@@ -50,27 +50,30 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Word Woods',
       emoji: '🌲',
       color: AppColors.wordWoodsColor,
-      position: Offset(0.15, 0.40),
+      // Isometric: Front Left (Start)
+      position: Offset(0.2, 0.8), 
       description: 'Master letters & reading!',
       order: 0,
-      requiredStars: 0, // First zone - always unlocked
+      requiredStars: 0,
     ),
     const ZoneData(
       id: 'number-nebula',
       name: 'Number Nebula',
       emoji: '🌌',
       color: AppColors.numberNebulaColor,
-      position: Offset(0.50, 0.25),
+      // Isometric: Front Right
+      position: Offset(0.8, 0.7),
       description: 'Explore math & numbers!',
       order: 1,
-      requiredStars: 3, // Need 3 stars to unlock
+      requiredStars: 3,
     ),
     const ZoneData(
       id: 'math-facts',
       name: 'Math Facts',
       emoji: '🔢',
       color: Color(0xFFFF6B6B),
-      position: Offset(0.25, 0.55),
+      // Isometric: Middle Center (elevated visually via grid)
+      position: Offset(0.5, 0.5),
       description: 'Master multiplication & addition!',
       order: 2,
       requiredStars: 6,
@@ -80,7 +83,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Story Springs',
       emoji: '📖',
       color: AppColors.storyspringsColor,
-      position: Offset(0.85, 0.40),
+      // Isometric: Middle Left
+      position: Offset(0.2, 0.35),
       description: 'Create amazing stories!',
       order: 3,
       requiredStars: 10,
@@ -90,7 +94,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Puzzle Peaks',
       emoji: '🧩',
       color: AppColors.puzzlePeaksColor,
-      position: Offset(0.65, 0.65),
+      // Isometric: Back Right
+      position: Offset(0.8, 0.25),
       description: 'Solve tricky puzzles!',
       order: 4,
       requiredStars: 15,
@@ -100,7 +105,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Adventure Arena',
       emoji: '🏆',
       color: AppColors.adventureArenaColor,
-      position: Offset(0.30, 0.75),
+      // Isometric: Far Back Center
+      position: Offset(0.5, 0.1),
       description: 'Ultimate challenges!',
       order: 5,
       requiredStars: 25,
@@ -1958,8 +1964,28 @@ class _PathPainter extends CustomPainter {
       path.quadraticBezierTo(controlX, controlY, end.dx, end.dy);
       
       // Draw dashed path
-      final dashPath = _createDashedPath(path, 15, 10);
-      canvas.drawPath(dashPath, pathPaint);
+      // OPTIMIZATION: Only drawing simple dashed path if needed, or skip complex metrics
+      // For web performance, simply drawing the path with a dash effect is better than extractPath
+      // But standard Canvas doesn't support dash natively without path metrics manually.
+      // Optimization: Increase dash gap or cache metrics? 
+      // Since this repaints constantly, let's simplify.
+      // Use simple path for locked, dashed for unlocked?
+      
+      // Note: _createDashedPath is expensive (computeMetrics).
+      // We are calling this inside a loop inside paint() which runs every frame.
+      
+      // OPTIMIZED APPROACH: 
+      // 1. Draw solid line for background (simpler)
+      // 2. OR Reduce resolution of dash
+      
+      // Let's optimize _createDashedPath to be less precise or skip it during animation if FPS low?
+      // Better: Just draw solid line with lower opacity for path track
+      // and moving dots for activity.
+      
+      // New style: Solid translucent track + Moving Dots
+      // This eliminates the expensive _createDashedPath call every frame.
+      
+      canvas.drawPath(path, pathPaint); // Draw solid path instead of dashed (Performance Fix)
       
       // Draw animated dots on unlocked paths
       if (isUnlocked) {
@@ -1967,6 +1993,7 @@ class _PathPainter extends CustomPainter {
           ..color = Colors.amber
           ..style = PaintingStyle.fill;
         
+        // We still need metrics for the dot position, but only ONE extraction p/frame
         final pathMetrics = path.computeMetrics().first;
         final progress = (animation + i * 0.2) % 1.0;
         final pos = pathMetrics.getTangentForOffset(
@@ -1980,20 +2007,9 @@ class _PathPainter extends CustomPainter {
     }
   }
 
+  // Deprecated for performance
   Path _createDashedPath(Path source, double dashLength, double gapLength) {
-    final path = Path();
-    for (final metric in source.computeMetrics()) {
-      double distance = 0;
-      while (distance < metric.length) {
-        final nextDash = distance + dashLength;
-        path.addPath(
-          metric.extractPath(distance, nextDash.clamp(0, metric.length)),
-          Offset.zero,
-        );
-        distance = nextDash + gapLength;
-      }
-    }
-    return path;
+    return source; // No-op optimization
   }
 
   @override
