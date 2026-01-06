@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/utils/isometric_engine.dart';
-import 'package:brightbound_adventures/core/models/index.dart';
+
+// Forward declaration - ZoneData is defined in world_map_screen.dart
+// This helper works with any object that has a position property
 
 /// Helper class to integrate isometric engine with world map
 class WorldMapIsometricHelper {
@@ -18,23 +20,25 @@ class WorldMapIsometricHelper {
     tileHeight: tileHeight,
   );
   
-  /// Convert zone data to isometric positions
-  /// Takes normalized 0-1 positions and converts to grid coordinates
-  static IsometricPosition zoneToIsometric(ZoneData zone) {
+  /// Convert zone position (Offset with dx/dy 0-1) to isometric position
+  static IsometricPosition offsetToIsometric(Offset position) {
     // Convert normalized position to grid coordinates
-    final gridX = (zone.position.dx * (gridWidth - 1)).round();
-    final gridY = (zone.position.dy * (gridHeight - 1)).round();
-    final gridZ = 0; // All zones on ground level for now
+    final gridX = (position.dx * (gridWidth - 1)).toDouble();
+    final gridY = (position.dy * (gridHeight - 1)).toDouble();
+    const gridZ = 0.0; // All zones on ground level for now
     
     return IsometricPosition(gridX, gridY, gridZ);
   }
   
-  /// Get all zone isometric positions
-  static Map<String, IsometricPosition> getZonePositions(List<ZoneData> zones) {
+  /// Get zone positions for zones with position property
+  static Map<String, IsometricPosition> getZonePositions(List<dynamic> zones) {
     final Map<String, IsometricPosition> positions = {};
     
     for (var zone in zones) {
-      positions[zone.id] = zoneToIsometric(zone);
+      // Access properties dynamically since we don't have compile-time type
+      final id = (zone as dynamic).id as String;
+      final position = (zone as dynamic).position as Offset;
+      positions[id] = offsetToIsometric(position);
     }
     
     return positions;
@@ -68,13 +72,7 @@ class WorldMapIsometricHelper {
     List<T> items,
     IsometricPosition Function(T) getPosition,
   ) {
-    final sorted = List<T>.from(items);
-    sorted.sort((a, b) {
-      final posA = getPosition(a);
-      final posB = getPosition(b);
-      return engine.compareDepth(posA, posB);
-    });
-    return sorted;
+    return engine.sortByDepth(items, getPosition);
   }
   
   /// Calculate path between two zones for avatar movement
@@ -83,30 +81,7 @@ class WorldMapIsometricHelper {
     IsometricPosition end,
   ) {
     // For world map, zones are far apart, so direct path is fine
-    // In more complex scenarios, use IsometricPathfinder
-    final pathfinder = IsometricPathfinder();
-    
-    // Create walkable grid (all tiles walkable for world map)
-    bool isWalkable(IsometricPosition pos) {
-      return pos.gridX >= 0 && pos.gridX < gridWidth &&
-             pos.gridY >= 0 && pos.gridY < gridHeight;
-    }
-    
-    return pathfinder.findPath(start, end, isWalkable) ?? [start, end];
-  }
-  
-  /// Create movement controller for avatar
-  static IsometricMovementController createMovementController({
-    required IsometricPosition start,
-    required IsometricPosition target,
-    required TickerProvider vsync,
-    Duration duration = const Duration(milliseconds: 1200),
-  }) {
-    return IsometricMovementController(
-      vsync: vsync,
-      duration: duration,
-      tileWidth: tileWidth,
-      tileHeight: tileHeight,
-    );
+    // Return simple two-point path
+    return [start, end];
   }
 }

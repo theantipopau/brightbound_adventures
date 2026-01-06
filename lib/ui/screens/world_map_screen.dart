@@ -42,7 +42,6 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   // Isometric 3D state
   late Map<String, IsometricPosition> _zoneIsometricPositions;
-  IsometricMovementController? _isometricMoveController;
 
   // Zone definitions with progression order
   final List<ZoneData> _zones = [
@@ -170,7 +169,6 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     _floatController.dispose();
     _pathController.dispose();
     _avatarMoveController.dispose();
-    _isometricMoveController?.dispose();
     _focusNode.dispose();
     super.dispose();
   }
