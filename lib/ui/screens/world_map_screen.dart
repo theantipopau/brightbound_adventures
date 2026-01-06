@@ -2007,10 +2007,10 @@ class _PathPainter extends CustomPainter {
     }
   }
 
-  // Deprecated for performance
-  Path _createDashedPath(Path source, double dashLength, double gapLength) {
-    return source; // No-op optimization
-  }
+  // Deprecated for performance - removed usage
+  // Path _createDashedPath(Path source, double dashLength, double gapLength) {
+  //   return source;
+  // }
 
   @override
   bool shouldRepaint(covariant _PathPainter oldDelegate) {
