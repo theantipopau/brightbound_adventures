@@ -314,11 +314,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                               size: Size(constraints.maxWidth, constraints.maxHeight),
                             ),
 
-                            // Zone islands
-                            ..._buildZoneIslands(constraints, totalStars, skillProvider),
-
-                            // Animated avatar on path
-                            _buildMovingAvatar(constraints, avatar),
+                            // Combined isometric render layer (Zones + Avatar)
+                            ..._build3DMapLayer(constraints, totalStars, skillProvider, avatar),
 
                             // Top HUD
                             _buildTopHUD(avatar, totalStars),
@@ -422,104 +419,163 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
-  List<Widget> _buildZoneIslands(
+  List<Widget> _build3DMapLayer(
     BoxConstraints constraints, 
     int totalStars,
     SkillProvider skillProvider,
+    Avatar avatar,
   ) {
-    // Sort zones by depth for proper 3D layering
-    final sortedZones = WorldMapIsometricHelper.sortByDepth(
-      _zones,
-      (zone) => _zoneIsometricPositions[zone.id]!,
-    );
-    
-    return sortedZones.map((zone) {
+    return [
+      AnimatedBuilder(
+        animation: Listenable.merge([_avatarMoveController, _entranceController]),
+        builder: (context, child) {
+          // 1. Calculate Avatar Isometric Position
+          IsometricPosition avatarIsoPos;
+          if (_isMoving && _targetZoneIndex != null) {
+             final currentZone = _zones[_currentZoneIndex];
+             final targetZone = _zones[_targetZoneIndex!];
+             
+             final startIso = _zoneIsometricPositions[currentZone.id]!;
+             final endIso = _zoneIsometricPositions[targetZone.id]!;
+             
+             // Use 3D lerp logic
+             // Curved path simulation:
+             // t is linear progress (0->1)
+             // We can just lerp linearly in grid space for depth sorting
+             // But visual position might have arc
+             
+             double t = Curves.easeInOutCubic.transform(_avatarMoveController.value);
+             avatarIsoPos = startIso.lerp(endIso, t);
+             
+             // Add artificial Z height for jump arc if needed for depth?
+             // Actually depth = x+y-z. Higher Z = lower depth value? 
+             // Isometric engine says: depth => x + y - z;
+             // If we jump up (increase Z), depth decreases (objects behind us might become in front?)
+             // Usually jumping shouldn't change sort order significantly unless we jump OVER something.
+             // Let's keep Z=0 for sorting purposes to avoid flickering.
+             
+          } else {
+             final currentZone = _zones[_currentZoneIndex];
+             avatarIsoPos = _zoneIsometricPositions[currentZone.id]!;
+          }
+
+          // 2. Prepare Render Items
+          final List<dynamic> renderItems = [..._zones, avatar];
+          
+          // Helper to get depth position
+          IsometricPosition getPos(dynamic item) {
+            if (item is ZoneData) {
+              return _zoneIsometricPositions[item.id]!;
+            } else {
+              return avatarIsoPos;
+            }
+          }
+
+          // 3. Sort by Depth
+          // We can use WorldMapIsometricHelper logic, leveraging engine
+          // Manual sort here since helper expects generic list
+          renderItems.sort((a, b) {
+             final posA = getPos(a);
+             final posB = getPos(b);
+             // Higher depth value = closer to camera (drawn LAST)
+             // Painter/Stack draws first items at bottom, last items on top.
+             // So we want smallest depth first (background), largest depth last (foreground).
+             // Engine.depth = x + y - z.
+             // Small x,y (top-left of grid) = Background?
+             // Let's check transformation: 
+             // screenY = (x+y) * tileHeight/2.
+             // Larger (x+y) means larger Screen Y (down the screen).
+             // Objects lower on screen are "closer".
+             // So larger (x+y) should be drawn LAST.
+             // Hence sort ascending by depth.
+             return posA.depth.compareTo(posB.depth);
+          });
+
+          // 4. Build Widgets
+          return Stack(
+            children: renderItems.map((item) {
+              if (item is ZoneData) {
+                return _buildZoneItem(item, constraints, totalStars, skillProvider);
+              } else {
+                return _buildAvatarItem(avatar, avatarIsoPos, constraints);
+              }
+            }).toList(),
+          );
+        },
+      ),
+    ];
+  }
+
+  Widget _buildZoneItem(
+    ZoneData zone, 
+    BoxConstraints constraints, 
+    int totalStars, 
+    SkillProvider skillProvider
+  ) {
       final index = _zones.indexOf(zone);
       final isUnlocked = _isZoneUnlocked(index, totalStars);
       final isCurrentZone = _currentZoneIndex == index;
       final zoneStats = skillProvider.getZoneStats(zone.id.replaceAll('-', '_'));
 
-      // Use isometric position instead of normalized 2D position
+      // Use isometric position
       final isoPos = _zoneIsometricPositions[zone.id]!;
       final screenPos = WorldMapIsometricHelper.gridToScreen(
         isoPos,
         Size(constraints.maxWidth, constraints.maxHeight),
       );
 
-      return AnimatedBuilder(
-        animation: _entranceController,
-        builder: (context, child) {
-          // Staggered entrance animation
-          final delay = index * 0.15;
-          final progress = ((_entranceController.value - delay) / 0.4).clamp(0.0, 1.0);
+      // Animation calculations (reused from original)
+      final delay = index * 0.15;
+      final progress = ((_entranceController.value - delay) / 0.4).clamp(0.0, 1.0);
           
-          return Positioned(
-            left: screenPos.dx - 60,
-            top: screenPos.dy - 70 + (1 - progress) * 50,
-            child: Opacity(
-              opacity: progress,
-              child: _ZoneIsland(
-                zone: zone,
-                isUnlocked: isUnlocked,
-                isCurrentZone: isCurrentZone,
-                isSelected: _selectedZoneIndex == index,
-                starsEarned: zoneStats.masteredSkills,
-                totalSkills: zoneStats.totalSkills,
-                floatAnimation: _floatController,
-                onTap: isUnlocked 
-                    ? () {
-                        debugPrint('Tapped zone ${zone.name} - moving to index $index');
-                        _moveToZone(index);
-                      }
-                    : () {
-                        debugPrint('Tapped locked zone ${zone.name}');
-                        _showLockedDialog(zone, totalStars);
-                      },
-              ),
-            ),
-          );
-        },
+      return Positioned(
+        left: screenPos.dx - 60,
+        top: screenPos.dy - 70 + (1 - progress) * 50,
+        child: Opacity(
+          opacity: progress,
+          child: _ZoneIsland(
+            zone: zone,
+            isUnlocked: isUnlocked,
+            isCurrentZone: isCurrentZone,
+            isSelected: _selectedZoneIndex == index,
+            starsEarned: zoneStats.masteredSkills,
+            totalSkills: zoneStats.totalSkills,
+            floatAnimation: _floatController,
+            onTap: isUnlocked 
+                ? () {
+                    debugPrint('Tapped zone ${zone.name} - moving to index $index');
+                    _moveToZone(index);
+                  }
+                : () {
+                    debugPrint('Tapped locked zone ${zone.name}');
+                    _showLockedDialog(zone, totalStars);
+                  },
+          ),
+        ),
       );
-    }).toList();
   }
 
-  Widget _buildMovingAvatar(BoxConstraints constraints, Avatar avatar) {
-    return AnimatedBuilder(
-      animation: _avatarMoveController,
-      builder: (context, child) {
-        final currentZone = _zones[_currentZoneIndex];
-        final targetZone = _targetZoneIndex != null ? _zones[_targetZoneIndex!] : currentZone;
-        
-        // Use isometric positions
-        final currentIsoPos = _zoneIsometricPositions[currentZone.id]!;
-        final targetIsoPos = _zoneIsometricPositions[targetZone.id]!;
-        
-        final startPos = WorldMapIsometricHelper.gridToScreen(
-          currentIsoPos,
-          Size(constraints.maxWidth, constraints.maxHeight),
-        );
-        final endPos = WorldMapIsometricHelper.gridToScreen(
-          targetIsoPos,
-          Size(constraints.maxWidth, constraints.maxHeight),
-        );
+  Widget _buildAvatarItem(Avatar avatar, IsometricPosition isoPos, BoxConstraints constraints) {
+      final screenPos = WorldMapIsometricHelper.gridToScreen(
+        isoPos,
+        Size(constraints.maxWidth, constraints.maxHeight),
+      );
+      
+      // Add jump arc if moving
+      double arcHeight = 0;
+      if (_isMoving) {
+         double t = Curves.easeInOutCubic.transform(_avatarMoveController.value);
+         arcHeight = -40 * math.sin(t * math.pi);
+      }
 
-        // Curved path with bounce
-        final t = Curves.easeInOutCubic.transform(_avatarMoveController.value);
-        final pos = Offset.lerp(startPos, endPos, t)!;
-        
-        // Add arc to movement (jump effect)
-        final arcHeight = -40 * math.sin(t * math.pi);
-        
-        return Positioned(
-          left: pos.dx - 35,
-          top: pos.dy - 70 + arcHeight,
-          child: IgnorePointer(
-            ignoring: false,
-            child: _build3DAvatar(avatar, _isMoving),
-          ),
-        );
-      },
-    );
+      return Positioned(
+        left: screenPos.dx - 35,
+        top: screenPos.dy - 70 + arcHeight,
+        child: IgnorePointer(
+          ignoring: false,
+          child: _build3DAvatar(avatar, _isMoving),
+        ),
+      );
   }
 
   Widget _build3DAvatar(Avatar avatar, bool isMoving) {
@@ -1864,13 +1920,14 @@ class _PathPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < zones.length - 1; i++) {
-      final start = Offset(
-        size.width * zones[i].position.dx,
-        size.height * zones[i].position.dy,
+      // Use isometric conversion for path positions
+      final start = WorldMapIsometricHelper.gridToScreen(
+        WorldMapIsometricHelper.offsetToIsometric(zones[i].position),
+        size,
       );
-      final end = Offset(
-        size.width * zones[i + 1].position.dx,
-        size.height * zones[i + 1].position.dy,
+      final end = WorldMapIsometricHelper.gridToScreen(
+        WorldMapIsometricHelper.offsetToIsometric(zones[i + 1].position),
+        size,
       );
       
       final isUnlocked = totalStars >= zones[i + 1].requiredStars;
@@ -1884,12 +1941,19 @@ class _PathPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
 
-      // Create curved path
+      // Create curved path (adjusted for iso perspective)
       final path = Path();
       path.moveTo(start.dx, start.dy);
       
-      final controlX = (start.dx + end.dx) / 2;
-      final controlY = math.min(start.dy, end.dy) - 30;
+      // Midpoint for curve control
+      final midX = (start.dx + end.dx) / 2;
+      final midY = (start.dy + end.dy) / 2;
+      
+      // Lift the curve up a bit (negative Y) to simulate an arc if desired, 
+      // or just direct line if that looks better.
+      // previous was: min(start.dy, end.dy) - 30.
+      final controlX = midX;
+      final controlY = midY - 30;
       
       path.quadraticBezierTo(controlX, controlY, end.dx, end.dy);
       
