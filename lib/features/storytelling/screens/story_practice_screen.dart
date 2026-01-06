@@ -5,6 +5,7 @@ import '../widgets/story_game.dart';
 import '../widgets/story_results_screen.dart';
 import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
+import 'package:brightbound_adventures/core/utils/story_springs_generator.dart';
 
 /// Main screen for Story Springs skill practice
 /// Routes to appropriate story game based on skill selected
@@ -29,22 +30,31 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
   int _xpEarned = 0;
 
   List<StoryQuestion> _getQuestionsForSkill() {
-    switch (widget.skillId) {
-      case 'skill_story_sequencing':
-        return StorySequencingQuestions.getByDifficulty(3);
-      case 'skill_emotion_recognition':
-        return EmotionRecognitionQuestions.getByDifficulty(3);
-      case 'skill_descriptive_language':
-        return DescriptiveLanguageQuestions.getByDifficulty(3);
-      case 'skill_dialogue_creation':
-        return DialogueCreationQuestions.getByDifficulty(3);
-      case 'skill_plot_structure':
-        return PlotStructureQuestions.getByDifficulty(3);
-      case 'skill_character_development':
-        return CharacterDevelopmentQuestions.getByDifficulty(3);
-      default:
-        // For skills without question banks yet, return sequencing
-        return StorySequencingQuestions.getByDifficulty(3);
+    try {
+      // Use generator for varied questions based on skill
+      return StorySpringsQuestionGenerator.generate(
+        skill: widget.skillId,
+        difficulty: 3,
+        count: 10,
+      );
+    } catch (e) {
+      // Fallback to hardcoded questions if generator fails
+      switch (widget.skillId) {
+        case 'skill_story_sequencing':
+          return StorySequencingQuestions.getByDifficulty(3);
+        case 'skill_emotion_recognition':
+          return EmotionRecognitionQuestions.getByDifficulty(3);
+        case 'skill_descriptive_language':
+          return DescriptiveLanguageQuestions.getByDifficulty(3);
+        case 'skill_dialogue_creation':
+          return DialogueCreationQuestions.getByDifficulty(3);
+        case 'skill_plot_structure':
+          return PlotStructureQuestions.getByDifficulty(3);
+        case 'skill_character_development':
+          return CharacterDevelopmentQuestions.getByDifficulty(3);
+        default:
+          return StorySequencingQuestions.getByDifficulty(3);
+      }
     }
   }
 

@@ -5,6 +5,7 @@ import '../widgets/motor_game.dart';
 import '../widgets/motor_results_screen.dart';
 import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
+import 'package:brightbound_adventures/core/utils/adventure_arena_generator.dart';
 
 /// Main screen for Adventure Arena motor skills practice
 /// Routes to appropriate motor game based on skill selected
@@ -73,7 +74,10 @@ class _MotorPracticeScreenState extends State<MotorPracticeScreen> {
       );
     }
 
-    final config = MotorGameConfigs.getForSkill(widget.skillId);
+    final config = AdventureArenaGenerator.generate(
+      skill: widget.skillId,
+      difficulty: 3,
+    );
 
     return MotorGame(
       config: config,

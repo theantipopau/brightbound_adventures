@@ -5,6 +5,7 @@ import '../widgets/logic_game.dart';
 import '../widgets/logic_results_screen.dart';
 import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
+import 'package:brightbound_adventures/core/utils/puzzle_peaks_generator.dart';
 
 /// Main screen for Puzzle Peaks skill practice
 /// Routes to appropriate logic game based on skill selected
@@ -29,22 +30,31 @@ class _LogicPracticeScreenState extends State<LogicPracticeScreen> {
   int _xpEarned = 0;
 
   List<LogicQuestion> _getQuestionsForSkill() {
-    switch (widget.skillId) {
-      case 'skill_pattern_recognition':
-        return PatternRecognitionQuestions.getByDifficulty(3);
-      case 'skill_shape_matching':
-        return ShapeMatchingQuestions.getByDifficulty(3);
-      case 'skill_spatial_reasoning':
-        return SpatialReasoningQuestions.getByDifficulty(3);
-      case 'skill_logic_puzzles':
-        return LogicPuzzleQuestions.getByDifficulty(3);
-      case 'skill_problem_solving':
-        return ProblemSolvingQuestions.getByDifficulty(3);
-      case 'skill_sequence_logic':
-        return SequenceLogicQuestions.getByDifficulty(3);
-      default:
-        // For skills without question banks yet, return pattern recognition
-        return PatternRecognitionQuestions.getByDifficulty(3);
+    try {
+      // Use generator for varied questions based on skill
+      return PuzzlePeaksQuestionGenerator.generate(
+        skill: widget.skillId,
+        difficulty: 3,
+        count: 10,
+      );
+    } catch (e) {
+      // Fallback to hardcoded questions if generator fails
+      switch (widget.skillId) {
+        case 'skill_pattern_recognition':
+          return PatternRecognitionQuestions.getByDifficulty(3);
+        case 'skill_shape_matching':
+          return ShapeMatchingQuestions.getByDifficulty(3);
+        case 'skill_spatial_reasoning':
+          return SpatialReasoningQuestions.getByDifficulty(3);
+        case 'skill_logic_puzzles':
+          return LogicPuzzleQuestions.getByDifficulty(3);
+        case 'skill_problem_solving':
+          return ProblemSolvingQuestions.getByDifficulty(3);
+        case 'skill_sequence_logic':
+          return SequenceLogicQuestions.getByDifficulty(3);
+        default:
+          return PatternRecognitionQuestions.getByDifficulty(3);
+      }
     }
   }
 
