@@ -314,12 +314,14 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                   child: Text(
                     _currentQuestion.question,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: MediaQuery.of(context).size.width < 600 ? 18 : 20,
                       fontWeight: FontWeight.w600,
-                      height: 1.4,
+                      height: 1.5,
                     ),
+                    maxLines: 10,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 
@@ -406,9 +408,12 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                     text,
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 16,
+                      fontSize: MediaQuery.of(context).size.width < 600 ? 14 : 16,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      height: 1.3,
                     ),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (_showFeedback && isCorrectAnswer)

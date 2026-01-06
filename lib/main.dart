@@ -23,6 +23,13 @@ void main() async {
   // Initialize adaptive difficulty service
   final adaptiveDifficultyService = AdaptiveDifficultyService();
   await adaptiveDifficultyService.initialize();
+  
+  // Initialize audio manager
+  final audioManager = AudioManager();
+  await audioManager.initialize();
+  
+  // Initialize cosmetic unlock service
+  final cosmeticUnlockService = CosmeticUnlockService();
 
   runApp(
     MultiProvider(
@@ -31,6 +38,8 @@ void main() async {
         ChangeNotifierProvider<AchievementService>.value(value: achievementService),
         ChangeNotifierProvider<ShopService>.value(value: shopService),
         ChangeNotifierProvider<AdaptiveDifficultyService>.value(value: adaptiveDifficultyService),
+        ChangeNotifierProvider<AudioManager>.value(value: audioManager),
+        ChangeNotifierProvider<CosmeticUnlockService>.value(value: cosmeticUnlockService),
         ChangeNotifierProvider<AvatarProvider>(
           create: (_) {
             final provider = AvatarProvider();

@@ -406,15 +406,16 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 600;
+        final isTinyScreen = constraints.maxHeight < 500; // Very small phones
         
         return SingleChildScrollView(
-      padding: EdgeInsets.all(isCompact ? 16 : 24),
+      padding: EdgeInsets.all(isTinyScreen ? 12 : (isCompact ? 16 : 24)),
       child: Column(
         children: [
-          SizedBox(height: isCompact ? 10 : 20),
-          // Animated character showcase
+          SizedBox(height: isTinyScreen ? 4 : (isCompact ? 10 : 20)),
+          // Animated character showcase - reduced size for tiny screens
           SizedBox(
-            height: isCompact ? 120 : 180,
+            height: isTinyScreen ? 100 : (isCompact ? 120 : 180),
             child: AnimatedBuilder(
               animation: _characterShowcaseController,
               builder: (context, child) {
@@ -426,7 +427,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                   child: AnimatedCharacter(
                     key: ValueKey(char['id']),
                     character: char['id'],
-                    size: isCompact ? 80 : 100,
+                    size: isTinyScreen ? 60 : (isCompact ? 80 : 100),
                     animation: CharacterAnimation.celebrating,
                     showParticles: true,
                   ),
@@ -434,7 +435,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               },
             ),
           ),
-          SizedBox(height: isCompact ? 12 : 24),
+          SizedBox(height: isTinyScreen ? 8 : (isCompact ? 12 : 24)),
 
           ShaderMask(
             shaderCallback: (bounds) => const LinearGradient(
@@ -443,24 +444,24 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             child: Text(
               'Welcome, Adventurer!',
               style: TextStyle(
-                fontSize: isCompact ? 24 : 32,
+                fontSize: isTinyScreen ? 20 : (isCompact ? 24 : 32),
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          SizedBox(height: isCompact ? 8 : 12),
+          SizedBox(height: isTinyScreen ? 4 : (isCompact ? 8 : 12)),
           Text(
             'Your learning journey begins here.\nFirst, tell us your name!',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: AppColors.textSecondary,
-                  height: 1.5,
-                  fontSize: isCompact ? 14 : 16,
+                  height: 1.4,
+                  fontSize: isTinyScreen ? 12 : (isCompact ? 14 : 16),
                 ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: isCompact ? 20 : 40),
+          SizedBox(height: isTinyScreen ? 12 : (isCompact ? 20 : 40)),
 
           // Name input
           Container(
@@ -478,7 +479,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               controller: _nameController,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: isCompact ? 20 : 24,
+                fontSize: isTinyScreen ? 18 : (isCompact ? 20 : 24),
                 fontWeight: FontWeight.bold,
               ),
               decoration: InputDecoration(
@@ -491,11 +492,11 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 fillColor: Colors.white,
                 prefixIcon: Padding(
                   padding: const EdgeInsets.only(left: 16),
-                  child: Text('✨', style: TextStyle(fontSize: isCompact ? 20 : 24)),
+                  child: Text('✨', style: TextStyle(fontSize: isTinyScreen ? 18 : (isCompact ? 20 : 24))),
                 ),
                 suffixIcon: Padding(
                   padding: const EdgeInsets.only(right: 16),
-                  child: Text('✨', style: TextStyle(fontSize: isCompact ? 20 : 24)),
+                  child: Text('✨', style: TextStyle(fontSize: isTinyScreen ? 18 : (isCompact ? 20 : 24))),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),

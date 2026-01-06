@@ -1,0 +1,27 @@
+<% layout('./layout.eta') %>
+
+<div class="admin-dashboard">
+  <h2>Admin Dashboard</h2>
+  
+  <div class="admin-menu">
+    <a href="/admin/categories" class="admin-card">
+      <h3>Categories</h3>
+      <p>Manage forum categories</p>
+    </a>
+    
+    <a href="/admin/forums" class="admin-card">
+      <h3>Forums</h3>
+      <p>Manage forums and subforums</p>
+    </a>
+    
+    <a href="/admin/users" class="admin-card">
+      <h3>Users</h3>
+      <p>Manage user accounts and permissions</p>
+    </a>
+    
+    <a href="/admin/settings" class="admin-card">
+      <h3>Settings</h3>
+      <p>Forum configuration and settings</p>
+    </a>
+  </div>
+</div>

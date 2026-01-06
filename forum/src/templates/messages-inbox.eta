@@ -1,0 +1,33 @@
+<% layout('./layout.eta') %>
+
+<div class="messages-inbox">
+  <h2>Inbox</h2>
+  
+  <div class="message-actions">
+    <a href="/messages/compose" class="btn btn-primary">Compose Message</a>
+    <a href="/messages/sent" class="btn">Sent Messages</a>
+  </div>
+  
+  <% if (it.messages.length === 0) { %>
+    <p>No messages in your inbox.</p>
+  <% } else { %>
+    <table class="message-list">
+      <thead>
+        <tr>
+          <th>From</th>
+          <th>Subject</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% it.messages.forEach(msg => { %>
+          <tr class="<%= msg.isRead ? '' : 'unread' %>">
+            <td><a href="/user/<%= msg.sender.id %>/<%= msg.sender.username %>"><%= msg.sender.username %></a></td>
+            <td><a href="/messages/<%= msg.id %>"><%= msg.subject %></a></td>
+            <td><%= new Date(msg.createdAt).toLocaleString() %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</div>

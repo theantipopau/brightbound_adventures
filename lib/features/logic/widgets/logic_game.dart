@@ -293,12 +293,14 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                 child: Text(
                   _currentQuestion.question,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: MediaQuery.of(context).size.width < 600 ? 16 : 18,
                     fontWeight: FontWeight.w600,
-                    height: 1.4,
+                    height: 1.5,
                   ),
+                  maxLines: 8,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
 
@@ -400,10 +402,13 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                     text,
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 15,
+                      fontSize: MediaQuery.of(context).size.width < 600 ? 13 : 15,
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.normal,
+                      height: 1.3,
                     ),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (icon != null)

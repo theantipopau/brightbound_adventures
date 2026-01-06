@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
@@ -28,6 +29,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   // Keyboard focus
   final FocusNode _focusNode = FocusNode();
   int _selectedZoneIndex = 0;
+  
+  // Device detection
+  bool _isPhoneDevice = false;
   
   // Avatar state
   int _currentZoneIndex = 0;
@@ -101,7 +105,23 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   @override
   void initState() {
     super.initState();
+    _detectDevice();
     _initAnimations();
+  }
+
+  Future<void> _detectDevice() async {
+    try {
+      if (Theme.of(context).platform == TargetPlatform.iOS ||
+          Theme.of(context).platform == TargetPlatform.android) {
+        // Check screen size to distinguish phone from tablet
+        final screenWidth = MediaQuery.of(context).size.width;
+        setState(() {
+          _isPhoneDevice = screenWidth < 600; // Phones are typically < 600dp
+        });
+      }
+    } catch (e) {
+      debugPrint('Error detecting device: $e');
+    }
   }
 
   void _initAnimations() {
@@ -551,41 +571,44 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       right: 16,
       child: Row(
         children: [
-          // Logo and title
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.95),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    width: 28,
-                    height: 28,
-                    errorBuilder: (_, __, ___) => const Text('🌟', style: TextStyle(fontSize: 20)),
+          // Logo and title - clickable for info
+          GestureDetector(
+            onTap: () => _showAppInfoDialog(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'BrightBound',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      width: 28,
+                      height: 28,
+                      errorBuilder: (_, __, ___) => const Text('🌟', style: TextStyle(fontSize: 20)),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  const Text(
+                    'BrightBound',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           
@@ -834,6 +857,129 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             child: const Text('Got it!'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showAppInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            const Text('🌟', style: TextStyle(fontSize: 28)),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'BrightBound Adventures',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Version info
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Version 1.0.0',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Alpha Release',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Made with ❤️ for learning',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 12),
+              const Text(
+                'Quick Links',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Links
+              _buildLinkTile('🔗', 'Developer Website', 'https://matthurley.dev'),
+              const SizedBox(height: 8),
+              _buildLinkTile('❤️', 'Support the Project', 'https://ko-fi.com/theantipopau'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildLinkTile(String emoji, String label, String url) {
+    return GestureDetector(
+      onTap: () async {
+        final Uri uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            const Icon(Icons.open_in_new, size: 14, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }
@@ -1384,6 +1530,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
   
   Widget _buildKeyboardHint() {
+    // Hide keyboard hints on phones - they don't have physical keyboards
+    if (_isPhoneDevice) {
+      return const SizedBox.shrink();
+    }
+    
     return Positioned(
       bottom: 100,
       left: 16,

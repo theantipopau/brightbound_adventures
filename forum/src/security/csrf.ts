@@ -1,10 +1,11 @@
-import { Context } from 'hono';
 import { generateToken, hashToken } from './crypto';
+import { AppHonoContext } from '../types';
+import { getCookie } from 'hono/cookie';
 
 const CSRF_TOKEN_NAME = 'csrf_token';
 
 // Generate and store CSRF token
-export async function generateCSRFToken(c: Context): Promise<string> {
+export async function generateCSRFToken(c: AppHonoContext): Promise<string> {
   const token = generateToken(32);
   const tokenHash = await hashToken(token);
   
@@ -17,10 +18,10 @@ export async function generateCSRFToken(c: Context): Promise<string> {
 }
 
 // Verify CSRF token
-export async function verifyCSRFToken(c: Context, token: string | undefined): Promise<boolean> {
+export async function verifyCSRFToken(c: AppHonoContext, token: string | undefined): Promise<boolean> {
   if (!token) return false;
   
-  const storedHash = c.req.cookie(CSRF_TOKEN_NAME);
+  const storedHash = getCookie(c, CSRF_TOKEN_NAME);
   if (!storedHash) return false;
   
   const tokenHash = await hashToken(token);
@@ -28,7 +29,7 @@ export async function verifyCSRFToken(c: Context, token: string | undefined): Pr
 }
 
 // Middleware to check CSRF on POST/PUT/DELETE
-export async function csrfMiddleware(c: Context, next: () => Promise<void>): Promise<void> {
+export async function csrfMiddleware(c: AppHonoContext, next: () => Promise<void>): Promise<void | Response> {
   const method = c.req.method;
   
   if (['POST', 'PUT', 'DELETE'].includes(method)) {

@@ -139,7 +139,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: widget.themeColor.withOpacity(0.05),
+      backgroundColor: widget.themeColor.withValues(alpha: 0.05),
       appBar: AppBar(
         backgroundColor: widget.themeColor,
         foregroundColor: Colors.white,
@@ -208,7 +208,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                 // Progress bar
                 LinearProgressIndicator(
                   value: _progress,
-                  backgroundColor: widget.themeColor.withOpacity(0.2),
+                  backgroundColor: widget.themeColor.withValues(alpha: 0.2),
                   valueColor: AlwaysStoppedAnimation(widget.themeColor),
                   minHeight: 4,
                 ),
@@ -278,20 +278,20 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
             gradient: LinearGradient(
               colors: [
                 Colors.white,
-                widget.themeColor.withOpacity(0.05),
+                widget.themeColor.withValues(alpha: 0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: widget.themeColor.withOpacity(0.3),
+                color: widget.themeColor.withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
                 spreadRadius: 1,
               ),
             ],
             border: Border.all(
-              color: widget.themeColor.withOpacity(0.3),
+              color: widget.themeColor.withValues(alpha: 0.3),
               width: 2,
             ),
           ),
@@ -397,32 +397,32 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
           child: Opacity(
             opacity: value,
             child: Container(
-              padding: EdgeInsets.all(isCompact ? 16 : 28),
+              padding: EdgeInsets.all(isCompact ? 16 : 24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
                     Colors.white,
-                    widget.themeColor.withOpacity(0.05),
+                    widget.themeColor.withValues(alpha: 0.08),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(32),
                 border: Border.all(
-                  color: widget.themeColor.withOpacity(0.3),
-                  width: 2,
+                  color: widget.themeColor.withValues(alpha: 0.2),
+                  width: 3,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.themeColor.withOpacity(0.15),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
-                    spreadRadius: 5,
+                    color: widget.themeColor.withValues(alpha: 0.2),
+                    blurRadius: 40,
+                    offset: const Offset(0, 15),
+                    spreadRadius: 0,
                   ),
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.8),
-                    blurRadius: 15,
-                    offset: const Offset(-5, -5),
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -434,43 +434,46 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                     animation: _sparkleController,
                     builder: (context, child) {
                       return Container(
-                        padding: EdgeInsets.all(isCompact ? 10 : 14),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           gradient: RadialGradient(
                             colors: [
-                              widget.themeColor.withOpacity(0.25 + _sparkleController.value * 0.15),
-                              widget.themeColor.withOpacity(0.1),
+                              widget.themeColor.withValues(alpha: 0.2 + _sparkleController.value * 0.15),
+                              widget.themeColor.withValues(alpha: 0.05),
                             ],
                           ),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: widget.themeColor.withOpacity(0.3),
-                              blurRadius: 15 + _sparkleController.value * 8,
-                              spreadRadius: 2,
+                              color: widget.themeColor.withValues(alpha: 0.4),
+                              blurRadius: 25 + _sparkleController.value * 10,
+                              spreadRadius: 3,
                             ),
                           ],
                         ),
-                        child: Text(
+                        child: const Text(
                           '📚',
-                          style: TextStyle(fontSize: isCompact ? 28 : 36),
+                          style: TextStyle(fontSize: 44),
                         ),
                       );
                     },
                   ),
-                  SizedBox(height: isCompact ? 8 : 16),
+                  const SizedBox(height: 20),
                   // Question text
                   Flexible(
                     child: SingleChildScrollView(
-                      child: Text(
-                        _currentQuestion.question,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: isCompact ? 18 : 22,
-                          fontWeight: FontWeight.w700,
-                          height: 1.4,
-                          color: Colors.grey[900],
-                          letterSpacing: 0.3,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          _currentQuestion.question,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: isCompact ? 20 : 26,
+                            fontWeight: FontWeight.w800,
+                            height: 1.4,
+                            color: Colors.grey[900],
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ),
@@ -506,7 +509,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.amber.withOpacity(0.3),
+                  color: Colors.amber.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -521,7 +524,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.amber.withOpacity(0.5),
+                        color: Colors.amber.withValues(alpha: 0.5),
                         blurRadius: 8,
                         spreadRadius: 2,
                       ),
@@ -576,12 +579,12 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
 
       if (_answered) {
         if (isCorrect) {
-          backgroundColor = AppColors.success.withOpacity(0.15);
+          backgroundColor = AppColors.success.withValues(alpha: 0.15);
           borderColor = AppColors.success;
           textColor = AppColors.success;
           trailingIcon = Icons.check_circle;
         } else if (isSelected) {
-          backgroundColor = AppColors.error.withOpacity(0.15);
+          backgroundColor = AppColors.error.withValues(alpha: 0.15);
           borderColor = AppColors.error;
           textColor = AppColors.error;
           trailingIcon = Icons.cancel;
@@ -592,7 +595,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
         }
       } else {
         if (isSelected) {
-          backgroundColor = widget.themeColor.withOpacity(0.15);
+          backgroundColor = widget.themeColor.withValues(alpha: 0.15);
           borderColor = widget.themeColor;
           textColor = widget.themeColor;
         } else {
@@ -689,8 +692,8 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
         padding: EdgeInsets.all(isCompact ? 12 : 20),
         decoration: BoxDecoration(
           color: isCorrect
-              ? AppColors.success.withOpacity(0.1)
-              : AppColors.error.withOpacity(0.1),
+              ? AppColors.success.withValues(alpha: 0.1)
+              : AppColors.error.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isCorrect ? AppColors.success : AppColors.error,
@@ -745,7 +748,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

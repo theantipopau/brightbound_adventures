@@ -1,0 +1,30 @@
+<% layout('./layout.eta') %>
+
+<div class="messages-compose">
+  <h2>Compose Message</h2>
+  
+  <form method="POST" action="/messages/compose">
+    <input type="hidden" name="csrf_token" value="<%= it.csrfToken %>">
+    
+    <div class="form-group">
+      <label for="to">To (username):</label>
+      <input type="text" id="to" name="to" value="<%= it.toUsername || '' %>" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="subject">Subject:</label>
+      <input type="text" id="subject" name="subject" required maxlength="200">
+    </div>
+    
+    <div class="form-group">
+      <label for="body">Message:</label>
+      <textarea name="body" id="body" rows="15" required></textarea>
+      <div class="bbcode-help">
+        BBCode: [b]bold[/b] [i]italic[/i] [u]underline[/u] [url]link[/url] [quote]quote[/quote] [code]code[/code]
+      </div>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Send Message</button>
+    <a href="/messages" class="btn">Cancel</a>
+  </form>
+</div>

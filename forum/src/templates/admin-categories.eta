@@ -1,0 +1,28 @@
+<% layout('./layout.eta') %>
+
+<div class="admin-page">
+  <h2>Manage Categories</h2>
+  
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Sort Order</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% it.categories.forEach(cat => { %>
+        <tr>
+          <td><%= cat.id %></td>
+          <td><%= cat.title %></td>
+          <td><%= cat.sortOrder %></td>
+          <td>
+            <a href="/admin/categories/<%= cat.id %>/edit">Edit</a>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>

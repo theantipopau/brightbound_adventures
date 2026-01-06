@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
+import 'package:brightbound_adventures/core/models/skill_database.dart';
 import 'package:brightbound_adventures/core/services/local_storage_service.dart';
 import 'package:brightbound_adventures/core/services/learning_engine.dart';
 import 'package:brightbound_adventures/core/utils/constants.dart';

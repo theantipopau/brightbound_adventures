@@ -1,0 +1,98 @@
+<% layout('./layout.eta') %>
+
+<div class="forum-view">
+  <div class="forum-header">
+    <div class="forum-info">
+      <h2><%= it.forum.title %></h2>
+      <% if (it.forum.description) { %>
+        <p class="forum-description"><%= it.forum.description %></p>
+      <% } %>
+    </div>
+    <% if (it.user && !it.forum.isLocked) { %>
+      <div class="forum-actions">
+        <a href="/thread/new?forumId=<%= it.forum.id %>" class="btn btn-primary">New Topic</a>
+      </div>
+    <% } %>
+  </div>
+
+  <% if (it.pagination) { %>
+    <div class="pagination">
+      <% if (it.pagination.page > 1) { %>
+        <a href="?page=<%= it.pagination.page - 1 %>">&laquo; Previous</a>
+      <% } %>
+      <span>Page <%= it.pagination.page %> of <%= it.pagination.totalPages %></span>
+      <% if (it.pagination.page < it.pagination.totalPages) { %>
+        <a href="?page=<%= it.pagination.page + 1 %>">Next &raquo;</a>
+      <% } %>
+    </div>
+  <% } %>
+
+  <table class="thread-list">
+    <thead>
+      <tr>
+        <th class="thread-title">Topic</th>
+        <th class="thread-author">Author</th>
+        <th class="thread-stats">Replies</th>
+        <th class="thread-stats">Views</th>
+        <th class="thread-last-post">Last Post</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (it.threads.length === 0) { %>
+        <tr>
+          <td colspan="5" class="no-threads">No topics in this forum yet. Be the first to post!</td>
+        </tr>
+      <% } else { %>
+        <% it.threads.forEach(thread => { %>
+          <tr class="thread-row <%= thread.isSticky ? 'sticky' : '' %> <%= thread.isLocked ? 'locked' : '' %>">
+            <td class="thread-title">
+              <div class="thread-icon">
+                <% if (thread.isSticky) { %>
+                  📌
+                <% } else if (thread.isLocked) { %>
+                  🔒
+                <% } else { %>
+                  💬
+                <% } %>
+              </div>
+              <div class="thread-info">
+                <h3><a href="/thread/<%= thread.id %>/<%= thread.slug %>"><%= thread.title %></a></h3>
+              </div>
+            </td>
+            <td class="thread-author">
+              <a href="/user/<%= thread.author.id %>/<%= thread.author.username %>"><%= thread.author.username %></a>
+            </td>
+            <td class="thread-stats"><%= thread.replyCount %></td>
+            <td class="thread-stats"><%= thread.views %></td>
+            <td class="thread-last-post">
+              <div class="last-post-info">
+                <div><%= new Date(thread.lastPostAt).toLocaleString() %></div>
+                <% if (thread.lastPostUser) { %>
+                  <div>by <a href="/user/<%= thread.lastPostUser.id %>/<%= thread.lastPostUser.username %>"><%= thread.lastPostUser.username %></a></div>
+                <% } %>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+      <% } %>
+    </tbody>
+  </table>
+
+  <% if (it.pagination) { %>
+    <div class="pagination">
+      <% if (it.pagination.page > 1) { %>
+        <a href="?page=<%= it.pagination.page - 1 %>">&laquo; Previous</a>
+      <% } %>
+      <span>Page <%= it.pagination.page %> of <%= it.pagination.totalPages %></span>
+      <% if (it.pagination.page < it.pagination.totalPages) { %>
+        <a href="?page=<%= it.pagination.page + 1 %>">Next &raquo;</a>
+      <% } %>
+    </div>
+  <% } %>
+
+  <% if (it.user && !it.forum.isLocked) { %>
+    <div class="forum-actions">
+      <a href="/thread/new?forumId=<%= it.forum.id %>" class="btn btn-primary">New Topic</a>
+    </div>
+  <% } %>
+</div>

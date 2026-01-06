@@ -1,0 +1,123 @@
+<% layout('./layout.eta') %>
+
+<div class="thread-view">
+  <div class="thread-header">
+    <h2><%= it.thread.title %></h2>
+    <% if (it.canModerate) { %>
+      <div class="mod-tools">
+        <form method="POST" action="/thread/<%= it.thread.id %>/tools" style="display: inline;">
+          <input type="hidden" name="csrf_token" value="<%= it.csrfToken %>">
+          <% if (it.thread.isLocked) { %>
+            <button type="submit" name="action" value="unlock" class="btn btn-sm">Unlock</button>
+          <% } else { %>
+            <button type="submit" name="action" value="lock" class="btn btn-sm">Lock</button>
+          <% } %>
+          <% if (it.thread.isSticky) { %>
+            <button type="submit" name="action" value="unsticky" class="btn btn-sm">Unsticky</button>
+          <% } else { %>
+            <button type="submit" name="action" value="sticky" class="btn btn-sm">Sticky</button>
+          <% } %>
+          <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger" onclick="return confirm('Delete this thread?')">Delete</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+
+  <% if (it.pagination) { %>
+    <div class="pagination">
+      <% if (it.pagination.page > 1) { %>
+        <a href="?page=<%= it.pagination.page - 1 %>">&laquo; Previous</a>
+      <% } %>
+      <span>Page <%= it.pagination.page %> of <%= it.pagination.totalPages %></span>
+      <% if (it.pagination.page < it.pagination.totalPages) { %>
+        <a href="?page=<%= it.pagination.page + 1 %>">Next &raquo;</a>
+      <% } %>
+    </div>
+  <% } %>
+
+  <div class="posts">
+    <% it.posts.forEach((post, index) => { %>
+      <div class="post" id="post-<%= post.id %>">
+        <div class="post-sidebar">
+          <div class="post-author">
+            <a href="/user/<%= post.author.id %>/<%= post.author.username %>">
+              <strong><%= post.author.username %></strong>
+            </a>
+          </div>
+          <div class="user-info">
+            <div class="user-role <%= post.author.role %>"><%= post.author.role %></div>
+            <div class="user-stats">
+              <div>Posts: <%= post.author.postCount || 0 %></div>
+              <div>Joined: <%= new Date(post.author.createdAt).toLocaleDateString() %></div>
+            </div>
+          </div>
+        </div>
+        <div class="post-main">
+          <div class="post-header">
+            <div class="post-date">
+              <a href="#post-<%= post.id %>"><%= new Date(post.createdAt).toLocaleString() %></a>
+            </div>
+            <div class="post-actions">
+              <% if (it.user && (it.user.id === post.createdBy || it.canModerate)) { %>
+                <a href="/post/<%= post.id %>/edit" class="btn btn-sm">Edit</a>
+              <% } %>
+              <% if (it.user) { %>
+                <a href="/thread/<%= it.thread.id %>/reply?quote=<%= post.id %>" class="btn btn-sm">Quote</a>
+              <% } %>
+            </div>
+          </div>
+          <div class="post-content">
+            <%~ post.contentHtml %>
+          </div>
+          <% if (post.author.signature && it.user?.settingsJson?.showSignatures !== false) { %>
+            <div class="post-signature">
+              <%~ post.author.signatureHtml %>
+            </div>
+          <% } %>
+          <% if (post.updatedAt && post.updatedAt !== post.createdAt) { %>
+            <div class="post-edited">
+              <em>Last edited: <%= new Date(post.updatedAt).toLocaleString() %></em>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+
+  <% if (it.pagination) { %>
+    <div class="pagination">
+      <% if (it.pagination.page > 1) { %>
+        <a href="?page=<%= it.pagination.page - 1 %>">&laquo; Previous</a>
+      <% } %>
+      <span>Page <%= it.pagination.page %> of <%= it.pagination.totalPages %></span>
+      <% if (it.pagination.page < it.pagination.totalPages) { %>
+        <a href="?page=<%= it.pagination.page + 1 %>">Next &raquo;</a>
+      <% } %>
+    </div>
+  <% } %>
+
+  <% if (it.user && !it.thread.isLocked) { %>
+    <div class="quick-reply">
+      <h3>Quick Reply</h3>
+      <form method="POST" action="/thread/<%= it.thread.id %>/reply">
+        <input type="hidden" name="csrf_token" value="<%= it.csrfToken %>">
+        <div class="form-group">
+          <label for="content">Message:</label>
+          <textarea name="content" id="content" rows="8" required></textarea>
+          <div class="bbcode-help">
+            BBCode: [b]bold[/b] [i]italic[/i] [u]underline[/u] [url]link[/url] [quote]quote[/quote] [code]code[/code]
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Post Reply</button>
+      </form>
+    </div>
+  <% } else if (it.thread.isLocked) { %>
+    <div class="thread-locked-notice">
+      This thread is locked. No new replies can be posted.
+    </div>
+  <% } else { %>
+    <div class="login-to-reply">
+      <a href="/login?redirect=/thread/<%= it.thread.id %>/<%= it.thread.slug %>">Login</a> or <a href="/register">Register</a> to post a reply.
+    </div>
+  <% } %>
+</div>

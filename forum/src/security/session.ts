@@ -1,5 +1,6 @@
-import { Context } from 'hono';
 import { generateToken } from './crypto';
+import { AppHonoContext } from '../types';
+import { getCookie } from 'hono/cookie';
 
 export interface Session {
   id: string;
@@ -17,7 +18,7 @@ const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 // Create a new session
 export async function createSession(
-  c: Context,
+  c: AppHonoContext,
   userId: number,
   username: string,
   role: string
@@ -50,11 +51,11 @@ export async function createSession(
 }
 
 // Get session from cookie
-export async function getSession(c: Context): Promise<Session | null> {
-  const sessionId = c.req.cookie(SESSION_COOKIE_NAME);
+export async function getSession(c: AppHonoContext): Promise<Session | null> {
+  const sessionId = getCookie(c, SESSION_COOKIE_NAME);
   if (!sessionId) return null;
 
-  const env = c.env as any;
+  const env = c.env;
   if (env.SESSIONS) {
     const data = await env.SESSIONS.get(`session:${sessionId}`);
     if (!data) return null;
@@ -74,25 +75,25 @@ export async function getSession(c: Context): Promise<Session | null> {
 }
 
 // Delete a session
-export async function deleteSession(c: Context, sessionId?: string): Promise<void> {
-  const sid = sessionId || c.req.cookie(SESSION_COOKIE_NAME);
+export async function deleteSession(c: AppHonoContext, sessionId?: string): Promise<void> {
+  const sid = sessionId || getCookie(c, SESSION_COOKIE_NAME);
   if (!sid) return;
 
-  const env = c.env as any;
+  const env = c.env;
   if (env.SESSIONS) {
     await env.SESSIONS.delete(`session:${sid}`);
   }
 }
 
 // Set session cookie
-export function setSessionCookie(c: Context, sessionId: string): void {
+export function setSessionCookie(c: AppHonoContext, sessionId: string): void {
   c.header('Set-Cookie', 
     `${SESSION_COOKIE_NAME}=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_DURATION / 1000}`
   );
 }
 
 // Clear session cookie
-export function clearSessionCookie(c: Context): void {
+export function clearSessionCookie(c: AppHonoContext): void {
   c.header('Set-Cookie', 
     `${SESSION_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`
   );

@@ -1,0 +1,35 @@
+<% layout('./layout.eta') %>
+
+<div class="admin-page">
+  <h2>Manage Forums</h2>
+  
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Category</th>
+        <th>Threads</th>
+        <th>Posts</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% it.forums.forEach(forum => { %>
+        <tr>
+          <td><%= forum.id %></td>
+          <td><%= forum.title %></td>
+          <td>
+            <% const cat = it.categories.find(c => c.id === forum.categoryId); %>
+            <%= cat ? cat.title : 'N/A' %>
+          </td>
+          <td><%= forum.threadCount %></td>
+          <td><%= forum.postCount %></td>
+          <td>
+            <a href="/admin/forums/<%= forum.id %>/edit">Edit</a>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>

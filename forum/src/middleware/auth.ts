@@ -1,8 +1,8 @@
-import { Context } from 'hono';
 import { getSession, Session } from '../security/session';
+import { AppHonoContext } from '../types';
 
 // Add user and session to context
-export async function authMiddleware(c: Context, next: () => Promise<void>): Promise<void> {
+export async function authMiddleware(c: AppHonoContext, next: () => Promise<void>): Promise<void> {
   const session = await getSession(c);
   c.set('session', session);
   c.set('user', session ? { id: session.userId, username: session.username, role: session.role } : null);
@@ -10,17 +10,17 @@ export async function authMiddleware(c: Context, next: () => Promise<void>): Pro
 }
 
 // Require authentication
-export function requireAuth(c: Context, next: () => Promise<void>): Promise<void | Response> {
+export async function requireAuth(c: AppHonoContext, next: () => Promise<void>): Promise<void | Response> {
   const user = c.get('user');
   if (!user) {
     return c.redirect('/login?redirect=' + encodeURIComponent(c.req.url));
   }
-  return next();
+  await next();
 }
 
 // Require specific role
 export function requireRole(role: 'admin' | 'moderator') {
-  return (c: Context, next: () => Promise<void>): Promise<void | Response> => {
+  return async (c: AppHonoContext, next: () => Promise<void>): Promise<void | Response> => {
     const user = c.get('user');
     if (!user) {
       return c.redirect('/login?redirect=' + encodeURIComponent(c.req.url));
@@ -34,7 +34,7 @@ export function requireRole(role: 'admin' | 'moderator') {
       return c.text('Forbidden: Moderator access required', 403);
     }
     
-    return next();
+    await next();
   };
 }
 

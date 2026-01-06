@@ -128,7 +128,7 @@ class _NumeracyGameState extends State<NumeracyGame>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: widget.themeColor.withOpacity(0.05),
+      backgroundColor: widget.themeColor.withValues(alpha: 0.05),
       appBar: AppBar(
         backgroundColor: widget.themeColor,
         foregroundColor: Colors.white,
@@ -162,7 +162,7 @@ class _NumeracyGameState extends State<NumeracyGame>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -183,7 +183,7 @@ class _NumeracyGameState extends State<NumeracyGame>
             // Progress bar
             LinearProgressIndicator(
               value: _progress,
-              backgroundColor: widget.themeColor.withOpacity(0.2),
+              backgroundColor: widget.themeColor.withValues(alpha: 0.2),
               valueColor: AlwaysStoppedAnimation(widget.themeColor),
               minHeight: 8,
             ),
@@ -268,12 +268,12 @@ class _NumeracyGameState extends State<NumeracyGame>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            widget.themeColor.withOpacity(0.1),
-            widget.themeColor.withOpacity(0.2),
+            widget.themeColor.withValues(alpha: 0.1),
+            widget.themeColor.withValues(alpha: 0.2),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: widget.themeColor.withOpacity(0.3)),
+        border: Border.all(color: widget.themeColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -282,13 +282,13 @@ class _NumeracyGameState extends State<NumeracyGame>
           Container(
             width: 1,
             height: 40,
-            color: widget.themeColor.withOpacity(0.3),
+            color: widget.themeColor.withValues(alpha: 0.3),
           ),
           _buildScoreItem('🎯', 'Questions', '${_currentIndex + 1}/${_shuffledQuestions.length}'),
           Container(
             width: 1,
             height: 40,
-            color: widget.themeColor.withOpacity(0.3),
+            color: widget.themeColor.withValues(alpha: 0.3),
           ),
           _buildScoreItem(
             '📊',
@@ -337,36 +337,37 @@ class _NumeracyGameState extends State<NumeracyGame>
           child: Opacity(
             opacity: value,
             child: Container(
-              padding: const EdgeInsets.all(28),
+              padding: EdgeInsets.all(MediaQuery.of(context).size.width < 600 ? 20 : 28),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
                     Colors.white,
-                    widget.themeColor.withOpacity(0.05),
+                    widget.themeColor.withValues(alpha: 0.08),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(32),
                 border: Border.all(
-                  color: widget.themeColor.withOpacity(0.3),
-                  width: 2,
+                  color: widget.themeColor.withValues(alpha: 0.2),
+                  width: 3,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.themeColor.withOpacity(0.15),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
-                    spreadRadius: 5,
+                    color: widget.themeColor.withValues(alpha: 0.2),
+                    blurRadius: 40,
+                    offset: const Offset(0, 15),
+                    spreadRadius: 0,
                   ),
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.8),
-                    blurRadius: 15,
-                    offset: const Offset(-5, -5),
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Animated icon with glow
                   Container(
@@ -374,35 +375,40 @@ class _NumeracyGameState extends State<NumeracyGame>
                     decoration: BoxDecoration(
                       gradient: RadialGradient(
                         colors: [
-                          widget.themeColor.withOpacity(0.25),
-                          widget.themeColor.withOpacity(0.1),
+                          widget.themeColor.withValues(alpha: 0.2),
+                          widget.themeColor.withValues(alpha: 0.05),
                         ],
                       ),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: widget.themeColor.withOpacity(0.3),
-                          blurRadius: 20,
-                          spreadRadius: 2,
+                          color: widget.themeColor.withValues(alpha: 0.4),
+                          blurRadius: 30,
+                          spreadRadius: 3,
                         ),
                       ],
                     ),
                     child: Text(
                       _getQuestionTypeEmoji(),
-                      style: const TextStyle(fontSize: 40),
+                      style: TextStyle(fontSize: MediaQuery.of(context).size.width < 600 ? 40 : 48),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    _currentQuestion.question,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      height: 1.5,
-                      color: Colors.grey[900],
-                      letterSpacing: 0.3,
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Text(
+                      _currentQuestion.question,
+                      style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.width < 600 ? 22 : 28,
+                        fontWeight: FontWeight.w800,
+                        height: 1.5,
+                        color: Colors.grey[900],
+                        letterSpacing: 0.3,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 8,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -481,7 +487,7 @@ class _NumeracyGameState extends State<NumeracyGame>
         }
       } else {
         backgroundColor = isSelected 
-            ? widget.themeColor.withOpacity(0.1)
+            ? widget.themeColor.withValues(alpha: 0.1)
             : Colors.white;
         borderColor = isSelected 
             ? widget.themeColor 
@@ -508,7 +514,7 @@ class _NumeracyGameState extends State<NumeracyGame>
                 boxShadow: isSelected && !_answered
                     ? [
                         BoxShadow(
-                          color: widget.themeColor.withOpacity(0.3),
+                          color: widget.themeColor.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -524,7 +530,7 @@ class _NumeracyGameState extends State<NumeracyGame>
                     decoration: BoxDecoration(
                       color: _answered
                           ? (isCorrect ? Colors.green : (isSelected ? Colors.red : Colors.grey[300]))
-                          : widget.themeColor.withOpacity(0.2),
+                          : widget.themeColor.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -545,12 +551,15 @@ class _NumeracyGameState extends State<NumeracyGame>
                     child: Text(
                       option,
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: MediaQuery.of(context).size.width < 600 ? 16 : 18,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                         color: _answered 
                             ? (isCorrect ? Colors.green[800] : (isSelected ? Colors.red[800] : Colors.grey[600]))
                             : Colors.black87,
+                        height: 1.3,
                       ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   if (trailingIcon != null)
@@ -618,7 +627,7 @@ class _NumeracyGameState extends State<NumeracyGame>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(

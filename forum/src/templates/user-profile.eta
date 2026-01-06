@@ -1,0 +1,29 @@
+<% layout('./layout.eta') %>
+
+<div class="user-profile">
+  <h2><%= it.profileUser.username %>'s Profile</h2>
+  
+  <div class="profile-info">
+    <div class="profile-row">
+      <strong>Role:</strong> <span class="user-role <%= it.profileUser.role %>"><%= it.profileUser.role %></span>
+    </div>
+    <div class="profile-row">
+      <strong>Joined:</strong> <%= new Date(it.profileUser.createdAt).toLocaleDateString() %>
+    </div>
+    <div class="profile-row">
+      <strong>Last Active:</strong> <%= it.profileUser.lastActiveAt ? new Date(it.profileUser.lastActiveAt).toLocaleDateString() : 'Never' %>
+    </div>
+    <% if (it.profileUser.signature) { %>
+      <div class="profile-row">
+        <strong>Signature:</strong>
+        <div class="signature-preview"><%~ it.profileUser.signature %></div>
+      </div>
+    <% } %>
+  </div>
+  
+  <% if (it.user && it.user.id !== it.profileUser.id) { %>
+    <div class="profile-actions">
+      <a href="/messages/compose?to=<%= it.profileUser.username %>" class="btn">Send Message</a>
+    </div>
+  <% } %>
+</div>

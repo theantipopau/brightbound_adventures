@@ -16,40 +16,8 @@ class ResponsiveWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final size = MediaQuery.of(context).size;
-        
-        // Calculate scale factor to fit design size
-        double scale = 1.0;
-        if (minWidth && size.width < designSize.width) {
-          scale = size.width / designSize.width;
-        }
-        
-        // If we also care about height (e.g. game view), we might want to use the smaller scale
-        if (minHeight && size.height < designSize.height) {
-          final heightScale = size.height / designSize.height;
-          if (heightScale < scale) {
-            scale = heightScale;
-          }
-        }
-
-        // If scale is 1.0, just return child
-        if (scale >= 1.0) {
-          return child;
-        }
-
-        // Otherwise, scale the content
-        return FittedBox(
-          fit: BoxFit.contain,
-          alignment: Alignment.topCenter,
-          child: SizedBox(
-            width: designSize.width,
-            height: designSize.height,
-            child: child,
-          ),
-        );
-      },
-    );
+    // Simply return the child - let it fill the available space
+    // The app will be responsive to any screen size
+    return child;
   }
 }

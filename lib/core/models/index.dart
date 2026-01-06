@@ -3,6 +3,6 @@ export 'skill.dart';
 export 'avatar.dart';
 export 'game_progress.dart';
 export 'cosmetics.dart';
-export 'skill_database.dart';
-export 'daily_challenge.dart';
+export 'cosmetic_item.dart';
 export 'player_stats.dart';
+export 'daily_challenge.dart';

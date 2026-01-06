@@ -1,0 +1,26 @@
+<% layout('./layout.eta') %>
+
+<div class="new-thread">
+  <h2>New Topic in <%= it.forum.title %></h2>
+  
+  <form method="POST" action="/thread/new">
+    <input type="hidden" name="csrf_token" value="<%= it.csrfToken %>">
+    <input type="hidden" name="forumId" value="<%= it.forum.id %>">
+    
+    <div class="form-group">
+      <label for="title">Topic Title:</label>
+      <input type="text" id="title" name="title" required maxlength="200">
+    </div>
+    
+    <div class="form-group">
+      <label for="content">Message:</label>
+      <textarea name="content" id="content" rows="15" required></textarea>
+      <div class="bbcode-help">
+        BBCode: [b]bold[/b] [i]italic[/i] [u]underline[/u] [url]link[/url] [quote]quote[/quote] [code]code[/code]
+      </div>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Create Topic</button>
+    <a href="/forum/<%= it.forum.id %>" class="btn">Cancel</a>
+  </form>
+</div>
