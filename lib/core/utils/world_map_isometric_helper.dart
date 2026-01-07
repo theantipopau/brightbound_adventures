@@ -50,24 +50,20 @@ class WorldMapIsometricHelper {
     IsometricPosition pos, 
     Size screenSize,
   ) {
-    // Get base isometric screen coordinates
-    final isoOffset = engine.gridToScreen(pos);
+    // Direct mapping: use normalized position to fill screen
+    // The position is already 0-1 normalized, so map directly to screen space
+    final padding = 100.0; // Padding from edges
     
-    // Center the map with moderate spread
-    final centerX = screenSize.width / 2;
-    final centerY = screenSize.height / 2;
+    final usableWidth = screenSize.width - (padding * 2);
+    final usableHeight = screenSize.height - (padding * 2) - 100; // Extra bottom padding for UI
     
-    // Calculate scale to fit all zones comfortably on screen
-    final maxGridExtent = (gridWidth + gridHeight) * tileHeight / 2;
-    final scale = (screenSize.width * 0.7 / maxGridExtent).clamp(0.6, 1.5);
-    
-    // Offset to center the grid and move it up slightly
-    final gridCenterX = (gridWidth / 2) * tileWidth / 2;
-    final gridCenterY = (gridHeight / 2) * tileHeight;
+    // Map grid position (0-9) to screen position
+    final normalizedX = pos.x / (gridWidth - 1);
+    final normalizedY = pos.y / (gridHeight - 1);
     
     return Offset(
-      centerX + (isoOffset.dx - gridCenterX) * scale,
-      centerY + (isoOffset.dy - gridCenterY) * scale - 50,
+      padding + (normalizedX * usableWidth),
+      padding + (normalizedY * usableHeight),
     );
   }
   
