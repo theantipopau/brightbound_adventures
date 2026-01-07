@@ -345,28 +345,41 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         return Stack(
                           children: [
                             // Terrain patches showing biome regions under each zone
-                            CustomPaint(
-                              painter: TerrainPainter(zones: _zones),
-                              size: Size(constraints.maxWidth, constraints.maxHeight),
+                            RepaintBoundary(
+                              child: CustomPaint(
+                                painter: TerrainPainter(zones: _zones),
+                                size: Size(constraints.maxWidth, constraints.maxHeight),
+                              ),
                             ),
 
                             // Shadows for 3D depth
-                            CustomPaint(
-                              painter: ShadowPainter(
-                                zones: _zones,
-                                avatarPosition: avatarIsoPos,
+                            RepaintBoundary(
+                              child: CustomPaint(
+                                painter: ShadowPainter(
+                                  zones: _zones,
+                                  avatarPosition: avatarIsoPos,
+                                ),
+                                size: Size(constraints.maxWidth, constraints.maxHeight),
                               ),
-                              size: Size(constraints.maxWidth, constraints.maxHeight),
                             ),
 
-                            // Animated paths between zones
-                            CustomPaint(
-                              painter: PathPainter(
-                                zones: _zones,
-                                animation: _pathController.value,
-                                totalStars: totalStars,
+                            // Animated paths between zones (optimized)
+                            RepaintBoundary(
+                              child: CustomPaint(
+                                painter: PathPainter(
+                                  zones: _zones,
+                                  zoneScreenPositions: {
+                                    for (final z in _zones)
+                                      z.id: WorldMapIsometricHelper.gridToScreen(
+                                        _zoneIsometricPositions[z.id]!,
+                                        Size(constraints.maxWidth, constraints.maxHeight),
+                                      ),
+                                  },
+                                  animation: _pathController,
+                                  totalStars: totalStars,
+                                ),
+                                size: Size(constraints.maxWidth, constraints.maxHeight),
                               ),
-                              size: Size(constraints.maxWidth, constraints.maxHeight),
                             ),
 
                             // Combined isometric render layer (Zones + Avatar)

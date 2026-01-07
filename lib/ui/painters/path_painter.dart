@@ -1,39 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
-import 'package:brightbound_adventures/core/utils/world_map_isometric_helper.dart';
 
 /// Animated path painter connecting zones with particle effects
+///
+/// Optimizations:
+/// - Accepts precomputed screen positions to avoid repeated coordinate conversions
+/// - Uses an [Animation<double>] as the repaint listenable so the framework
+///   repaints this painter when the animation ticks (no need to rebuild parent)
 class PathPainter extends CustomPainter {
   final List<ZoneData> zones;
-  final double animation;
+  final Map<String, Offset> zoneScreenPositions;
+  final Animation<double> animation;
   final int totalStars;
 
   PathPainter({
     required this.zones,
+    required this.zoneScreenPositions,
     required this.animation,
     required this.totalStars,
-  });
+  }) : super(repaint: animation);
 
   @override
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < zones.length - 1; i++) {
-      // Use isometric conversion for path positions
-      final start = WorldMapIsometricHelper.gridToScreen(
-        WorldMapIsometricHelper.offsetToIsometric(zones[i].position),
-        size,
-      );
-      final end = WorldMapIsometricHelper.gridToScreen(
-        WorldMapIsometricHelper.offsetToIsometric(zones[i + 1].position),
-        size,
-      );
-      
+      final start = zoneScreenPositions[zones[i].id]!;
+      final end = zoneScreenPositions[zones[i + 1].id]!;
+
       final isUnlocked = totalStars >= zones[i + 1].requiredStars;
-      
+
       // Draw path
       final pathPaint = Paint()
-        ..color = isUnlocked 
-            ? Colors.amber.withValues(alpha: 0.6)
-            : Colors.grey.withValues(alpha: 0.3)
+        ..color = (isUnlocked ? Colors.amber : Colors.grey).withOpacity(isUnlocked ? 0.6 : 0.3)
         ..strokeWidth = 8
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
@@ -41,33 +38,32 @@ class PathPainter extends CustomPainter {
       // Create curved path (adjusted for iso perspective)
       final path = Path();
       path.moveTo(start.dx, start.dy);
-      
+
       // Midpoint for curve control
       final midX = (start.dx + end.dx) / 2;
       final midY = (start.dy + end.dy) / 2;
-      
+
       // Lift the curve up for visual depth
       final controlX = midX;
       final controlY = midY - 30;
-      
+
       path.quadraticBezierTo(controlX, controlY, end.dx, end.dy);
-      
-      // Draw solid path (optimized for performance)
+
+      // Draw solid path
       canvas.drawPath(path, pathPaint);
-      
+
       // Draw animated dots on unlocked paths (particle effect)
       if (isUnlocked) {
         final dotPaint = Paint()
           ..color = Colors.amber
           ..style = PaintingStyle.fill;
-        
-        // Compute dot position along path
+
         final pathMetrics = path.computeMetrics().first;
-        final progress = (animation + i * 0.2) % 1.0;
+        final progress = (animation.value + i * 0.2) % 1.0;
         final pos = pathMetrics.getTangentForOffset(
           pathMetrics.length * progress,
         )?.position;
-        
+
         if (pos != null) {
           canvas.drawCircle(pos, 6, dotPaint);
         }
@@ -77,7 +73,9 @@ class PathPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant PathPainter oldDelegate) {
-    return oldDelegate.animation != animation || 
-           oldDelegate.totalStars != totalStars;
+    // Animation drives repaint via the repaint listenable. Only repaint if
+    // non-animated state changes (e.g., unlocking a new path).
+    return oldDelegate.totalStars != totalStars ||
+           oldDelegate.zoneScreenPositions.length != zoneScreenPositions.length;
   }
 }
