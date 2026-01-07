@@ -55,8 +55,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Word Woods',
       emoji: '🌲',
       color: AppColors.wordWoodsColor,
-      // Isometric: Start (Bottom Front Left)
-      position: Offset(0.15, 0.75), 
+      // Isometric: Front bottom left corner
+      position: Offset(0.05, 0.85), 
       description: 'Master letters & reading!',
       order: 0,
       requiredStars: 0,
@@ -66,8 +66,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Number Nebula',
       emoji: '🌌',
       color: AppColors.numberNebulaColor,
-      // Isometric: Middle Left
-      position: Offset(0.05, 0.50),
+      // Isometric: Left edge middle
+      position: Offset(0.02, 0.55),
       description: 'Explore math & numbers!',
       order: 1,
       requiredStars: 3,
@@ -77,8 +77,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Math Facts',
       emoji: '🔢',
       color: Color(0xFFFF6B6B),
-      // Isometric: Middle Right
-      position: Offset(0.85, 0.55),
+      // Isometric: Right edge middle
+      position: Offset(0.92, 0.60),
       description: 'Master multiplication & addition!',
       order: 2,
       requiredStars: 6,
@@ -88,8 +88,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Story Springs',
       emoji: '📖',
       color: AppColors.storyspringsColor,
-      // Isometric: Upper Left (Back Left)
-      position: Offset(0.10, 0.30),
+      // Isometric: Left back area
+      position: Offset(0.08, 0.28),
       description: 'Create amazing stories!',
       order: 3,
       requiredStars: 10,
@@ -99,8 +99,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Puzzle Peaks',
       emoji: '🧩',
       color: AppColors.puzzlePeaksColor,
-      // Isometric: Upper Right (Back Right)
-      position: Offset(0.90, 0.25),
+      // Isometric: Right back corner
+      position: Offset(0.95, 0.22),
       description: 'Solve tricky puzzles!',
       order: 4,
       requiredStars: 15,
@@ -110,8 +110,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Adventure Arena',
       emoji: '🏆',
       color: AppColors.adventureArenaColor,
-      // Isometric: Top Center (Far Back)
-      position: Offset(0.50, 0.10),
+      // Isometric: Far back center
+      position: Offset(0.50, 0.08),
       description: 'Ultimate challenges!',
       order: 5,
       requiredStars: 25,
