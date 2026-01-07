@@ -11,6 +11,8 @@ import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:brightbound_adventures/ui/widgets/daily_challenge_card.dart';
 import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
+import 'package:brightbound_adventures/ui/screens/daily_challenge_screen.dart';
+import 'package:brightbound_adventures/ui/screens/mini_games_screen.dart';
 import 'package:brightbound_adventures/ui/painters/shadow_painter.dart';
 import 'package:brightbound_adventures/ui/painters/terrain_painter.dart';
 import 'package:brightbound_adventures/ui/painters/path_painter.dart';
@@ -53,8 +55,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Word Woods',
       emoji: '🌲',
       color: AppColors.wordWoodsColor,
-      // Isometric: Start (Bottom Front)
-      position: Offset(0.3, 0.85), 
+      // Isometric: Start (Bottom Front Left)
+      position: Offset(0.15, 0.75), 
       description: 'Master letters & reading!',
       order: 0,
       requiredStars: 0,
@@ -65,7 +67,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       emoji: '🌌',
       color: AppColors.numberNebulaColor,
       // Isometric: Middle Left
-      position: Offset(0.15, 0.55),
+      position: Offset(0.05, 0.50),
       description: 'Explore math & numbers!',
       order: 1,
       requiredStars: 3,
@@ -76,7 +78,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       emoji: '🔢',
       color: Color(0xFFFF6B6B),
       // Isometric: Middle Right
-      position: Offset(0.75, 0.65),
+      position: Offset(0.85, 0.55),
       description: 'Master multiplication & addition!',
       order: 2,
       requiredStars: 6,
@@ -87,7 +89,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       emoji: '📖',
       color: AppColors.storyspringsColor,
       // Isometric: Upper Left (Back Left)
-      position: Offset(0.25, 0.35),
+      position: Offset(0.10, 0.30),
       description: 'Create amazing stories!',
       order: 3,
       requiredStars: 10,
@@ -98,7 +100,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       emoji: '🧩',
       color: AppColors.puzzlePeaksColor,
       // Isometric: Upper Right (Back Right)
-      position: Offset(0.70, 0.30),
+      position: Offset(0.90, 0.25),
       description: 'Solve tricky puzzles!',
       order: 4,
       requiredStars: 15,
@@ -109,7 +111,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       emoji: '🏆',
       color: AppColors.adventureArenaColor,
       // Isometric: Top Center (Far Back)
-      position: Offset(0.50, 0.15),
+      position: Offset(0.50, 0.10),
       description: 'Ultimate challenges!',
       order: 5,
       requiredStars: 25,
@@ -1137,93 +1139,10 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   void _showMiniGamesMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              '🎮 Mini Games',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: [
-                _buildMiniGameTile('🎯', 'Target\nPractice', Colors.red),
-                _buildMiniGameTile('🧠', 'Memory\nMatch', Colors.purple),
-                _buildMiniGameTile('⏱️', 'Speed\nRound', Colors.orange),
-                _buildMiniGameTile('🎨', 'Color\nSplash', Colors.blue),
-              ],
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMiniGameTile(String emoji, String label, Color color) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pop(context);
-        _showComingSoon(label.replaceAll('\n', ' '));
-      },
-      child: Container(
-        width: 80,
-        height: 90,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [color.withValues(alpha: 0.7), color],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 32)),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                height: 1.2,
-              ),
-            ),
-          ],
-        ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MiniGamesScreen(),
       ),
     );
   }
@@ -1373,140 +1292,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
-  void _showComingSoon(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon! 🚀'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
-  
   void _showDailyChallenges() {
-    final challenges = DailyChallengeGenerator.generateDailyChallenges(DateTime.now());
-    
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.6,
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.indigo.shade900,
-              Colors.purple.shade900,
-            ],
-          ),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text('🎯', style: TextStyle(fontSize: 28)),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Daily Challenges',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Complete challenges for bonus XP!',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Timer until reset
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.timer,
-                          color: Colors.white.withValues(alpha: 0.8),
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _getTimeUntilReset(),
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Challenge cards
-            Flexible(
-              child: DailyChallengesList(
-                challenges: challenges,
-                onChallengeTap: (challenge) {
-                  Navigator.pop(context);
-                  // Navigate to the zone
-                  Navigator.pushNamed(
-                    context, 
-                    '/${challenge.zoneId.replaceAll('_', '-')}',
-                  );
-                },
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-          ],
-        ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const DailyChallengeScreen(),
       ),
     );
   }
