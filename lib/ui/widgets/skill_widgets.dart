@@ -3,7 +3,7 @@ import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/graphics_helpers.dart';
 
-class SkillCard extends StatelessWidget {
+class SkillCard extends StatefulWidget {
   final Skill skill;
   final VoidCallback? onTap;
   final bool showLockOverlay;
@@ -16,156 +16,301 @@ class SkillCard extends StatelessWidget {
   });
 
   @override
+  State<SkillCard> createState() => _SkillCardState();
+}
+
+class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+  bool _isHovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  Color _getSkillColor() {
+    switch (widget.skill.state) {
+      case SkillState.mastered:
+        return AppColors.success;
+      case SkillState.practising:
+        return AppColors.secondary;
+      case SkillState.introduced:
+        return AppColors.primary;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getSkillEmoji() {
+    // Map skill names to relevant emojis
+    final name = widget.skill.name.toLowerCase();
+    if (name.contains('letter')) return '🔤';
+    if (name.contains('phoneme') || name.contains('sound')) return '🔊';
+    if (name.contains('sight') || name.contains('word')) return '👁️';
+    if (name.contains('blend')) return '🔀';
+    if (name.contains('sentence')) return '📝';
+    if (name.contains('reading')) return '📖';
+    if (name.contains('spell')) return '✏️';
+    if (name.contains('vocab')) return '📚';
+    if (name.contains('comprehension')) return '🧠';
+    if (name.contains('punctuation') || name.contains('comma')) return '❗';
+    if (name.contains('apostrophe')) return '✨';
+    if (name.contains('homophone')) return '👂';
+    return '⭐';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: showLockOverlay ? null : onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header with name and state badge
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              skill.name,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              skill.description,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppColors.textSecondary),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      BrightBoundGraphics.buildMasteryBadge(skill.state),
+    final skillColor = _getSkillColor();
+    final emoji = _getSkillEmoji();
+    final isLocked = widget.showLockOverlay;
+    
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        transform: Matrix4.identity()..scale(_isHovered && !isLocked ? 1.02 : 1.0),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isLocked
+                  ? [Colors.grey.shade100, Colors.grey.shade200]
+                  : [
+                      Colors.white,
+                      skillColor.withValues(alpha: 0.08),
                     ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // NAPLAN indicator if applicable
-                  if (skill.naplanArea != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: BrightBoundGraphics.buildSkillBadge(
-                        label: '⚠️ NAPLAN Focus',
-                        backgroundColor: AppColors.warning.withValues(alpha: 0.2),
-                        textColor: AppColors.warning,
-                        padding: 6,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isLocked 
+                  ? Colors.grey.shade300 
+                  : skillColor.withValues(alpha: _isHovered ? 0.6 : 0.3),
+              width: _isHovered ? 3 : 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isLocked 
+                    ? Colors.black.withValues(alpha: 0.05)
+                    : skillColor.withValues(alpha: _isHovered ? 0.3 : 0.15),
+                blurRadius: _isHovered ? 20 : 12,
+                offset: const Offset(0, 6),
+                spreadRadius: _isHovered ? 2 : 0,
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: isLocked ? null : widget.onTap,
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    // Left: Emoji icon with animated background
+                    AnimatedBuilder(
+                      animation: _pulseController,
+                      builder: (context, child) {
+                        final pulse = isLocked ? 0.0 : _pulseController.value * 0.15;
+                        return Container(
+                          width: 70,
+                          height: 70,
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              colors: isLocked
+                                  ? [Colors.grey.shade200, Colors.grey.shade300]
+                                  : [
+                                      skillColor.withValues(alpha: 0.2 + pulse),
+                                      skillColor.withValues(alpha: 0.05),
+                                    ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: isLocked ? null : [
+                              BoxShadow(
+                                color: skillColor.withValues(alpha: 0.3),
+                                blurRadius: 12,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              isLocked ? '🔒' : emoji,
+                              style: const TextStyle(fontSize: 32),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    
+                    // Middle: Skill info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.skill.name,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: isLocked ? Colors.grey : Colors.grey.shade800,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.skill.description,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: isLocked ? Colors.grey : AppColors.textSecondary,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 10),
+                          
+                          // Progress bar with glow
+                          Container(
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: widget.skill.accuracy,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: isLocked 
+                                        ? [Colors.grey, Colors.grey.shade400]
+                                        : [skillColor, skillColor.withValues(alpha: 0.7)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                  boxShadow: isLocked ? null : [
+                                    BoxShadow(
+                                      color: skillColor.withValues(alpha: 0.4),
+                                      blurRadius: 6,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          
+                          // Stats row
+                          Row(
+                            children: [
+                              _buildMiniStat(
+                                'Accuracy',
+                                '${(widget.skill.accuracy * 100).toStringAsFixed(0)}%',
+                                skillColor,
+                                isLocked,
+                              ),
+                              const SizedBox(width: 16),
+                              _buildMiniStat(
+                                'Attempts',
+                                widget.skill.attempts.toString(),
+                                Colors.blue,
+                                isLocked,
+                              ),
+                              const SizedBox(width: 16),
+                              // Difficulty stars
+                              Row(
+                                children: List.generate(5, (i) {
+                                  return Icon(
+                                    i < widget.skill.difficulty 
+                                        ? Icons.star 
+                                        : Icons.star_border,
+                                    size: 14,
+                                    color: isLocked 
+                                        ? Colors.grey.shade400 
+                                        : (i < widget.skill.difficulty 
+                                            ? Colors.amber 
+                                            : Colors.grey.shade300),
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-
-                  // Progress bar
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: skill.accuracy,
-                      minHeight: 8,
-                      backgroundColor: AppColors.divider,
-                      valueColor: AlwaysStoppedAnimation(
-                        _getProgressColor(skill.state),
+                    
+                    // Right: Play button
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        gradient: isLocked
+                            ? LinearGradient(
+                                colors: [Colors.grey.shade300, Colors.grey.shade400],
+                              )
+                            : LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [skillColor, skillColor.withValues(alpha: 0.8)],
+                              ),
+                        shape: BoxShape.circle,
+                        boxShadow: isLocked ? null : [
+                          BoxShadow(
+                            color: skillColor.withValues(alpha: 0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        isLocked ? Icons.lock : Icons.play_arrow,
+                        color: Colors.white,
+                        size: 28,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Stats row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Accuracy
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Accuracy',
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(color: AppColors.textSecondary),
-                            ),
-                            Text(
-                              '${(skill.accuracy * 100).toStringAsFixed(0)}%',
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Attempts
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Attempts',
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(color: AppColors.textSecondary),
-                            ),
-                            Text(
-                              skill.attempts.toString(),
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Difficulty
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Difficulty',
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(color: AppColors.textSecondary),
-                            ),
-                            BrightBoundGraphics.buildDifficultyBars(
-                              level: skill.difficulty,
-                              barHeight: 12,
-                              filledColor: AppColors.primary,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-            if (showLockOverlay) BrightBoundGraphics.buildLockedOverlay(),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Color _getProgressColor(SkillState state) {
-    switch (state) {
-      case SkillState.locked:
-        return Colors.grey;
-      case SkillState.introduced:
-        return AppColors.secondary;
-      case SkillState.practising:
-        return AppColors.tertiary;
-      case SkillState.mastered:
-        return AppColors.success;
-    }
+  Widget _buildMiniStat(String label, String value, Color color, bool isLocked) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: isLocked ? Colors.grey : AppColors.textSecondary,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: isLocked ? Colors.grey : color,
+          ),
+        ),
+      ],
+    );
   }
 }
 
