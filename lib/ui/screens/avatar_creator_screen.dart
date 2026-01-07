@@ -555,59 +555,70 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 600;
+        final isTiny = constraints.maxHeight < 500;
         final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
         
-        return SingleChildScrollView(
-      padding: EdgeInsets.all(isCompact ? 12 : 24),
-      child: Column(
-        children: [
-          Text(
-            'Choose Your Companion! 🎭',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: isCompact ? 20 : 24,
-                ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: isCompact ? 4 : 8),
-          Text(
-            'Tap a character to see them in action!',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: isCompact ? 13 : 14,
-                ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: isCompact ? 12 : 24),
+        // Calculate available height for grid
+        final headerHeight = isTiny ? 120.0 : (isCompact ? 140.0 : 180.0);
+        final footerHeight = isTiny ? 60.0 : (isCompact ? 80.0 : 100.0);
+        final gridHeight = constraints.maxHeight - headerHeight - footerHeight;
+        
+        return Column(
+          children: [
+            // Header section
+            Padding(
+              padding: EdgeInsets.all(isCompact ? 12 : 24),
+              child: Column(
+                children: [
+                  Text(
+                    'Choose Your Companion! 🎭',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: isTiny ? 18 : (isCompact ? 20 : 24),
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: isTiny ? 2 : (isCompact ? 4 : 8)),
+                  Text(
+                    'Tap a character to see them in action!',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: isTiny ? 12 : (isCompact ? 13 : 14),
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: isTiny ? 8 : (isCompact ? 12 : 16)),
 
-          // Animation control buttons
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildAnimationButton('Idle', CharacterAnimation.idle, '😊', isCompact),
-              _buildAnimationButton('Walk', CharacterAnimation.walking, '🚶', isCompact),
-              _buildAnimationButton('Jump', CharacterAnimation.jumping, '🦘', isCompact),
-              _buildAnimationButton(
-                  'Celebrate', CharacterAnimation.celebrating, '🎉', isCompact),
-            ],
-          ),
-          ),
-          SizedBox(height: isCompact ? 12 : 24),
-
-          // Character grid with animated previews
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: isCompact ? 12 : 16,
-              mainAxisSpacing: isCompact ? 12 : 16,
-              childAspectRatio: 0.75,
+                  // Animation control buttons
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildAnimationButton('Idle', CharacterAnimation.idle, '😊', isCompact),
+                        _buildAnimationButton('Walk', CharacterAnimation.walking, '🚶', isCompact),
+                        _buildAnimationButton('Jump', CharacterAnimation.jumping, '🦘', isCompact),
+                        _buildAnimationButton(
+                            'Celebrate', CharacterAnimation.celebrating, '🎉', isCompact),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            itemCount: _characters.length,
-            itemBuilder: (context, index) {
+
+            // Character grid - fits available space
+            Expanded(
+              child: GridView.builder(
+                padding: EdgeInsets.symmetric(horizontal: isCompact ? 12 : 24),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: isCompact ? 12 : 16,
+                  mainAxisSpacing: isCompact ? 12 : 16,
+                  childAspectRatio: 0.75,
+                ),
+                itemCount: _characters.length,
+                itemBuilder: (context, index) {
               final character = _characters[index];
               final isSelected = _selectedCharacter == character['id'];
 
@@ -743,10 +754,17 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               );
             },
           ),
-
-          // Selected character description
-          SizedBox(height: isCompact ? 8 : 16),
-          AnimatedSwitcher(
+        ),
+        
+        // Selected character description
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            isCompact ? 12 : 24,
+            isTiny ? 4 : (isCompact ? 8 : 16),
+            isCompact ? 12 : 24,
+            isCompact ? 12 : 24,
+          ),
+          child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             child: Container(
               key: ValueKey(_selectedCharacter),
@@ -761,14 +779,16 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 _characters.firstWhere(
                     (c) => c['id'] == _selectedCharacter)['description'],
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: isCompact ? 13 : 14,
+                      fontSize: isTiny ? 12 : (isCompact ? 13 : 14),
                     ),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
         );
       },
     );
@@ -833,79 +853,88 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 600;
+        final isTiny = constraints.maxHeight < 500;
         
-        return SingleChildScrollView(
-      padding: EdgeInsets.all(isCompact ? 12 : 24),
-      child: Column(
-        children: [
-          // Large animated preview
-          AnimatedCharacter(
-            character: _selectedCharacter,
-            skinColor: _selectedColor,
-            size: 120,
-            animation: CharacterAnimation.celebrating,
-            showParticles: true,
-          ),
-          const SizedBox(height: 24),
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Spacer(flex: 1),
+            
+            // Large animated preview
+            AnimatedCharacter(
+              character: _selectedCharacter,
+              skinColor: _selectedColor,
+              size: isTiny ? 100 : (isCompact ? 120 : 140),
+              animation: CharacterAnimation.celebrating,
+              showParticles: true,
+            ),
+            SizedBox(height: isTiny ? 12 : (isCompact ? 16 : 24)),
 
-          Text(
-            'Pick Your Style! 🎨',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Choose a color for your $_selectedCharacter',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-          ),
-          const SizedBox(height: 32),
-
-          // Color options
-          Wrap(
-            spacing: isCompact ? 12 : 16,
-            runSpacing: isCompact ? 12 : 16,
-            alignment: WrapAlignment.center,
-            children: colors.map((color) {
-              final isSelected = _selectedColor == color;
-              final colorValue =
-                  Color(int.parse('0xFF${color.replaceFirst('#', '')}'));
-
-              return GestureDetector(
-                onTap: () {
-                  setState(() => _selectedColor = color);
-                  HapticFeedback.selectionClick();
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: isCompact ? 50 : 70,
-                  height: isCompact ? 50 : 70,
-                  decoration: BoxDecoration(
-                    color: colorValue,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected ? AppColors.tertiary : Colors.white,
-                      width: isSelected ? 4 : 3,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colorValue.withValues(alpha: isSelected ? 0.5 : 0.3),
-                        blurRadius: isSelected ? 12 : 8,
-                        spreadRadius: isSelected ? 3 : 0,
-                      ),
-                    ],
+            Text(
+              'Pick Your Style! 🎨',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: isTiny ? 18 : (isCompact ? 20 : 24),
                   ),
-                  child: isSelected
-                      ? Icon(Icons.check, color: Colors.white, size: isCompact ? 24 : 32)
-                      : null,
+            ),
+            SizedBox(height: isTiny ? 4 : 8),
+            Text(
+              'Choose a color for your $_selectedCharacter',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: isTiny ? 12 : (isCompact ? 13 : 14),
+                  ),
+            ),
+            SizedBox(height: isTiny ? 16 : (isCompact ? 20 : 32)),
+
+            // Color options
+            Flexible(
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: isCompact ? 12 : 16,
+                  runSpacing: isCompact ? 12 : 16,
+                  alignment: WrapAlignment.center,
+                  children: colors.map((color) {
+                    final isSelected = _selectedColor == color;
+                    final colorValue =
+                        Color(int.parse('0xFF${color.replaceFirst('#', '')}'));
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => _selectedColor = color);
+                        HapticFeedback.selectionClick();
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: isCompact ? 50 : 70,
+                        height: isCompact ? 50 : 70,
+                        decoration: BoxDecoration(
+                          color: colorValue,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected ? AppColors.tertiary : Colors.white,
+                            width: isSelected ? 4 : 3,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colorValue.withValues(alpha: isSelected ? 0.5 : 0.3),
+                              blurRadius: isSelected ? 12 : 8,
+                              spreadRadius: isSelected ? 3 : 0,
+                            ),
+                          ],
+                        ),
+                        child: isSelected
+                            ? Icon(Icons.check, color: Colors.white, size: isCompact ? 24 : 32)
+                            : null,
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+              ),
+            ),
+            
+            const Spacer(flex: 1),
+          ],
         );
       },
     );
