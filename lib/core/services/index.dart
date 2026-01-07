@@ -9,3 +9,4 @@ export 'shop_service.dart';
 export 'adaptive_difficulty_service.dart';
 export 'audio_manager.dart';
 export 'cosmetic_unlock_service.dart';
+export 'service_registry.dart';

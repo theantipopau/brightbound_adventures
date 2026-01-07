@@ -10,17 +10,28 @@ class SkillProvider extends ChangeNotifier {
   
   final Map<String, Skill> _skills = {};
   bool _isInitialized = false;
+  bool _isInitializing = false;
 
   SkillProvider(this._storageService);
 
   bool get isInitialized => _isInitialized;
+  bool get isInitializing => _isInitializing;
   
   Map<String, Skill> get skills => _skills;
 
   /// Initialize skills from storage or create new ones
+  /// 
+  /// This is now lazy-loaded on first zone entry to avoid blocking app startup.
+  /// Multiple calls are safe—will only initialize once.
   Future<void> initializeSkills() async {
-    // Try to load existing skills
+    // Already initialized or currently initializing - skip
+    if (_isInitialized || _isInitializing) return;
+
+    _isInitializing = true;
+    notifyListeners();
+
     try {
+      // Try to load existing skills from storage
       final existingSkills = await _storageService.getAllSkills();
       if (existingSkills.isNotEmpty) {
         for (final skill in existingSkills) {
@@ -30,13 +41,16 @@ class SkillProvider extends ChangeNotifier {
         // First time - seed with all skills from database
         await _seedSkillsFromDatabase();
       }
+      _isInitialized = true;
     } catch (e) {
+      debugPrint('Error initializing skills: $e');
       // Error loading - seed with defaults
       await _seedSkillsFromDatabase();
+      _isInitialized = true;
+    } finally {
+      _isInitializing = false;
+      notifyListeners();
     }
-
-    _isInitialized = true;
-    notifyListeners();
   }
 
   /// Seed skills from the curriculum database

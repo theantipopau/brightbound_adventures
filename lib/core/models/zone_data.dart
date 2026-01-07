@@ -1,7 +1,8 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 /// Data class for zone information in the world map
-class ZoneData {
+class ZoneData extends Equatable {
   final String id;
   final String name;
   final String emoji;
@@ -21,4 +22,16 @@ class ZoneData {
     required this.order,
     required this.requiredStars,
   });
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        emoji,
+        color,
+        position,
+        description,
+        order,
+        requiredStars,
+      ];
 }

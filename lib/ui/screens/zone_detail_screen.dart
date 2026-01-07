@@ -32,6 +32,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Trigger lazy initialization of skills when zone is first entered
+    Future.microtask(() {
+      context.read<SkillProvider>().initializeSkills();
+    });
   }
 
   @override
@@ -45,8 +49,18 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       body: Consumer<SkillProvider>(
         builder: (context, skillProvider, _) {
           if (!skillProvider.isInitialized) {
-            return const Center(
-              child: CircularProgressIndicator(),
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading skills...',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
             );
           }
 

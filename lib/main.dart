@@ -8,51 +8,29 @@ import 'package:brightbound_adventures/ui/screens/index.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize storage
-  final storageService = LocalStorageService();
-  await storageService.initializeHive();
-
-  // Initialize achievement service
-  final achievementService = AchievementService();
-  await achievementService.initialize();
-
-  // Initialize shop service
-  final shopService = ShopService();
-  await shopService.initialize();
-
-  // Initialize adaptive difficulty service
-  final adaptiveDifficultyService = AdaptiveDifficultyService();
-  await adaptiveDifficultyService.initialize();
-  
-  // Initialize audio manager
-  final audioManager = AudioManager();
-  await audioManager.initialize();
-  
-  // Initialize cosmetic unlock service
-  final cosmeticUnlockService = CosmeticUnlockService();
+  // Initialize all services via registry
+  final registry = ServiceRegistry();
+  await registry.initializeAll();
 
   runApp(
     MultiProvider(
       providers: [
-        Provider<LocalStorageService>(create: (_) => storageService),
-        ChangeNotifierProvider<AchievementService>.value(value: achievementService),
-        ChangeNotifierProvider<ShopService>.value(value: shopService),
-        ChangeNotifierProvider<AdaptiveDifficultyService>.value(value: adaptiveDifficultyService),
-        ChangeNotifierProvider<AudioManager>.value(value: audioManager),
-        ChangeNotifierProvider<CosmeticUnlockService>.value(value: cosmeticUnlockService),
+        Provider<LocalStorageService>(create: (_) => registry.storage),
+        ChangeNotifierProvider<AchievementService>.value(value: registry.achievements),
+        ChangeNotifierProvider<ShopService>.value(value: registry.shop),
+        ChangeNotifierProvider<AdaptiveDifficultyService>.value(value: registry.adaptiveDifficulty),
+        ChangeNotifierProvider<AudioManager>.value(value: registry.audioManager),
+        ChangeNotifierProvider<CosmeticUnlockService>.value(value: registry.cosmeticUnlock),
         ChangeNotifierProvider<AvatarProvider>(
           create: (_) {
             final provider = AvatarProvider();
-            provider.setStorageService(storageService);
+            provider.setStorageService(registry.storage);
             return provider;
           },
         ),
         ChangeNotifierProvider<SkillProvider>(
-          create: (_) {
-            final provider = SkillProvider(storageService);
-            provider.initializeSkills();
-            return provider;
-          },
+          create: (_) => SkillProvider(registry.storage),
+          // Lazy initialization: skills will be loaded on first zone entry
         ),
       ],
       child: const BrightBoundApp(),

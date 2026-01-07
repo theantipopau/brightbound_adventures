@@ -1,7 +1,8 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 /// Shop item that can be purchased with stars
-class ShopItem {
+class ShopItem extends Equatable {
   final String id;
   final String name;
   final String description;
@@ -47,6 +48,19 @@ class ShopItem {
       previewImage: previewImage ?? this.previewImage,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        description,
+        emoji,
+        category,
+        starCost,
+        isPurchased,
+        purchasedAt,
+        previewImage,
+      ];
 }
 
 enum ShopCategory {
