@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../themes/index.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -21,12 +22,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    // TODO: Load settings from local storage
-    // For now, using defaults
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _soundEnabled = prefs.getBool('soundEnabled') ?? true;
+        _musicEnabled = prefs.getBool('musicEnabled') ?? true;
+        _hapticEnabled = prefs.getBool('hapticEnabled') ?? true;
+        _difficulty = prefs.getDouble('difficulty') ?? 1.0;
+      });
+    } catch (e) {
+      debugPrint('Error loading settings: $e');
+    }
   }
 
   Future<void> _saveSetting(String key, dynamic value) async {
-    // TODO: Save setting to local storage
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (value is bool) {
+        await prefs.setBool(key, value);
+      } else if (value is double) {
+        await prefs.setDouble(key, value);
+      } else if (value is int) {
+        await prefs.setInt(key, value);
+      } else if (value is String) {
+        await prefs.setString(key, value);
+      }
+      debugPrint('Saved setting: $key = $value');
+    } catch (e) {
+      debugPrint('Error saving setting: $e');
+    }
   }
 
   @override

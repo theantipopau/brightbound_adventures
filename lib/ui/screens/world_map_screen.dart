@@ -11,6 +11,9 @@ import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:brightbound_adventures/ui/widgets/daily_challenge_card.dart';
 import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
+import 'package:brightbound_adventures/ui/painters/shadow_painter.dart';
+import 'package:brightbound_adventures/ui/painters/terrain_painter.dart';
+import 'package:brightbound_adventures/ui/painters/path_painter.dart';
 
 /// Enhanced World Map with 3D-style visuals and progressive unlocking
 class WorldMapScreen extends StatefulWidget {
@@ -113,6 +116,16 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     ),
   ];
 
+  // Zone elevation map (Z-height for true 3D)
+  final Map<String, double> _zoneElevations = {
+    'word-woods': 0.0,
+    'number-nebula': 0.5,
+    'math-facts': 0.3,
+    'story-springs': 0.8,
+    'puzzle-peaks': 1.2,
+    'adventure-arena': 1.5,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -122,8 +135,17 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   void _initIsometricPositions() {
-    // Convert all zones to isometric grid positions
-    _zoneIsometricPositions = WorldMapIsometricHelper.getZonePositions(_zones);
+    // Convert all zones to isometric grid positions with elevation
+    _zoneIsometricPositions = {};
+    for (final zone in _zones) {
+      final basePos = WorldMapIsometricHelper.offsetToIsometric(zone.position);
+      final elevation = _zoneElevations[zone.id] ?? 0.0;
+      _zoneIsometricPositions[zone.id] = IsometricPosition(
+        basePos.x,
+        basePos.y,
+        elevation,
+      );
+    }
   }
 
   Future<void> _detectDevice() async {
@@ -308,17 +330,40 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   SafeArea(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
+                        // Calculate avatar position for shadows
+                        IsometricPosition? avatarIsoPos;
+                        if (_isMoving && _targetZoneIndex != null) {
+                          final currentZone = _zones[_currentZoneIndex];
+                          final targetZone = _zones[_targetZoneIndex!];
+                          final startIso = _zoneIsometricPositions[currentZone.id]!;
+                          final endIso = _zoneIsometricPositions[targetZone.id]!;
+                          double t = Curves.easeInOutCubic.transform(_avatarMoveController.value);
+                          avatarIsoPos = startIso.lerp(endIso, t);
+                        } else {
+                          final currentZone = _zones[_currentZoneIndex];
+                          avatarIsoPos = _zoneIsometricPositions[currentZone.id];
+                        }
+                        
                         return Stack(
                           children: [
                             // Terrain patches showing biome regions under each zone
                             CustomPaint(
-                              painter: _TerrainPainter(zones: _zones),
+                              painter: TerrainPainter(zones: _zones),
+                              size: Size(constraints.maxWidth, constraints.maxHeight),
+                            ),
+
+                            // Shadows for 3D depth
+                            CustomPaint(
+                              painter: ShadowPainter(
+                                zones: _zones,
+                                avatarPosition: avatarIsoPos,
+                              ),
                               size: Size(constraints.maxWidth, constraints.maxHeight),
                             ),
 
                             // Animated paths between zones
                             CustomPaint(
-                              painter: _PathPainter(
+                              painter: PathPainter(
                                 zones: _zones,
                                 animation: _pathController.value,
                                 totalStars: totalStars,
@@ -539,12 +584,16 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       // Animation calculations (reused from original)
       final delay = index * 0.15;
       final progress = ((_entranceController.value - delay) / 0.4).clamp(0.0, 1.0);
+      
+      // Atmospheric perspective: fade distant zones (higher Y = further back)
+      final atmosphericOpacity = 1.0 - (zone.position.dy * 0.3); // 0-30% fade for depth
+      final finalOpacity = progress * atmosphericOpacity;
           
       return Positioned(
         left: screenPos.dx - 60,
         top: screenPos.dy - 70 + (1 - progress) * 50,
         child: Opacity(
-          opacity: progress,
+          opacity: finalOpacity,
           child: _ZoneIsland(
             zone: zone,
             isUnlocked: isUnlocked,
@@ -1655,31 +1704,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 }
 
-/// Data class for zone information
-class ZoneData {
-  final String id;
-  final String name;
-  final String emoji;
-  final Color color;
-  final Offset position;
-  final String description;
-  final int order;
-  final int requiredStars;
-
-  const ZoneData({
-    required this.id,
-    required this.name,
-    required this.emoji,
-    required this.color,
-    required this.position,
-    required this.description,
-    required this.order,
-    required this.requiredStars,
-  });
-}
-
 /// Zone island widget with 3D floating effect
-class _ZoneIsland extends StatelessWidget {
+class _ZoneIsland extends StatefulWidget {
   final ZoneData zone;
   final bool isUnlocked;
   final bool isCurrentZone;
@@ -1701,36 +1727,46 @@ class _ZoneIsland extends StatelessWidget {
   });
 
   @override
+  State<_ZoneIsland> createState() => _ZoneIslandState();
+}
+
+class _ZoneIslandState extends State<_ZoneIsland> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: floatAnimation,
+      animation: widget.floatAnimation,
       builder: (context, child) {
-        final float = math.sin(floatAnimation.value * math.pi + zone.order) * 4;
+        final float = math.sin(widget.floatAnimation.value * math.pi + widget.zone.order) * 4;
         
         return Transform.translate(
           offset: Offset(0, float),
-          child: GestureDetector(
-            onTap: onTap,
-            child: Container(
-              width: 120,
-              height: 140,
-              decoration: isSelected ? BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white,
-                  width: 3,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: zone.color.withValues(alpha: 0.6),
-                    blurRadius: 15,
-                    spreadRadius: 3,
+          child: MouseRegion(
+            onEnter: (_) => setState(() => _isHovered = true),
+            onExit: (_) => setState(() => _isHovered = false),
+            child: GestureDetector(
+              onTap: widget.onTap,
+              child: Container(
+                width: 120,
+                height: 140,
+                decoration: (widget.isSelected || _isHovered) ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 3,
                   ),
-                ],
-              ) : null,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.zone.color.withValues(alpha: _isHovered ? 0.8 : 0.6),
+                      blurRadius: _isHovered ? 20 : 15,
+                      spreadRadius: _isHovered ? 5 : 3,
+                    ),
+                  ],
+                ) : null,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
                   // Island shadow
                   Positioned(
                     bottom: 0,
@@ -1755,11 +1791,11 @@ class _ZoneIsland extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            isUnlocked 
-                                ? zone.color.withValues(alpha: 0.6)
+                            widget.isUnlocked 
+                                ? widget.zone.color.withValues(alpha: 0.6)
                                 : Colors.grey.withValues(alpha: 0.4),
-                            isUnlocked
-                                ? zone.color.withValues(alpha: 0.3)
+                            widget.isUnlocked
+                                ? widget.zone.color.withValues(alpha: 0.3)
                                 : Colors.grey.withValues(alpha: 0.2),
                           ],
                         ),
@@ -1779,10 +1815,10 @@ class _ZoneIsland extends StatelessWidget {
                       decoration: BoxDecoration(
                         gradient: RadialGradient(
                           center: const Alignment(0, -0.5),
-                          colors: isUnlocked
+                          colors: widget.isUnlocked
                               ? [
-                                  zone.color.withValues(alpha: 0.9),
-                                  zone.color,
+                                  widget.zone.color.withValues(alpha: 0.9),
+                                  widget.zone.color,
                                 ]
                               : [
                                   Colors.grey.shade400,
@@ -1791,17 +1827,17 @@ class _ZoneIsland extends StatelessWidget {
                         ),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isCurrentZone 
+                          color: widget.isCurrentZone 
                               ? Colors.white 
                               : Colors.white.withValues(alpha: 0.5),
-                          width: isCurrentZone ? 4 : 2,
+                          width: widget.isCurrentZone ? 4 : 2,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: (isUnlocked ? zone.color : Colors.grey)
+                            color: (widget.isUnlocked ? widget.zone.color : Colors.grey)
                                 .withValues(alpha: 0.4),
-                            blurRadius: isCurrentZone ? 20 : 12,
-                            spreadRadius: isCurrentZone ? 4 : 2,
+                            blurRadius: widget.isCurrentZone ? 20 : 12,
+                            spreadRadius: widget.isCurrentZone ? 4 : 2,
                           ),
                         ],
                       ),
@@ -1813,14 +1849,14 @@ class _ZoneIsland extends StatelessWidget {
                           children: [
                             // Emoji or lock
                             Text(
-                              isUnlocked ? zone.emoji : '🔒',
+                              widget.isUnlocked ? widget.zone.emoji : '🔒',
                               style: TextStyle(
-                                fontSize: isUnlocked ? 28 : 22,
+                                fontSize: widget.isUnlocked ? 28 : 22,
                               ),
                             ),
                             // Zone name
                             Text(
-                              zone.name.split(' ').first,
+                              widget.zone.name.split(' ').first,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
@@ -1834,14 +1870,14 @@ class _ZoneIsland extends StatelessWidget {
                               ),
                             ),
                             // Stars progress - only show if unlocked
-                            if (isUnlocked)
+                            if (widget.isUnlocked)
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.min,
                                 children: List.generate(3, (i) {
                                   // Safely calculate stars - avoid division by zero
-                                  final maxStarsPerSection = totalSkills > 0 ? totalSkills / 3 : 1;
-                                  final filled = i < (starsEarned / maxStarsPerSection).ceil();
+                                  final maxStarsPerSection = widget.totalSkills > 0 ? widget.totalSkills / 3 : 1;
+                                  final filled = i < (widget.starsEarned / maxStarsPerSection).ceil();
                                   return Icon(
                                     filled ? Icons.star : Icons.star_border,
                                     size: 10,
@@ -1856,7 +1892,7 @@ class _ZoneIsland extends StatelessWidget {
                   ),
                   
                   // Current zone indicator
-                  if (isCurrentZone)
+                  if (widget.isCurrentZone)
                     Positioned(
                       top: 0,
                       child: Container(
@@ -1885,7 +1921,7 @@ class _ZoneIsland extends StatelessWidget {
                     ),
                   
                   // Locked indicator
-                  if (!isUnlocked)
+                  if (!widget.isUnlocked)
                     Positioned(
                       top: 5,
                       child: Container(
@@ -1898,7 +1934,7 @@ class _ZoneIsland extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '${zone.requiredStars}⭐',
+                          '${widget.zone.requiredStars}⭐',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
@@ -1911,178 +1947,10 @@ class _ZoneIsland extends StatelessWidget {
               ),
             ),
           ),
+          ),
         );
       },
     );
-  }
-}
-
-/// Animated path painter connecting zones
-class _TerrainPainter extends CustomPainter {
-  final List<ZoneData> zones;
-  
-  _TerrainPainter({required this.zones});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (final zone in zones) {
-      final isoPos = WorldMapIsometricHelper.offsetToIsometric(zone.position);
-      final screenPos = WorldMapIsometricHelper.gridToScreen(isoPos, size);
-      
-      _drawBiomePatch(canvas, screenPos, zone.color, zone.id);
-    }
-  }
-
-  void _drawBiomePatch(Canvas canvas, Offset center, Color color, String zoneId) {
-    // 1. Large soft glow for ambient biome color
-    final glowPaint = Paint()
-      ..color = color.withValues(alpha: 0.25)
-      ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30); 
-
-    // Visual center adjusted for the 3D 'floor' (below where the island floats)
-    final floorCenter = center + const Offset(0, 40);
-
-    canvas.drawOval(
-      Rect.fromCenter(center: floorCenter, width: 350, height: 200),
-      glowPaint,
-    );
-    
-    // 2. Isometric Terrain Base (Rhombus shape to suggest grid/land)
-    final terrainPaint = Paint()
-      ..color = color.withValues(alpha: 0.15)
-      ..style = PaintingStyle.fill;
-      
-    final path = Path();
-    const double width = 140; // Half width magnitude
-    const double height = 70;  // Half height magnitude
-    
-    path.moveTo(floorCenter.dx, floorCenter.dy - height); // Top
-    path.lineTo(floorCenter.dx + width, floorCenter.dy);    // Right
-    path.lineTo(floorCenter.dx, floorCenter.dy + height);   // Bottom
-    path.lineTo(floorCenter.dx - width, floorCenter.dy);    // Left
-    path.close();
-    
-    canvas.drawPath(path, terrainPaint);
-
-    // 3. Terrain Detail Rings (Ripples)
-    final ringPaint = Paint()
-      ..color = color.withValues(alpha: 0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-      
-    canvas.drawPath(path, ringPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// Animated path painter connecting zones
-class _PathPainter extends CustomPainter {
-  final List<ZoneData> zones;
-  final double animation;
-  final int totalStars;
-
-  _PathPainter({
-    required this.zones,
-    required this.animation,
-    required this.totalStars,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (int i = 0; i < zones.length - 1; i++) {
-      // Use isometric conversion for path positions
-      final start = WorldMapIsometricHelper.gridToScreen(
-        WorldMapIsometricHelper.offsetToIsometric(zones[i].position),
-        size,
-      );
-      final end = WorldMapIsometricHelper.gridToScreen(
-        WorldMapIsometricHelper.offsetToIsometric(zones[i + 1].position),
-        size,
-      );
-      
-      final isUnlocked = totalStars >= zones[i + 1].requiredStars;
-      
-      // Draw path
-      final pathPaint = Paint()
-        ..color = isUnlocked 
-            ? Colors.amber.withValues(alpha: 0.6)
-            : Colors.grey.withValues(alpha: 0.3)
-        ..strokeWidth = 8
-        ..strokeCap = StrokeCap.round
-        ..style = PaintingStyle.stroke;
-
-      // Create curved path (adjusted for iso perspective)
-      final path = Path();
-      path.moveTo(start.dx, start.dy);
-      
-      // Midpoint for curve control
-      final midX = (start.dx + end.dx) / 2;
-      final midY = (start.dy + end.dy) / 2;
-      
-      // Lift the curve up a bit (negative Y) to simulate an arc if desired, 
-      // or just direct line if that looks better.
-      // previous was: min(start.dy, end.dy) - 30.
-      final controlX = midX;
-      final controlY = midY - 30;
-      
-      path.quadraticBezierTo(controlX, controlY, end.dx, end.dy);
-      
-      // Draw dashed path
-      // OPTIMIZATION: Only drawing simple dashed path if needed, or skip complex metrics
-      // For web performance, simply drawing the path with a dash effect is better than extractPath
-      // But standard Canvas doesn't support dash natively without path metrics manually.
-      // Optimization: Increase dash gap or cache metrics? 
-      // Since this repaints constantly, let's simplify.
-      // Use simple path for locked, dashed for unlocked?
-      
-      // Note: _createDashedPath is expensive (computeMetrics).
-      // We are calling this inside a loop inside paint() which runs every frame.
-      
-      // OPTIMIZED APPROACH: 
-      // 1. Draw solid line for background (simpler)
-      // 2. OR Reduce resolution of dash
-      
-      // Let's optimize _createDashedPath to be less precise or skip it during animation if FPS low?
-      // Better: Just draw solid line with lower opacity for path track
-      // and moving dots for activity.
-      
-      // New style: Solid translucent track + Moving Dots
-      // This eliminates the expensive _createDashedPath call every frame.
-      
-      canvas.drawPath(path, pathPaint); // Draw solid path instead of dashed (Performance Fix)
-      
-      // Draw animated dots on unlocked paths
-      if (isUnlocked) {
-        final dotPaint = Paint()
-          ..color = Colors.amber
-          ..style = PaintingStyle.fill;
-        
-        // We still need metrics for the dot position, but only ONE extraction p/frame
-        final pathMetrics = path.computeMetrics().first;
-        final progress = (animation + i * 0.2) % 1.0;
-        final pos = pathMetrics.getTangentForOffset(
-          pathMetrics.length * progress,
-        )?.position;
-        
-        if (pos != null) {
-          canvas.drawCircle(pos, 6, dotPaint);
-        }
-      }
-    }
-  }
-
-  // Deprecated for performance - removed usage
-  // Path _createDashedPath(Path source, double dashLength, double gapLength) {
-  //   return source;
-  // }
-
-  @override
-  bool shouldRepaint(covariant _PathPainter oldDelegate) {
-    return oldDelegate.animation != animation || 
-           oldDelegate.totalStars != totalStars;
   }
 }
 
