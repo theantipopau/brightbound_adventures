@@ -53,8 +53,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Word Woods',
       emoji: '🌲',
       color: AppColors.wordWoodsColor,
-      // Isometric: Start (Bottom Center-Left)
-      position: Offset(0.5, 0.9), 
+      // Isometric: Start (Bottom Front)
+      position: Offset(0.3, 0.85), 
       description: 'Master letters & reading!',
       order: 0,
       requiredStars: 0,
@@ -65,7 +65,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       emoji: '🌌',
       color: AppColors.numberNebulaColor,
       // Isometric: Middle Left
-      position: Offset(0.1, 0.6),
+      position: Offset(0.15, 0.55),
       description: 'Explore math & numbers!',
       order: 1,
       requiredStars: 3,
@@ -75,8 +75,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Math Facts',
       emoji: '🔢',
       color: Color(0xFFFF6B6B),
-      // Isometric: Bottom Right
-      position: Offset(0.9, 0.7),
+      // Isometric: Middle Right
+      position: Offset(0.75, 0.65),
       description: 'Master multiplication & addition!',
       order: 2,
       requiredStars: 6,
@@ -87,7 +87,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       emoji: '📖',
       color: AppColors.storyspringsColor,
       // Isometric: Upper Left (Back Left)
-      position: Offset(0.2, 0.2),
+      position: Offset(0.25, 0.35),
       description: 'Create amazing stories!',
       order: 3,
       requiredStars: 10,
@@ -97,8 +97,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Puzzle Peaks',
       emoji: '🧩',
       color: AppColors.puzzlePeaksColor,
-      // Isometric: Upper  Right (Back Right)
-      position: Offset(0.8, 0.3),
+      // Isometric: Upper Right (Back Right)
+      position: Offset(0.70, 0.30),
       description: 'Solve tricky puzzles!',
       order: 4,
       requiredStars: 15,
@@ -109,7 +109,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       emoji: '🏆',
       color: AppColors.adventureArenaColor,
       // Isometric: Top Center (Far Back)
-      position: Offset(0.5, 0.05),
+      position: Offset(0.50, 0.15),
       description: 'Ultimate challenges!',
       order: 5,
       requiredStars: 25,
@@ -258,9 +258,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   bool _isZoneUnlocked(int zoneIndex, int totalStars) {
-    final isUnlocked = totalStars >= _zones[zoneIndex].requiredStars;
-    debugPrint('Zone ${_zones[zoneIndex].name}: totalStars=$totalStars, required=${_zones[zoneIndex].requiredStars}, unlocked=$isUnlocked');
-    return isUnlocked;
+    return totalStars >= _zones[zoneIndex].requiredStars;
   }
 
   void _moveToZone(int targetIndex) {
