@@ -90,51 +90,73 @@ class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderSt
                 ),
               ),
 
-              // Games Grid
+              // Games Grid - Responsive
               Expanded(
-                child: AnimatedBuilder(
-                  animation: _entranceController,
-                  builder: (context, child) {
-                    return GridView.count(
-                      crossAxisCount: 2,
-                      padding: const EdgeInsets.all(20),
-                      mainAxisSpacing: 20,
-                      crossAxisSpacing: 20,
-                      childAspectRatio: 0.9,
-                      children: [
-                        _buildGameCard(
-                          index: 0,
-                          emoji: '🎯',
-                          title: 'Target\nPractice',
-                          description: 'Tap the targets\nbefore time runs out!',
-                          color: Colors.red,
-                          game: () => _launchGame(context, 'target_practice'),
-                        ),
-                        _buildGameCard(
-                          index: 1,
-                          emoji: '🧠',
-                          title: 'Memory\nMatch',
-                          description: 'Find matching\npairs quickly!',
-                          color: Colors.deepPurple,
-                          game: () => _launchGame(context, 'memory_match'),
-                        ),
-                        _buildGameCard(
-                          index: 2,
-                          emoji: '⏱️',
-                          title: 'Speed\nMath',
-                          description: 'Solve problems\nas fast as you can!',
-                          color: Colors.orange,
-                          game: () => _launchGame(context, 'speed_round'),
-                        ),
-                        _buildGameCard(
-                          index: 3,
-                          emoji: '🎨',
-                          title: 'Color\nMatch',
-                          description: 'Match word color\nwith the name!',
-                          color: Colors.cyan,
-                          game: () => _launchGame(context, 'color_splash'),
-                        ),
-                      ],
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Determine grid layout based on available space
+                    final width = constraints.maxWidth;
+                    final height = constraints.maxHeight;
+                    final isWide = width > 600;
+                    final crossAxisCount = isWide ? 2 : 1;
+                    
+                    // Calculate card size to fit without scrolling
+                    final padding = 20.0;
+                    final spacing = 20.0;
+                    final availableWidth = width - (padding * 2) - (isWide ? spacing : 0);
+                    final cardWidth = availableWidth / crossAxisCount;
+                    final availableHeight = height - (padding * 2);
+                    final rowCount = (4 / crossAxisCount).ceil();
+                    final cardHeight = (availableHeight - (spacing * (rowCount - 1))) / rowCount;
+                    
+                    // Use the smaller dimension to maintain aspect ratio
+                    final cardSize = math.min(cardWidth * 0.9, cardHeight);
+                    
+                    return AnimatedBuilder(
+                      animation: _entranceController,
+                      builder: (context, child) {
+                        return GridView.count(
+                          crossAxisCount: crossAxisCount,
+                          padding: EdgeInsets.all(padding),
+                          mainAxisSpacing: spacing,
+                          crossAxisSpacing: spacing,
+                          childAspectRatio: cardWidth / cardSize,
+                          children: [
+                            _buildGameCard(
+                              index: 0,
+                              emoji: '🎯',
+                              title: 'Target\nPractice',
+                              description: 'Tap the targets\nbefore time runs out!',
+                              color: Colors.red,
+                              game: () => _launchGame(context, 'target_practice'),
+                            ),
+                            _buildGameCard(
+                              index: 1,
+                              emoji: '🧠',
+                              title: 'Memory\nMatch',
+                              description: 'Find matching\npairs quickly!',
+                              color: Colors.deepPurple,
+                              game: () => _launchGame(context, 'memory_match'),
+                            ),
+                            _buildGameCard(
+                              index: 2,
+                              emoji: '⏱️',
+                              title: 'Speed\nMath',
+                              description: 'Solve problems\nas fast as you can!',
+                              color: Colors.orange,
+                              game: () => _launchGame(context, 'speed_round'),
+                            ),
+                            _buildGameCard(
+                              index: 3,
+                              emoji: '🎨',
+                              title: 'Color\nMatch',
+                              description: 'Match word color\nwith the name!',
+                              color: Colors.cyan,
+                              game: () => _launchGame(context, 'color_splash'),
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
                 ),

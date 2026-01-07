@@ -9,7 +9,6 @@ import 'package:brightbound_adventures/core/utils/isometric_engine.dart';
 import 'package:brightbound_adventures/core/utils/world_map_isometric_helper.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
-import 'package:brightbound_adventures/ui/widgets/daily_challenge_card.dart';
 import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
 import 'package:brightbound_adventures/ui/screens/daily_challenge_screen.dart';
 import 'package:brightbound_adventures/ui/screens/mini_games_screen.dart';
@@ -48,15 +47,15 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   // Isometric 3D state
   late Map<String, IsometricPosition> _zoneIsometricPositions;
 
-  // Zone definitions with progression order
+  // Zone definitions with progression order - MAXIMALLY SPREAD
   final List<ZoneData> _zones = [
     const ZoneData(
       id: 'word-woods',
       name: 'Word Woods',
       emoji: '🌲',
       color: AppColors.wordWoodsColor,
-      // Isometric: Front bottom left corner
-      position: Offset(0.05, 0.85), 
+      // Isometric: Front LEFT corner - starter zone
+      position: Offset(0.02, 0.95), 
       description: 'Master letters & reading!',
       order: 0,
       requiredStars: 0,
@@ -66,8 +65,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Number Nebula',
       emoji: '🌌',
       color: AppColors.numberNebulaColor,
-      // Isometric: Left edge middle
-      position: Offset(0.02, 0.55),
+      // Isometric: Front RIGHT corner
+      position: Offset(0.98, 0.90),
       description: 'Explore math & numbers!',
       order: 1,
       requiredStars: 3,
@@ -77,8 +76,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Math Facts',
       emoji: '🔢',
       color: Color(0xFFFF6B6B),
-      // Isometric: Right edge middle
-      position: Offset(0.92, 0.60),
+      // Isometric: Middle LEFT
+      position: Offset(0.05, 0.55),
       description: 'Master multiplication & addition!',
       order: 2,
       requiredStars: 6,
@@ -88,8 +87,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Story Springs',
       emoji: '📖',
       color: AppColors.storyspringsColor,
-      // Isometric: Left back area
-      position: Offset(0.08, 0.28),
+      // Isometric: Middle RIGHT
+      position: Offset(0.95, 0.50),
       description: 'Create amazing stories!',
       order: 3,
       requiredStars: 10,
@@ -99,8 +98,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Puzzle Peaks',
       emoji: '🧩',
       color: AppColors.puzzlePeaksColor,
-      // Isometric: Right back corner
-      position: Offset(0.95, 0.22),
+      // Isometric: Back LEFT
+      position: Offset(0.10, 0.15),
       description: 'Solve tricky puzzles!',
       order: 4,
       requiredStars: 15,
@@ -110,8 +109,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Adventure Arena',
       emoji: '🏆',
       color: AppColors.adventureArenaColor,
-      // Isometric: Far back center
-      position: Offset(0.50, 0.08),
+      // Isometric: Back RIGHT corner - final zone
+      position: Offset(0.90, 0.05),
       description: 'Ultimate challenges!',
       order: 5,
       requiredStars: 25,
@@ -1539,7 +1538,7 @@ class _ZoneIslandState extends State<_ZoneIsland> {
     return AnimatedBuilder(
       animation: widget.floatAnimation,
       builder: (context, child) {
-        final float = math.sin(widget.floatAnimation.value * math.pi + widget.zone.order) * 4;
+        final float = math.sin(widget.floatAnimation.value * math.pi + widget.zone.order) * 6; // Increased float
         
         return Transform.translate(
           offset: Offset(0, float),
@@ -1549,143 +1548,201 @@ class _ZoneIslandState extends State<_ZoneIsland> {
             child: GestureDetector(
               onTap: widget.onTap,
               child: Container(
-                width: 120,
-                height: 140,
+                width: 140, // Increased from 120
+                height: 160, // Increased from 140
                 decoration: (widget.isSelected || _isHovered) ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: Colors.white,
-                    width: 3,
+                    width: 4,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: widget.zone.color.withValues(alpha: _isHovered ? 0.8 : 0.6),
-                      blurRadius: _isHovered ? 20 : 15,
-                      spreadRadius: _isHovered ? 5 : 3,
+                      color: widget.zone.color.withValues(alpha: _isHovered ? 0.9 : 0.7),
+                      blurRadius: _isHovered ? 30 : 20,
+                      spreadRadius: _isHovered ? 8 : 5,
                     ),
                   ],
                 ) : null,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                  // Island shadow
+                  // Enhanced island shadow with depth
                   Positioned(
                     bottom: 0,
                     child: Container(
-                      width: 90,
-                      height: 20,
+                      width: 100,
+                      height: 25,
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(45),
+                        gradient: RadialGradient(
+                          colors: [
+                            Colors.black.withValues(alpha: 0.25),
+                            Colors.black.withValues(alpha: 0.05),
+                            Colors.transparent,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(50),
                       ),
                     ),
                   ),
                   
-                  // Island base (3D effect)
+                  // Island base with better 3D effect
                   Positioned(
-                    bottom: 15,
+                    bottom: 18,
                     child: Container(
-                      width: 100,
-                      height: 30,
+                      width: 115,
+                      height: 35,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
                             widget.isUnlocked 
-                                ? widget.zone.color.withValues(alpha: 0.6)
-                                : Colors.grey.withValues(alpha: 0.4),
+                                ? widget.zone.color.withValues(alpha: 0.7)
+                                : Colors.grey.withValues(alpha: 0.5),
                             widget.isUnlocked
-                                ? widget.zone.color.withValues(alpha: 0.3)
-                                : Colors.grey.withValues(alpha: 0.2),
+                                ? widget.zone.color.withValues(alpha: 0.4)
+                                : Colors.grey.withValues(alpha: 0.3),
                           ],
                         ),
                         borderRadius: const BorderRadius.vertical(
                           bottom: Radius.circular(50),
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                   
-                  // Main island body
+                  // Main island body with glow
                   Positioned(
-                    bottom: 25,
+                    bottom: 30,
                     child: Container(
-                      width: 100,
-                      height: 85,
+                      width: 115,
+                      height: 100,
                       decoration: BoxDecoration(
                         gradient: RadialGradient(
                           center: const Alignment(0, -0.5),
                           colors: widget.isUnlocked
                               ? [
-                                  widget.zone.color.withValues(alpha: 0.9),
+                                  widget.zone.color.withValues(alpha: 0.95),
                                   widget.zone.color,
+                                  widget.zone.color.withValues(alpha: 0.85),
                                 ]
                               : [
-                                  Colors.grey.shade400,
+                                  Colors.grey.shade300,
+                                  Colors.grey.shade500,
                                   Colors.grey.shade600,
                                 ],
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: widget.isCurrentZone 
                               ? Colors.white 
-                              : Colors.white.withValues(alpha: 0.5),
-                          width: widget.isCurrentZone ? 4 : 2,
+                              : Colors.white.withValues(alpha: 0.6),
+                          width: widget.isCurrentZone ? 5 : 3,
                         ),
                         boxShadow: [
+                          // Inner glow
                           BoxShadow(
                             color: (widget.isUnlocked ? widget.zone.color : Colors.grey)
-                                .withValues(alpha: 0.4),
-                            blurRadius: widget.isCurrentZone ? 20 : 12,
-                            spreadRadius: widget.isCurrentZone ? 4 : 2,
+                                .withValues(alpha: 0.6),
+                            blurRadius: widget.isCurrentZone ? 25 : 15,
+                            spreadRadius: widget.isCurrentZone ? 6 : 3,
+                          ),
+                          // Outer shadow for depth
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
+                        borderRadius: BorderRadius.circular(21),
+                        child: Stack(
                           children: [
-                            // Emoji or lock
-                            Text(
-                              widget.isUnlocked ? widget.zone.emoji : '🔒',
-                              style: TextStyle(
-                                fontSize: widget.isUnlocked ? 28 : 22,
-                              ),
-                            ),
-                            // Zone name
-                            Text(
-                              widget.zone.name.split(' ').first,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withValues(alpha: 0.3),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Stars progress - only show if unlocked
+                            // Shimmer effect for unlocked zones
                             if (widget.isUnlocked)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: List.generate(3, (i) {
-                                  // Safely calculate stars - avoid division by zero
-                                  final maxStarsPerSection = widget.totalSkills > 0 ? widget.totalSkills / 3 : 1;
-                                  final filled = i < (widget.starsEarned / maxStarsPerSection).ceil();
-                                  return Icon(
-                                    filled ? Icons.star : Icons.star_border,
-                                    size: 10,
-                                    color: Colors.amber,
-                                  );
-                                }),
+                              Positioned.fill(
+                                child: AnimatedBuilder(
+                                  animation: widget.floatAnimation,
+                                  builder: (context, child) {
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Colors.white.withValues(alpha: 0.0),
+                                            Colors.white.withValues(alpha: 0.15),
+                                            Colors.white.withValues(alpha: 0.0),
+                                          ],
+                                          stops: [
+                                            widget.floatAnimation.value - 0.3,
+                                            widget.floatAnimation.value,
+                                            widget.floatAnimation.value + 0.3,
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
+                            // Content
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Emoji or lock
+                                Text(
+                                  widget.isUnlocked ? widget.zone.emoji : '🔒',
+                                  style: TextStyle(
+                                    fontSize: widget.isUnlocked ? 36 : 28, // Increased size
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                // Zone name
+                                Text(
+                                  widget.zone.name.split(' ').first,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black.withValues(alpha: 0.5),
+                                        blurRadius: 6,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Stars progress - only show if unlocked
+                                if (widget.isUnlocked)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: List.generate(3, (i) {
+                                        // Safely calculate stars - avoid division by zero
+                                        final maxStarsPerSection = widget.totalSkills > 0 ? widget.totalSkills / 3 : 1;
+                                        final filled = i < (widget.starsEarned / maxStarsPerSection).ceil();
+                                        return Icon(
+                                          filled ? Icons.star : Icons.star_border,
+                                          size: 12,
+                                          color: Colors.amber,
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                       ),

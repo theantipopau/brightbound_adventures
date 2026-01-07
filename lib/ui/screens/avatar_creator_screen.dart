@@ -920,15 +920,28 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       padding: EdgeInsets.all(isCompact ? 12 : 24),
       child: Column(
         children: [
-          // Large animated preview
-          AnimatedCharacter(
-            character: _selectedCharacter,
-            skinColor: _selectedColor,
-            size: isCompact ? 100 : 140,
-            animation: CharacterAnimation.celebrating,
-            showParticles: true,
+          // Large animated preview with enhanced visuals
+          Container(
+            padding: EdgeInsets.all(isCompact ? 16 : 24),
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                colors: [
+                  _getStepColor(_currentStep).withValues(alpha: 0.2),
+                  _getStepColor(_currentStep).withValues(alpha: 0.05),
+                  Colors.transparent,
+                ],
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: AnimatedCharacter(
+              character: _selectedCharacter,
+              skinColor: _selectedColor,
+              size: isCompact ? 120 : 180, // Increased from 100:140 to 120:180
+              animation: CharacterAnimation.celebrating,
+              showParticles: true,
+            ),
           ),
-          SizedBox(height: isCompact ? 8 : 16),
+          SizedBox(height: isCompact ? 12 : 20),
 
           // Name badge
           Container(
