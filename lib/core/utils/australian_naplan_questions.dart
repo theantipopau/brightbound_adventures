@@ -27,6 +27,7 @@ class AustralianNAPLANQuestions {
 
   static Map<String, dynamic> _year1Addition(int difficulty) {
     final scenarios = [
+      // Original scenarios
       {
         'context':
             'Mia has {a} lamingtons. She bakes {b} more. How many lamingtons does she have now?',
@@ -52,6 +53,57 @@ class AustralianNAPLANQuestions {
             'Grandma has {a} Anzac biscuits on a plate. She bakes {b} more. How many biscuits now?',
         'theme': 'food'
       },
+      // New scenarios (expansion)
+      {
+        'context':
+            'A koala ate {a} eucalyptus leaves yesterday. It ate {b} more today. How many leaves in total?',
+        'theme': 'animals'
+      },
+      {
+        'context':
+            'At the Olympics, Australia won {a} gold medals in the first week and {b} in the second. Total gold?',
+        'theme': 'sport'
+      },
+      {
+        'context':
+            'The library has {a} books about Australian animals. They get {b} new books. How many books now?',
+        'theme': 'school'
+      },
+      {
+        'context':
+            'A wombat dug {a} metres of tunnel. Then it dug {b} more metres. Total tunnel length?',
+        'theme': 'animals'
+      },
+      {
+        'context':
+            'The kookaburra had {a} friends in one tree. {b} more kookaburras joined them. How many now?',
+        'theme': 'animals'
+      },
+      {
+        'context':
+            'Sam picked {a} mangoes from the tree. Her brother picked {b} mangoes. How many in total?',
+        'theme': 'fruit'
+      },
+      {
+        'context':
+            'There are {a} children on the bus. {b} more children get on. How many children now?',
+        'theme': 'transport'
+      },
+      {
+        'context':
+            'A platypus laid {a} eggs in its burrow. A friend laid {b} more eggs nearby. How many eggs altogether?',
+        'theme': 'animals'
+      },
+      {
+        'context':
+            'The school fête had {a} stalls on Monday and {b} stalls on Tuesday. How many stalls total?',
+        'theme': 'school'
+      },
+      {
+        'context':
+            'A swimmer did {a} laps of the pool. Then did {b} more laps. Total laps completed?',
+        'theme': 'sport'
+      },
     ];
 
     final nums = _getNumberPair(difficulty, 1, 10);
@@ -71,6 +123,7 @@ class AustralianNAPLANQuestions {
 
   static Map<String, dynamic> _year1Subtraction(int difficulty) {
     final scenarios = [
+      // Original scenarios
       {
         'context':
             'Dad has {a} meat pies. The family eats {b}. How many pies are left?',
@@ -95,6 +148,57 @@ class AustralianNAPLANQuestions {
         'context':
             'Mum bought {a} Tim Tams. We ate {b} of them. How many Tim Tams remain?',
         'theme': 'food'
+      },
+      // New scenarios (expansion)
+      {
+        'context':
+            'There were {a} kangaroos in the paddock. {b} hopped away. How many kangaroos left?',
+        'theme': 'animals'
+      },
+      {
+        'context':
+            'The zoo had {a} birds. {b} birds flew away. How many birds still at the zoo?',
+        'theme': 'animals'
+      },
+      {
+        'context':
+            'You had {a} stickers. You gave {b} to your friend. How many stickers do you have now?',
+        'theme': 'collection'
+      },
+      {
+        'context':
+            'The school had {a} books. They donated {b} books to the library. How many left?',
+        'theme': 'school'
+      },
+      {
+        'context':
+            'There were {a} people at the beach. {b} people left. How many people stayed?',
+        'theme': 'beach'
+      },
+      {
+        'context':
+            'A tree had {a} leaves. The wind blew off {b} leaves. How many leaves remain?',
+        'theme': 'nature'
+      },
+      {
+        'context':
+            'You scored {a} points in the game. Your friend scored {b} less. How many points for your friend?',
+        'theme': 'games'
+      },
+      {
+        'context':
+            'There were {a} cupcakes. We ate {b} of them. How many cupcakes are left?',
+        'theme': 'food'
+      },
+      {
+        'context':
+            'A car had {a} passengers. {b} passengers got off. How many passengers left on the car?',
+        'theme': 'transport'
+      },
+      {
+        'context':
+            'The basket had {a} apples. We used {b} apples to make juice. How many apples left?',
+        'theme': 'fruit'
       },
     ];
 
@@ -189,6 +293,7 @@ class AustralianNAPLANQuestions {
 
   static Map<String, dynamic> _year3Multiplication(int difficulty) {
     final scenarios = [
+      // Original scenarios
       {
         'context':
             'Each cricket team has {a} players. There are {b} teams. How many players altogether?',
@@ -214,6 +319,57 @@ class AustralianNAPLANQuestions {
             'Each pavlova needs {a} egg whites. Making {b} pavlovas. How many eggs needed?',
         'theme': 'cooking'
       },
+      // New scenarios (expansion)
+      {
+        'context':
+            'A kangaroo can hop {a} metres in one jump. If it makes {b} jumps, how far does it go?',
+        'theme': 'animals'
+      },
+      {
+        'context':
+            'Each netball team has {a} players. There are {b} teams in the competition. Total players?',
+        'theme': 'sport'
+      },
+      {
+        'context':
+            'A lamington has {a} coconut strands. If you make {b} lamingtons, how many strands needed?',
+        'theme': 'cooking'
+      },
+      {
+        'context':
+            'The library bought {a} books for each classroom. There are {b} classrooms. Total books?',
+        'theme': 'school'
+      },
+      {
+        'context':
+            'A platypus has {a} eggs. If {b} platypuses each have eggs, how many eggs in total?',
+        'theme': 'animals'
+      },
+      {
+        'context':
+            'Each row of seats has {a} chairs. The hall has {b} rows. How many chairs in total?',
+        'theme': 'school'
+      },
+      {
+        'context':
+            'A pack of Tim Tams has {a} biscuits. How many biscuits in {b} packs?',
+        'theme': 'food'
+      },
+      {
+        'context':
+            'Each swimmer completed {a} laps. There were {b} swimmers. Total laps completed?',
+        'theme': 'sport'
+      },
+      {
+        'context':
+            'An emu can run {a} km/hour. In {b} hours, how far can it run?',
+        'theme': 'animals'
+      },
+      {
+        'context':
+            'Each tent holds {a} campers. At camp, there are {b} tents. How many campers total?',
+        'theme': 'camping'
+      },
     ];
 
     final nums = _getNumberPair(difficulty, 2, 12);
@@ -238,6 +394,7 @@ class AustralianNAPLANQuestions {
     final dividend = divisor * quotient;
 
     final scenarios = [
+      // Original scenarios
       {
         'context':
             '{a} mangoes shared equally among {b} friends. How many each?',
@@ -258,6 +415,47 @@ class AustralianNAPLANQuestions {
             '{a} swimmers divided into {b} equal lanes. Swimmers per lane?',
         'theme': 'sport'
       },
+      // New scenarios (expansion)
+      {
+        'context':
+            '{a} lamingtons are shared equally among {b} people. How many each?',
+        'theme': 'food'
+      },
+      {
+        'context':
+            '{a} points divided equally among {b} team members. Points per member?',
+        'theme': 'sport'
+      },
+      {
+        'context':
+            '{a} books need to be put on {b} shelves equally. Books per shelf?',
+        'theme': 'school'
+      },
+      {
+        'context':
+            '{a} children are divided into {b} equal groups. Children per group?',
+        'theme': 'school'
+      },
+      {
+        'context':
+            '{a} biscuits shared equally among {b} friends. How many each?',
+        'theme': 'food'
+      },
+      {
+        'context':
+            '{a} metres of rope cut into {b} equal pieces. Length of each piece?',
+        'theme': 'measurement'
+      },
+      {
+        'context':
+            '{a} crayons shared equally among {b} students. Crayons per student?',
+        'theme': 'art'
+      },
+      {
+        'context':
+            '{a} pizza slices divided equally among {b} friends. Slices per friend?',
+        'theme': 'food'
+      },
     ];
 
     final scenario = scenarios[_random.nextInt(scenarios.length)];
@@ -276,6 +474,7 @@ class AustralianNAPLANQuestions {
 
   static Map<String, dynamic> _year3Fractions(int difficulty) {
     final scenarios = [
+      // Original scenarios
       {
         'context': 'You eat 1/2 of a lamington. What fraction is left?',
         'answer': '1/2',
@@ -299,6 +498,52 @@ class AustralianNAPLANQuestions {
         'answer': '1/2',
         'theme': 'food'
       },
+      // New scenarios (expansion)
+      {
+        'context': 'A cake is cut into 6 equal pieces. You take 2 pieces. What fraction is that?',
+        'answer': '1/3',
+        'theme': 'food'
+      },
+      {
+        'context':
+            'Your class has 20 students. 5 have blue eyes. What fraction have blue eyes?',
+        'answer': '1/4',
+        'theme': 'school'
+      },
+      {
+        'context': 'A ribbon is 10 metres long. You cut off 5 metres. What fraction did you cut?',
+        'answer': '1/2',
+        'theme': 'craft'
+      },
+      {
+        'context':
+            'There are 12 biscuits in a packet. You eat 3. What fraction did you eat?',
+        'answer': '1/4',
+        'theme': 'food'
+      },
+      {
+        'context': 'A hour has 60 minutes. 15 minutes is what fraction of an hour?',
+        'answer': '1/4',
+        'theme': 'time'
+      },
+      {
+        'context':
+            'A metre has 100 centimetres. 25 centimetres is what fraction?',
+        'answer': '1/4',
+        'theme': 'measurement'
+      },
+      {
+        'context':
+            'There are 8 flowers. 4 are red and 4 are blue. Red flowers are what fraction?',
+        'answer': '1/2',
+        'theme': 'nature'
+      },
+      {
+        'context':
+            'A book has 100 pages. You read 50 pages. What fraction have you read?',
+        'answer': '1/2',
+        'theme': 'reading'
+      },
     ];
 
     final scenario = scenarios[_random.nextInt(scenarios.length)];
@@ -314,6 +559,7 @@ class AustralianNAPLANQuestions {
 
   static Map<String, dynamic> _year3Measurement(int difficulty) {
     final scenarios = [
+      // Original scenarios
       {
         'context': 'The classroom is 10 metres long. How many centimetres?',
         'answer': 1000,
@@ -341,6 +587,55 @@ class AustralianNAPLANQuestions {
             'A packet of Tim Tams weighs 200 grams. That\'s how many kilograms?',
         'answer': 0.2,
         'unit': 'kg'
+      },
+      // New scenarios (expansion)
+      {
+        'context':
+            'A kangaroo is 2 metres tall. A koala is 60 centimetres tall. Difference in centimetres?',
+        'answer': 140,
+        'unit': 'cm'
+      },
+      {
+        'context':
+            'A beach is 3 kilometres long. How many metres is that?',
+        'answer': 3000,
+        'unit': 'm'
+      },
+      {
+        'context':
+            'Your backpack weighs 2.5 kilograms. How many grams?',
+        'answer': 2500,
+        'unit': 'g'
+      },
+      {
+        'context':
+            'A milk carton holds 1 litre. How many millilitres?',
+        'answer': 1000,
+        'unit': 'mL'
+      },
+      {
+        'context':
+            'The school oval is 150 metres long and 120 metres wide. What\'s the perimeter?',
+        'answer': 540,
+        'unit': 'm'
+      },
+      {
+        'context':
+            'A lamington weighs 25 grams. How much do 10 lamingtons weigh in grams?',
+        'answer': 250,
+        'unit': 'g'
+      },
+      {
+        'context':
+            'A recipe needs 250 millilitres of milk. How much in litres?',
+        'answer': 0.25,
+        'unit': 'L'
+      },
+      {
+        'context':
+            'The Great Barrier Reef is 2,300 kilometres long. How many metres?',
+        'answer': 2300000,
+        'unit': 'm'
       },
     ];
 
@@ -375,7 +670,28 @@ class AustralianNAPLANQuestions {
   static Map<String, dynamic> _year1Spelling(int difficulty) {
     // Australian English spelling focus
     final words = {
-      1: ['mum', 'dad', 'cat', 'dog', 'sun', 'hat', 'run', 'fun', 'bed', 'red'],
+      1: [
+        'mum',
+        'dad',
+        'cat',
+        'dog',
+        'sun',
+        'hat',
+        'run',
+        'fun',
+        'bed',
+        'red',
+        'big',
+        'pig',
+        'bat',
+        'rat',
+        'mat',
+        'sit',
+        'sit',
+        'pot',
+        'hot',
+        'lot'
+      ],
       2: [
         'colour',
         'favourite',
@@ -384,7 +700,19 @@ class AustralianNAPLANQuestions {
         'theatre',
         'neighbour',
         'harbour',
-        'favour'
+        'favour',
+        'honour',
+        'travelling',
+        'cancelled',
+        'labelled',
+        'modelled',
+        'jewellery',
+        'realise',
+        'organise',
+        'recognise',
+        'practise',
+        'defence',
+        'licence'
       ],
       3: [
         'beautiful',
@@ -393,7 +721,15 @@ class AustralianNAPLANQuestions {
         'organise',
         'practise',
         'licence',
-        'defence'
+        'defence',
+        'analyse',
+        'emphasise',
+        'summarise',
+        'apologise',
+        'catastrophe',
+        'parallel',
+        'environment',
+        'government'
       ],
     };
 
@@ -410,6 +746,7 @@ class AustralianNAPLANQuestions {
 
   static Map<String, dynamic> _year1Reading(int difficulty) {
     final passages = [
+      // Original passages
       {
         'text':
             'The kangaroo hopped across the paddock. It was looking for water.',
@@ -426,6 +763,37 @@ class AustralianNAPLANQuestions {
         'text': 'Mum made lamingtons for the school fête. Everyone loved them!',
         'question': 'What did Mum make?',
         'answer': 'lamingtons',
+      },
+      // New passages (expansion)
+      {
+        'text':
+            'The koala climbed high up in the eucalyptus tree to eat leaves. It moved very slowly.',
+        'question': 'Where was the koala?',
+        'answer': 'in the eucalyptus tree',
+      },
+      {
+        'text':
+            'Ali played cricket with his friends on Saturday. They had lots of fun in the park.',
+        'question': 'What did Ali do on Saturday?',
+        'answer': 'played cricket',
+      },
+      {
+        'text':
+            'The kookaburra laughed loudly in the morning. The sound was very funny.',
+        'question': 'When did the kookaburra laugh?',
+        'answer': 'in the morning',
+      },
+      {
+        'text':
+            'Emma found a beautiful shell on Bondi Beach. It was pink and white.',
+        'question': 'Where did Emma find the shell?',
+        'answer': 'on Bondi Beach',
+      },
+      {
+        'text':
+            'At the zoo, we saw many animals. The elephant was the biggest one.',
+        'question': 'Which animal was the biggest?',
+        'answer': 'the elephant',
       },
     ];
 
