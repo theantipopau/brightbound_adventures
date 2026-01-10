@@ -2,6 +2,15 @@
  * BrightBound Adventures - Website JavaScript
  */
 
+// Register Service Worker for offline support
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.warn('Service Worker registration failed:', err);
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Mobile Navigation Toggle
     initMobileNav();
@@ -14,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add scroll effects
     initScrollEffects();
+    
+    // Add keyboard accessibility
+    initKeyboardNav();
 });
 
 /**
@@ -175,3 +187,43 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
+
+/**
+ * Keyboard Navigation
+ */
+function initKeyboardNav() {
+    // Skip to main content link
+    const skipLink = document.createElement('a');
+    skipLink.href = '#main-content';
+    skipLink.className = 'skip-to-main';
+    skipLink.textContent = 'Skip to main content';
+    skipLink.style.cssText = `
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: #6C63FF;
+        color: white;
+        padding: 8px;
+        text-decoration: none;
+        z-index: 100;
+    `;
+    skipLink.addEventListener('focus', () => {
+        skipLink.style.top = '0';
+    });
+    skipLink.addEventListener('blur', () => {
+        skipLink.style.top = '-40px';
+    });
+    document.body.insertBefore(skipLink, document.body.firstChild);
+
+    // Keyboard support for buttons
+    const buttons = document.querySelectorAll('[role="button"], .btn');
+    buttons.forEach(button => {
+        button.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+}
+

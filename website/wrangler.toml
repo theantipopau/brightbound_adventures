@@ -1,15 +1,27 @@
 name = "brightbound-adventures"
 main = "worker.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-01-15"
 
 [site]
 bucket = "./"
 
-# Custom domain configuration
-# routes = [
-#   { pattern = "brightbound.matthurley.dev", custom_domain = true }
-# ]
+# Enable gzip compression for better performance
+[build]
+command = ""
+cwd = ""
+watch_paths = []
+
+# Caching configuration
+[env.production]
+name = "brightbound-adventures"
+routes = [
+  { pattern = "*.matthurley.dev/*", zone_id = "" },
+]
 
 # For development
 [env.dev]
 name = "brightbound-adventures-dev"
+
+# Configure performance optimizations
+[triggers]
+crons = []
