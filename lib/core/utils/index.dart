@@ -6,4 +6,5 @@ export 'puzzle_peaks_generator.dart';
 export 'story_springs_generator.dart';
 export 'math_word_problem_bank.dart';
 export 'literacy_word_bank.dart';
+export 'literacy_skill_questions.dart';
 export 'australian_naplan_questions.dart';
