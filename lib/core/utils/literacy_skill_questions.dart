@@ -4,16 +4,26 @@ import 'package:brightbound_adventures/features/literacy/models/question.dart';
 /// Each skill has 25+ unique questions organized by difficulty level
 class LiteracySkillQuestions {
   static final Map<String, SkillQuestionBank> _skillBanks = {
-    'silent_letters': SilentLettersQuestions(),
-    'homophones': HomophonesQuestions(),
-    'apostrophes': ApostrophesQuestions(),
-    'vocabulary_in_context': VocabularyInContextQuestions(),
-    'comma_usage': CommaUsageQuestions(),
-    'verb_tense': VerbTenseQuestions(),
-    'pronoun_reference': PronounReferenceQuestions(),
-    'main_idea': MainIdeaQuestions(),
-    'inference': InferenceQuestions(),
-    'sentence_formation': SentenceFormationQuestions(),
+    'skill_silent_letters': SilentLettersQuestions(),
+    'Silent Letters': SilentLettersQuestions(), // Also support display name
+    'skill_homophones': HomophonesQuestions(),
+    'Homophones': HomophonesQuestions(),
+    'skill_apostrophes': ApostrophesQuestions(),
+    'Apostrophes': ApostrophesQuestions(),
+    'skill_vocabulary_context': VocabularyInContextQuestions(),
+    'Vocabulary in Context': VocabularyInContextQuestions(),
+    'skill_comma_usage': CommaUsageQuestions(),
+    'Comma Usage': CommaUsageQuestions(),
+    'skill_verb_tense': VerbTenseQuestions(),
+    'Verb Tense Consistency': VerbTenseQuestions(),
+    'skill_pronoun_reference': PronounReferenceQuestions(),
+    'Pronoun Reference': PronounReferenceQuestions(),
+    'skill_main_idea': MainIdeaQuestions(),
+    'Main Idea': MainIdeaQuestions(),
+    'skill_inference': InferenceQuestions(),
+    'Inference': InferenceQuestions(),
+    'skill_sentence_formation': SentenceFormationQuestions(),
+    'Sentence Formation': SentenceFormationQuestions(),
   };
 
   static List<LiteracyQuestion> getQuestions({
