@@ -53,8 +53,8 @@ jobs:
           name: web-build
           path: build/web
 
-  deploy:
-    name: Deploy to Cloudflare Pages
+  deploy-game:
+    name: Deploy Flutter Game to Cloudflare Pages
     runs-on: ubuntu-latest
     needs: build-web
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -75,8 +75,29 @@ jobs:
       - name: Install Wrangler
         run: npm install -g wrangler
       
-      - name: Deploy to Cloudflare
+      - name: Deploy Flutter Game to playbrightbound
         run: wrangler pages deploy build/web --project-name=playbrightbound
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-website:
+    name: Deploy Website to Cloudflare Pages
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install Wrangler
+        run: npm install -g wrangler
+      
+      - name: Deploy Website to brightbound_adventures
+        run: wrangler pages deploy website --project-name=brightbound_adventures
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
