@@ -1,17 +1,17 @@
 import 'package:equatable/equatable.dart';
 
 enum SkillState {
-  locked,      // Not yet available
-  introduced,  // First exposure to skill
-  practising,  // Active practice
-  mastered,    // Consistently high performance
+  locked, // Not yet available
+  introduced, // First exposure to skill
+  practising, // Active practice
+  mastered, // Consistently high performance
 }
 
 class Skill extends Equatable {
   final String id;
   final String name;
   final String description;
-  final String strand;  // ACARA strand
+  final String strand; // ACARA strand
   final String? naplanArea; // NAPLAN high-difficulty area (optional)
   final SkillState state;
   final double accuracy; // 0.0 - 1.0

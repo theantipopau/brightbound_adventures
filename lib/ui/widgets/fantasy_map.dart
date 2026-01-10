@@ -5,42 +5,46 @@ import 'package:brightbound_adventures/ui/themes/index.dart';
 /// Magical fantasy map painter - draws terrain, paths, and magical decorations
 class FantasyMapPainter extends CustomPainter {
   final double animationValue;
-  final math.Random _random = math.Random(42); // Fixed seed for consistent terrain
-  
+  final math.Random _random =
+      math.Random(42); // Fixed seed for consistent terrain
+
   FantasyMapPainter({this.animationValue = 0.0});
 
   @override
   void paint(Canvas canvas, Size size) {
     // Safety check - don't paint if size is invalid
-    if (size.width <= 0 || size.height <= 0 || 
-        size.width.isInfinite || size.height.isInfinite ||
-        size.width.isNaN || size.height.isNaN) {
+    if (size.width <= 0 ||
+        size.height <= 0 ||
+        size.width.isInfinite ||
+        size.height.isInfinite ||
+        size.width.isNaN ||
+        size.height.isNaN) {
       return;
     }
-    
+
     // Sky gradient background
     _drawSkyBackground(canvas, size);
-    
+
     // Distant mountains silhouette
     _drawDistantMountains(canvas, size);
-    
+
     // Main terrain
     _drawGrassyHills(canvas, size);
     _drawRiver(canvas, size, animationValue);
     _drawBridge(canvas, size);
-    
+
     // Forest details
     _drawEnchantedForest(canvas, size);
-    
+
     // Mountains with snow
     _drawMagicMountains(canvas, size);
-    
+
     // Magic pond with sparkles
     _drawMagicPond(canvas, size, animationValue);
-    
+
     // Paths with stepping stones
     _drawMagicPaths(canvas, size);
-    
+
     // Decorative elements
     _drawFlowers(canvas, size);
     _drawMushrooms(canvas, size);
@@ -49,10 +53,10 @@ class FantasyMapPainter extends CustomPainter {
     _drawMagicSparkles(canvas, size, animationValue);
     _drawStars(canvas, size, animationValue);
     _drawClouds(canvas, size, animationValue);
-    
+
     // Castle in distance
     _drawFairyCastle(canvas, size);
-    
+
     // Map decorations
     _drawMapBorder(canvas, size);
     _drawCompass(canvas, size);
@@ -67,7 +71,8 @@ class FantasyMapPainter extends CustomPainter {
           const Color(0xFF87CEEB), // Sky blue
           const Color(0xFFB4E7F8), // Light blue
           const Color(0xFFFFF8DC), // Cornsilk (warm horizon)
-          const Color(0xFF90EE90).withValues(alpha: 0.5), // Light green (grass blend)
+          const Color(0xFF90EE90)
+              .withValues(alpha: 0.5), // Light green (grass blend)
         ],
         stops: const [0.0, 0.3, 0.6, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -105,17 +110,18 @@ class FantasyMapPainter extends CustomPainter {
           Color(0xFF228B22), // Forest green
           Color(0xFF2E8B57), // Sea green
         ],
-      ).createShader(Rect.fromLTWH(0, size.height * 0.35, size.width, size.height * 0.65));
+      ).createShader(
+          Rect.fromLTWH(0, size.height * 0.35, size.width, size.height * 0.65));
 
     final hillPath = Path();
     hillPath.moveTo(0, size.height * 0.4);
-    
+
     // Wavy hills
     for (double x = 0; x <= size.width; x += size.width / 8) {
       final y = size.height * 0.4 + math.sin(x * 0.02) * 20;
       hillPath.lineTo(x, y);
     }
-    
+
     hillPath.lineTo(size.width, size.height);
     hillPath.lineTo(0, size.height);
     hillPath.close();
@@ -149,46 +155,61 @@ class FantasyMapPainter extends CustomPainter {
 
     final riverPath = Path();
     riverPath.moveTo(size.width * 0.1, size.height * 0.3);
-    
+
     // Winding river
     riverPath.quadraticBezierTo(
-      size.width * 0.2, size.height * 0.45,
-      size.width * 0.35, size.height * 0.5,
+      size.width * 0.2,
+      size.height * 0.45,
+      size.width * 0.35,
+      size.height * 0.5,
     );
     riverPath.quadraticBezierTo(
-      size.width * 0.5, size.height * 0.55,
-      size.width * 0.4, size.height * 0.7,
+      size.width * 0.5,
+      size.height * 0.55,
+      size.width * 0.4,
+      size.height * 0.7,
     );
     riverPath.quadraticBezierTo(
-      size.width * 0.3, size.height * 0.85,
-      size.width * 0.35, size.height,
+      size.width * 0.3,
+      size.height * 0.85,
+      size.width * 0.35,
+      size.height,
     );
-    
+
     // River width
     riverPath.lineTo(size.width * 0.42, size.height);
     riverPath.quadraticBezierTo(
-      size.width * 0.37, size.height * 0.85,
-      size.width * 0.47, size.height * 0.7,
+      size.width * 0.37,
+      size.height * 0.85,
+      size.width * 0.47,
+      size.height * 0.7,
     );
     riverPath.quadraticBezierTo(
-      size.width * 0.57, size.height * 0.55,
-      size.width * 0.42, size.height * 0.5,
+      size.width * 0.57,
+      size.height * 0.55,
+      size.width * 0.42,
+      size.height * 0.5,
     );
     riverPath.quadraticBezierTo(
-      size.width * 0.27, size.height * 0.45,
-      size.width * 0.17, size.height * 0.3,
+      size.width * 0.27,
+      size.height * 0.45,
+      size.width * 0.17,
+      size.height * 0.3,
     );
     riverPath.close();
-    
+
     canvas.drawPath(riverPath, riverPaint);
 
     // Animated water sparkles
     final sparklePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.6 + 0.3 * math.sin(animation * math.pi * 4));
-    
+      ..color = Colors.white
+          .withValues(alpha: 0.6 + 0.3 * math.sin(animation * math.pi * 4));
+
     for (int i = 0; i < 8; i++) {
-      final x = size.width * (0.2 + 0.2 * (i / 8)) + math.sin(animation * math.pi * 2 + i) * 10;
-      final y = size.height * (0.4 + 0.05 * i) + math.cos(animation * math.pi * 2 + i) * 5;
+      final x = size.width * (0.2 + 0.2 * (i / 8)) +
+          math.sin(animation * math.pi * 2 + i) * 10;
+      final y = size.height * (0.4 + 0.05 * i) +
+          math.cos(animation * math.pi * 2 + i) * 5;
       canvas.drawCircle(Offset(x, y), 2, sparklePaint);
     }
   }
@@ -196,28 +217,31 @@ class FantasyMapPainter extends CustomPainter {
   void _drawBridge(Canvas canvas, Size size) {
     final bridgeX = size.width * 0.38;
     final bridgeY = size.height * 0.5;
-    
+
     // Bridge planks
-    final woodPaint = Paint()
-      ..color = const Color(0xFF8B4513);
-    
+    final woodPaint = Paint()..color = const Color(0xFF8B4513);
+
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromCenter(center: Offset(bridgeX, bridgeY), width: 50, height: 15),
+        Rect.fromCenter(
+            center: Offset(bridgeX, bridgeY), width: 50, height: 15),
         const Radius.circular(3),
       ),
       woodPaint,
     );
-    
+
     // Bridge rails
     final railPaint = Paint()
       ..color = const Color(0xFF654321)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-    
-    canvas.drawLine(Offset(bridgeX - 25, bridgeY - 12), Offset(bridgeX - 25, bridgeY - 3), railPaint);
-    canvas.drawLine(Offset(bridgeX + 25, bridgeY - 12), Offset(bridgeX + 25, bridgeY - 3), railPaint);
-    canvas.drawLine(Offset(bridgeX - 25, bridgeY - 12), Offset(bridgeX + 25, bridgeY - 12), railPaint);
+
+    canvas.drawLine(Offset(bridgeX - 25, bridgeY - 12),
+        Offset(bridgeX - 25, bridgeY - 3), railPaint);
+    canvas.drawLine(Offset(bridgeX + 25, bridgeY - 12),
+        Offset(bridgeX + 25, bridgeY - 3), railPaint);
+    canvas.drawLine(Offset(bridgeX - 25, bridgeY - 12),
+        Offset(bridgeX + 25, bridgeY - 12), railPaint);
   }
 
   void _drawEnchantedForest(Canvas canvas, Size size) {
@@ -242,7 +266,8 @@ class FantasyMapPainter extends CustomPainter {
       final x = forestX + (i - 4) * 28 + math.sin(i * 2) * 10;
       final y = forestY + (i % 2) * 20 + math.cos(i * 1.5) * 8;
       final leafPaint = i % 2 == 0 ? treeLeafPaint : treeLeafLightPaint;
-      _drawPineTree(canvas, x, y, 0.9 + (i % 3) * 0.15, leafPaint, treeTrunkPaint);
+      _drawPineTree(
+          canvas, x, y, 0.9 + (i % 3) * 0.15, leafPaint, treeTrunkPaint);
     }
 
     // Add some round bushes
@@ -250,14 +275,20 @@ class FantasyMapPainter extends CustomPainter {
     for (int i = 0; i < 5; i++) {
       final x = forestX + (i - 2) * 35;
       final y = forestY + 45 + (i % 2) * 10;
-      canvas.drawOval(Rect.fromCenter(center: Offset(x, y), width: 25, height: 18), bushPaint);
+      canvas.drawOval(
+          Rect.fromCenter(center: Offset(x, y), width: 25, height: 18),
+          bushPaint);
     }
   }
 
-  void _drawPineTree(Canvas canvas, double x, double y, double scale, Paint leafPaint, Paint trunkPaint) {
+  void _drawPineTree(Canvas canvas, double x, double y, double scale,
+      Paint leafPaint, Paint trunkPaint) {
     // Trunk
     canvas.drawRect(
-      Rect.fromCenter(center: Offset(x, y + 25 * scale), width: 8 * scale, height: 20 * scale),
+      Rect.fromCenter(
+          center: Offset(x, y + 25 * scale),
+          width: 8 * scale,
+          height: 20 * scale),
       trunkPaint,
     );
 
@@ -320,7 +351,8 @@ class FantasyMapPainter extends CustomPainter {
         ..moveTo(mx - mw * 0.35, peaksY + mh * 0.3)
         ..lineTo(mx, peaksY)
         ..lineTo(mx + mw * 0.35, peaksY + mh * 0.3)
-        ..quadraticBezierTo(mx, peaksY + mh * 0.4, mx - mw * 0.35, peaksY + mh * 0.3);
+        ..quadraticBezierTo(
+            mx, peaksY + mh * 0.4, mx - mw * 0.35, peaksY + mh * 0.3);
       canvas.drawPath(snowPath, snowPaint);
 
       // Magic glow
@@ -340,7 +372,8 @@ class FantasyMapPainter extends CustomPainter {
           const Color(0xFF4169E1).withValues(alpha: 0.8),
           const Color(0xFF1E90FF).withValues(alpha: 0.7),
         ],
-      ).createShader(Rect.fromCenter(center: Offset(pondX, pondY), width: 100, height: 60));
+      ).createShader(Rect.fromCenter(
+          center: Offset(pondX, pondY), width: 100, height: 60));
 
     // Pond shape
     canvas.drawOval(
@@ -357,11 +390,13 @@ class FantasyMapPainter extends CustomPainter {
     ];
 
     for (final pos in lilyPositions) {
-      canvas.drawOval(Rect.fromCenter(center: pos, width: 18, height: 12), lilyPaint);
+      canvas.drawOval(
+          Rect.fromCenter(center: pos, width: 18, height: 12), lilyPaint);
       // Pink flower
       final flowerPaint = Paint()..color = const Color(0xFFFF69B4);
       canvas.drawCircle(Offset(pos.dx + 2, pos.dy - 2), 4, flowerPaint);
-      canvas.drawCircle(Offset(pos.dx, pos.dy - 1), 2, Paint()..color = Colors.yellow);
+      canvas.drawCircle(
+          Offset(pos.dx, pos.dy - 1), 2, Paint()..color = Colors.yellow);
     }
 
     // Animated sparkles on water
@@ -371,8 +406,10 @@ class FantasyMapPainter extends CustomPainter {
       final r = 20.0 + i * 5;
       final sx = pondX + math.cos(angle) * r * 0.8;
       final sy = pondY + math.sin(angle) * r * 0.4;
-      final opacity = (0.3 + 0.5 * math.sin(animation * math.pi * 4 + i)).clamp(0.0, 1.0);
-      canvas.drawCircle(Offset(sx, sy), 2, sparklePaint..color = Colors.white.withValues(alpha: opacity));
+      final opacity =
+          (0.3 + 0.5 * math.sin(animation * math.pi * 4 + i)).clamp(0.0, 1.0);
+      canvas.drawCircle(Offset(sx, sy), 2,
+          sparklePaint..color = Colors.white.withValues(alpha: opacity));
     }
   }
 
@@ -395,7 +432,7 @@ class FantasyMapPainter extends CustomPainter {
     // Zone positions
     final zones = [
       Offset(size.width * 0.12, size.height * 0.38), // Word Woods
-      Offset(size.width * 0.78, size.height * 0.35), // Number Nebula  
+      Offset(size.width * 0.78, size.height * 0.35), // Number Nebula
       Offset(size.width * 0.78, size.height * 0.18), // Puzzle Peaks
       Offset(size.width * 0.48, size.height * 0.72), // Story Springs
       Offset(size.width * 0.85, size.height * 0.78), // Adventure Arena
@@ -413,8 +450,12 @@ class FantasyMapPainter extends CustomPainter {
       for (double t = 0.15; t < 0.95; t += 0.2) {
         final x = _quadBezier(centerX, midX + 15, zone.dx, t);
         final y = _quadBezier(centerY, midY - 10, zone.dy, t);
-        canvas.drawOval(Rect.fromCenter(center: Offset(x, y), width: 14, height: 10), stonePaint);
-        canvas.drawOval(Rect.fromCenter(center: Offset(x, y), width: 14, height: 10), stoneOutlinePaint);
+        canvas.drawOval(
+            Rect.fromCenter(center: Offset(x, y), width: 14, height: 10),
+            stonePaint);
+        canvas.drawOval(
+            Rect.fromCenter(center: Offset(x, y), width: 14, height: 10),
+            stoneOutlinePaint);
       }
     }
   }
@@ -436,11 +477,11 @@ class FantasyMapPainter extends CustomPainter {
       final x = _random.nextDouble() * size.width;
       final y = size.height * 0.5 + _random.nextDouble() * size.height * 0.45;
       final color = flowerColors[i % flowerColors.length];
-      
+
       // Simple flower
       final petalPaint = Paint()..color = color;
       final centerPaint = Paint()..color = Colors.yellow;
-      
+
       // Petals
       for (int p = 0; p < 5; p++) {
         final angle = p * math.pi * 2 / 5;
@@ -464,15 +505,21 @@ class FantasyMapPainter extends CustomPainter {
     for (final pos in mushPositions) {
       // Stem
       final stemPaint = Paint()..color = const Color(0xFFFFF8DC);
-      canvas.drawRect(Rect.fromCenter(center: Offset(pos.dx, pos.dy + 8), width: 8, height: 12), stemPaint);
-      
+      canvas.drawRect(
+          Rect.fromCenter(
+              center: Offset(pos.dx, pos.dy + 8), width: 8, height: 12),
+          stemPaint);
+
       // Cap
       final capPaint = Paint()..color = const Color(0xFFFF6347);
       canvas.drawArc(
         Rect.fromCenter(center: Offset(pos.dx, pos.dy), width: 20, height: 16),
-        math.pi, math.pi, true, capPaint,
+        math.pi,
+        math.pi,
+        true,
+        capPaint,
       );
-      
+
       // Spots
       final spotPaint = Paint()..color = Colors.white;
       canvas.drawCircle(Offset(pos.dx - 4, pos.dy - 2), 2, spotPaint);
@@ -481,7 +528,8 @@ class FantasyMapPainter extends CustomPainter {
   }
 
   void _drawRainbow(Canvas canvas, Size size, double animation) {
-    final rainbowOpacity = (0.4 + 0.2 * math.sin(animation * math.pi * 2)).clamp(0.0, 1.0);
+    final rainbowOpacity =
+        (0.4 + 0.2 * math.sin(animation * math.pi * 2)).clamp(0.0, 1.0);
     final colors = [
       Colors.red.withValues(alpha: rainbowOpacity),
       Colors.orange.withValues(alpha: rainbowOpacity),
@@ -499,10 +547,16 @@ class FantasyMapPainter extends CustomPainter {
         ..color = colors[i]
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4;
-      
+
       canvas.drawArc(
-        Rect.fromCenter(center: Offset(centerX, centerY), width: 200 - i * 12, height: 100 - i * 6),
-        math.pi, math.pi, false, paint,
+        Rect.fromCenter(
+            center: Offset(centerX, centerY),
+            width: 200 - i * 12,
+            height: 100 - i * 6),
+        math.pi,
+        math.pi,
+        false,
+        paint,
       );
     }
   }
@@ -518,33 +572,39 @@ class FantasyMapPainter extends CustomPainter {
     for (int i = 0; i < 6; i++) {
       final baseX = size.width * (0.2 + 0.6 * (i / 5));
       final baseY = size.height * (0.3 + 0.3 * math.sin(i * 1.5));
-      
+
       // Animated position
       final x = baseX + math.sin(animation * math.pi * 4 + i * 2) * 20;
       final y = baseY + math.cos(animation * math.pi * 3 + i * 1.5) * 15;
-      
+
       // Wing flap animation
       final wingAngle = math.sin(animation * math.pi * 8 + i) * 0.4;
-      
+
       final color = butterflyColors[i % butterflyColors.length];
       final wingPaint = Paint()..color = color;
-      
+
       // Left wing
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(wingAngle);
-      canvas.drawOval(Rect.fromCenter(center: const Offset(-5, 0), width: 10, height: 6), wingPaint);
+      canvas.drawOval(
+          Rect.fromCenter(center: const Offset(-5, 0), width: 10, height: 6),
+          wingPaint);
       canvas.restore();
-      
+
       // Right wing
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(-wingAngle);
-      canvas.drawOval(Rect.fromCenter(center: const Offset(5, 0), width: 10, height: 6), wingPaint);
+      canvas.drawOval(
+          Rect.fromCenter(center: const Offset(5, 0), width: 10, height: 6),
+          wingPaint);
       canvas.restore();
-      
+
       // Body
-      canvas.drawRect(Rect.fromCenter(center: Offset(x, y), width: 2, height: 8), Paint()..color = Colors.black);
+      canvas.drawRect(
+          Rect.fromCenter(center: Offset(x, y), width: 2, height: 8),
+          Paint()..color = Colors.black);
     }
   }
 
@@ -552,31 +612,42 @@ class FantasyMapPainter extends CustomPainter {
     for (int i = 0; i < 25; i++) {
       final x = (i * 47 + animation * 100) % size.width;
       final y = size.height * (0.2 + 0.6 * math.sin(i * 0.8));
-      final opacity = (0.3 + 0.7 * math.sin(animation * math.pi * 6 + i * 0.5)).clamp(0.0, 1.0);
+      final opacity = (0.3 + 0.7 * math.sin(animation * math.pi * 6 + i * 0.5))
+          .clamp(0.0, 1.0);
       final sparkleSize = 2 + math.sin(animation * math.pi * 4 + i) * 1.5;
-      
+
       // Draw 4-point star sparkle
       final paint = Paint()..color = Colors.white.withValues(alpha: opacity);
       canvas.drawCircle(Offset(x, y), sparkleSize, paint);
-      
+
       // Cross lines for sparkle effect
       final linePaint = Paint()
-        ..color = Colors.white.withValues(alpha: (opacity * 0.6).clamp(0.0, 1.0))
+        ..color =
+            Colors.white.withValues(alpha: (opacity * 0.6).clamp(0.0, 1.0))
         ..strokeWidth = 1;
-      canvas.drawLine(Offset(x - sparkleSize * 2, y), Offset(x + sparkleSize * 2, y), linePaint);
-      canvas.drawLine(Offset(x, y - sparkleSize * 2), Offset(x, y + sparkleSize * 2), linePaint);
+      canvas.drawLine(Offset(x - sparkleSize * 2, y),
+          Offset(x + sparkleSize * 2, y), linePaint);
+      canvas.drawLine(Offset(x, y - sparkleSize * 2),
+          Offset(x, y + sparkleSize * 2), linePaint);
     }
   }
 
   void _drawStars(Canvas canvas, Size size, double animation) {
     final starPaint = Paint()..color = const Color(0xFFFFD700);
-    
+
     for (int i = 0; i < 12; i++) {
       final x = size.width * (0.1 + 0.8 * (i / 11));
       final y = size.height * (0.05 + 0.15 * math.sin(i * 1.3));
-      final twinkle = (0.5 + 0.5 * math.sin(animation * math.pi * 4 + i * 0.7)).clamp(0.0, 1.0);
-      
-      _drawStar(canvas, x, y, 4 + twinkle * 2, starPaint..color = const Color(0xFFFFD700).withValues(alpha: twinkle));
+      final twinkle = (0.5 + 0.5 * math.sin(animation * math.pi * 4 + i * 0.7))
+          .clamp(0.0, 1.0);
+
+      _drawStar(
+          canvas,
+          x,
+          y,
+          4 + twinkle * 2,
+          starPaint
+            ..color = const Color(0xFFFFD700).withValues(alpha: twinkle));
     }
   }
 
@@ -585,12 +656,12 @@ class FantasyMapPainter extends CustomPainter {
     for (int i = 0; i < 5; i++) {
       final angle = -math.pi / 2 + i * math.pi * 2 / 5;
       final innerAngle = angle + math.pi / 5;
-      
+
       final outerX = x + math.cos(angle) * size;
       final outerY = y + math.sin(angle) * size;
       final innerX = x + math.cos(innerAngle) * size * 0.4;
       final innerY = y + math.sin(innerAngle) * size * 0.4;
-      
+
       if (i == 0) {
         path.moveTo(outerX, outerY);
       } else {
@@ -616,7 +687,7 @@ class FantasyMapPainter extends CustomPainter {
       final cx = (cloud[0]) % (size.width + 100) - 50;
       final cy = cloud[1];
       final scale = cloud[2];
-      
+
       // Shadow
       _drawCloudShape(canvas, cx + 3, cy + 3, scale, shadowPaint);
       // Cloud
@@ -624,7 +695,8 @@ class FantasyMapPainter extends CustomPainter {
     }
   }
 
-  void _drawCloudShape(Canvas canvas, double x, double y, double scale, Paint paint) {
+  void _drawCloudShape(
+      Canvas canvas, double x, double y, double scale, Paint paint) {
     canvas.drawCircle(Offset(x, y), 18 * scale, paint);
     canvas.drawCircle(Offset(x + 20 * scale, y - 5 * scale), 15 * scale, paint);
     canvas.drawCircle(Offset(x + 35 * scale, y), 12 * scale, paint);
@@ -634,15 +706,18 @@ class FantasyMapPainter extends CustomPainter {
   void _drawFairyCastle(Canvas canvas, Size size) {
     final castleX = size.width * 0.88;
     final castleY = size.height * 0.28;
-    
+
     // Castle walls
     final wallPaint = Paint()..color = const Color(0xFFE6E6FA);
     final roofPaint = Paint()..color = const Color(0xFF9370DB);
     final windowPaint = Paint()..color = const Color(0xFF4169E1);
 
     // Main tower
-    canvas.drawRect(Rect.fromCenter(center: Offset(castleX, castleY + 15), width: 25, height: 35), wallPaint);
-    
+    canvas.drawRect(
+        Rect.fromCenter(
+            center: Offset(castleX, castleY + 15), width: 25, height: 35),
+        wallPaint);
+
     // Tower roof
     final roofPath = Path()
       ..moveTo(castleX - 15, castleY - 2)
@@ -650,11 +725,17 @@ class FantasyMapPainter extends CustomPainter {
       ..lineTo(castleX + 15, castleY - 2)
       ..close();
     canvas.drawPath(roofPath, roofPaint);
-    
+
     // Side towers
-    canvas.drawRect(Rect.fromCenter(center: Offset(castleX - 18, castleY + 18), width: 12, height: 25), wallPaint);
-    canvas.drawRect(Rect.fromCenter(center: Offset(castleX + 18, castleY + 18), width: 12, height: 25), wallPaint);
-    
+    canvas.drawRect(
+        Rect.fromCenter(
+            center: Offset(castleX - 18, castleY + 18), width: 12, height: 25),
+        wallPaint);
+    canvas.drawRect(
+        Rect.fromCenter(
+            center: Offset(castleX + 18, castleY + 18), width: 12, height: 25),
+        wallPaint);
+
     // Side tower roofs
     final leftRoof = Path()
       ..moveTo(castleX - 25, castleY + 5)
@@ -662,21 +743,25 @@ class FantasyMapPainter extends CustomPainter {
       ..lineTo(castleX - 11, castleY + 5)
       ..close();
     canvas.drawPath(leftRoof, roofPaint);
-    
+
     final rightRoof = Path()
       ..moveTo(castleX + 11, castleY + 5)
       ..lineTo(castleX + 18, castleY - 8)
       ..lineTo(castleX + 25, castleY + 5)
       ..close();
     canvas.drawPath(rightRoof, roofPaint);
-    
+
     // Windows
-    canvas.drawRect(Rect.fromCenter(center: Offset(castleX, castleY + 10), width: 6, height: 10), windowPaint);
+    canvas.drawRect(
+        Rect.fromCenter(
+            center: Offset(castleX, castleY + 10), width: 6, height: 10),
+        windowPaint);
     canvas.drawCircle(Offset(castleX, castleY + 2), 3, windowPaint);
-    
+
     // Flag
     final flagPaint = Paint()..color = const Color(0xFFFF69B4);
-    canvas.drawRect(Rect.fromLTWH(castleX - 1, castleY - 32, 2, 12), Paint()..color = Colors.brown);
+    canvas.drawRect(Rect.fromLTWH(castleX - 1, castleY - 32, 2, 12),
+        Paint()..color = Colors.brown);
     canvas.drawRect(Rect.fromLTWH(castleX + 1, castleY - 32, 10, 6), flagPaint);
   }
 
@@ -686,7 +771,7 @@ class FantasyMapPainter extends CustomPainter {
       ..color = const Color(0xFF8B4513)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8;
-    
+
     final innerBorderPaint = Paint()
       ..color = const Color(0xFFDEB887)
       ..style = PaintingStyle.stroke
@@ -704,7 +789,7 @@ class FantasyMapPainter extends CustomPainter {
       ),
       borderPaint,
     );
-    
+
     // Inner decorative border
     canvas.drawRRect(
       RRect.fromRectAndRadius(
@@ -739,7 +824,8 @@ class FantasyMapPainter extends CustomPainter {
           Color(0xFFFFF8DC),
           Color(0xFFDEB887),
         ],
-      ).createShader(Rect.fromCircle(center: Offset(compassX, compassY), radius: radius));
+      ).createShader(
+          Rect.fromCircle(center: Offset(compassX, compassY), radius: radius));
     canvas.drawCircle(Offset(compassX, compassY), radius, bgPaint);
 
     // Border
@@ -750,8 +836,13 @@ class FantasyMapPainter extends CustomPainter {
     canvas.drawCircle(Offset(compassX, compassY), radius, borderPaint);
 
     // Inner circle
-    canvas.drawCircle(Offset(compassX, compassY), radius - 8, 
-      Paint()..color = const Color(0xFF8B4513)..style = PaintingStyle.stroke..strokeWidth = 1);
+    canvas.drawCircle(
+        Offset(compassX, compassY),
+        radius - 8,
+        Paint()
+          ..color = const Color(0xFF8B4513)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1);
 
     // Direction labels
     const textStyle = TextStyle(
@@ -759,7 +850,7 @@ class FantasyMapPainter extends CustomPainter {
       fontWeight: FontWeight.bold,
       color: Color(0xFF8B4513),
     );
-    
+
     final directions = [
       ['N', Offset(compassX - 4, compassY - radius + 6)],
       ['E', Offset(compassX + radius - 12, compassY - 5)],
@@ -771,7 +862,9 @@ class FantasyMapPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(
           text: dir[0] as String,
-          style: dir[0] == 'N' ? textStyle.copyWith(color: Colors.red.shade700) : textStyle,
+          style: dir[0] == 'N'
+              ? textStyle.copyWith(color: Colors.red.shade700)
+              : textStyle,
         ),
         textDirection: TextDirection.ltr,
       );
@@ -788,10 +881,12 @@ class FantasyMapPainter extends CustomPainter {
       ..lineTo(compassX + 5, compassY)
       ..close();
     canvas.drawPath(needlePath, needlePaint);
-    
+
     // Center jewel
-    canvas.drawCircle(Offset(compassX, compassY), 4, Paint()..color = const Color(0xFFFFD700));
-    canvas.drawCircle(Offset(compassX, compassY), 2, Paint()..color = const Color(0xFFFF6347));
+    canvas.drawCircle(Offset(compassX, compassY), 4,
+        Paint()..color = const Color(0xFFFFD700));
+    canvas.drawCircle(Offset(compassX, compassY), 2,
+        Paint()..color = const Color(0xFFFF6347));
   }
 
   @override
@@ -851,7 +946,7 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    
+
     _glowAnimation = Tween<double>(begin: 0.4, end: 0.9).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
@@ -868,7 +963,8 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([_pulseController, _rotateController, _sparkleController]),
+      animation: Listenable.merge(
+          [_pulseController, _rotateController, _sparkleController]),
       builder: (context, child) {
         return GestureDetector(
           onTap: widget.isUnlocked ? widget.onTap : null,
@@ -913,12 +1009,14 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: widget.color.withValues(alpha: _glowAnimation.value),
+                            color: widget.color
+                                .withValues(alpha: _glowAnimation.value),
                             blurRadius: 20,
                             spreadRadius: 8,
                           ),
                           BoxShadow(
-                            color: Colors.white.withValues(alpha: _glowAnimation.value * 0.5),
+                            color: Colors.white
+                                .withValues(alpha: _glowAnimation.value * 0.5),
                             blurRadius: 10,
                             spreadRadius: 2,
                           ),
@@ -954,12 +1052,13 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
                           ],
                         ),
                         child: Center(
-                          child: widget.isUnlocked 
-                            ? Text(
-                                widget.emoji,
-                                style: const TextStyle(fontSize: 26),
-                              )
-                            : const Icon(Icons.lock, color: Colors.white54, size: 24),
+                          child: widget.isUnlocked
+                              ? Text(
+                                  widget.emoji,
+                                  style: const TextStyle(fontSize: 26),
+                                )
+                              : const Icon(Icons.lock,
+                                  color: Colors.white54, size: 24),
                         ),
                       ),
                     ),
@@ -971,7 +1070,8 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
               const SizedBox(height: 4),
               // Fancy zone name banner (scroll style)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [
@@ -1019,7 +1119,9 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
                       return Icon(
                         filled ? Icons.star : Icons.star_border,
                         size: 12,
-                        color: filled ? const Color(0xFFFFD700) : Colors.grey.shade400,
+                        color: filled
+                            ? const Color(0xFFFFD700)
+                            : Colors.grey.shade400,
                       );
                     }),
                   ),
@@ -1028,7 +1130,8 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
               if (!widget.isUnlocked)
                 Container(
                   margin: const EdgeInsets.only(top: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [Colors.grey.shade600, Colors.grey.shade800],
@@ -1041,7 +1144,8 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
                     children: [
                       Icon(Icons.lock, size: 12, color: Colors.white),
                       SizedBox(width: 4),
-                      Text('Locked', style: TextStyle(fontSize: 9, color: Colors.white)),
+                      Text('Locked',
+                          style: TextStyle(fontSize: 9, color: Colors.white)),
                     ],
                   ),
                 ),
@@ -1055,12 +1159,16 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
   List<Widget> _buildSparkles() {
     final sparkles = <Widget>[];
     for (int i = 0; i < 6; i++) {
-      final angle = (i / 6) * 2 * math.pi + _sparkleController.value * 2 * math.pi;
-      final radius = 38 + math.sin(_sparkleController.value * math.pi * 2 + i) * 5;
+      final angle =
+          (i / 6) * 2 * math.pi + _sparkleController.value * 2 * math.pi;
+      final radius =
+          38 + math.sin(_sparkleController.value * math.pi * 2 + i) * 5;
       final x = math.cos(angle) * radius;
       final y = math.sin(angle) * radius;
-      final opacity = (0.3 + 0.7 * math.sin(_sparkleController.value * math.pi * 4 + i * 0.8)).clamp(0.0, 1.0);
-      
+      final opacity = (0.3 +
+              0.7 * math.sin(_sparkleController.value * math.pi * 4 + i * 0.8))
+          .clamp(0.0, 1.0);
+
       sparkles.add(
         Positioned(
           left: 45 + x - 4,
@@ -1073,7 +1181,8 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
               color: Colors.white.withValues(alpha: opacity),
               boxShadow: [
                 BoxShadow(
-                  color: widget.color.withValues(alpha: (opacity * 0.8).clamp(0.0, 1.0)),
+                  color: widget.color
+                      .withValues(alpha: (opacity * 0.8).clamp(0.0, 1.0)),
                   blurRadius: 4,
                   spreadRadius: 1,
                 ),
@@ -1113,15 +1222,17 @@ class _MagicRingPainter extends CustomPainter {
     canvas.drawCircle(center, radius, ringPaint);
 
     // Draw small stars/dots around the ring
-    final starPaint = Paint()..color = Colors.white.withValues(alpha: safeOpacity);
+    final starPaint = Paint()
+      ..color = Colors.white.withValues(alpha: safeOpacity);
     for (int i = 0; i < starCount; i++) {
       final angle = (i / starCount) * 2 * math.pi;
       final x = center.dx + math.cos(angle) * radius;
       final y = center.dy + math.sin(angle) * radius;
       canvas.drawCircle(Offset(x, y), 3, starPaint);
-      
+
       // Small glow
-      final glowPaint = Paint()..color = color.withValues(alpha: (safeOpacity * 0.5).clamp(0.0, 1.0));
+      final glowPaint = Paint()
+        ..color = color.withValues(alpha: (safeOpacity * 0.5).clamp(0.0, 1.0));
       canvas.drawCircle(Offset(x, y), 5, glowPaint);
     }
   }
@@ -1212,7 +1323,12 @@ class _CentralHubState extends State<CentralHub> with TickerProviderStateMixin {
                       gradient: RadialGradient(
                         colors: [
                           Colors.transparent,
-                          AppColors.primary.withValues(alpha: 0.2 + 0.1 * math.sin(_sparkleController.value * math.pi * 2)),
+                          AppColors.primary.withValues(
+                              alpha: 0.2 +
+                                  0.1 *
+                                      math.sin(_sparkleController.value *
+                                          math.pi *
+                                          2)),
                           AppColors.secondary.withValues(alpha: 0.3),
                           Colors.transparent,
                         ],
@@ -1250,7 +1366,8 @@ class _CentralHubState extends State<CentralHub> with TickerProviderStateMixin {
                       ],
                     ),
                     child: Center(
-                      child: Text(widget.avatarEmoji, style: const TextStyle(fontSize: 40)),
+                      child: Text(widget.avatarEmoji,
+                          style: const TextStyle(fontSize: 40)),
                     ),
                   ),
                   // Floating stars around avatar
@@ -1313,7 +1430,8 @@ class _CentralHubState extends State<CentralHub> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 2),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(10),
@@ -1353,15 +1471,18 @@ class _CentralHubState extends State<CentralHub> with TickerProviderStateMixin {
       const Color(0xFF87CEEB), // Sky blue
       const Color(0xFF98FB98), // Pale green
     ];
-    
+
     for (int i = 0; i < 8; i++) {
       final baseAngle = (i / 8) * 2 * math.pi;
       final angle = baseAngle + _sparkleController.value * math.pi * 2 * 0.5;
-      final radius = 48 + math.sin(_sparkleController.value * math.pi * 3 + i) * 4;
+      final radius =
+          48 + math.sin(_sparkleController.value * math.pi * 3 + i) * 4;
       final x = math.cos(angle) * radius;
       final y = math.sin(angle) * radius;
-      final opacity = (0.4 + 0.6 * math.sin(_sparkleController.value * math.pi * 4 + i * 0.7)).clamp(0.0, 1.0);
-      
+      final opacity = (0.4 +
+              0.6 * math.sin(_sparkleController.value * math.pi * 4 + i * 0.7))
+          .clamp(0.0, 1.0);
+
       stars.add(
         Positioned(
           left: 50 + x - 5,
@@ -1387,7 +1508,7 @@ class _MagicCrownPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final centerX = size.width / 2;
-    
+
     // Draw sparkle dots in a crown pattern
     final sparklePositions = [
       Offset(centerX - 35, 15),
@@ -1402,13 +1523,15 @@ class _MagicCrownPainter extends CustomPainter {
       final phase = animationValue * math.pi * 2 + i * 0.5;
       final opacity = (0.3 + 0.7 * math.sin(phase * 2)).clamp(0.0, 1.0);
       final sparkleSize = 3 + math.sin(phase) * 2;
-      
-      final paint = Paint()..color = const Color(0xFFFFD700).withValues(alpha: opacity);
+
+      final paint = Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: opacity);
       canvas.drawCircle(pos, sparkleSize, paint);
-      
+
       // Cross lines for sparkle effect
       final linePaint = Paint()
-        ..color = Colors.white.withValues(alpha: (opacity * 0.6).clamp(0.0, 1.0))
+        ..color =
+            Colors.white.withValues(alpha: (opacity * 0.6).clamp(0.0, 1.0))
         ..strokeWidth = 1;
       canvas.drawLine(
         Offset(pos.dx - sparkleSize * 1.5, pos.dy),

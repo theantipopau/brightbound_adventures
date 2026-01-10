@@ -1,8 +1,8 @@
 name: brightbound_adventures
-description: A fully offline, child-safe, avatar-driven educational adventure app for children aged 4–12.
+description: 'A fully offline, child-safe, avatar-driven educational adventure app for children aged 4–12. Features Australian NAPLAN-aligned content, mini-games, responsive design, and engaging gamification.'
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 2.0.0+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

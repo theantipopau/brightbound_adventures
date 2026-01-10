@@ -96,7 +96,8 @@ class ProgressionEngine {
     required int sessionHints,
   }) {
     final newAttempts = skill.attempts + 1;
-    final newAccuracy = (skill.accuracy * skill.attempts + sessionAccuracy) / newAttempts;
+    final newAccuracy =
+        (skill.accuracy * skill.attempts + sessionAccuracy) / newAttempts;
     final newHints = skill.hintsUsed + sessionHints;
 
     Skill updated = skill.copyWith(

@@ -46,8 +46,8 @@ class AchievementCard extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: isLocked 
-                    ? Colors.grey[400] 
+                color: isLocked
+                    ? Colors.grey[400]
                     : tierColor.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
@@ -69,7 +69,7 @@ class AchievementCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            
+
             // Achievement details
             Expanded(
               child: Column(
@@ -94,9 +94,7 @@ class AchievementCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: isLocked 
-                              ? Colors.grey[400] 
-                              : tierColor,
+                          color: isLocked ? Colors.grey[400] : tierColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -104,8 +102,8 @@ class AchievementCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: achievement.tier == AchievementTier.gold 
-                                ? Colors.black87 
+                            color: achievement.tier == AchievementTier.gold
+                                ? Colors.black87
                                 : Colors.white,
                           ),
                         ),
@@ -164,7 +162,7 @@ class AchievementCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final diff = now.difference(date);
-    
+
     if (diff.inDays == 0) {
       return 'Today';
     } else if (diff.inDays == 1) {
@@ -206,8 +204,8 @@ class AchievementsList extends StatelessWidget {
         final achievement = sorted[index];
         return AchievementCard(
           achievement: achievement,
-          onTap: onAchievementTap != null 
-              ? () => onAchievementTap!(achievement) 
+          onTap: onAchievementTap != null
+              ? () => onAchievementTap!(achievement)
               : null,
         );
       },
@@ -262,7 +260,7 @@ class AchievementShowcase extends StatelessWidget {
             // Trophy/sparkle animation placeholder
             const Text('🎉', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 8),
-            
+
             Text(
               'Achievement Unlocked!',
               style: TextStyle(
@@ -272,7 +270,7 @@ class AchievementShowcase extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Achievement emoji
             Container(
               width: 80,
@@ -299,7 +297,7 @@ class AchievementShowcase extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Achievement name
             Text(
               achievement.name,
@@ -311,7 +309,7 @@ class AchievementShowcase extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            
+
             // Achievement description
             Text(
               achievement.description,
@@ -322,7 +320,7 @@ class AchievementShowcase extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            
+
             // Tier badge
             Container(
               padding: const EdgeInsets.symmetric(
@@ -343,7 +341,7 @@ class AchievementShowcase extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Dismiss button
             ElevatedButton(
               onPressed: onDismiss,

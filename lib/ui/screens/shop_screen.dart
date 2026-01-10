@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/shop_service.dart';
 import 'package:brightbound_adventures/core/models/shop_item.dart';
+import 'package:brightbound_adventures/ui/widgets/modern_shop_item_card.dart';
 
 /// Shop screen for purchasing cosmetics and power-ups
 class ShopScreen extends StatefulWidget {
@@ -57,10 +58,10 @@ class _ShopScreenState extends State<ShopScreen>
             children: [
               // Header with star balance
               _buildHeader(),
-              
+
               // Category tabs
               _buildCategoryTabs(),
-              
+
               // Items grid
               Expanded(
                 child: _buildItemsGrid(),
@@ -190,7 +191,7 @@ class _ShopScreenState extends State<ShopScreen>
     return Consumer<ShopService>(
       builder: (context, shop, _) {
         final items = shop.getItemsByCategory(_selectedCategory);
-        
+
         if (items.isEmpty) {
           return Center(
             child: Column(
@@ -221,130 +222,14 @@ class _ShopScreenState extends State<ShopScreen>
           ),
           itemCount: items.length,
           itemBuilder: (context, index) {
-            return _buildShopItemCard(items[index], shop);
+            return ModernShopItemCard(
+              item: items[index],
+              shopService: shop,
+              onTap: () => _showItemDetails(items[index], shop),
+            );
           },
         );
       },
-    );
-  }
-
-  Widget _buildShopItemCard(ShopItem item, ShopService shop) {
-    final canAfford = shop.canAfford(item);
-    final isPurchased = item.isPurchased;
-
-    return GestureDetector(
-      onTap: () => _showItemDetails(item, shop),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isPurchased
-              ? Colors.green.withValues(alpha: 0.2)
-              : Colors.white.withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isPurchased
-                ? Colors.green
-                : ShopHelper.getCategoryColor(item.category),
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: (isPurchased ? Colors.green : ShopHelper.getCategoryColor(item.category))
-                  .withValues(alpha: 0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Item emoji/icon
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Text(
-                  item.emoji,
-                  style: const TextStyle(fontSize: 64),
-                ),
-                if (isPurchased)
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Item name
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(
-                item.name,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isPurchased ? Colors.green : Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // Price or purchased label
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: isPurchased
-                    ? Colors.green
-                    : (canAfford ? Colors.amber : Colors.grey),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (!isPurchased) ...[
-                    const Text('⭐', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${item.starCost}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ] else
-                    const Text(
-                      'Owned',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -466,10 +351,10 @@ class _ShopScreenState extends State<ShopScreen>
 
   void _purchaseItem(ShopItem item, ShopService shop) async {
     final success = await shop.purchaseItem(item.id);
-    
+
     if (mounted) {
       Navigator.pop(context);
-      
+
       if (success) {
         _showPurchaseSuccess(item);
       } else {

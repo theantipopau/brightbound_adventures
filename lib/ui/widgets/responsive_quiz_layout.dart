@@ -6,28 +6,28 @@ class ScreenBreakpoints {
   static const double tablet = 900;
   static const double desktop = 1200;
   static const double largeDesktop = 1920;
-  
+
   static bool isMobile(BuildContext context) {
     return MediaQuery.of(context).size.width < mobile;
   }
-  
+
   static bool isTablet(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     return width >= mobile && width < desktop;
   }
-  
+
   static bool isDesktop(BuildContext context) {
     return MediaQuery.of(context).size.width >= desktop;
   }
-  
+
   static bool isLargeDesktop(BuildContext context) {
     return MediaQuery.of(context).size.width >= largeDesktop;
   }
-  
+
   static bool isWideScreen(BuildContext context) {
     return MediaQuery.of(context).size.width >= tablet;
   }
-  
+
   static double getHorizontalPadding(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     if (width >= largeDesktop) return 120;
@@ -35,7 +35,7 @@ class ScreenBreakpoints {
     if (width >= tablet) return 40;
     return 20;
   }
-  
+
   static double getMaxContentWidth(BuildContext context) {
     if (isLargeDesktop(context)) return 1400;
     if (isDesktop(context)) return 1200;
@@ -50,7 +50,7 @@ class ResponsiveQuizLayout extends StatelessWidget {
   final Widget? feedbackWidget;
   final Widget? scoreCard;
   final double maxWidth;
-  
+
   const ResponsiveQuizLayout({
     super.key,
     required this.questionCard,
@@ -59,12 +59,12 @@ class ResponsiveQuizLayout extends StatelessWidget {
     this.scoreCard,
     this.maxWidth = 1400,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     final isWide = ScreenBreakpoints.isWideScreen(context);
     final padding = ScreenBreakpoints.getHorizontalPadding(context);
-    
+
     return Center(
       child: Container(
         constraints: BoxConstraints(maxWidth: maxWidth),
@@ -73,7 +73,7 @@ class ResponsiveQuizLayout extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildSideBySideLayout() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +105,7 @@ class ResponsiveQuizLayout extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildStackedLayout() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

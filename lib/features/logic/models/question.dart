@@ -49,7 +49,8 @@ class PatternRecognitionQuestions {
       options: ['🔴', '🔵', '🟢', '🟡'],
       correctIndex: 1,
       hint: 'Look at the pattern - red, blue, red, blue...',
-      explanation: 'The pattern alternates: red, blue, red, blue - so blue comes next!',
+      explanation:
+          'The pattern alternates: red, blue, red, blue - so blue comes next!',
       difficulty: 1,
       type: LogicQuestionType.patternCompletion,
       imageEmoji: '🎨',
@@ -73,7 +74,8 @@ class PatternRecognitionQuestions {
       options: ['⬆️', '⬇️', '➡️', '⬅️'],
       correctIndex: 2,
       hint: 'The arrows spin around like a clock',
-      explanation: 'The arrows rotate clockwise: up, right, down, left - then repeats!',
+      explanation:
+          'The arrows rotate clockwise: up, right, down, left - then repeats!',
       difficulty: 1,
       type: LogicQuestionType.patternCompletion,
       imageEmoji: '🔄',
@@ -276,7 +278,12 @@ class SpatialReasoningQuestions {
       id: 'spatial_3',
       skillId: 'skill_spatial_reasoning',
       question: 'What do you see if you look at 🏠 from above?',
-      options: ['A square/rectangle', 'A triangle', 'A circle', 'The front door'],
+      options: [
+        'A square/rectangle',
+        'A triangle',
+        'A circle',
+        'The front door'
+      ],
       correctIndex: 0,
       hint: 'Think about what the roof looks like from a bird\'s eye view',
       explanation: 'From above, most houses look like squares or rectangles!',
@@ -300,11 +307,13 @@ class SpatialReasoningQuestions {
     LogicQuestion(
       id: 'spatial_5',
       skillId: 'skill_spatial_reasoning',
-      question: 'If you fold a paper in half, then cut a heart shape, how many hearts when unfolded?',
+      question:
+          'If you fold a paper in half, then cut a heart shape, how many hearts when unfolded?',
       options: ['Half a heart', '1 heart', '2 hearts', '4 hearts'],
       correctIndex: 1,
       hint: 'The fold creates symmetry',
-      explanation: 'When you cut a half-heart on folded paper, unfolding shows 1 whole heart!',
+      explanation:
+          'When you cut a half-heart on folded paper, unfolding shows 1 whole heart!',
       difficulty: 2,
       type: LogicQuestionType.spatialReasoning,
       imageEmoji: '❤️',
@@ -313,7 +322,8 @@ class SpatialReasoningQuestions {
     LogicQuestion(
       id: 'spatial_6',
       skillId: 'skill_spatial_reasoning',
-      question: 'A cube is unfolded into a flat cross shape (+). How many squares make up this shape?',
+      question:
+          'A cube is unfolded into a flat cross shape (+). How many squares make up this shape?',
       options: ['4', '5', '6', '8'],
       correctIndex: 2,
       hint: 'A cube has 6 faces',
@@ -325,7 +335,8 @@ class SpatialReasoningQuestions {
     LogicQuestion(
       id: 'spatial_7',
       skillId: 'skill_spatial_reasoning',
-      question: 'If you turn ➡️ 90° clockwise (like a clock hand), which direction does it point?',
+      question:
+          'If you turn ➡️ 90° clockwise (like a clock hand), which direction does it point?',
       options: ['⬆️', '⬇️', '⬅️', '➡️'],
       correctIndex: 1,
       hint: 'Clockwise is the direction clock hands move',
@@ -348,7 +359,8 @@ class LogicPuzzleQuestions {
     LogicQuestion(
       id: 'logic_1',
       skillId: 'skill_logic_puzzles',
-      question: 'Tom is taller than Sam. Sam is taller than Ben. Who is the tallest?',
+      question:
+          'Tom is taller than Sam. Sam is taller than Ben. Who is the tallest?',
       options: ['Sam', 'Ben', 'Tom', 'They\'re all equal'],
       correctIndex: 2,
       hint: 'Tom > Sam > Ben means...',
@@ -360,7 +372,8 @@ class LogicPuzzleQuestions {
     LogicQuestion(
       id: 'logic_2',
       skillId: 'skill_logic_puzzles',
-      question: 'All dogs have four legs. Buddy is a dog. How many legs does Buddy have?',
+      question:
+          'All dogs have four legs. Buddy is a dog. How many legs does Buddy have?',
       options: ['2', '3', '4', '5'],
       correctIndex: 2,
       hint: 'If ALL dogs have 4 legs, and Buddy is a dog...',
@@ -373,11 +386,13 @@ class LogicPuzzleQuestions {
     LogicQuestion(
       id: 'logic_3',
       skillId: 'skill_logic_puzzles',
-      question: 'If it\'s raining, the ground gets wet. The ground is wet. Is it definitely raining?',
+      question:
+          'If it\'s raining, the ground gets wet. The ground is wet. Is it definitely raining?',
       options: ['Yes, definitely', 'No, not definitely', 'Maybe', 'Never'],
       correctIndex: 1,
       hint: 'Could the ground get wet another way?',
-      explanation: 'No! The ground could be wet from a sprinkler or spilled water!',
+      explanation:
+          'No! The ground could be wet from a sprinkler or spilled water!',
       difficulty: 2,
       type: LogicQuestionType.logicPuzzle,
       imageEmoji: '🌧️',
@@ -385,7 +400,8 @@ class LogicPuzzleQuestions {
     LogicQuestion(
       id: 'logic_4',
       skillId: 'skill_logic_puzzles',
-      question: 'In a race: Amy finished before Ben, Carl finished after Ben. Who came in 2nd?',
+      question:
+          'In a race: Amy finished before Ben, Carl finished after Ben. Who came in 2nd?',
       options: ['Amy', 'Ben', 'Carl', 'Can\'t tell'],
       correctIndex: 1,
       hint: 'Put them in order: Amy > ? > Carl',
@@ -398,7 +414,8 @@ class LogicPuzzleQuestions {
     LogicQuestion(
       id: 'logic_5',
       skillId: 'skill_logic_puzzles',
-      question: 'A farmer has 17 sheep. All but 9 run away. How many sheep are left?',
+      question:
+          'A farmer has 17 sheep. All but 9 run away. How many sheep are left?',
       options: ['8', '9', '17', '0'],
       correctIndex: 1,
       hint: 'Read carefully: "all BUT 9"',
@@ -410,7 +427,8 @@ class LogicPuzzleQuestions {
     LogicQuestion(
       id: 'logic_6',
       skillId: 'skill_logic_puzzles',
-      question: 'If some A are B, and all B are C, then some A are definitely...',
+      question:
+          'If some A are B, and all B are C, then some A are definitely...',
       options: ['C', 'B only', 'Neither', 'All A are C'],
       correctIndex: 0,
       hint: 'If some A are B, and those B are all C...',
@@ -433,8 +451,14 @@ class ProblemSolvingQuestions {
     LogicQuestion(
       id: 'prob_1',
       skillId: 'skill_problem_solving',
-      question: 'You need to cross a river but can\'t swim. What\'s the best solution?',
-      options: ['Fly across', 'Find a bridge or boat', 'Drink the river', 'Give up'],
+      question:
+          'You need to cross a river but can\'t swim. What\'s the best solution?',
+      options: [
+        'Fly across',
+        'Find a bridge or boat',
+        'Drink the river',
+        'Give up'
+      ],
       correctIndex: 1,
       hint: 'Think about tools or paths humans use',
       explanation: 'Finding a bridge or boat is a practical solution!',
@@ -446,7 +470,12 @@ class ProblemSolvingQuestions {
       id: 'prob_2',
       skillId: 'skill_problem_solving',
       question: 'Your flashlight won\'t turn on. What should you check FIRST?',
-      options: ['Buy a new one', 'Check the batteries', 'Break it open', 'Use candles instead'],
+      options: [
+        'Buy a new one',
+        'Check the batteries',
+        'Break it open',
+        'Use candles instead'
+      ],
       correctIndex: 1,
       hint: 'Start with the simplest thing that could be wrong',
       explanation: 'Check batteries first - it\'s the simplest fix!',
@@ -458,7 +487,8 @@ class ProblemSolvingQuestions {
     LogicQuestion(
       id: 'prob_3',
       skillId: 'skill_problem_solving',
-      question: 'You have 3 red socks and 3 blue socks in a dark drawer. How many must you grab to guarantee a matching pair?',
+      question:
+          'You have 3 red socks and 3 blue socks in a dark drawer. How many must you grab to guarantee a matching pair?',
       options: ['2', '3', '4', '6'],
       correctIndex: 1,
       hint: 'Think about the worst case - you might grab different colors',
@@ -470,8 +500,14 @@ class ProblemSolvingQuestions {
     LogicQuestion(
       id: 'prob_4',
       skillId: 'skill_problem_solving',
-      question: 'You\'re cooking and realize you\'re missing an ingredient. Best solution?',
-      options: ['Cancel dinner', 'Find a substitute ingredient', 'Panic', 'Blame someone else'],
+      question:
+          'You\'re cooking and realize you\'re missing an ingredient. Best solution?',
+      options: [
+        'Cancel dinner',
+        'Find a substitute ingredient',
+        'Panic',
+        'Blame someone else'
+      ],
       correctIndex: 1,
       hint: 'Problem solvers look for alternatives',
       explanation: 'Finding a substitute shows creative problem solving!',
@@ -483,11 +519,14 @@ class ProblemSolvingQuestions {
     LogicQuestion(
       id: 'prob_5',
       skillId: 'skill_problem_solving',
-      question: 'A bottle and cork cost \$1.10. The bottle costs \$1 more than the cork. What does the cork cost?',
+      question:
+          'A bottle and cork cost \$1.10. The bottle costs \$1 more than the cork. What does the cork cost?',
       options: ['\$0.10', '\$0.05', '\$0.15', '\$0.20'],
       correctIndex: 1,
-      hint: 'If cork = \$0.10, then bottle = \$1.10, but \$0.10 + \$1.10 = \$1.20!',
-      explanation: 'Cork = \$0.05, Bottle = \$1.05. Check: \$0.05 + \$1.05 = \$1.10 ✓',
+      hint:
+          'If cork = \$0.10, then bottle = \$1.10, but \$0.10 + \$1.10 = \$1.20!',
+      explanation:
+          'Cork = \$0.05, Bottle = \$1.05. Check: \$0.05 + \$1.05 = \$1.10 ✓',
       difficulty: 3,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🍾',
@@ -504,7 +543,8 @@ class ProblemSolvingQuestions {
       ],
       correctIndex: 2,
       hint: 'You need multiple steps and pouring between buckets',
-      explanation: 'This classic puzzle requires several steps of filling and pouring!',
+      explanation:
+          'This classic puzzle requires several steps of filling and pouring!',
       difficulty: 3,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🪣',
@@ -554,7 +594,12 @@ class SequenceLogicQuestions {
       id: 'seq_logic_3',
       skillId: 'skill_sequence_logic',
       question: 'What must happen BEFORE you can read a book?',
-      options: ['Close the book', 'Learn to read', 'Write a book', 'Finish the book'],
+      options: [
+        'Close the book',
+        'Learn to read',
+        'Write a book',
+        'Finish the book'
+      ],
       correctIndex: 1,
       hint: 'What skill is required?',
       explanation: 'You need to learn to read first!',
@@ -569,7 +614,8 @@ class SequenceLogicQuestions {
       options: ['Evaporation', 'Precipitation', 'More clouds', 'Nothing'],
       correctIndex: 1,
       hint: 'What falls from clouds?',
-      explanation: 'Evaporation → Clouds form → Precipitation (rain/snow) → Collection!',
+      explanation:
+          'Evaporation → Clouds form → Precipitation (rain/snow) → Collection!',
       difficulty: 2,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '💧',
@@ -578,7 +624,8 @@ class SequenceLogicQuestions {
     LogicQuestion(
       id: 'seq_logic_5',
       skillId: 'skill_sequence_logic',
-      question: 'A happens before B. C happens after B but before D. What\'s the correct order?',
+      question:
+          'A happens before B. C happens after B but before D. What\'s the correct order?',
       options: ['A, B, C, D', 'B, A, C, D', 'A, C, B, D', 'C, A, B, D'],
       correctIndex: 0,
       hint: 'A < B, B < C < D',
@@ -590,11 +637,18 @@ class SequenceLogicQuestions {
     LogicQuestion(
       id: 'seq_logic_6',
       skillId: 'skill_sequence_logic',
-      question: 'Cause and effect: What comes LAST?\n"The ice cream melted because it was left in the sun."',
-      options: ['Ice cream existed', 'Ice cream left in sun', 'Ice cream melted', 'Sun was shining'],
+      question:
+          'Cause and effect: What comes LAST?\n"The ice cream melted because it was left in the sun."',
+      options: [
+        'Ice cream existed',
+        'Ice cream left in sun',
+        'Ice cream melted',
+        'Sun was shining'
+      ],
       correctIndex: 2,
       hint: 'What is the final result?',
-      explanation: 'Sun shining → Ice cream left out → Ice cream melts (effect)!',
+      explanation:
+          'Sun shining → Ice cream left out → Ice cream melts (effect)!',
       difficulty: 3,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🍦',

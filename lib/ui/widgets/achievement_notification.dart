@@ -14,7 +14,8 @@ class AchievementNotification extends StatefulWidget {
   });
 
   @override
-  State<AchievementNotification> createState() => _AchievementNotificationState();
+  State<AchievementNotification> createState() =>
+      _AchievementNotificationState();
 }
 
 class _AchievementNotificationState extends State<AchievementNotification>
@@ -200,7 +201,8 @@ class _AchievementNotificationState extends State<AchievementNotification>
                                         shape: BoxShape.circle,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.2),
+                                            color: Colors.black
+                                                .withValues(alpha: 0.2),
                                             blurRadius: 10,
                                           ),
                                         ],
@@ -227,7 +229,8 @@ class _AchievementNotificationState extends State<AchievementNotification>
                                   Text(
                                     'Achievement Unlocked!',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.9),
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                       letterSpacing: 1.2,
@@ -246,7 +249,8 @@ class _AchievementNotificationState extends State<AchievementNotification>
                                   Text(
                                     widget.achievement.description,
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.85),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.85),
                                       fontSize: 14,
                                     ),
                                     maxLines: 2,
@@ -259,7 +263,8 @@ class _AchievementNotificationState extends State<AchievementNotification>
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.3),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.3),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
@@ -283,7 +288,8 @@ class _AchievementNotificationState extends State<AchievementNotification>
                                 color: Colors.white,
                               ),
                               style: IconButton.styleFrom(
-                                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                                backgroundColor:
+                                    Colors.white.withValues(alpha: 0.2),
                               ),
                             ),
                           ],

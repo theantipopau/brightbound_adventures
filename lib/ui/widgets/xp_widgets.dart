@@ -16,7 +16,8 @@ class XpBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = stats.xpProgressToNextLevel;
-    final currentLevelXp = stats.totalXp - PlayerStats.totalXpForLevel(stats.currentLevel - 1);
+    final currentLevelXp =
+        stats.totalXp - PlayerStats.totalXpForLevel(stats.currentLevel - 1);
     final xpNeeded = stats.xpForNextLevel;
 
     return Column(

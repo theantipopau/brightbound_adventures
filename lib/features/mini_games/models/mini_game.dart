@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 /// These are separate from the zone-based skill practice games
 
 enum MiniGameType {
-  memoryMatch,     // Match pairs of cards
+  memoryMatch, // Match pairs of cards
   patternChallenge, // Repeat patterns
-  speedChallenge,  // Fast-paced quiz
-  puzzleGame,      // Block/tile puzzles
-  wordSearch,      // Find words in grid
-  mathRace,        // Timed math problems
+  speedChallenge, // Fast-paced quiz
+  puzzleGame, // Block/tile puzzles
+  wordSearch, // Find words in grid
+  mathRace, // Timed math problems
 }
 
 class MiniGame {
@@ -18,9 +18,9 @@ class MiniGame {
   final String emoji;
   final MiniGameType type;
   final String description;
-  final int minLevel;  // Required level to unlock
+  final int minLevel; // Required level to unlock
   final bool requiresInternet;
-  
+
   const MiniGame({
     required this.id,
     required this.name,
@@ -84,11 +84,13 @@ class MiniGames {
       minLevel: 1,
     ),
   ];
-  
+
   static List<MiniGame> getUnlockedGames(int playerLevel) {
-    return availableGames.where((game) => game.minLevel <= playerLevel).toList();
+    return availableGames
+        .where((game) => game.minLevel <= playerLevel)
+        .toList();
   }
-  
+
   static MiniGame? getGameById(String id) {
     try {
       return availableGames.firstWhere((game) => game.id == id);
@@ -102,7 +104,7 @@ class MiniGames {
 abstract class MiniGameWidget extends StatefulWidget {
   final MiniGame gameConfig;
   final Function(int score) onGameComplete;
-  
+
   const MiniGameWidget({
     super.key,
     required this.gameConfig,
@@ -113,10 +115,10 @@ abstract class MiniGameWidget extends StatefulWidget {
 abstract class MiniGameState extends State {
   int score = 0;
   bool isGameActive = false;
-  
+
   Future<void> startGame();
   Future<void> endGame();
-  
+
   void addScore(int points) {
     setState(() {
       score += points;

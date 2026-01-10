@@ -84,13 +84,14 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
     );
 
     // Track achievements
-    await achievementService.trackQuestionAnswered(true); // Track correct answers
-    
+    await achievementService
+        .trackQuestionAnswered(true); // Track correct answers
+
     // Check for perfect score
     if (widget.accuracy >= 1.0) {
       await achievementService.trackPerfectScore();
     }
-    
+
     // Show any newly unlocked achievements
     if (mounted) {
       for (final achievement in achievementService.recentlyUnlocked) {
@@ -156,7 +157,7 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
             child: Column(
               children: [
                 const SizedBox(height: 20),
-                
+
                 // Animated celebration icon
                 AnimatedBuilder(
                   animation: _celebrationController,
@@ -189,9 +190,9 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 8),
-                
+
                 Text(
                   _getPerformanceSubtext(),
                   style: TextStyle(
@@ -214,13 +215,17 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                         animation: _scoreController,
                         builder: (context, child) {
                           final delay = index * 0.2;
-                          final progress = ((_scoreController.value - delay) / 0.3).clamp(0.0, 1.0);
+                          final progress =
+                              ((_scoreController.value - delay) / 0.3)
+                                  .clamp(0.0, 1.0);
                           return Transform.scale(
                             scale: earned ? progress : 0.8,
                             child: Icon(
                               earned ? Icons.star : Icons.star_border,
                               size: 60,
-                              color: earned ? Colors.amber : Colors.white.withValues(alpha: 0.5),
+                              color: earned
+                                  ? Colors.amber
+                                  : Colors.white.withValues(alpha: 0.5),
                             ),
                           );
                         },
@@ -258,7 +263,7 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                           ),
                         ),
                         const SizedBox(height: 20),
-                        
+
                         // Animated score circle
                         AnimatedBuilder(
                           animation: _scoreAnimation,
@@ -339,7 +344,8 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: widget.themeColor,
                                   side: BorderSide(color: widget.themeColor),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
@@ -355,7 +361,8 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: widget.themeColor,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),

@@ -30,7 +30,8 @@ class PathPainter extends CustomPainter {
 
       // Draw path
       final pathPaint = Paint()
-        ..color = (isUnlocked ? Colors.amber : Colors.grey).withOpacity(isUnlocked ? 0.6 : 0.3)
+        ..color = (isUnlocked ? Colors.amber : Colors.grey)
+            .withValues(alpha: isUnlocked ? 0.6 : 0.3)
         ..strokeWidth = 8
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
@@ -60,9 +61,11 @@ class PathPainter extends CustomPainter {
 
         final pathMetrics = path.computeMetrics().first;
         final progress = (animation.value + i * 0.2) % 1.0;
-        final pos = pathMetrics.getTangentForOffset(
-          pathMetrics.length * progress,
-        )?.position;
+        final pos = pathMetrics
+            .getTangentForOffset(
+              pathMetrics.length * progress,
+            )
+            ?.position;
 
         if (pos != null) {
           canvas.drawCircle(pos, 6, dotPaint);
@@ -76,6 +79,6 @@ class PathPainter extends CustomPainter {
     // Animation drives repaint via the repaint listenable. Only repaint if
     // non-animated state changes (e.g., unlocking a new path).
     return oldDelegate.totalStars != totalStars ||
-           oldDelegate.zoneScreenPositions.length != zoneScreenPositions.length;
+        oldDelegate.zoneScreenPositions.length != zoneScreenPositions.length;
   }
 }

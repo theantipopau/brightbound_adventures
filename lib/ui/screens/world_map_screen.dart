@@ -9,9 +9,12 @@ import 'package:brightbound_adventures/core/utils/isometric_engine.dart';
 import 'package:brightbound_adventures/core/utils/world_map_isometric_helper.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
+import 'package:brightbound_adventures/ui/widgets/streak_widget.dart';
+import 'package:brightbound_adventures/ui/widgets/transitions.dart';
 import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
 import 'package:brightbound_adventures/ui/screens/daily_challenge_screen.dart';
 import 'package:brightbound_adventures/ui/screens/mini_games_screen.dart';
+import 'package:brightbound_adventures/ui/screens/parent_dashboard_screen.dart';
 import 'package:brightbound_adventures/ui/painters/shadow_painter.dart';
 import 'package:brightbound_adventures/ui/painters/terrain_painter.dart';
 import 'package:brightbound_adventures/ui/painters/path_painter.dart';
@@ -31,14 +34,16 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   late AnimationController _floatController;
   late AnimationController _pathController;
   late AnimationController _avatarMoveController;
-  
+
   // Keyboard focus
   final FocusNode _focusNode = FocusNode();
   int _selectedZoneIndex = 0;
-  
+
   // Device detection
   bool _isPhoneDevice = false;
-  
+  late AudioManager _audioManager;
+  bool _audioSetupDone = false;
+
   // Avatar state
   int _currentZoneIndex = 0;
   int? _targetZoneIndex;
@@ -55,7 +60,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       emoji: '🌲',
       color: AppColors.wordWoodsColor,
       // Bottom left - starter zone
-      position: Offset(0.15, 0.85), 
+      position: Offset(0.15, 0.85),
       description: 'Master letters & reading!',
       order: 0,
       requiredStars: 0,
@@ -135,6 +140,16 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     _initIsometricPositions();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_audioSetupDone) {
+      _audioManager = Provider.of<AudioManager>(context, listen: false);
+      _audioManager.playMenuMusic();
+      _audioSetupDone = true;
+    }
+  }
+
   void _initIsometricPositions() {
     // Convert all zones to isometric grid positions with elevation
     _zoneIsometricPositions = {};
@@ -194,6 +209,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   @override
   void dispose() {
+    if (_audioSetupDone) {
+      _audioManager.stopMusic();
+    }
     _entranceController.dispose();
     _floatController.dispose();
     _pathController.dispose();
@@ -206,19 +224,23 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   void _handleKeyEvent(KeyEvent event, int totalStars) {
     if (event is! KeyDownEvent) return;
     if (_isMoving) return;
-    
+
     final key = event.logicalKey;
-    
+
     // Arrow keys to select zone
-    if (key == LogicalKeyboardKey.arrowRight || key == LogicalKeyboardKey.arrowDown) {
+    if (key == LogicalKeyboardKey.arrowRight ||
+        key == LogicalKeyboardKey.arrowDown) {
       setState(() {
         _selectedZoneIndex = (_selectedZoneIndex + 1) % _zones.length;
       });
-    } else if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.arrowUp) {
+    } else if (key == LogicalKeyboardKey.arrowLeft ||
+        key == LogicalKeyboardKey.arrowUp) {
       setState(() {
-        _selectedZoneIndex = (_selectedZoneIndex - 1 + _zones.length) % _zones.length;
+        _selectedZoneIndex =
+            (_selectedZoneIndex - 1 + _zones.length) % _zones.length;
       });
-    } else if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.space) {
+    } else if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
       // Enter/Space to go to selected zone
       final isUnlocked = _isZoneUnlocked(_selectedZoneIndex, totalStars);
       if (isUnlocked) {
@@ -238,7 +260,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       _selectZoneByNumber(4, totalStars);
     }
   }
-  
+
   void _selectZoneByNumber(int index, int totalStars) {
     if (index >= _zones.length) return;
     setState(() {
@@ -264,26 +286,27 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   void _moveToZone(int targetIndex) {
     if (_isMoving) return;
-    
+
     // If already at this zone, navigate directly without animation
     if (targetIndex == _currentZoneIndex) {
       debugPrint('Already at zone $targetIndex - navigating directly');
       Navigator.pushNamed(context, '/${_zones[targetIndex].id}');
       return;
     }
-    
-    debugPrint('Moving avatar from zone $_currentZoneIndex to zone $targetIndex');
+
+    debugPrint(
+        'Moving avatar from zone $_currentZoneIndex to zone $targetIndex');
     setState(() {
       _targetZoneIndex = targetIndex;
       _isMoving = true;
     });
-    
+
     _avatarMoveController.forward(from: 0);
   }
 
   void _onAvatarArrived() {
     final targetZone = _targetZoneIndex;
-    
+
     setState(() {
       _currentZoneIndex = _targetZoneIndex ?? _currentZoneIndex;
       _targetZoneIndex = null;
@@ -306,8 +329,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       body: Consumer2<AvatarProvider, SkillProvider>(
         builder: (context, avatarProvider, skillProvider, _) {
           final avatar = avatarProvider.avatar;
-          final totalStars = skillProvider.isInitialized 
-              ? _calculateTotalStars(skillProvider) 
+          final totalStars = skillProvider.isInitialized
+              ? _calculateTotalStars(skillProvider)
               : 0;
 
           if (avatar == null) {
@@ -334,22 +357,27 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         if (_isMoving && _targetZoneIndex != null) {
                           final currentZone = _zones[_currentZoneIndex];
                           final targetZone = _zones[_targetZoneIndex!];
-                          final startIso = _zoneIsometricPositions[currentZone.id]!;
-                          final endIso = _zoneIsometricPositions[targetZone.id]!;
-                          double t = Curves.easeInOutCubic.transform(_avatarMoveController.value);
+                          final startIso =
+                              _zoneIsometricPositions[currentZone.id]!;
+                          final endIso =
+                              _zoneIsometricPositions[targetZone.id]!;
+                          double t = Curves.easeInOutCubic
+                              .transform(_avatarMoveController.value);
                           avatarIsoPos = startIso.lerp(endIso, t);
                         } else {
                           final currentZone = _zones[_currentZoneIndex];
-                          avatarIsoPos = _zoneIsometricPositions[currentZone.id];
+                          avatarIsoPos =
+                              _zoneIsometricPositions[currentZone.id];
                         }
-                        
+
                         return Stack(
                           children: [
                             // Terrain patches showing biome regions under each zone
                             RepaintBoundary(
                               child: CustomPaint(
                                 painter: TerrainPainter(zones: _zones),
-                                size: Size(constraints.maxWidth, constraints.maxHeight),
+                                size: Size(constraints.maxWidth,
+                                    constraints.maxHeight),
                               ),
                             ),
 
@@ -360,7 +388,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                                   zones: _zones,
                                   avatarPosition: avatarIsoPos,
                                 ),
-                                size: Size(constraints.maxWidth, constraints.maxHeight),
+                                size: Size(constraints.maxWidth,
+                                    constraints.maxHeight),
                               ),
                             ),
 
@@ -371,27 +400,31 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                                   zones: _zones,
                                   zoneScreenPositions: {
                                     for (final z in _zones)
-                                      z.id: WorldMapIsometricHelper.gridToScreen(
+                                      z.id:
+                                          WorldMapIsometricHelper.gridToScreen(
                                         _zoneIsometricPositions[z.id]!,
-                                        Size(constraints.maxWidth, constraints.maxHeight),
+                                        Size(constraints.maxWidth,
+                                            constraints.maxHeight),
                                       ),
                                   },
                                   animation: _pathController,
                                   totalStars: totalStars,
                                 ),
-                                size: Size(constraints.maxWidth, constraints.maxHeight),
+                                size: Size(constraints.maxWidth,
+                                    constraints.maxHeight),
                               ),
                             ),
 
                             // Combined isometric render layer (Zones + Avatar)
-                            ..._build3DMapLayer(constraints, totalStars, skillProvider, avatar),
+                            ..._build3DMapLayer(
+                                constraints, totalStars, skillProvider, avatar),
 
                             // Top HUD
                             _buildTopHUD(avatar, totalStars),
 
                             // Bottom quick actions
                             _buildBottomActions(totalStars),
-                            
+
                             // Keyboard navigation hint
                             _buildKeyboardHint(),
                           ],
@@ -429,16 +462,18 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             Text(
               'Create Your Character!',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => Navigator.pushReplacementNamed(context, '/avatar-creator'),
+              onPressed: () =>
+                  Navigator.pushReplacementNamed(context, '/avatar-creator'),
               icon: const Icon(Icons.person_add),
               label: const Text('Get Started'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               ),
             ),
           ],
@@ -480,7 +515,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             ),
           ),
           child: CustomPaint(
-            painter: _EnhancedBackgroundPainter(animation: _floatController.value),
+            painter:
+                _EnhancedBackgroundPainter(animation: _floatController.value),
             size: Size.infinite,
           ),
         );
@@ -489,48 +525,49 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   List<Widget> _build3DMapLayer(
-    BoxConstraints constraints, 
+    BoxConstraints constraints,
     int totalStars,
     SkillProvider skillProvider,
     Avatar avatar,
   ) {
     return [
       AnimatedBuilder(
-        animation: Listenable.merge([_avatarMoveController, _entranceController]),
+        animation:
+            Listenable.merge([_avatarMoveController, _entranceController]),
         builder: (context, child) {
           // 1. Calculate Avatar Isometric Position
           IsometricPosition avatarIsoPos;
           if (_isMoving && _targetZoneIndex != null) {
-             final currentZone = _zones[_currentZoneIndex];
-             final targetZone = _zones[_targetZoneIndex!];
-             
-             final startIso = _zoneIsometricPositions[currentZone.id]!;
-             final endIso = _zoneIsometricPositions[targetZone.id]!;
-             
-             // Use 3D lerp logic
-             // Curved path simulation:
-             // t is linear progress (0->1)
-             // We can just lerp linearly in grid space for depth sorting
-             // But visual position might have arc
-             
-             double t = Curves.easeInOutCubic.transform(_avatarMoveController.value);
-             avatarIsoPos = startIso.lerp(endIso, t);
-             
-             // Add artificial Z height for jump arc if needed for depth?
-             // Actually depth = x+y-z. Higher Z = lower depth value? 
-             // Isometric engine says: depth => x + y - z;
-             // If we jump up (increase Z), depth decreases (objects behind us might become in front?)
-             // Usually jumping shouldn't change sort order significantly unless we jump OVER something.
-             // Let's keep Z=0 for sorting purposes to avoid flickering.
-             
+            final currentZone = _zones[_currentZoneIndex];
+            final targetZone = _zones[_targetZoneIndex!];
+
+            final startIso = _zoneIsometricPositions[currentZone.id]!;
+            final endIso = _zoneIsometricPositions[targetZone.id]!;
+
+            // Use 3D lerp logic
+            // Curved path simulation:
+            // t is linear progress (0->1)
+            // We can just lerp linearly in grid space for depth sorting
+            // But visual position might have arc
+
+            double t =
+                Curves.easeInOutCubic.transform(_avatarMoveController.value);
+            avatarIsoPos = startIso.lerp(endIso, t);
+
+            // Add artificial Z height for jump arc if needed for depth?
+            // Actually depth = x+y-z. Higher Z = lower depth value?
+            // Isometric engine says: depth => x + y - z;
+            // If we jump up (increase Z), depth decreases (objects behind us might become in front?)
+            // Usually jumping shouldn't change sort order significantly unless we jump OVER something.
+            // Let's keep Z=0 for sorting purposes to avoid flickering.
           } else {
-             final currentZone = _zones[_currentZoneIndex];
-             avatarIsoPos = _zoneIsometricPositions[currentZone.id]!;
+            final currentZone = _zones[_currentZoneIndex];
+            avatarIsoPos = _zoneIsometricPositions[currentZone.id]!;
           }
 
           // 2. Prepare Render Items
           final List<dynamic> renderItems = [..._zones, avatar];
-          
+
           // Helper to get depth position
           IsometricPosition getPos(dynamic item) {
             if (item is ZoneData) {
@@ -544,27 +581,28 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           // We can use WorldMapIsometricHelper logic, leveraging engine
           // Manual sort here since helper expects generic list
           renderItems.sort((a, b) {
-             final posA = getPos(a);
-             final posB = getPos(b);
-             // Higher depth value = closer to camera (drawn LAST)
-             // Painter/Stack draws first items at bottom, last items on top.
-             // So we want smallest depth first (background), largest depth last (foreground).
-             // Engine.depth = x + y - z.
-             // Small x,y (top-left of grid) = Background?
-             // Let's check transformation: 
-             // screenY = (x+y) * tileHeight/2.
-             // Larger (x+y) means larger Screen Y (down the screen).
-             // Objects lower on screen are "closer".
-             // So larger (x+y) should be drawn LAST.
-             // Hence sort ascending by depth.
-             return posA.depth.compareTo(posB.depth);
+            final posA = getPos(a);
+            final posB = getPos(b);
+            // Higher depth value = closer to camera (drawn LAST)
+            // Painter/Stack draws first items at bottom, last items on top.
+            // So we want smallest depth first (background), largest depth last (foreground).
+            // Engine.depth = x + y - z.
+            // Small x,y (top-left of grid) = Background?
+            // Let's check transformation:
+            // screenY = (x+y) * tileHeight/2.
+            // Larger (x+y) means larger Screen Y (down the screen).
+            // Objects lower on screen are "closer".
+            // So larger (x+y) should be drawn LAST.
+            // Hence sort ascending by depth.
+            return posA.depth.compareTo(posB.depth);
           });
 
           // 4. Build Widgets
           return Stack(
             children: renderItems.map((item) {
               if (item is ZoneData) {
-                return _buildZoneItem(item, constraints, totalStars, skillProvider);
+                return _buildZoneItem(
+                    item, constraints, totalStars, skillProvider);
               } else {
                 return _buildAvatarItem(avatar, avatarIsoPos, constraints);
               }
@@ -575,88 +613,89 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     ];
   }
 
-  Widget _buildZoneItem(
-    ZoneData zone, 
-    BoxConstraints constraints, 
-    int totalStars, 
-    SkillProvider skillProvider
-  ) {
-      final index = _zones.indexOf(zone);
-      final isUnlocked = _isZoneUnlocked(index, totalStars);
-      final isCurrentZone = _currentZoneIndex == index;
-      final zoneStats = skillProvider.getZoneStats(zone.id.replaceAll('-', '_'));
+  Widget _buildZoneItem(ZoneData zone, BoxConstraints constraints,
+      int totalStars, SkillProvider skillProvider) {
+    final index = _zones.indexOf(zone);
+    final isUnlocked = _isZoneUnlocked(index, totalStars);
+    final isCurrentZone = _currentZoneIndex == index;
+    final zoneStats = skillProvider.getZoneStats(zone.id.replaceAll('-', '_'));
 
-      // Use isometric position
-      final isoPos = _zoneIsometricPositions[zone.id]!;
-      final screenPos = WorldMapIsometricHelper.gridToScreen(
-        isoPos,
-        Size(constraints.maxWidth, constraints.maxHeight),
-      );
+    // Use isometric position
+    final isoPos = _zoneIsometricPositions[zone.id]!;
+    final screenPos = WorldMapIsometricHelper.gridToScreen(
+      isoPos,
+      Size(constraints.maxWidth, constraints.maxHeight),
+    );
 
-      // Animation calculations (reused from original)
-      final delay = index * 0.15;
-      final progress = ((_entranceController.value - delay) / 0.4).clamp(0.0, 1.0);
-      
-      // Atmospheric perspective: fade distant zones (higher Y = further back)
-      final atmosphericOpacity = 1.0 - (zone.position.dy * 0.3); // 0-30% fade for depth
-      final finalOpacity = progress * atmosphericOpacity;
-          
-      return Positioned(
-        left: screenPos.dx - 60,
-        top: screenPos.dy - 70 + (1 - progress) * 50,
-        child: Opacity(
-          opacity: finalOpacity,
-          child: _ZoneIsland(
-            zone: zone,
-            isUnlocked: isUnlocked,
-            isCurrentZone: isCurrentZone,
-            isSelected: _selectedZoneIndex == index,
-            starsEarned: zoneStats.masteredSkills,
-            totalSkills: zoneStats.totalSkills,
-            floatAnimation: _floatController,
-            onTap: isUnlocked 
-                ? () {
-                    debugPrint('Tapped zone ${zone.name} - moving to index $index');
-                    _moveToZone(index);
-                  }
-                : () {
-                    debugPrint('Tapped locked zone ${zone.name}');
-                    _showLockedDialog(zone, totalStars);
-                  },
-          ),
+    // Animation calculations (reused from original)
+    final delay = index * 0.15;
+    final progress =
+        ((_entranceController.value - delay) / 0.4).clamp(0.0, 1.0);
+
+    // Atmospheric perspective: fade distant zones (higher Y = further back)
+    final atmosphericOpacity =
+        1.0 - (zone.position.dy * 0.3); // 0-30% fade for depth
+    final finalOpacity = progress * atmosphericOpacity;
+
+    return Positioned(
+      left: screenPos.dx - 60,
+      top: screenPos.dy - 70 + (1 - progress) * 50,
+      child: Opacity(
+        opacity: finalOpacity,
+        child: _ZoneIsland(
+          zone: zone,
+          isUnlocked: isUnlocked,
+          isCurrentZone: isCurrentZone,
+          isSelected: _selectedZoneIndex == index,
+          starsEarned: zoneStats.masteredSkills,
+          totalSkills: zoneStats.totalSkills,
+          floatAnimation: _floatController,
+          onTap: isUnlocked
+              ? () {
+                  debugPrint(
+                      'Tapped zone ${zone.name} - moving to index $index');
+                  _moveToZone(index);
+                }
+              : () {
+                  debugPrint('Tapped locked zone ${zone.name}');
+                  _showLockedDialog(zone, totalStars);
+                },
         ),
-      );
+      ),
+    );
   }
 
-  Widget _buildAvatarItem(Avatar avatar, IsometricPosition isoPos, BoxConstraints constraints) {
-      final screenPos = WorldMapIsometricHelper.gridToScreen(
-        isoPos,
-        Size(constraints.maxWidth, constraints.maxHeight),
-      );
-      
-      // Add jump arc if moving
-      double arcHeight = 0;
-      if (_isMoving) {
-         double t = Curves.easeInOutCubic.transform(_avatarMoveController.value);
-         arcHeight = -40 * math.sin(t * math.pi);
-      }
+  Widget _buildAvatarItem(
+      Avatar avatar, IsometricPosition isoPos, BoxConstraints constraints) {
+    final screenPos = WorldMapIsometricHelper.gridToScreen(
+      isoPos,
+      Size(constraints.maxWidth, constraints.maxHeight),
+    );
 
-      return Positioned(
-        left: screenPos.dx - 35,
-        top: screenPos.dy - 70 + arcHeight,
-        child: IgnorePointer(
-          ignoring: false,
-          child: _build3DAvatar(avatar, _isMoving),
-        ),
-      );
+    // Add jump arc if moving
+    double arcHeight = 0;
+    if (_isMoving) {
+      double t = Curves.easeInOutCubic.transform(_avatarMoveController.value);
+      arcHeight = -40 * math.sin(t * math.pi);
+    }
+
+    return Positioned(
+      left: screenPos.dx - 35,
+      top: screenPos.dy - 70 + arcHeight,
+      child: IgnorePointer(
+        ignoring: false,
+        child: _build3DAvatar(avatar, _isMoving),
+      ),
+    );
   }
 
   Widget _build3DAvatar(Avatar avatar, bool isMoving) {
     return AnimatedBuilder(
       animation: _floatController,
       builder: (context, child) {
-        final bounce = isMoving ? 0.0 : math.sin(_floatController.value * math.pi) * 3;
-        
+        final bounce =
+            isMoving ? 0.0 : math.sin(_floatController.value * math.pi) * 3;
+
         return GestureDetector(
           onTap: () => _showAvatarInfo(context, avatar),
           child: Transform.translate(
@@ -675,8 +714,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       character: avatar.baseCharacter,
                       skinColor: avatar.skinColor,
                       size: 50,
-                      animation: isMoving 
-                          ? CharacterAnimation.walking 
+                      animation: isMoving
+                          ? CharacterAnimation.walking
                           : CharacterAnimation.idle,
                       showParticles: false,
                     ),
@@ -684,7 +723,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   const SizedBox(height: 2),
                   // Name tag
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [AppColors.primary, AppColors.secondary],
@@ -718,6 +758,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   Widget _buildTopHUD(Avatar avatar, int totalStars) {
+    final streakService = Provider.of<StreakService>(context);
+
     return Positioned(
       top: 10,
       left: 16,
@@ -749,7 +791,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       'assets/images/logo.png',
                       width: 28,
                       height: 28,
-                      errorBuilder: (_, __, ___) => const Text('🌟', style: TextStyle(fontSize: 20)),
+                      errorBuilder: (_, __, ___) =>
+                          const Text('🌟', style: TextStyle(fontSize: 20)),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -764,9 +807,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               ),
             ),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           // Player switcher button
           GestureDetector(
             onTap: () => _showPlayerSwitcher(context),
@@ -775,7 +818,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 2),
+                border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.3), width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.1),
@@ -797,14 +841,26 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                     ),
                   ),
                   const SizedBox(width: 2),
-                  const Icon(Icons.swap_horiz, size: 16, color: AppColors.primary),
+                  const Icon(Icons.swap_horiz,
+                      size: 16, color: AppColors.primary),
                 ],
               ),
             ),
           ),
-          
+
+          const SizedBox(width: 8),
+
+          // Daily streak indicator
+          GestureDetector(
+            onTap: () => _showStreakDialog(context, streakService),
+            child: StreakWidget(
+              streakService: streakService,
+              compact: true,
+            ),
+          ),
+
           const Spacer(),
-          
+
           // Star counter
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -837,9 +893,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               ],
             ),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           // Settings button
           Container(
             decoration: BoxDecoration(
@@ -878,7 +934,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             onTap: () => _showDailyChallenges(),
           ),
           const SizedBox(width: 12),
-          
+
           // Mini Games button
           _buildActionButton(
             icon: '🎮',
@@ -887,7 +943,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             onTap: () => _showMiniGamesMenu(),
           ),
           const SizedBox(width: 12),
-          
+
           // Achievements button
           _buildActionButton(
             icon: '🏆',
@@ -946,7 +1002,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   void _showLockedDialog(ZoneData zone, int totalStars) {
     final starsNeeded = zone.requiredStars - totalStars;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1041,27 +1097,35 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             children: [
               // Version info
               Container(
-                padding: const EdgeInsets.all(12),
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.1),
+                      AppColors.secondary.withValues(alpha: 0.1)
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.2)),
                 ),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Version 1.0.0',
+                    const Text(
+                      'Version 2.0.0 Alpha',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Alpha Release',
+                      'Created with ❤️ by Matt Hurley',
                       style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
+                        fontSize: 14,
+                        color: Colors.grey[700],
                       ),
                     ),
                   ],
@@ -1069,7 +1133,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               ),
               const SizedBox(height: 16),
               const Text(
-                'Made with ❤️ for learning',
+                'Made with ❤️ for kids who love learning',
                 style: TextStyle(
                   fontSize: 14,
                   fontStyle: FontStyle.italic,
@@ -1079,7 +1143,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               const Divider(),
               const SizedBox(height: 12),
               const Text(
-                'Quick Links',
+                'Connect With Us',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -1087,9 +1151,40 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               ),
               const SizedBox(height: 8),
               // Links
-              _buildLinkTile('🔗', 'Developer Website', 'https://matthurley.dev'),
+              _buildLinkTile(
+                  '🌐', 'Developer Website', 'https://matthurley.dev'),
               const SizedBox(height: 8),
-              _buildLinkTile('❤️', 'Support the Project', 'https://ko-fi.com/theantipopau'),
+              _buildLinkTile(
+                  '☕', 'Buy Us a Coffee', 'https://ko-fi.com/theantipopau'),
+              const SizedBox(height: 8),
+              _buildLinkTile(
+                  '💬', 'Community Forum', 'https://forum.playbrightbound.com'),
+              const SizedBox(height: 8),
+              _buildLinkTile('🐛', 'Report a Bug',
+                  'https://github.com/theantipopau/brightbound_adventures/issues'),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.pink.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.pink.withValues(alpha: 0.3)),
+                ),
+                child: const Row(
+                  children: [
+                    Text('💖', style: TextStyle(fontSize: 20)),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Your support helps us make learning fun for kids everywhere!',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -1102,7 +1197,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       ),
     );
   }
-  
+
   Widget _buildLinkTile(String emoji, String label, String url) {
     return GestureDetector(
       onTap: () async {
@@ -1140,8 +1235,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   void _showMiniGamesMenu() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const MiniGamesScreen(),
+      FadeSlidePageRoute(
+        page: const MiniGamesScreen(),
       ),
     );
   }
@@ -1180,7 +1275,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               children: [
                 _buildStatChip('⭐', 'Level ${avatar.level}', Colors.amber),
                 const SizedBox(width: 8),
-                _buildStatChip('⚡', '${avatar.experiencePoints} XP', Colors.purple),
+                _buildStatChip(
+                    '⚡', '${avatar.experiencePoints} XP', Colors.purple),
               ],
             ),
             const SizedBox(height: 20),
@@ -1220,47 +1316,212 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
-  void _showSettingsDialog(BuildContext context) {
+  void _showStreakDialog(BuildContext context, StreakService streakService) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Row(
+        title: Row(
           children: [
-            Text('⚙️ ', style: TextStyle(fontSize: 24)),
-            Text('Settings'),
+            Text(streakService.streakEmoji,
+                style: const TextStyle(fontSize: 28)),
+            const SizedBox(width: 8),
+            const Text('Daily Streak'),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Text('🔊', style: TextStyle(fontSize: 24)),
-              title: const Text('Sound Effects'),
-              trailing: Switch(value: true, onChanged: (_) {}),
+            // Full streak widget
+            StreakWidget(
+              streakService: streakService,
+              compact: false,
             ),
-            ListTile(
-              leading: const Text('🎵', style: TextStyle(fontSize: 24)),
-              title: const Text('Music'),
-              trailing: Switch(value: true, onChanged: (_) {}),
+            const SizedBox(height: 16),
+            // Stats row
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStreakStat(
+                    '🏆',
+                    '${streakService.longestStreak}',
+                    'Best Streak',
+                  ),
+                  _buildStreakStat(
+                    '📅',
+                    '${streakService.totalDaysPlayed}',
+                    'Days Played',
+                  ),
+                ],
+              ),
             ),
-            const Divider(),
-            ListTile(
-              leading: const Text('🔄', style: TextStyle(fontSize: 24)),
-              title: const Text('Reset Progress'),
-              onTap: () {
-                Navigator.pop(context);
-                _showResetConfirmation(context);
-              },
-            ),
+            if (!streakService.playedToday) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border:
+                      Border.all(color: Colors.amber.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  children: [
+                    const Text('💡', style: TextStyle(fontSize: 20)),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Complete any activity to record your streak today!',
+                        style: TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Done'),
+            child: const Text('Close'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStreakStat(String emoji, String value, String label) {
+    return Column(
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 24)),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 11,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showSettingsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: const Row(
+              children: [
+                Text('⚙️ ', style: TextStyle(fontSize: 24)),
+                Text('Settings'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Text('🔊', style: TextStyle(fontSize: 24)),
+                  title: const Text('Game SFX'),
+                  trailing: Switch(
+                    value: _audioManager.isSfxEnabled,
+                    onChanged: (_) {
+                      _audioManager.toggleSfx();
+                      setState(() {});
+                    },
+                  ),
+                ),
+                ListTile(
+                  leading: const Text('🎵', style: TextStyle(fontSize: 24)),
+                  title: const Text('Music'),
+                  trailing: Switch(
+                    value: _audioManager.isMusicEnabled,
+                    onChanged: (_) {
+                      _audioManager.toggleMusic();
+                      setState(() {});
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Music Volume',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      Slider(
+                        value: _audioManager.musicVolume,
+                        onChanged: (value) {
+                          _audioManager.setMusicVolume(value);
+                          setState(() {});
+                        },
+                      ),
+                      const SizedBox(height: 4),
+                      const Text('SFX Volume',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      Slider(
+                        value: _audioManager.sfxVolume,
+                        onChanged: (value) {
+                          _audioManager.setSfxVolume(value);
+                          setState(() {});
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.supervisor_account,
+                      size: 28, color: Colors.indigo),
+                  title: const Text('Parent Dashboard'),
+                  subtitle: const Text('View progress & stats'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      FadeSlidePageRoute(
+                        page: const ParentDashboardScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.restart_alt,
+                      size: 28, color: Colors.red),
+                  title: const Text('Reset Progress'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showResetConfirmation(context);
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Done'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1294,28 +1555,17 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   void _showDailyChallenges() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const DailyChallengeScreen(),
+      FadeSlidePageRoute(
+        page: const DailyChallengeScreen(),
       ),
     );
   }
-  
-  String _getTimeUntilReset() {
-    final now = DateTime.now();
-    final tomorrow = DateTime(now.year, now.month, now.day + 1);
-    final difference = tomorrow.difference(now);
-    
-    final hours = difference.inHours;
-    final minutes = difference.inMinutes % 60;
-    
-    return '${hours}h ${minutes}m';
-  }
-  
+
   void _showAchievements() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const TrophyRoomScreen(),
+      FadeSlidePageRoute(
+        page: const TrophyRoomScreen(),
       ),
     );
   }
@@ -1355,7 +1605,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               style: TextStyle(color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
-            
+
             // Current player
             Consumer<AvatarProvider>(
               builder: (context, avatarProvider, _) {
@@ -1364,7 +1614,10 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [AppColors.primary.withValues(alpha: 0.1), AppColors.secondary.withValues(alpha: 0.1)],
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.1),
+                        AppColors.secondary.withValues(alpha: 0.1)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.primary, width: 2),
@@ -1407,15 +1660,16 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                           ],
                         ),
                       ),
-                      const Icon(Icons.check_circle, color: Colors.green, size: 28),
+                      const Icon(Icons.check_circle,
+                          color: Colors.green, size: 28),
                     ],
                   ),
                 );
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Create new player button
             SizedBox(
               width: double.infinity,
@@ -1434,9 +1688,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Edit current player
             SizedBox(
               width: double.infinity,
@@ -1450,32 +1704,39 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                 label: const Text('Edit Current Player'),
               ),
             ),
-            
+
             const SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
-  
+
   String _getCharacterEmoji(String character) {
     switch (character.toLowerCase()) {
-      case 'fox': return '🦊';
-      case 'deer': return '🦌';
-      case 'bunny': return '🐰';
-      case 'bear': return '🐻';
-      case 'owl': return '🦉';
-      case 'cat': return '🐱';
-      default: return '🦊';
+      case 'fox':
+        return '🦊';
+      case 'deer':
+        return '🦌';
+      case 'bunny':
+        return '🐰';
+      case 'bear':
+        return '🐻';
+      case 'owl':
+        return '🦉';
+      case 'cat':
+        return '🐱';
+      default:
+        return '🦊';
     }
   }
-  
+
   Widget _buildKeyboardHint() {
     // Hide keyboard hints on phones - they don't have physical keyboards
     if (_isPhoneDevice) {
       return const SizedBox.shrink();
     }
-    
+
     return Positioned(
       bottom: 100,
       left: 16,
@@ -1538,8 +1799,10 @@ class _ZoneIslandState extends State<_ZoneIsland> {
     return AnimatedBuilder(
       animation: widget.floatAnimation,
       builder: (context, child) {
-        final float = math.sin(widget.floatAnimation.value * math.pi + widget.zone.order) * 6; // Increased float
-        
+        final float = math.sin(
+                widget.floatAnimation.value * math.pi + widget.zone.order) *
+            6; // Increased float
+
         return Transform.translate(
           offset: Offset(0, float),
           child: MouseRegion(
@@ -1550,261 +1813,286 @@ class _ZoneIslandState extends State<_ZoneIsland> {
               child: Container(
                 width: 140, // Increased from 120
                 height: 160, // Increased from 140
-                decoration: (widget.isSelected || _isHovered) ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 4,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.zone.color.withValues(alpha: _isHovered ? 0.9 : 0.7),
-                      blurRadius: _isHovered ? 30 : 20,
-                      spreadRadius: _isHovered ? 8 : 5,
-                    ),
-                  ],
-                ) : null,
+                decoration: (widget.isSelected || _isHovered)
+                    ? BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: widget.zone.color
+                                .withValues(alpha: _isHovered ? 0.9 : 0.7),
+                            blurRadius: _isHovered ? 30 : 20,
+                            spreadRadius: _isHovered ? 8 : 5,
+                          ),
+                        ],
+                      )
+                    : null,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                  // Enhanced island shadow with depth
-                  Positioned(
-                    bottom: 0,
-                    child: Container(
-                      width: 100,
-                      height: 25,
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.black.withValues(alpha: 0.25),
-                            Colors.black.withValues(alpha: 0.05),
-                            Colors.transparent,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                    ),
-                  ),
-                  
-                  // Island base with better 3D effect
-                  Positioned(
-                    bottom: 18,
-                    child: Container(
-                      width: 115,
-                      height: 35,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            widget.isUnlocked 
-                                ? widget.zone.color.withValues(alpha: 0.7)
-                                : Colors.grey.withValues(alpha: 0.5),
-                            widget.isUnlocked
-                                ? widget.zone.color.withValues(alpha: 0.4)
-                                : Colors.grey.withValues(alpha: 0.3),
-                          ],
-                        ),
-                        borderRadius: const BorderRadius.vertical(
-                          bottom: Radius.circular(50),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  // Main island body with glow
-                  Positioned(
-                    bottom: 30,
-                    child: Container(
-                      width: 115,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: const Alignment(0, -0.5),
-                          colors: widget.isUnlocked
-                              ? [
-                                  widget.zone.color.withValues(alpha: 0.95),
-                                  widget.zone.color,
-                                  widget.zone.color.withValues(alpha: 0.85),
-                                ]
-                              : [
-                                  Colors.grey.shade300,
-                                  Colors.grey.shade500,
-                                  Colors.grey.shade600,
-                                ],
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: widget.isCurrentZone 
-                              ? Colors.white 
-                              : Colors.white.withValues(alpha: 0.6),
-                          width: widget.isCurrentZone ? 5 : 3,
-                        ),
-                        boxShadow: [
-                          // Inner glow
-                          BoxShadow(
-                            color: (widget.isUnlocked ? widget.zone.color : Colors.grey)
-                                .withValues(alpha: 0.6),
-                            blurRadius: widget.isCurrentZone ? 25 : 15,
-                            spreadRadius: widget.isCurrentZone ? 6 : 3,
-                          ),
-                          // Outer shadow for depth
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(21),
-                        child: Stack(
-                          children: [
-                            // Shimmer effect for unlocked zones
-                            if (widget.isUnlocked)
-                              Positioned.fill(
-                                child: AnimatedBuilder(
-                                  animation: widget.floatAnimation,
-                                  builder: (context, child) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            Colors.white.withValues(alpha: 0.0),
-                                            Colors.white.withValues(alpha: 0.15),
-                                            Colors.white.withValues(alpha: 0.0),
-                                          ],
-                                          stops: [
-                                            widget.floatAnimation.value - 0.3,
-                                            widget.floatAnimation.value,
-                                            widget.floatAnimation.value + 0.3,
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            // Content
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Emoji or lock
-                                Text(
-                                  widget.isUnlocked ? widget.zone.emoji : '🔒',
-                                  style: TextStyle(
-                                    fontSize: widget.isUnlocked ? 36 : 28, // Increased size
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                // Zone name
-                                Text(
-                                  widget.zone.name.split(' ').first,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    shadows: [
-                                      Shadow(
-                                        color: Colors.black.withValues(alpha: 0.5),
-                                        blurRadius: 6,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // Stars progress - only show if unlocked
-                                if (widget.isUnlocked)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: List.generate(3, (i) {
-                                        // Safely calculate stars - avoid division by zero
-                                        final maxStarsPerSection = widget.totalSkills > 0 ? widget.totalSkills / 3 : 1;
-                                        final filled = i < (widget.starsEarned / maxStarsPerSection).ceil();
-                                        return Icon(
-                                          filled ? Icons.star : Icons.star_border,
-                                          size: 12,
-                                          color: Colors.amber,
-                                        );
-                                      }),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  // Current zone indicator
-                  if (widget.isCurrentZone)
+                    // Enhanced island shadow with depth
                     Positioned(
-                      top: 0,
+                      bottom: 0,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
+                        width: 100,
+                        height: 25,
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.black.withValues(alpha: 0.25),
+                              Colors.black.withValues(alpha: 0.05),
+                              Colors.transparent,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                      ),
+                    ),
+
+                    // Island base with better 3D effect
+                    Positioned(
+                      bottom: 18,
+                      child: Container(
+                        width: 115,
+                        height: 35,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              widget.isUnlocked
+                                  ? widget.zone.color.withValues(alpha: 0.7)
+                                  : Colors.grey.withValues(alpha: 0.5),
+                              widget.isUnlocked
+                                  ? widget.zone.color.withValues(alpha: 0.4)
+                                  : Colors.grey.withValues(alpha: 0.3),
+                            ],
+                          ),
+                          borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(50),
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 4,
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                        child: const Text(
-                          '📍 HERE',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ),
                     ),
-                  
-                  // Locked indicator
-                  if (!widget.isUnlocked)
+
+                    // Main island body with glow
                     Positioned(
-                      top: 5,
+                      bottom: 30,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
+                        width: 115,
+                        height: 100,
                         decoration: BoxDecoration(
-                          color: Colors.red.shade400,
-                          borderRadius: BorderRadius.circular(8),
+                          gradient: RadialGradient(
+                            center: const Alignment(0, -0.5),
+                            colors: widget.isUnlocked
+                                ? [
+                                    widget.zone.color.withValues(alpha: 0.95),
+                                    widget.zone.color,
+                                    widget.zone.color.withValues(alpha: 0.85),
+                                  ]
+                                : [
+                                    Colors.grey.shade300,
+                                    Colors.grey.shade500,
+                                    Colors.grey.shade600,
+                                  ],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: widget.isCurrentZone
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.6),
+                            width: widget.isCurrentZone ? 5 : 3,
+                          ),
+                          boxShadow: [
+                            // Inner glow
+                            BoxShadow(
+                              color: (widget.isUnlocked
+                                      ? widget.zone.color
+                                      : Colors.grey)
+                                  .withValues(alpha: 0.6),
+                              blurRadius: widget.isCurrentZone ? 25 : 15,
+                              spreadRadius: widget.isCurrentZone ? 6 : 3,
+                            ),
+                            // Outer shadow for depth
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
                         ),
-                        child: Text(
-                          '${widget.zone.requiredStars}⭐',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(21),
+                          child: Stack(
+                            children: [
+                              // Shimmer effect for unlocked zones
+                              if (widget.isUnlocked)
+                                Positioned.fill(
+                                  child: AnimatedBuilder(
+                                    animation: widget.floatAnimation,
+                                    builder: (context, child) {
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Colors.white
+                                                  .withValues(alpha: 0.0),
+                                              Colors.white
+                                                  .withValues(alpha: 0.15),
+                                              Colors.white
+                                                  .withValues(alpha: 0.0),
+                                            ],
+                                            stops: [
+                                              widget.floatAnimation.value - 0.3,
+                                              widget.floatAnimation.value,
+                                              widget.floatAnimation.value + 0.3,
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              // Content - centered both horizontally and vertically
+                              Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Emoji or lock
+                                    Text(
+                                      widget.isUnlocked
+                                          ? widget.zone.emoji
+                                          : '🔒',
+                                      style: TextStyle(
+                                        fontSize: widget.isUnlocked
+                                            ? 36
+                                            : 28, // Increased size
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    // Zone name
+                                    Text(
+                                      widget.zone.name.split(' ').first,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black
+                                                .withValues(alpha: 0.5),
+                                            blurRadius: 6,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Stars progress - only show if unlocked
+                                    if (widget.isUnlocked)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: List.generate(3, (i) {
+                                            // Safely calculate stars - avoid division by zero
+                                            final maxStarsPerSection =
+                                                widget.totalSkills > 0
+                                                    ? widget.totalSkills / 3
+                                                    : 1;
+                                            final filled = i <
+                                                (widget.starsEarned /
+                                                        maxStarsPerSection)
+                                                    .ceil();
+                                            return Icon(
+                                              filled
+                                                  ? Icons.star
+                                                  : Icons.star_border,
+                                              size: 12,
+                                              color: Colors.amber,
+                                            );
+                                          }),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
-                ],
+
+                    // Current zone indicator
+                    if (widget.isCurrentZone)
+                      Positioned(
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: const Text(
+                            '📍 HERE',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    // Locked indicator
+                    if (!widget.isUnlocked)
+                      Positioned(
+                        top: 5,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade400,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${widget.zone.requiredStars}⭐',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
           ),
         );
       },
@@ -1822,44 +2110,44 @@ class _EnhancedBackgroundPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Layer 0: Sky gradient with sun/moon
     _drawSky(canvas, size);
-    
+
     // Layer 1: Distant castles and buildings
     _drawDistantStructures(canvas, size);
-    
+
     // Layer 2: Distant mountains with snow caps
     _drawDistantMountains(canvas, size);
-    
+
     // Layer 3: Rolling hills with more detail
     _drawRollingHills(canvas, size);
-    
+
     // Layer 4: Puffy clouds with depth
     _drawClouds(canvas, size);
-    
+
     // Layer 5: Flying birds
     _drawBirds(canvas, size);
-    
+
     // Layer 6: Butterflies
     _drawButterflies(canvas, size);
-    
+
     // Layer 7: Water features with reflections
     _drawWaterFeatures(canvas, size);
-    
+
     // Layer 8: Trees and foliage
     _drawTrees(canvas, size);
-    
+
     // Layer 9: Bushes
     _drawBushes(canvas, size);
-    
+
     // Layer 10: Grass patches
     _drawGrassPatches(canvas, size);
-    
+
     // Layer 11: Flowers
     _drawFlowers(canvas, size);
-    
+
     // Layer 12: Floating particles/sparkles
     _drawSparkles(canvas, size);
   }
-  
+
   void _drawSky(Canvas canvas, Size size) {
     // Beautiful gradient sky
     final skyPaint = Paint()
@@ -1872,12 +2160,12 @@ class _EnhancedBackgroundPainter extends CustomPainter {
           const Color(0xFFFFF8DC), // Cornsilk (horizon)
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    
+
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), skyPaint);
-    
+
     // Sun with glow
     final sunPosition = Offset(size.width * 0.85, size.height * 0.12);
-    
+
     // Outer glow
     final glowPaint = Paint()
       ..shader = RadialGradient(
@@ -1888,7 +2176,7 @@ class _EnhancedBackgroundPainter extends CustomPainter {
         ],
       ).createShader(Rect.fromCircle(center: sunPosition, radius: 60));
     canvas.drawCircle(sunPosition, 60, glowPaint);
-    
+
     // Sun body
     final sunPaint = Paint()
       ..shader = RadialGradient(
@@ -1898,21 +2186,23 @@ class _EnhancedBackgroundPainter extends CustomPainter {
         ],
       ).createShader(Rect.fromCircle(center: sunPosition, radius: 30));
     canvas.drawCircle(sunPosition, 30, sunPaint);
-    
+
     // Sun rays
     final rayPaint = Paint()
       ..color = Colors.yellow.withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-    
+
     for (int i = 0; i < 12; i++) {
       final angle = (i * math.pi / 6) + animation * math.pi * 0.2;
-      final start = sunPosition + Offset(math.cos(angle) * 35, math.sin(angle) * 35);
-      final end = sunPosition + Offset(math.cos(angle) * 50, math.sin(angle) * 50);
+      final start =
+          sunPosition + Offset(math.cos(angle) * 35, math.sin(angle) * 35);
+      final end =
+          sunPosition + Offset(math.cos(angle) * 50, math.sin(angle) * 50);
       canvas.drawLine(start, end, rayPaint);
     }
   }
-  
+
   void _drawDistantStructures(Canvas canvas, Size size) {
     // Distant castle/buildings on horizon
     final structures = [
@@ -1920,23 +2210,23 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       Offset(size.width * 0.45, size.height * 0.38),
       Offset(size.width * 0.72, size.height * 0.4),
     ];
-    
+
     for (final structure in structures) {
       _drawCastle(canvas, structure, 25.0);
     }
   }
-  
+
   void _drawCastle(Canvas canvas, Offset position, double size) {
     final castlePaint = Paint()
       ..color = Colors.purple.shade900.withValues(alpha: 0.25)
       ..style = PaintingStyle.fill;
-    
+
     // Main tower
     canvas.drawRect(
       Rect.fromCenter(center: position, width: size, height: size * 1.5),
       castlePaint,
     );
-    
+
     // Side towers
     canvas.drawRect(
       Rect.fromCenter(
@@ -1954,7 +2244,7 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       ),
       castlePaint,
     );
-    
+
     // Cone roofs
     final roofPath = Path()
       ..moveTo(position.dx - size * 0.6, position.dy - size * 0.75)
@@ -1963,10 +2253,10 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       ..close();
     canvas.drawPath(roofPath, castlePaint);
   }
-  
+
   void _drawDistantMountains(Canvas canvas, Size size) {
     final float = math.sin(animation * math.pi * 0.3) * 3;
-    
+
     // Back mountain range (bluish)
     final backPaint = Paint()
       ..shader = LinearGradient(
@@ -1977,23 +2267,27 @@ class _EnhancedBackgroundPainter extends CustomPainter {
           Colors.blue.shade200.withValues(alpha: 0.3),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    
+
     final backPath = Path();
     backPath.moveTo(0, size.height * 0.52);
     backPath.quadraticBezierTo(
-      size.width * 0.2 + float, size.height * 0.38,
-      size.width * 0.4, size.height * 0.48,
+      size.width * 0.2 + float,
+      size.height * 0.38,
+      size.width * 0.4,
+      size.height * 0.48,
     );
     backPath.quadraticBezierTo(
-      size.width * 0.6 + float, size.height * 0.32,
-      size.width * 0.8, size.height * 0.45,
+      size.width * 0.6 + float,
+      size.height * 0.32,
+      size.width * 0.8,
+      size.height * 0.45,
     );
     backPath.lineTo(size.width, size.height * 0.45);
     backPath.lineTo(size.width, size.height);
     backPath.lineTo(0, size.height);
     backPath.close();
     canvas.drawPath(backPath, backPaint);
-    
+
     // Front mountain range with snow caps
     final frontPaint = Paint()
       ..shader = LinearGradient(
@@ -2004,37 +2298,43 @@ class _EnhancedBackgroundPainter extends CustomPainter {
           Colors.blueGrey.shade300.withValues(alpha: 0.4),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    
+
     final frontPath = Path();
     frontPath.moveTo(0, size.height * 0.5);
     frontPath.quadraticBezierTo(
-      size.width * 0.15 + float, size.height * 0.35,
-      size.width * 0.3, size.height * 0.45,
+      size.width * 0.15 + float,
+      size.height * 0.35,
+      size.width * 0.3,
+      size.height * 0.45,
     );
     frontPath.quadraticBezierTo(
-      size.width * 0.45 + float, size.height * 0.3,
-      size.width * 0.6, size.height * 0.42,
+      size.width * 0.45 + float,
+      size.height * 0.3,
+      size.width * 0.6,
+      size.height * 0.42,
     );
     frontPath.quadraticBezierTo(
-      size.width * 0.8 + float, size.height * 0.28,
-      size.width, size.height * 0.4,
+      size.width * 0.8 + float,
+      size.height * 0.28,
+      size.width,
+      size.height * 0.4,
     );
     frontPath.lineTo(size.width, size.height);
     frontPath.lineTo(0, size.height);
     frontPath.close();
     canvas.drawPath(frontPath, frontPaint);
-    
+
     // Snow caps on peaks
     final snowPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.7)
       ..style = PaintingStyle.fill;
-    
+
     final snowCaps = [
       Offset(size.width * 0.15 + float, size.height * 0.35),
       Offset(size.width * 0.45 + float, size.height * 0.3),
       Offset(size.width * 0.8 + float, size.height * 0.28),
     ];
-    
+
     for (final cap in snowCaps) {
       final snowPath = Path()
         ..moveTo(cap.dx - 15, cap.dy + 8)
@@ -2044,7 +2344,7 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       canvas.drawPath(snowPath, snowPaint);
     }
   }
-  
+
   void _drawRollingHills(Canvas canvas, Size size) {
     final paint = Paint()
       ..shader = LinearGradient(
@@ -2055,27 +2355,33 @@ class _EnhancedBackgroundPainter extends CustomPainter {
           Colors.green.shade100.withValues(alpha: 0.15),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    
+
     final float = math.sin(animation * math.pi * 0.5) * 5; // Medium parallax
-    
+
     final path = Path();
     path.moveTo(0, size.height * 0.7);
     path.quadraticBezierTo(
-      size.width * 0.2 + float, size.height * 0.6,
-      size.width * 0.4, size.height * 0.68,
+      size.width * 0.2 + float,
+      size.height * 0.6,
+      size.width * 0.4,
+      size.height * 0.68,
     );
     path.quadraticBezierTo(
-      size.width * 0.6 + float, size.height * 0.55,
-      size.width * 0.8, size.height * 0.65,
+      size.width * 0.6 + float,
+      size.height * 0.55,
+      size.width * 0.8,
+      size.height * 0.65,
     );
     path.quadraticBezierTo(
-      size.width * 0.95 + float, size.height * 0.58,
-      size.width, size.height * 0.62,
+      size.width * 0.95 + float,
+      size.height * 0.58,
+      size.width,
+      size.height * 0.62,
     );
     path.lineTo(size.width, size.height);
     path.lineTo(0, size.height);
     path.close();
-    
+
     canvas.drawPath(path, paint);
   }
 
@@ -2092,10 +2398,11 @@ class _EnhancedBackgroundPainter extends CustomPainter {
     for (int i = 0; i < clouds.length; i++) {
       final cloud = clouds[i];
       final float = math.sin(animation * math.pi + i * 0.5) * 12;
-      
+
       _draw3DCloud(
         canvas,
-        cloud.position + Offset(float, math.sin(animation * math.pi * 0.5 + i) * 3),
+        cloud.position +
+            Offset(float, math.sin(animation * math.pi * 0.5 + i) * 3),
         cloud.size,
         cloud.opacity,
       );
@@ -2108,37 +2415,43 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       ..color = Colors.blueGrey.withValues(alpha: opacity * 0.15)
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    
+
     const shadowOffset = Offset(4, 4);
     _drawCloudShape(canvas, center + shadowOffset, size, shadowPaint);
-    
+
     // Main cloud (white with gradient feel)
     final mainPaint = Paint()
       ..color = Colors.white.withValues(alpha: opacity * 0.85)
       ..style = PaintingStyle.fill;
-    
+
     _drawCloudShape(canvas, center, size, mainPaint);
-    
+
     // Highlight layer (top portion, brighter)
     final highlightPaint = Paint()
       ..color = Colors.white.withValues(alpha: opacity * 0.4)
       ..style = PaintingStyle.fill;
-    
-    canvas.drawCircle(center + Offset(-size * 0.2, -size * 0.3), size * 0.4, highlightPaint);
-    canvas.drawCircle(center + Offset(size * 0.15, -size * 0.35), size * 0.35, highlightPaint);
+
+    canvas.drawCircle(
+        center + Offset(-size * 0.2, -size * 0.3), size * 0.4, highlightPaint);
+    canvas.drawCircle(center + Offset(size * 0.15, -size * 0.35), size * 0.35,
+        highlightPaint);
   }
-  
+
   void _drawCloudShape(Canvas canvas, Offset center, double size, Paint paint) {
     canvas.drawCircle(center, size, paint);
-    canvas.drawCircle(center + Offset(-size * 0.7, size * 0.1), size * 0.75, paint);
-    canvas.drawCircle(center + Offset(size * 0.7, size * 0.1), size * 0.75, paint);
-    canvas.drawCircle(center + Offset(-size * 0.35, -size * 0.35), size * 0.65, paint);
-    canvas.drawCircle(center + Offset(size * 0.35, -size * 0.35), size * 0.65, paint);
+    canvas.drawCircle(
+        center + Offset(-size * 0.7, size * 0.1), size * 0.75, paint);
+    canvas.drawCircle(
+        center + Offset(size * 0.7, size * 0.1), size * 0.75, paint);
+    canvas.drawCircle(
+        center + Offset(-size * 0.35, -size * 0.35), size * 0.65, paint);
+    canvas.drawCircle(
+        center + Offset(size * 0.35, -size * 0.35), size * 0.65, paint);
   }
-  
+
   void _drawWaterFeatures(Canvas canvas, Size size) {
     final float = math.sin(animation * math.pi * 0.4) * 8;
-    
+
     // Winding river/stream with depth
     final waterPaint = Paint()
       ..shader = LinearGradient(
@@ -2149,67 +2462,88 @@ class _EnhancedBackgroundPainter extends CustomPainter {
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill;
-    
+
     final waterPath = Path();
     waterPath.moveTo(0, size.height * 0.75);
     waterPath.quadraticBezierTo(
-      size.width * 0.15 + float, size.height * 0.72,
-      size.width * 0.3, size.height * 0.78,
+      size.width * 0.15 + float,
+      size.height * 0.72,
+      size.width * 0.3,
+      size.height * 0.78,
     );
     waterPath.quadraticBezierTo(
-      size.width * 0.5 + float, size.height * 0.74,
-      size.width * 0.7, size.height * 0.8,
+      size.width * 0.5 + float,
+      size.height * 0.74,
+      size.width * 0.7,
+      size.height * 0.8,
     );
     waterPath.quadraticBezierTo(
-      size.width * 0.85 + float, size.height * 0.77,
-      size.width, size.height * 0.79,
+      size.width * 0.85 + float,
+      size.height * 0.77,
+      size.width,
+      size.height * 0.79,
     );
     waterPath.lineTo(size.width, size.height * 0.85);
     waterPath.quadraticBezierTo(
-      size.width * 0.85, size.height * 0.83,
-      size.width * 0.7, size.height * 0.86,
+      size.width * 0.85,
+      size.height * 0.83,
+      size.width * 0.7,
+      size.height * 0.86,
     );
     waterPath.quadraticBezierTo(
-      size.width * 0.5, size.height * 0.8,
-      size.width * 0.3, size.height * 0.84,
+      size.width * 0.5,
+      size.height * 0.8,
+      size.width * 0.3,
+      size.height * 0.84,
     );
     waterPath.quadraticBezierTo(
-      size.width * 0.15, size.height * 0.78,
-      0, size.height * 0.81,
+      size.width * 0.15,
+      size.height * 0.78,
+      0,
+      size.height * 0.81,
     );
     waterPath.close();
     canvas.drawPath(waterPath, waterPaint);
-    
+
     // Water edge highlights
     final edgePaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-    
+
     final edgePath = Path();
     edgePath.moveTo(0, size.height * 0.75);
     edgePath.quadraticBezierTo(
-      size.width * 0.15 + float, size.height * 0.72,
-      size.width * 0.3, size.height * 0.78,
+      size.width * 0.15 + float,
+      size.height * 0.72,
+      size.width * 0.3,
+      size.height * 0.78,
     );
     edgePath.quadraticBezierTo(
-      size.width * 0.5 + float, size.height * 0.74,
-      size.width * 0.7, size.height * 0.8,
+      size.width * 0.5 + float,
+      size.height * 0.74,
+      size.width * 0.7,
+      size.height * 0.8,
     );
     edgePath.quadraticBezierTo(
-      size.width * 0.85 + float, size.height * 0.77,
-      size.width, size.height * 0.79,
+      size.width * 0.85 + float,
+      size.height * 0.77,
+      size.width,
+      size.height * 0.79,
     );
     canvas.drawPath(edgePath, edgePaint);
-    
+
     // Water shimmer with more sparkle
     final shimmerPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.3 + math.sin(animation * math.pi * 3) * 0.2)
+      ..color = Colors.white
+          .withValues(alpha: 0.3 + math.sin(animation * math.pi * 3) * 0.2)
       ..style = PaintingStyle.fill;
-    
+
     for (int i = 0; i < 8; i++) {
-      final shimmerX = size.width * (0.1 + i * 0.11) + math.sin(animation * math.pi * 2 + i) * 12;
-      final shimmerY = size.height * 0.77 + math.sin(animation * math.pi + i) * 4;
+      final shimmerX = size.width * (0.1 + i * 0.11) +
+          math.sin(animation * math.pi * 2 + i) * 12;
+      final shimmerY =
+          size.height * 0.77 + math.sin(animation * math.pi + i) * 4;
       canvas.drawOval(
         Rect.fromCenter(
           center: Offset(shimmerX, shimmerY),
@@ -2219,13 +2553,13 @@ class _EnhancedBackgroundPainter extends CustomPainter {
         shimmerPaint,
       );
     }
-    
+
     // Water ripples
     final ripplePaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.15)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
-    
+
     for (int i = 0; i < 4; i++) {
       final ripplePhase = (animation * 2 + i * 0.5) % 1;
       final rippleX = size.width * (0.2 + i * 0.2);
@@ -2236,33 +2570,40 @@ class _EnhancedBackgroundPainter extends CustomPainter {
           width: 20 * ripplePhase,
           height: 10 * ripplePhase,
         ),
-        ripplePaint..color = Colors.white.withValues(alpha: 0.2 * (1 - ripplePhase)),
+        ripplePaint
+          ..color = Colors.white.withValues(alpha: 0.2 * (1 - ripplePhase)),
       );
     }
   }
-  
+
   void _drawTrees(Canvas canvas, Size size) {
     final trees = [
-      _TreeData(Offset(size.width * 0.08, size.height * 0.68), 35, Colors.green.shade700),
-      _TreeData(Offset(size.width * 0.22, size.height * 0.58), 42, Colors.green.shade600),
-      _TreeData(Offset(size.width * 0.35, size.height * 0.72), 38, Colors.green.shade700),
-      _TreeData(Offset(size.width * 0.62, size.height * 0.55), 45, Colors.green.shade800),
-      _TreeData(Offset(size.width * 0.78, size.height * 0.7), 40, Colors.green.shade700),
-      _TreeData(Offset(size.width * 0.92, size.height * 0.62), 36, Colors.green.shade600),
+      _TreeData(Offset(size.width * 0.08, size.height * 0.68), 35,
+          Colors.green.shade700),
+      _TreeData(Offset(size.width * 0.22, size.height * 0.58), 42,
+          Colors.green.shade600),
+      _TreeData(Offset(size.width * 0.35, size.height * 0.72), 38,
+          Colors.green.shade700),
+      _TreeData(Offset(size.width * 0.62, size.height * 0.55), 45,
+          Colors.green.shade800),
+      _TreeData(Offset(size.width * 0.78, size.height * 0.7), 40,
+          Colors.green.shade700),
+      _TreeData(Offset(size.width * 0.92, size.height * 0.62), 36,
+          Colors.green.shade600),
     ];
-    
+
     for (final tree in trees) {
       final sway = math.sin(animation * math.pi * 0.5) * 2;
       _drawTree(canvas, tree.position + Offset(sway, 0), tree.size, tree.color);
     }
   }
-  
+
   void _drawTree(Canvas canvas, Offset position, double size, Color leafColor) {
     // Tree trunk
     final trunkPaint = Paint()
       ..color = Colors.brown.shade700
       ..style = PaintingStyle.fill;
-    
+
     final trunkRect = RRect.fromRectAndRadius(
       Rect.fromCenter(
         center: position + Offset(0, size * 0.3),
@@ -2272,28 +2613,31 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       Radius.circular(size * 0.05),
     );
     canvas.drawRRect(trunkRect, trunkPaint);
-    
+
     // Tree leaves (3 circles)
     final leafPaint = Paint()
       ..color = leafColor
       ..style = PaintingStyle.fill;
-    
+
     final shadowPaint = Paint()
       ..color = Colors.black.withValues(alpha: 0.15)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    
+
     canvas.drawCircle(position + Offset(2, 2), size * 0.4, shadowPaint);
     canvas.drawCircle(position, size * 0.4, leafPaint);
-    canvas.drawCircle(position + Offset(-size * 0.2, -size * 0.15), size * 0.35, leafPaint);
-    canvas.drawCircle(position + Offset(size * 0.2, -size * 0.15), size * 0.35, leafPaint);
-    
+    canvas.drawCircle(
+        position + Offset(-size * 0.2, -size * 0.15), size * 0.35, leafPaint);
+    canvas.drawCircle(
+        position + Offset(size * 0.2, -size * 0.15), size * 0.35, leafPaint);
+
     // Highlight
     final highlightPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(position + Offset(-size * 0.15, -size * 0.2), size * 0.15, highlightPaint);
+    canvas.drawCircle(position + Offset(-size * 0.15, -size * 0.2), size * 0.15,
+        highlightPaint);
   }
-  
+
   void _drawGrassPatches(Canvas canvas, Size size) {
     final patches = [
       Offset(size.width * 0.12, size.height * 0.73),
@@ -2303,20 +2647,21 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       Offset(size.width * 0.73, size.height * 0.75),
       Offset(size.width * 0.88, size.height * 0.68),
     ];
-    
+
     for (int i = 0; i < patches.length; i++) {
       final sway = math.sin(animation * math.pi * 0.7 + i * 0.5) * 1.5;
       final center = patches[i] + Offset(sway, 0);
-      
+
       // Draw grass blades
       for (int j = 0; j < 8; j++) {
         final angle = (j / 8) * math.pi * 2;
         final bladeHeight = 8 + math.sin(animation * math.pi + j) * 2;
-        final bladeEnd = center + Offset(
-          math.cos(angle) * 12,
-          -bladeHeight + math.sin(angle) * 3,
-        );
-        
+        final bladeEnd = center +
+            Offset(
+              math.cos(angle) * 12,
+              -bladeHeight + math.sin(angle) * 3,
+            );
+
         final bladePath = Path()
           ..moveTo(center.dx, center.dy)
           ..quadraticBezierTo(
@@ -2325,18 +2670,18 @@ class _EnhancedBackgroundPainter extends CustomPainter {
             bladeEnd.dx,
             bladeEnd.dy,
           );
-        
+
         final bladePaint = Paint()
           ..color = Colors.green.shade400.withValues(alpha: 0.5 + j * 0.05)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5
           ..strokeCap = StrokeCap.round;
-        
+
         canvas.drawPath(bladePath, bladePaint);
       }
     }
   }
-  
+
   void _drawBushes(Canvas canvas, Size size) {
     final bushes = [
       Offset(size.width * 0.05, size.height * 0.72),
@@ -2347,99 +2692,113 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       Offset(size.width * 0.82, size.height * 0.68),
       Offset(size.width * 0.95, size.height * 0.71),
     ];
-    
+
     for (int i = 0; i < bushes.length; i++) {
       final sway = math.sin(animation * math.pi * 0.3 + i * 0.8) * 1;
       _drawBush(canvas, bushes[i] + Offset(sway, 0), 15.0 + (i % 3) * 5);
     }
   }
-  
+
   void _drawBush(Canvas canvas, Offset position, double size) {
     final bushPaint = Paint()
       ..color = Colors.green.shade700.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
-    
+
     // Multiple overlapping circles for fluffy bush
     canvas.drawCircle(position, size, bushPaint);
-    canvas.drawCircle(position + Offset(-size * 0.5, size * 0.2), size * 0.8, bushPaint);
-    canvas.drawCircle(position + Offset(size * 0.5, size * 0.2), size * 0.8, bushPaint);
+    canvas.drawCircle(
+        position + Offset(-size * 0.5, size * 0.2), size * 0.8, bushPaint);
+    canvas.drawCircle(
+        position + Offset(size * 0.5, size * 0.2), size * 0.8, bushPaint);
     canvas.drawCircle(position + Offset(0, -size * 0.4), size * 0.7, bushPaint);
-    
+
     // Highlight
     final highlightPaint = Paint()
       ..color = Colors.green.shade300.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(position + Offset(-size * 0.3, -size * 0.3), size * 0.4, highlightPaint);
+    canvas.drawCircle(position + Offset(-size * 0.3, -size * 0.3), size * 0.4,
+        highlightPaint);
   }
-  
+
   void _drawFlowers(Canvas canvas, Size size) {
     final flowers = [
-      _FlowerData(Offset(size.width * 0.12, size.height * 0.74), Colors.pink, 6),
-      _FlowerData(Offset(size.width * 0.16, size.height * 0.71), Colors.yellow, 5),
-      _FlowerData(Offset(size.width * 0.29, size.height * 0.68), Colors.purple, 6),
+      _FlowerData(
+          Offset(size.width * 0.12, size.height * 0.74), Colors.pink, 6),
+      _FlowerData(
+          Offset(size.width * 0.16, size.height * 0.71), Colors.yellow, 5),
+      _FlowerData(
+          Offset(size.width * 0.29, size.height * 0.68), Colors.purple, 6),
       _FlowerData(Offset(size.width * 0.33, size.height * 0.76), Colors.red, 5),
-      _FlowerData(Offset(size.width * 0.46, size.height * 0.79), Colors.orange, 6),
-      _FlowerData(Offset(size.width * 0.59, size.height * 0.63), Colors.pink, 5),
-      _FlowerData(Offset(size.width * 0.65, size.height * 0.73), Colors.yellow, 6),
-      _FlowerData(Offset(size.width * 0.74, size.height * 0.76), Colors.purple, 5),
+      _FlowerData(
+          Offset(size.width * 0.46, size.height * 0.79), Colors.orange, 6),
+      _FlowerData(
+          Offset(size.width * 0.59, size.height * 0.63), Colors.pink, 5),
+      _FlowerData(
+          Offset(size.width * 0.65, size.height * 0.73), Colors.yellow, 6),
+      _FlowerData(
+          Offset(size.width * 0.74, size.height * 0.76), Colors.purple, 5),
       _FlowerData(Offset(size.width * 0.83, size.height * 0.69), Colors.red, 6),
-      _FlowerData(Offset(size.width * 0.89, size.height * 0.72), Colors.orange, 5),
+      _FlowerData(
+          Offset(size.width * 0.89, size.height * 0.72), Colors.orange, 5),
     ];
-    
+
     for (int i = 0; i < flowers.length; i++) {
       final bob = math.sin(animation * math.pi * 1.5 + i * 0.7) * 2;
-      _drawFlower(canvas, flowers[i].position + Offset(0, bob), flowers[i].color, flowers[i].petalCount);
+      _drawFlower(canvas, flowers[i].position + Offset(0, bob),
+          flowers[i].color, flowers[i].petalCount);
     }
   }
-  
-  void _drawFlower(Canvas canvas, Offset position, Color color, int petalCount) {
+
+  void _drawFlower(
+      Canvas canvas, Offset position, Color color, int petalCount) {
     // Stem
     final stemPaint = Paint()
       ..color = Colors.green.shade600
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
     canvas.drawLine(position, position + const Offset(0, 12), stemPaint);
-    
+
     // Petals
     final petalPaint = Paint()
       ..color = color.withValues(alpha: 0.8)
       ..style = PaintingStyle.fill;
-    
+
     for (int i = 0; i < petalCount; i++) {
       final angle = (i * 2 * math.pi / petalCount);
-      final petalPos = position + Offset(
-        math.cos(angle) * 4,
-        math.sin(angle) * 4,
-      );
+      final petalPos = position +
+          Offset(
+            math.cos(angle) * 4,
+            math.sin(angle) * 4,
+          );
       canvas.drawCircle(petalPos, 3, petalPaint);
     }
-    
+
     // Center
     final centerPaint = Paint()
       ..color = Colors.yellow.shade700
       ..style = PaintingStyle.fill;
     canvas.drawCircle(position, 2.5, centerPaint);
   }
-  
+
   void _drawButterflies(Canvas canvas, Size size) {
     final butterflies = [
       Offset(size.width * 0.25, size.height * 0.35),
       Offset(size.width * 0.6, size.height * 0.45),
       Offset(size.width * 0.8, size.height * 0.28),
     ];
-    
+
     for (int i = 0; i < butterflies.length; i++) {
       final flyX = math.sin(animation * math.pi * 1.5 + i * 2) * 40;
       final flyY = math.sin(animation * math.pi * 2 + i) * 20;
       final position = butterflies[i] + Offset(flyX, flyY);
-      
+
       _drawButterfly(canvas, position, animation + i * 0.5);
     }
   }
-  
+
   void _drawButterfly(Canvas canvas, Offset position, double animPhase) {
     final wingFlap = math.sin(animPhase * math.pi * 12) * 0.3 + 0.7;
-    
+
     // Body
     final bodyPaint = Paint()
       ..color = Colors.black.withValues(alpha: 0.7)
@@ -2448,7 +2807,7 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       Rect.fromCenter(center: position, width: 3, height: 8),
       bodyPaint,
     );
-    
+
     // Left wings
     final leftWingPaint = Paint()
       ..shader = RadialGradient(
@@ -2457,8 +2816,9 @@ class _EnhancedBackgroundPainter extends CustomPainter {
           Colors.pink.shade200,
           Colors.white.withValues(alpha: 0.8),
         ],
-      ).createShader(Rect.fromCircle(center: position + Offset(-5 * wingFlap, -3), radius: 8));
-    
+      ).createShader(Rect.fromCircle(
+          center: position + Offset(-5 * wingFlap, -3), radius: 8));
+
     canvas.drawOval(
       Rect.fromCenter(
         center: position + Offset(-5 * wingFlap, -3),
@@ -2475,7 +2835,7 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       ),
       leftWingPaint,
     );
-    
+
     // Right wings
     final rightWingPaint = Paint()
       ..shader = RadialGradient(
@@ -2484,8 +2844,9 @@ class _EnhancedBackgroundPainter extends CustomPainter {
           Colors.pink.shade200,
           Colors.white.withValues(alpha: 0.8),
         ],
-      ).createShader(Rect.fromCircle(center: position + Offset(5 * wingFlap, -3), radius: 8));
-    
+      ).createShader(Rect.fromCircle(
+          center: position + Offset(5 * wingFlap, -3), radius: 8));
+
     canvas.drawOval(
       Rect.fromCenter(
         center: position + Offset(5 * wingFlap, -3),
@@ -2503,51 +2864,55 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       rightWingPaint,
     );
   }
-  
+
   void _drawBirds(Canvas canvas, Size size) {
     final birds = [
       Offset(size.width * 0.2, size.height * 0.18),
       Offset(size.width * 0.5, size.height * 0.22),
       Offset(size.width * 0.75, size.height * 0.13),
     ];
-    
+
     for (int i = 0; i < birds.length; i++) {
       final flyOffset = math.sin(animation * math.pi * 2 + i * 1.5) * 30;
       final bobOffset = math.sin(animation * math.pi * 4 + i) * 5;
       final position = birds[i] + Offset(flyOffset, bobOffset);
-      
+
       _drawBird(canvas, position, animation + i * 0.5);
     }
   }
-  
+
   void _drawBird(Canvas canvas, Offset position, double animPhase) {
     final wingFlap = math.sin(animPhase * math.pi * 8);
-    
+
     final birdPaint = Paint()
       ..color = Colors.black.withValues(alpha: 0.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
-    
+
     // Left wing
     final leftWing = Path()
       ..moveTo(position.dx, position.dy)
       ..quadraticBezierTo(
-        position.dx - 8, position.dy - 6 * wingFlap,
-        position.dx - 12, position.dy - 4 * wingFlap,
+        position.dx - 8,
+        position.dy - 6 * wingFlap,
+        position.dx - 12,
+        position.dy - 4 * wingFlap,
       );
     canvas.drawPath(leftWing, birdPaint);
-    
+
     // Right wing
     final rightWing = Path()
       ..moveTo(position.dx, position.dy)
       ..quadraticBezierTo(
-        position.dx + 8, position.dy - 6 * wingFlap,
-        position.dx + 12, position.dy - 4 * wingFlap,
+        position.dx + 8,
+        position.dy - 6 * wingFlap,
+        position.dx + 12,
+        position.dy - 4 * wingFlap,
       );
     canvas.drawPath(rightWing, birdPaint);
   }
-  
+
   void _drawSparkles(Canvas canvas, Size size) {
     final sparkles = [
       Offset(size.width * 0.15, size.height * 0.25),
@@ -2558,32 +2923,35 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       Offset(size.width * 0.5, size.height * 0.75),
       Offset(size.width * 0.8, size.height * 0.65),
     ];
-    
+
     for (int i = 0; i < sparkles.length; i++) {
       final twinkle = (math.sin(animation * math.pi * 2 + i * 0.8) + 1) / 2;
       final sparkleOpacity = 0.2 + twinkle * 0.5;
       final sparkleSize = 2 + twinkle * 3;
-      
+
       final paint = Paint()
         ..color = Colors.white.withValues(alpha: sparkleOpacity)
         ..style = PaintingStyle.fill;
-      
+
       canvas.drawCircle(sparkles[i], sparkleSize, paint);
-      
+
       // Star shape for some sparkles
       if (i % 2 == 0) {
         _drawStar(canvas, sparkles[i], sparkleSize * 1.5, paint);
       }
     }
   }
-  
+
   void _drawStar(Canvas canvas, Offset center, double size, Paint paint) {
     final path = Path();
     for (int i = 0; i < 4; i++) {
       final angle = (i * math.pi / 2) + animation * math.pi * 0.5;
-      final outer = center + Offset(math.cos(angle) * size, math.sin(angle) * size);
-      final inner = center + Offset(math.cos(angle + math.pi / 4) * size * 0.3, math.sin(angle + math.pi / 4) * size * 0.3);
-      
+      final outer =
+          center + Offset(math.cos(angle) * size, math.sin(angle) * size);
+      final inner = center +
+          Offset(math.cos(angle + math.pi / 4) * size * 0.3,
+              math.sin(angle + math.pi / 4) * size * 0.3);
+
       if (i == 0) {
         path.moveTo(outer.dx, outer.dy);
       } else {
@@ -2605,7 +2973,7 @@ class _CloudData {
   final Offset position;
   final double size;
   final double opacity;
-  
+
   _CloudData(this.position, this.size, this.opacity);
 }
 
@@ -2613,7 +2981,7 @@ class _TreeData {
   final Offset position;
   final double size;
   final Color color;
-  
+
   _TreeData(this.position, this.size, this.color);
 }
 
@@ -2621,6 +2989,6 @@ class _FlowerData {
   final Offset position;
   final Color color;
   final int petalCount;
-  
+
   _FlowerData(this.position, this.color, this.petalCount);
 }

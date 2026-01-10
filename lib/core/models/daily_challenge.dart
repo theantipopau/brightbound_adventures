@@ -29,8 +29,7 @@ class DailyChallenge {
     this.currentProgress = 0,
   });
 
-  double get progressPercent => 
-      (currentProgress / targetScore).clamp(0.0, 1.0);
+  double get progressPercent => (currentProgress / targetScore).clamp(0.0, 1.0);
 
   DailyChallenge copyWith({
     String? id,
@@ -207,8 +206,9 @@ class DailyChallengeGenerator {
         _ => 100,
       };
 
-      final description = (descriptions[random.nextInt(descriptions.length)] as String)
-          .replaceAll('{count}', targetScore.toString());
+      final description =
+          (descriptions[random.nextInt(descriptions.length)] as String)
+              .replaceAll('{count}', targetScore.toString());
 
       challenges.add(DailyChallenge(
         id: 'daily_${date.toIso8601String()}_$i',

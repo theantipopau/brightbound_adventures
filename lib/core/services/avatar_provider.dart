@@ -25,7 +25,7 @@ class AvatarProvider extends ChangeNotifier {
     required String skinColor,
   }) async {
     debugPrint('AvatarProvider.createAvatar called');
-    
+
     _avatar = Avatar(
       id: 'avatar_${DateTime.now().millisecondsSinceEpoch}',
       name: name,
@@ -41,19 +41,19 @@ class AvatarProvider extends ChangeNotifier {
     );
 
     debugPrint('Avatar object created: ${_avatar!.name}');
-    
+
     await _storageService.saveAvatar(_avatar!);
-    
+
     debugPrint('Avatar saved to storage');
-    
+
     notifyListeners();
-    
+
     debugPrint('Listeners notified');
   }
 
   Future<void> updateAvatarName(String newName) async {
     if (_avatar == null) return;
-    
+
     _avatar = _avatar!.copyWith(
       name: newName,
       lastModified: DateTime.now(),
@@ -65,7 +65,7 @@ class AvatarProvider extends ChangeNotifier {
 
   Future<void> changeOutfit(String outfitId) async {
     if (_avatar == null) return;
-    
+
     _avatar = _avatar!.copyWith(
       outfitId: outfitId,
       lastModified: DateTime.now(),

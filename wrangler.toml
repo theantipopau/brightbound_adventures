@@ -1,0 +1,23 @@
+name = "playbrightbound"
+type = "javascript"
+account_id = ""
+workers_dev = true
+route = ""
+zone_id = ""
+
+[env.production]
+name = "playbrightbound"
+routes = [
+  { pattern = "playbrightbound.pages.dev", zone_name = "pages.dev" }
+]
+
+[[env.production.triggers.crons]]
+cron = "0 0 * * *"
+
+[build]
+command = "flutter build web --release"
+cwd = "."
+watch_paths = ["lib/**/*.dart", "assets/**/*"]
+
+[build.upload]
+format = "service-worker"

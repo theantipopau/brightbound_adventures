@@ -36,7 +36,8 @@ class Outfit extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, description, color, isUnlocked, unlockedAtLevel];
+  List<Object?> get props =>
+      [id, name, description, color, isUnlocked, unlockedAtLevel];
 }
 
 class Accessory extends Equatable {
@@ -75,7 +76,8 @@ class Accessory extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, description, icon, isUnlocked, unlockedAtLevel];
+  List<Object?> get props =>
+      [id, name, description, icon, isUnlocked, unlockedAtLevel];
 }
 
 class CosmeticsLibrary {

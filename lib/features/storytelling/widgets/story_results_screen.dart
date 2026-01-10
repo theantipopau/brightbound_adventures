@@ -31,11 +31,11 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
   late AnimationController _confettiController;
   late Animation<double> _bookAnimation;
   late Animation<double> _starsAnimation;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     _bookController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
@@ -44,7 +44,7 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
       parent: _bookController,
       curve: Curves.elasticOut,
     );
-    
+
     _starsController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -53,18 +53,18 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
       parent: _starsController,
       curve: Curves.easeOut,
     );
-    
+
     _confettiController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
     );
-    
+
     // Start animations
     _bookController.forward();
     Future.delayed(const Duration(milliseconds: 500), () {
       _starsController.forward();
     });
-    
+
     if (_isPerfect) {
       _confettiController.forward();
     }
@@ -80,7 +80,7 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
 
   bool get _isPerfect => widget.correctAnswers == widget.totalQuestions;
   double get _percentage => widget.correctAnswers / widget.totalQuestions;
-  
+
   int get _starsEarned {
     if (_percentage >= 1.0) return 3;
     if (_percentage >= 0.7) return 2;
@@ -96,9 +96,15 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
   }
 
   String get _messageText {
-    if (_percentage >= 1.0) return 'Perfect! Your storytelling skills are legendary!';
-    if (_percentage >= 0.7) return 'Amazing work! You\'re becoming a great writer!';
-    if (_percentage >= 0.4) return 'Good job! Practice makes perfect!';
+    if (_percentage >= 1.0) {
+      return 'Perfect! Your storytelling skills are legendary!';
+    }
+    if (_percentage >= 0.7) {
+      return 'Amazing work! You\'re becoming a great writer!';
+    }
+    if (_percentage >= 0.4) {
+      return 'Good job! Practice makes perfect!';
+    }
     return 'Every author started somewhere. Keep reading and writing!';
   }
 
@@ -122,7 +128,7 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
             children: [
               // Background floating books
               ..._buildFloatingBooks(),
-              
+
               // Confetti for perfect score
               if (_isPerfect)
                 AnimatedBuilder(
@@ -134,7 +140,7 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
                     );
                   },
                 ),
-              
+
               // Main content
               Center(
                 child: SingleChildScrollView(
@@ -144,9 +150,9 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
                     children: [
                       // Animated book trophy
                       _buildBookTrophy(),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Title
                       AnimatedBuilder(
                         animation: _bookAnimation,
@@ -172,19 +178,19 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Score card
                       _buildScoreCard(),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Stars earned
                       _buildStarsDisplay(),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Message
                       Text(
                         _messageText,
@@ -194,14 +200,14 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // XP earned
                       _buildXpDisplay(),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Buttons
                       _buildButtons(),
                     ],
@@ -218,16 +224,18 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
   List<Widget> _buildFloatingBooks() {
     final books = ['📚', '📖', '📕', '📗', '📘', '📙', '✏️', '🖊️'];
     final random = math.Random(42);
-    
+
     return List.generate(10, (index) {
       final x = random.nextDouble();
       final y = random.nextDouble();
       final size = 20 + random.nextDouble() * 20;
-      
+
       return AnimatedBuilder(
         animation: _starsController,
         builder: (context, child) {
-          final offset = math.sin(DateTime.now().millisecondsSinceEpoch / 1000 + index) * 10;
+          final offset =
+              math.sin(DateTime.now().millisecondsSinceEpoch / 1000 + index) *
+                  10;
           return Positioned(
             left: MediaQuery.of(context).size.width * x,
             top: MediaQuery.of(context).size.height * y + offset,
@@ -367,7 +375,7 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
           children: List.generate(3, (index) {
             final isEarned = index < _starsEarned;
             final isVisible = index < visibleStars;
-            
+
             return Transform.scale(
               scale: isVisible ? 1.0 : 0.0,
               child: Container(
@@ -473,7 +481,7 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
 class _ConfettiPainter extends CustomPainter {
   final double progress;
   final List<_ConfettiParticle> particles = [];
-  
+
   _ConfettiPainter(this.progress) {
     final random = math.Random(42);
     final colors = [
@@ -483,7 +491,7 @@ class _ConfettiPainter extends CustomPainter {
       Colors.cyan,
       Colors.green,
     ];
-    
+
     for (int i = 0; i < 50; i++) {
       particles.add(_ConfettiParticle(
         x: random.nextDouble(),
@@ -497,24 +505,25 @@ class _ConfettiPainter extends CustomPainter {
       ));
     }
   }
-  
+
   @override
   void paint(Canvas canvas, Size size) {
     for (final particle in particles) {
       final y = particle.startY + (progress * particle.speed * 1.5);
       if (y > 1.1) continue;
-      
-      final wobbleOffset = math.sin(progress * particle.wobbleSpeed + particle.wobble) * 0.05;
+
+      final wobbleOffset =
+          math.sin(progress * particle.wobbleSpeed + particle.wobble) * 0.05;
       final x = particle.x + wobbleOffset;
-      
+
       final paint = Paint()
         ..color = particle.color.withValues(alpha: 1.0 - progress * 0.5)
         ..style = PaintingStyle.fill;
-      
+
       canvas.save();
       canvas.translate(x * size.width, y * size.height);
       canvas.rotate(particle.rotation + progress * 3);
-      
+
       canvas.drawRect(
         Rect.fromCenter(
           center: Offset.zero,
@@ -523,11 +532,11 @@ class _ConfettiPainter extends CustomPainter {
         ),
         paint,
       );
-      
+
       canvas.restore();
     }
   }
-  
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
@@ -541,7 +550,7 @@ class _ConfettiParticle {
   final Color color;
   final double rotation;
   final double size;
-  
+
   _ConfettiParticle({
     required this.x,
     required this.startY,

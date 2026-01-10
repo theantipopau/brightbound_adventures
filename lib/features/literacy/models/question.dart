@@ -36,7 +36,8 @@ class HomophoneQuestions {
       options: ['their', 'there', 'they\'re'],
       correctIndex: 1,
       hint: 'Think about a location',
-      explanation: '"There" refers to a place. "Their" shows ownership. "They\'re" means "they are".',
+      explanation:
+          '"There" refers to a place. "Their" shows ownership. "They\'re" means "they are".',
       difficulty: 1,
     ),
     LiteracyQuestion(
@@ -46,7 +47,8 @@ class HomophoneQuestions {
       options: ['Their', 'There', 'They\'re'],
       correctIndex: 2,
       hint: 'Try replacing with "they are"',
-      explanation: '"They\'re" is short for "they are". "They are going to the park."',
+      explanation:
+          '"They\'re" is short for "they are". "They are going to the park."',
       difficulty: 1,
     ),
     LiteracyQuestion(
@@ -66,7 +68,8 @@ class HomophoneQuestions {
       options: ['to', 'too', 'two'],
       correctIndex: 1,
       hint: 'It has an extra "o"',
-      explanation: '"Too" means "also" or "very". "To" is a direction. "Two" is the number 2.',
+      explanation:
+          '"Too" means "also" or "very". "To" is a direction. "Two" is the number 2.',
       difficulty: 1,
     ),
     LiteracyQuestion(
@@ -97,7 +100,8 @@ class HomophoneQuestions {
       options: ['red', 'read'],
       correctIndex: 1,
       hint: 'Past tense of reading',
-      explanation: '"Read" (pronounced "red") is past tense of read. "Red" is a colour.',
+      explanation:
+          '"Read" (pronounced "red") is past tense of read. "Red" is a colour.',
       difficulty: 2,
     ),
     LiteracyQuestion(
@@ -117,7 +121,8 @@ class HomophoneQuestions {
       options: ['knows', 'gnaws', 'nos'],
       correctIndex: 0,
       hint: 'Think about understanding something',
-      explanation: '"Knows" sounds like "nose" and means to understand or be aware.',
+      explanation:
+          '"Knows" sounds like "nose" and means to understand or be aware.',
       difficulty: 2,
     ),
     LiteracyQuestion(
@@ -138,7 +143,8 @@ class HomophoneQuestions {
       options: ['scene', 'seen'],
       correctIndex: 0,
       hint: 'A part of a show or movie',
-      explanation: '"Scene" is a part of a movie. "Seen" is past participle of see.',
+      explanation:
+          '"Scene" is a part of a movie. "Seen" is past participle of see.',
       difficulty: 3,
     ),
     LiteracyQuestion(
@@ -148,7 +154,8 @@ class HomophoneQuestions {
       options: ['scene', 'seen'],
       correctIndex: 1,
       hint: 'Past participle of "see"',
-      explanation: '"Seen" is used with "have/has/had". "Have seen" is correct.',
+      explanation:
+          '"Seen" is used with "have/has/had". "Have seen" is correct.',
       difficulty: 3,
     ),
     LiteracyQuestion(
@@ -158,7 +165,8 @@ class HomophoneQuestions {
       options: ['principal', 'principle'],
       correctIndex: 0,
       hint: 'The main character',
-      explanation: '"Principal" means main/chief. "Principle" is a belief or rule.',
+      explanation:
+          '"Principal" means main/chief. "Principle" is a belief or rule.',
       difficulty: 3,
     ),
     LiteracyQuestion(
@@ -168,7 +176,8 @@ class HomophoneQuestions {
       options: ['principal', 'principle'],
       correctIndex: 1,
       hint: 'A moral belief',
-      explanation: '"Principle" is a rule or belief. "Principal" means main/chief person.',
+      explanation:
+          '"Principle" is a rule or belief. "Principal" means main/chief person.',
       difficulty: 3,
     ),
     LiteracyQuestion(
@@ -178,7 +187,8 @@ class HomophoneQuestions {
       options: ['affect', 'effect'],
       correctIndex: 0,
       hint: 'A verb meaning "to influence"',
-      explanation: '"Affect" (verb) means to influence. "Effect" (noun) is the result.',
+      explanation:
+          '"Affect" (verb) means to influence. "Effect" (noun) is the result.',
       difficulty: 3,
     ),
   ];
@@ -209,7 +219,8 @@ class ApostropheQuestions {
       options: ['I\'m', 'Im', 'I,m'],
       correctIndex: 0,
       hint: 'Use an apostrophe to show missing letters',
-      explanation: '"I\'m" is the contraction. The apostrophe replaces the "a" in "am".',
+      explanation:
+          '"I\'m" is the contraction. The apostrophe replaces the "a" in "am".',
       difficulty: 1,
     ),
     LiteracyQuestion(
@@ -219,7 +230,8 @@ class ApostropheQuestions {
       options: ['can\'t', 'cant', 'ca\'nt'],
       correctIndex: 0,
       hint: 'The apostrophe goes where letters are missing',
-      explanation: '"Can\'t" is correct. The apostrophe replaces "no" in "cannot".',
+      explanation:
+          '"Can\'t" is correct. The apostrophe replaces "no" in "cannot".',
       difficulty: 1,
     ),
     LiteracyQuestion(
@@ -229,7 +241,8 @@ class ApostropheQuestions {
       options: ['were', 'we\'re', 'wer\'e'],
       correctIndex: 1,
       hint: 'The apostrophe replaces the "a"',
-      explanation: '"We\'re" is correct. Don\'t confuse it with "were" (past tense of be).',
+      explanation:
+          '"We\'re" is correct. Don\'t confuse it with "were" (past tense of be).',
       difficulty: 1,
     ),
     // Level 2 - Possession
@@ -247,7 +260,11 @@ class ApostropheQuestions {
       id: 'apos_6',
       skillId: 'skill_apostrophes',
       question: 'How do you show the toys belong to many children?',
-      options: ['the childrens toys', 'the children\'s toys', 'the childrens\' toys'],
+      options: [
+        'the childrens toys',
+        'the children\'s toys',
+        'the childrens\' toys'
+      ],
       correctIndex: 1,
       hint: '"Children" is already plural',
       explanation: 'For plural nouns not ending in s, add \'s: "children\'s".',
@@ -260,7 +277,8 @@ class ApostropheQuestions {
       options: ['James house', 'James\' house', 'Jame\'s house'],
       correctIndex: 1,
       hint: 'Names ending in "s" just need an apostrophe',
-      explanation: 'For names ending in s, you can add just \': "James\' house".',
+      explanation:
+          'For names ending in s, you can add just \': "James\' house".',
       difficulty: 2,
     ),
     // Level 3 - Mixed
@@ -289,7 +307,8 @@ class ApostropheQuestions {
       ],
       correctIndex: 0,
       hint: '"It is" or "it has"?',
-      explanation: '"It\'s" = "it is" or "it has". "Its" shows possession (no apostrophe).',
+      explanation:
+          '"It\'s" = "it is" or "it has". "Its" shows possession (no apostrophe).',
       difficulty: 3,
     ),
     LiteracyQuestion(
@@ -324,7 +343,8 @@ class PunctuationQuestions {
       ],
       correctIndex: 1,
       hint: 'Lists need commas between items',
-      explanation: 'Use commas to separate items in a list, and a full stop at the end.',
+      explanation:
+          'Use commas to separate items in a list, and a full stop at the end.',
       difficulty: 1,
     ),
     LiteracyQuestion(
@@ -363,7 +383,8 @@ class PunctuationQuestions {
       ],
       correctIndex: 1,
       hint: 'Commas go after introductory phrases',
-      explanation: 'Use a comma after introductory phrases like "After school".',
+      explanation:
+          'Use a comma after introductory phrases like "After school".',
       difficulty: 2,
     ),
     LiteracyQuestion(
@@ -486,7 +507,8 @@ class RhymingQuestions {
       options: ['flew', 'shoe', 'blow', 'true'],
       correctIndex: 2,
       hint: 'One ending sounds different',
-      explanation: '"Blue", "flew", "shoe", and "true" rhyme. "Blow" ends differently!',
+      explanation:
+          '"Blue", "flew", "shoe", and "true" rhyme. "Blow" ends differently!',
       difficulty: 3,
     ),
     LiteracyQuestion(
@@ -645,4 +667,3 @@ class SpellingQuestions {
     return questions.where((q) => q.difficulty <= level).toList();
   }
 }
-

@@ -12,7 +12,7 @@ import 'package:brightbound_adventures/core/utils/story_springs_generator.dart';
 class StoryPracticeScreen extends StatefulWidget {
   final String skillId;
   final String skillName;
-  
+
   const StoryPracticeScreen({
     super.key,
     required this.skillId,
@@ -92,7 +92,7 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
     // Update skill progress
     final skillProvider = Provider.of<SkillProvider>(context, listen: false);
     final percentage = correct / total;
-    
+
     // Record practice session with proper API
     skillProvider.updateSkillProgress(
       skillId: widget.skillId,
@@ -132,7 +132,7 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
     }
 
     final questions = _getQuestionsForSkill();
-    
+
     // If no questions available for this skill, show coming soon
     if (questions.isEmpty) {
       return _buildComingSoonScreen();
@@ -185,7 +185,8 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
                 ),
                 const SizedBox(height: 32),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   decoration: BoxDecoration(
                     color: Colors.purple.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(20),

@@ -6,3 +6,5 @@ export 'world_entry_screen.dart';
 export 'daily_challenge_screen.dart';
 export 'mini_games_screen.dart';
 export 'trophy_room_screen.dart';
+export 'parent_dashboard_screen.dart';
+export 'shop_screen.dart';

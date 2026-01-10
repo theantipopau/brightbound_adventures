@@ -77,8 +77,7 @@ class CosmeticUnlockService extends ChangeNotifier {
   List<CosmeticItem> getNextUnlockables() {
     return CosmeticManager.availableItems
         .where((item) =>
-            !_unlockedCosmeticIds.contains(item.id) &&
-            _canUnlockSoon(item))
+            !_unlockedCosmeticIds.contains(item.id) && _canUnlockSoon(item))
         .toList();
   }
 

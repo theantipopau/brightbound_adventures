@@ -5,7 +5,7 @@ import 'package:brightbound_adventures/core/utils/world_map_isometric_helper.dar
 /// Terrain painter with biome-themed ground patches
 class TerrainPainter extends CustomPainter {
   final List<ZoneData> zones;
-  
+
   TerrainPainter({required this.zones});
 
   @override
@@ -13,17 +13,18 @@ class TerrainPainter extends CustomPainter {
     for (final zone in zones) {
       final isoPos = WorldMapIsometricHelper.offsetToIsometric(zone.position);
       final screenPos = WorldMapIsometricHelper.gridToScreen(isoPos, size);
-      
+
       _drawBiomePatch(canvas, screenPos, zone.color, zone.id);
     }
   }
 
-  void _drawBiomePatch(Canvas canvas, Offset center, Color color, String zoneId) {
+  void _drawBiomePatch(
+      Canvas canvas, Offset center, Color color, String zoneId) {
     // 1. Large soft glow for ambient biome color
     final glowPaint = Paint()
       ..color = color.withValues(alpha: 0.25)
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30); 
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30);
 
     // Visual center adjusted for the 3D 'floor' (below where the island floats)
     final floorCenter = center + const Offset(0, 40);
@@ -32,22 +33,22 @@ class TerrainPainter extends CustomPainter {
       Rect.fromCenter(center: floorCenter, width: 350, height: 200),
       glowPaint,
     );
-    
+
     // 2. Isometric Terrain Base (Rhombus shape to suggest grid/land)
     final terrainPaint = Paint()
       ..color = color.withValues(alpha: 0.15)
       ..style = PaintingStyle.fill;
-      
+
     final path = Path();
     const double width = 140; // Half width magnitude
-    const double height = 70;  // Half height magnitude
-    
+    const double height = 70; // Half height magnitude
+
     path.moveTo(floorCenter.dx, floorCenter.dy - height); // Top
-    path.lineTo(floorCenter.dx + width, floorCenter.dy);    // Right
-    path.lineTo(floorCenter.dx, floorCenter.dy + height);   // Bottom
-    path.lineTo(floorCenter.dx - width, floorCenter.dy);    // Left
+    path.lineTo(floorCenter.dx + width, floorCenter.dy); // Right
+    path.lineTo(floorCenter.dx, floorCenter.dy + height); // Bottom
+    path.lineTo(floorCenter.dx - width, floorCenter.dy); // Left
     path.close();
-    
+
     canvas.drawPath(path, terrainPaint);
 
     // 3. Terrain Detail Rings (Ripples)
@@ -55,18 +56,15 @@ class TerrainPainter extends CustomPainter {
       ..color = color.withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-      
+
     canvas.drawPath(path, ringPaint);
-    
+
     // 4. Biome-specific texture patterns
     _drawBiomeTexture(canvas, floorCenter, color, zoneId);
   }
 
-  void _drawBiomeTexture(Canvas canvas, Offset center, Color color, String zoneId) {
-    final texturePaint = Paint()
-      ..color = color.withValues(alpha: 0.2)
-      ..style = PaintingStyle.fill;
-
+  void _drawBiomeTexture(
+      Canvas canvas, Offset center, Color color, String zoneId) {
     if (zoneId == 'word-woods') {
       // Forest floor - trees and grass dots
       for (int i = 0; i < 20; i++) {
@@ -77,8 +75,9 @@ class TerrainPainter extends CustomPainter {
           ..color = Colors.green.withValues(alpha: 0.3)
           ..style = PaintingStyle.fill;
         canvas.drawCircle(Offset(x, y - 3), 5, treePaint);
-        canvas.drawRect(Rect.fromCenter(center: Offset(x, y + 2), width: 2, height: 8), 
-          Paint()..color = Colors.brown.withValues(alpha: 0.3));
+        canvas.drawRect(
+            Rect.fromCenter(center: Offset(x, y + 2), width: 2, height: 8),
+            Paint()..color = Colors.brown.withValues(alpha: 0.3));
       }
     } else if (zoneId == 'number-nebula') {
       // Space/nebula - stars and cosmic swirls
@@ -119,7 +118,8 @@ class TerrainPainter extends CustomPainter {
           ),
         );
         textPainter.layout();
-        textPainter.paint(canvas, Offset(x - textPainter.width / 2, y - textPainter.height / 2));
+        textPainter.paint(canvas,
+            Offset(x - textPainter.width / 2, y - textPainter.height / 2));
       }
     } else if (zoneId == 'story-springs') {
       // Book pages and water ripples

@@ -24,9 +24,10 @@ class _ProfileStatsScreenState extends State<ProfileStatsScreen> {
   }
 
   Future<void> _loadStats() async {
-    final localStorage = Provider.of<LocalStorageService>(context, listen: false);
+    final localStorage =
+        Provider.of<LocalStorageService>(context, listen: false);
     final avatar = await localStorage.getAvatar();
-    
+
     if (avatar != null) {
       final stats = await _statsService.getStats(avatar.id);
       setState(() {
@@ -55,7 +56,7 @@ class _ProfileStatsScreenState extends State<ProfileStatsScreen> {
             children: [
               // Header
               _buildHeader(),
-              
+
               // Content
               Expanded(
                 child: _loading
@@ -101,19 +102,19 @@ class _ProfileStatsScreenState extends State<ProfileStatsScreen> {
         children: [
           // Level card
           _buildLevelCard(),
-          
+
           const SizedBox(height: 16),
-          
+
           // Stats overview
           _buildStatsGrid(),
-          
+
           const SizedBox(height: 16),
-          
+
           // Zone progress
           _buildZoneProgress(),
-          
+
           const SizedBox(height: 16),
-          
+
           // Recent achievements section could go here
         ],
       ),
@@ -154,9 +155,7 @@ class _ProfileStatsScreenState extends State<ProfileStatsScreen> {
               LevelBadge(level: _stats!.currentLevel, size: 60),
             ],
           ),
-          
           const SizedBox(height: 24),
-          
           XpBar(stats: _stats!),
         ],
       ),
@@ -252,7 +251,12 @@ class _ProfileStatsScreenState extends State<ProfileStatsScreen> {
       ('🌌', 'Number Nebula', 'number_nebula', AppColors.numberNebulaColor),
       ('📖', 'Story Springs', 'story_springs', AppColors.storyspringsColor),
       ('🧩', 'Puzzle Peaks', 'puzzle_peaks', AppColors.puzzlePeaksColor),
-      ('🏆', 'Adventure Arena', 'adventure_arena', AppColors.adventureArenaColor),
+      (
+        '🏆',
+        'Adventure Arena',
+        'adventure_arena',
+        AppColors.adventureArenaColor
+      ),
     ];
 
     return Container(
@@ -286,7 +290,7 @@ class _ProfileStatsScreenState extends State<ProfileStatsScreen> {
             final color = zone.$4;
             final xp = _stats!.zoneXp[id] ?? 0;
             final isUnlocked = _stats!.isZoneUnlocked(id);
-            
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(

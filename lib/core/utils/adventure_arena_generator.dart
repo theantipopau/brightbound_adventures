@@ -4,7 +4,7 @@ import 'package:brightbound_adventures/features/motor/models/motor_game.dart';
 /// Configuration generator for Adventure Arena (Motor Skills)
 class AdventureArenaGenerator {
   static final Random _random = Random();
-  
+
   /// Generate motor challenge configurations based on difficulty
   static MotorGameConfig generate({
     required String skill,
@@ -18,7 +18,7 @@ class AdventureArenaGenerator {
       return _generateHardConfig(skill);
     }
   }
-  
+
   static MotorGameConfig _generateEasyConfig(String skillId) {
     final configs = [
       // Simple tap targets with generous timing
@@ -55,10 +55,10 @@ class AdventureArenaGenerator {
         difficultyMultiplier: 0.9,
       ),
     ];
-    
+
     return configs[_random.nextInt(configs.length)];
   }
-  
+
   static MotorGameConfig _generateMediumConfig(String skillId) {
     final configs = [
       // Mixed interactions
@@ -95,10 +95,10 @@ class AdventureArenaGenerator {
         difficultyMultiplier: 1.4,
       ),
     ];
-    
+
     return configs[_random.nextInt(configs.length)];
   }
-  
+
   static MotorGameConfig _generateHardConfig(String skillId) {
     final configs = [
       // All interaction types
@@ -109,9 +109,9 @@ class AdventureArenaGenerator {
         rounds: 3,
         roundDuration: const Duration(seconds: 40),
         targetTypes: [
-          TargetType.tap, 
-          TargetType.doubleTap, 
-          TargetType.longPress, 
+          TargetType.tap,
+          TargetType.doubleTap,
+          TargetType.longPress,
           TargetType.drag,
         ],
         targetCount: 12,
@@ -140,7 +140,7 @@ class AdventureArenaGenerator {
         difficultyMultiplier: 1.9,
       ),
     ];
-    
+
     return configs[_random.nextInt(configs.length)];
   }
 }

@@ -91,7 +91,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
         _correctAnswers++;
         _currentStreak++;
         _celebrationController.forward(from: 0);
-        
+
         // Play appropriate celebration sound based on streak
         if (_currentStreak >= 3) {
           _audioManager.playStreak(_currentStreak);
@@ -124,12 +124,12 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
     } else {
       final xpEarned = _correctAnswers * 18 +
           (_correctAnswers == widget.questions.length ? 30 : 0);
-      
+
       // Play celebration sound for perfect score
       if (_correctAnswers == widget.questions.length) {
         _audioManager.playPerfectScore();
       }
-      
+
       widget.onFinish(_correctAnswers, widget.questions.length, xpEarned);
     }
   }
@@ -192,8 +192,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
       child: Row(
         children: [
           IconButton(
-            icon:
-                const Icon(Icons.close, color: Colors.white70),
+            icon: const Icon(Icons.close, color: Colors.white70),
             onPressed: () => Navigator.of(context).pop(),
           ),
           Expanded(
@@ -231,7 +230,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
             ),
             child: Row(
               children: [
-                const Icon(Icons.psychology, color: Colors.tealAccent, size: 20),
+                const Icon(Icons.psychology,
+                    color: Colors.tealAccent, size: 20),
                 const SizedBox(width: 4),
                 Text(
                   '$_correctAnswers',
@@ -342,7 +342,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                 const SizedBox(height: 16),
                 TextButton.icon(
                   onPressed: () => _showHint(),
-                  icon: const Icon(Icons.lightbulb_outline, color: Colors.amber),
+                  icon:
+                      const Icon(Icons.lightbulb_outline, color: Colors.amber),
                   label: const Text('Need a hint?',
                       style: TextStyle(color: Colors.amber)),
                 ),
@@ -422,7 +423,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                     text,
                     style: TextStyle(
                       color: textColor,
-                      fontSize: MediaQuery.of(context).size.width < 600 ? 13 : 15,
+                      fontSize:
+                          MediaQuery.of(context).size.width < 600 ? 13 : 15,
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.normal,
                       height: 1.3,
@@ -431,8 +433,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (icon != null)
-                  Icon(icon, color: textColor, size: 24),
+                if (icon != null) Icon(icon, color: textColor, size: 24),
               ],
             ),
           ),
@@ -527,7 +528,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                     ),
                     child: Center(
                       child: isCompleted
-                          ? const Icon(Icons.check, color: Colors.black, size: 16)
+                          ? const Icon(Icons.check,
+                              color: Colors.black, size: 16)
                           : (isCurrent
                               ? const Icon(Icons.landscape,
                                   color: Colors.white, size: 20)

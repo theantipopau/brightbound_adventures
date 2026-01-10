@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 class LoadingScreen extends StatefulWidget {
   final String? message;
   final List<String>? tips;
-  
+
   const LoadingScreen({
     super.key,
     this.message,
     this.tips,
   });
-  
+
   @override
   State<LoadingScreen> createState() => _LoadingScreenState();
 }
@@ -22,7 +22,7 @@ class _LoadingScreenState extends State<LoadingScreen>
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
   String _currentTip = '';
-  
+
   static const List<String> _defaultTips = [
     '💡 Did you know? Your brain is like a muscle - the more you use it, the stronger it gets!',
     '🌟 Keep practicing! Every mistake helps you learn something new.',
@@ -35,36 +35,36 @@ class _LoadingScreenState extends State<LoadingScreen>
     '🧠 Your brain loves new challenges - don\'t be afraid to try!',
     '💪 Believe in yourself! You can do amazing things!',
   ];
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     final tips = widget.tips ?? _defaultTips;
     _currentTip = tips[Random().nextInt(tips.length)];
-    
+
     _spinController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat();
-    
+
     _bounceController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     )..repeat(reverse: true);
-    
+
     _bounceAnimation = Tween<double>(begin: 0, end: 20).animate(
       CurvedAnimation(parent: _bounceController, curve: Curves.easeInOut),
     );
   }
-  
+
   @override
   void dispose() {
     _spinController.dispose();
     _bounceController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,9 +125,9 @@ class _LoadingScreenState extends State<LoadingScreen>
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Loading message
                 Text(
                   widget.message ?? 'Loading...',
@@ -137,9 +137,9 @@ class _LoadingScreenState extends State<LoadingScreen>
                     color: Colors.black87,
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Educational tip
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 40),
@@ -178,13 +178,13 @@ class _LoadingScreenState extends State<LoadingScreen>
 class CircularLoadingWidget extends StatelessWidget {
   final Color? color;
   final double size;
-  
+
   const CircularLoadingWidget({
     super.key,
     this.color,
     this.size = 40,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(

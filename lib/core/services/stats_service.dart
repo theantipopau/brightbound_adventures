@@ -15,12 +15,12 @@ class StatsService {
   /// Get stats for a player
   Future<PlayerStats> getStats(String playerId) async {
     await initialize();
-    
+
     final data = _box.get(playerId);
     if (data != null) {
       return PlayerStats.fromJson(Map<String, dynamic>.from(data));
     }
-    
+
     // Create new stats for new player
     final newStats = PlayerStats(playerId: playerId);
     await saveStats(newStats);
@@ -39,7 +39,7 @@ class StatsService {
     final oldLevel = stats.currentLevel;
     final leveledUp = stats.addXp(xp, zone: zone);
     await saveStats(stats);
-    
+
     return LevelUpResult(
       leveledUp: leveledUp,
       oldLevel: oldLevel,
@@ -64,11 +64,11 @@ class StatsService {
       isFirstTime: isFirstTime,
       isDailyChallenge: isDailyChallenge,
     );
-    
+
     final stats = await getStats(playerId);
     stats.incrementActivities();
     stats.addStars((score * 3 / maxScore).round()); // Convert score to stars
-    
+
     await saveStats(stats);
     return await addXp(playerId, xp, zone: zone);
   }
@@ -100,18 +100,18 @@ class StatsService {
   Future<List<String>> checkAndUnlockZones(String playerId) async {
     final stats = await getStats(playerId);
     final newlyUnlocked = <String>[];
-    
+
     for (final zoneId in stats.unlockedZones.keys) {
       if (!stats.isZoneUnlocked(zoneId) && stats.canUnlockZone(zoneId)) {
         stats.unlockZone(zoneId);
         newlyUnlocked.add(zoneId);
       }
     }
-    
+
     if (newlyUnlocked.isNotEmpty) {
       await saveStats(stats);
     }
-    
+
     return newlyUnlocked;
   }
 
@@ -154,6 +154,6 @@ class LevelUpResult {
     required this.xpGained,
     required this.totalXp,
   });
-  
+
   int get levelsGained => newLevel - oldLevel;
 }

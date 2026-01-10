@@ -55,11 +55,13 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
         LiteracyQuestion(
           id: '${widget.skill.id}_1',
           skillId: widget.skill.id,
-          question: 'This skill is coming soon!\nWould you like to practice anyway?',
+          question:
+              'This skill is coming soon!\nWould you like to practice anyway?',
           options: ['Yes, let\'s practice!', 'I\'ll wait', 'Tell me more'],
           correctIndex: 0,
           hint: 'The first option is always ready to go!',
-          explanation: 'More questions for ${widget.skill.name} are being added.',
+          explanation:
+              'More questions for ${widget.skill.name} are being added.',
           difficulty: 1,
         ),
       ];
@@ -106,7 +108,7 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
     }
 
     final questions = _getQuestionsForSkill();
-    
+
     if (questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(

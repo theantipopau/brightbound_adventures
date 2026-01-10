@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 enum CosmeticType { outfit, accessory, skin }
+
 enum UnlockType { zoneCompletion, levelMilestone, achievement }
 
 class CosmeticItem extends Equatable {
@@ -10,7 +11,8 @@ class CosmeticItem extends Equatable {
   final CosmeticType type;
   final String description;
   final UnlockType unlockType;
-  final String unlockRequirement; // e.g., 'word-woods', 'level_5', 'achievement_100'
+  final String
+      unlockRequirement; // e.g., 'word-woods', 'level_5', 'achievement_100'
   final List<String> applicableCharacters; // Empty = all characters
 
   const CosmeticItem({

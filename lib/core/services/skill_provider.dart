@@ -7,7 +7,7 @@ import 'package:brightbound_adventures/core/utils/constants.dart';
 
 class SkillProvider extends ChangeNotifier {
   final LocalStorageService _storageService;
-  
+
   final Map<String, Skill> _skills = {};
   bool _isInitialized = false;
   bool _isInitializing = false;
@@ -16,11 +16,11 @@ class SkillProvider extends ChangeNotifier {
 
   bool get isInitialized => _isInitialized;
   bool get isInitializing => _isInitializing;
-  
+
   Map<String, Skill> get skills => _skills;
 
   /// Initialize skills from storage or create new ones
-  /// 
+  ///
   /// This is now lazy-loaded on first zone entry to avoid blocking app startup.
   /// Multiple calls are safe—will only initialize once.
   Future<void> initializeSkills() async {
@@ -64,28 +64,26 @@ class SkillProvider extends ChangeNotifier {
 
   /// Get skills for a specific zone
   List<Skill> getZoneSkills(String zoneId) {
-    return _skills.values
-        .where((skill) {
-          if (zoneId == 'word_woods') {
-            return skill.strand == Constants.strandLiteracy ||
-                skill.strand == Constants.strandCommunication;
-          } else if (zoneId == 'number_nebula') {
-            return skill.strand == Constants.strandNumeracy;
-          } else if (zoneId == 'math_facts') {
-            return skill.strand == Constants.strandNumeracy && 
-                (skill.id.contains('multiplication') || 
-                 skill.id.contains('addition') || 
-                 skill.id.contains('subtraction'));
-          } else if (zoneId == 'story_springs') {
-            return skill.strand == Constants.strandCommunication;
-          } else if (zoneId == 'puzzle_peaks') {
-            return skill.strand == Constants.strandLogic;
-          } else if (zoneId == 'adventure_arena') {
-            return skill.strand == Constants.strandMotor;
-          }
-          return false;
-        })
-        .toList();
+    return _skills.values.where((skill) {
+      if (zoneId == 'word_woods') {
+        return skill.strand == Constants.strandLiteracy ||
+            skill.strand == Constants.strandCommunication;
+      } else if (zoneId == 'number_nebula') {
+        return skill.strand == Constants.strandNumeracy;
+      } else if (zoneId == 'math_facts') {
+        return skill.strand == Constants.strandNumeracy &&
+            (skill.id.contains('multiplication') ||
+                skill.id.contains('addition') ||
+                skill.id.contains('subtraction'));
+      } else if (zoneId == 'story_springs') {
+        return skill.strand == Constants.strandCommunication;
+      } else if (zoneId == 'puzzle_peaks') {
+        return skill.strand == Constants.strandLogic;
+      } else if (zoneId == 'adventure_arena') {
+        return skill.strand == Constants.strandMotor;
+      }
+      return false;
+    }).toList();
   }
 
   /// Get all skills for a strand
@@ -137,15 +135,18 @@ class SkillProvider extends ChangeNotifier {
   /// Get skill progression stats
   SkillProgressionStats getProgressionStats() {
     final allSkills = _skills.values.toList();
-    
+
     return SkillProgressionStats(
       totalSkills: allSkills.length,
       locked: allSkills.where((s) => s.state == SkillState.locked).length,
-      introduced: allSkills.where((s) => s.state == SkillState.introduced).length,
-      practising: allSkills.where((s) => s.state == SkillState.practising).length,
+      introduced:
+          allSkills.where((s) => s.state == SkillState.introduced).length,
+      practising:
+          allSkills.where((s) => s.state == SkillState.practising).length,
       mastered: allSkills.where((s) => s.state == SkillState.mastered).length,
       averageAccuracy: allSkills.isNotEmpty
-          ? allSkills.map((s) => s.accuracy).reduce((a, b) => a + b) / allSkills.length
+          ? allSkills.map((s) => s.accuracy).reduce((a, b) => a + b) /
+              allSkills.length
           : 0.0,
     );
   }
@@ -153,13 +154,15 @@ class SkillProvider extends ChangeNotifier {
   /// Get zone-specific stats
   ZoneStats getZoneStats(String zoneId) {
     final zoneSkills = getZoneSkills(zoneId);
-    
+
     return ZoneStats(
       zoneId: zoneId,
       totalSkills: zoneSkills.length,
-      masteredSkills: zoneSkills.where((s) => s.state == SkillState.mastered).length,
+      masteredSkills:
+          zoneSkills.where((s) => s.state == SkillState.mastered).length,
       averageAccuracy: zoneSkills.isNotEmpty
-          ? zoneSkills.map((s) => s.accuracy).reduce((a, b) => a + b) / zoneSkills.length
+          ? zoneSkills.map((s) => s.accuracy).reduce((a, b) => a + b) /
+              zoneSkills.length
           : 0.0,
       nextSkill: ProgressionEngine.selectNextSkill(
         ProgressionEngine.getAvailableSkills(zoneSkills),
@@ -203,10 +206,10 @@ class SkillProgressionStats {
   });
 
   int get unlockedSkills => introduced + practising + mastered;
-  
+
   double get masteryPercentage =>
       totalSkills > 0 ? (mastered / totalSkills) * 100 : 0.0;
-  
+
   double get progressPercentage =>
       totalSkills > 0 ? (unlockedSkills / totalSkills) * 100 : 0.0;
 }

@@ -7,7 +7,7 @@ import 'package:brightbound_adventures/core/utils/world_map_isometric_helper.dar
 class ShadowPainter extends CustomPainter {
   final List<ZoneData> zones;
   final IsometricPosition? avatarPosition;
-  
+
   ShadowPainter({required this.zones, this.avatarPosition});
 
   @override
@@ -20,21 +20,22 @@ class ShadowPainter extends CustomPainter {
     for (final zone in zones) {
       final isoPos = WorldMapIsometricHelper.offsetToIsometric(zone.position);
       final screenPos = WorldMapIsometricHelper.gridToScreen(isoPos, size);
-      
+
       // Shadow offset based on light source (top-left)
       final shadowCenter = screenPos + const Offset(15, 50);
-      
+
       canvas.drawOval(
         Rect.fromCenter(center: shadowCenter, width: 100, height: 40),
         shadowPaint,
       );
     }
-    
+
     // Draw avatar shadow
     if (avatarPosition != null) {
-      final avatarScreen = WorldMapIsometricHelper.gridToScreen(avatarPosition!, size);
+      final avatarScreen =
+          WorldMapIsometricHelper.gridToScreen(avatarPosition!, size);
       final shadowCenter = avatarScreen + const Offset(10, 35);
-      
+
       canvas.drawOval(
         Rect.fromCenter(center: shadowCenter, width: 50, height: 20),
         shadowPaint,

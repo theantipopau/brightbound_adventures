@@ -24,10 +24,11 @@ class _LevelUpDialogState extends State<LevelUpDialog>
   @override
   void initState() {
     super.initState();
-    
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 3));
     _confettiController.play();
-    
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -79,7 +80,7 @@ class _LevelUpDialogState extends State<LevelUpDialog>
             ],
           ),
         ),
-        
+
         // Dialog
         Dialog(
           backgroundColor: Colors.transparent,
@@ -122,9 +123,9 @@ class _LevelUpDialogState extends State<LevelUpDialog>
                     '🏆',
                     style: TextStyle(fontSize: 80),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Title
                   const Text(
                     'LEVEL UP!',
@@ -135,9 +136,9 @@ class _LevelUpDialogState extends State<LevelUpDialog>
                       letterSpacing: 2,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 8),
-                  
+
                   // Level display
                   Text(
                     'Level ${widget.result.oldLevel} ➜ Level ${widget.result.newLevel}',
@@ -147,9 +148,9 @@ class _LevelUpDialogState extends State<LevelUpDialog>
                       color: Colors.amber.shade300,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // XP gained
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -179,9 +180,9 @@ class _LevelUpDialogState extends State<LevelUpDialog>
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Encouraging message
                   Text(
                     _getEncouragingMessage(widget.result.newLevel),
@@ -192,9 +193,9 @@ class _LevelUpDialogState extends State<LevelUpDialog>
                       fontStyle: FontStyle.italic,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Continue button
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -232,7 +233,7 @@ class _LevelUpDialogState extends State<LevelUpDialog>
     if (level == 5) return "Story Springs is now unlocked!";
     if (level == 7) return "Puzzle Peaks is now unlocked!";
     if (level == 10) return "Adventure Arena is now unlocked!";
-    
+
     final messages = [
       "You're doing amazing!",
       "Keep up the great work!",
@@ -243,13 +244,14 @@ class _LevelUpDialogState extends State<LevelUpDialog>
       "You're a star learner!",
       "Keep reaching for the stars!",
     ];
-    
+
     return messages[level % messages.length];
   }
 }
 
 /// Show level up dialog and return when dismissed
-Future<void> showLevelUpDialog(BuildContext context, LevelUpResult result) async {
+Future<void> showLevelUpDialog(
+    BuildContext context, LevelUpResult result) async {
   return showDialog(
     context: context,
     barrierDismissible: false,

@@ -37,7 +37,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   bool _hintUsed = false;
   int _hintsUsedTotal = 0;
   final AudioManager _audioManager = AudioManager();
-  
+
   late AnimationController _feedbackController;
   late Animation<double> _feedbackAnimation;
   late AnimationController _progressController;
@@ -49,22 +49,22 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   void initState() {
     super.initState();
     _shuffledQuestions = List.from(widget.questions)..shuffle(Random());
-    
+
     _feedbackController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    
+
     _sparkleController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat();
-    
+
     _bounceController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _bounceAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
       CurvedAnimation(
         parent: _bounceController,
@@ -75,7 +75,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
       parent: _feedbackController,
       curve: Curves.elasticOut,
     );
-    
+
     _progressController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -97,16 +97,16 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
 
   void _selectAnswer(int index) {
     if (_answered) return;
-    
+
     setState(() {
       _selectedIndex = index;
       _answered = true;
       final isCorrect = _currentQuestion.isCorrect(index);
-      
+
       if (isCorrect) {
         _correctCount++;
         _currentStreak++;
-        
+
         // Play appropriate celebration sound based on streak
         if (_currentStreak >= 3) {
           _audioManager.playStreak(_currentStreak);
@@ -118,7 +118,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
         _audioManager.playIncorrectAnswer();
       }
     });
-    
+
     _feedbackController.forward(from: 0);
   }
 
@@ -139,12 +139,12 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
 
   void _completeGame() {
     final accuracy = _correctCount / _shuffledQuestions.length;
-    
+
     // Play celebration sound for perfect score
     if (accuracy == 1.0) {
       _audioManager.playPerfectScore();
     }
-    
+
     widget.onComplete?.call(accuracy, _correctCount, _shuffledQuestions.length);
   }
 
@@ -184,23 +184,28 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
           // Hint button
           if (_currentQuestion.hint != null && !_answered)
             Tooltip(
-              message: _hintUsed ? '💡 Hint Used!' : '💡 Need Help? Tap for a Hint!',
+              message:
+                  _hintUsed ? '💡 Hint Used!' : '💡 Need Help? Tap for a Hint!',
               textStyle: const TextStyle(fontSize: 16, color: Colors.white),
               decoration: BoxDecoration(
                 color: Colors.black87,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ScaleTransition(
-                scale: _hintUsed ? const AlwaysStoppedAnimation(1.0) : _bounceAnimation,
+                scale: _hintUsed
+                    ? const AlwaysStoppedAnimation(1.0)
+                    : _bounceAnimation,
                 child: IconButton(
                   icon: Icon(
                     _showHint ? Icons.lightbulb : Icons.lightbulb_outline,
                     color: _showHint ? Colors.yellow : Colors.white,
                   ),
-                  onPressed: _hintUsed ? null : () {
-                    _bounceController.forward(from: 0);
-                    _showHintDialog();
-                  },
+                  onPressed: _hintUsed
+                      ? null
+                      : () {
+                          _bounceController.forward(from: 0);
+                          _showHintDialog();
+                        },
                 ),
               ),
             ),
@@ -224,7 +229,39 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
           builder: (context, constraints) {
             final isCompact = constraints.maxHeight < 700;
             final spacing = isCompact ? 6.0 : 12.0;
-            
+            final isWideLayout = constraints.maxWidth >= 960;
+
+            final questionPanel = Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildScoreCard(isCompact),
+                SizedBox(height: spacing),
+                Flexible(flex: 2, child: _buildQuestionCard(isCompact)),
+                if (_showHint && _currentQuestion.hint != null) ...[
+                  SizedBox(height: spacing),
+                  _buildHintCard(),
+                  SizedBox(height: spacing),
+                ],
+              ],
+            );
+
+            final optionsPanel = Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Flexible(
+                  flex: 3,
+                  child: ListView(
+                    physics: const BouncingScrollPhysics(),
+                    children: _buildOptions(isCompact),
+                  ),
+                ),
+                if (_answered) ...[
+                  SizedBox(height: spacing),
+                  _buildFeedback(isCompact),
+                ],
+              ],
+            );
+
             return Column(
               children: [
                 // Progress bar
@@ -238,42 +275,23 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.all(isCompact ? 8 : 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Score display
-                        _buildScoreCard(isCompact),
-                        SizedBox(height: spacing),
-
-                        // Question card
-                        Flexible(
-                          flex: 2,
-                          child: _buildQuestionCard(isCompact),
-                        ),
-                        SizedBox(height: spacing),
-
-                        // Hint display
-                        if (_showHint && _currentQuestion.hint != null) ...[
-                          _buildHintCard(),
-                          SizedBox(height: spacing),
-                        ],
-
-                        // Options - scrollable if needed but constrained
-                        Flexible(
-                          flex: 3,
-                          child: ListView(
-                            shrinkWrap: true,
-                            children: _buildOptions(isCompact),
+                    child: isWideLayout
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(child: questionPanel),
+                              SizedBox(width: spacing),
+                              Expanded(child: optionsPanel),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              questionPanel,
+                              SizedBox(height: spacing),
+                              optionsPanel,
+                            ],
                           ),
-                        ),
-
-                        // Feedback and explanation
-                        if (_answered) ...[
-                          SizedBox(height: spacing),
-                          _buildFeedback(isCompact),
-                        ],
-                      ],
-                    ),
                   ),
                 ),
 
@@ -342,37 +360,38 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                   ),
                 ),
               ),
-          _buildStatColumn(
-            icon: Icons.lightbulb,
-            color: Colors.amber,
-            value: '$_hintsUsedTotal',
-            label: 'Hints',
-            isCompact: isCompact,
-          ),
-          Container(
-            width: 1,
-            height: isCompact ? 30 : 40,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.grey.shade300,
-                  Colors.transparent,
-                ],
+              _buildStatColumn(
+                icon: Icons.lightbulb,
+                color: Colors.amber,
+                value: '$_hintsUsedTotal',
+                label: 'Hints',
+                isCompact: isCompact,
               ),
-            ),
+              Container(
+                width: 1,
+                height: isCompact ? 30 : 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.grey.shade300,
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+              _buildStatColumn(
+                icon: Icons.star,
+                color: widget.themeColor,
+                value:
+                    '${((_correctCount / max(1, _currentIndex + (_answered ? 1 : 0))) * 100).toStringAsFixed(0)}%',
+                label: 'Accuracy',
+                isCompact: isCompact,
+              ),
+            ],
           ),
-          _buildStatColumn(
-            icon: Icons.star,
-            color: widget.themeColor,
-            value: '${((_correctCount / max(1, _currentIndex + (_answered ? 1 : 0))) * 100).toStringAsFixed(0)}%',
-            label: 'Accuracy',
-            isCompact: isCompact,
-          ),
-        ],
-      ),
         );
       },
     );
@@ -418,90 +437,152 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
           scale: 0.9 + (value * 0.1),
           child: Opacity(
             opacity: value,
-            child: Container(
-              padding: EdgeInsets.all(isCompact ? 16 : 24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white,
-                    widget.themeColor.withValues(alpha: 0.08),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(32),
-                border: Border.all(
-                  color: widget.themeColor.withValues(alpha: 0.2),
-                  width: 3,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: widget.themeColor.withValues(alpha: 0.2),
-                    blurRadius: 40,
-                    offset: const Offset(0, 15),
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Question icon with animation
-                  AnimatedBuilder(
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  left: -30,
+                  top: -30,
+                  child: AnimatedBuilder(
                     animation: _sparkleController,
                     builder: (context, child) {
-                      return Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          gradient: RadialGradient(
-                            colors: [
-                              widget.themeColor.withValues(alpha: 0.2 + _sparkleController.value * 0.15),
-                              widget.themeColor.withValues(alpha: 0.05),
-                            ],
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: widget.themeColor.withValues(alpha: 0.4),
-                              blurRadius: 25 + _sparkleController.value * 10,
-                              spreadRadius: 3,
-                            ),
-                          ],
-                        ),
-                        child: const Text(
-                          '📚',
-                          style: TextStyle(fontSize: 44),
+                      final scale = 0.85 + _sparkleController.value * 0.2;
+                      return Transform.scale(
+                        scale: scale,
+                        child: Opacity(
+                          opacity: 0.35 + _sparkleController.value * 0.25,
+                          child: child,
                         ),
                       );
                     },
+                    child: _buildGlowCircle(
+                        widget.themeColor.withValues(alpha: 0.25), 90),
                   ),
-                  const SizedBox(height: 20),
-                  // Question text
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          _currentQuestion.question,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: isCompact ? 20 : 26,
-                            fontWeight: FontWeight.w800,
-                            height: 1.4,
-                            color: Colors.grey[900],
-                            letterSpacing: 0.5,
+                ),
+                Positioned(
+                  right: -25,
+                  bottom: -20,
+                  child: AnimatedBuilder(
+                    animation: _sparkleController,
+                    builder: (context, child) {
+                      final offset = sin(_sparkleController.value * pi * 2) * 6;
+                      return Transform.translate(
+                        offset: Offset(offset, offset / 2),
+                        child: Opacity(
+                          opacity: 0.2 + _sparkleController.value * 0.3,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: _buildGlowCircle(
+                        widget.themeColor.withValues(alpha: 0.2), 50),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.all(isCompact ? 16 : 24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white,
+                        widget.themeColor.withValues(alpha: 0.08),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: widget.themeColor.withValues(alpha: 0.2),
+                      width: 3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: widget.themeColor.withValues(alpha: 0.2),
+                        blurRadius: 40,
+                        offset: const Offset(0, 15),
+                        spreadRadius: 0,
+                      ),
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Question icon with animation
+                      AnimatedBuilder(
+                        animation: _sparkleController,
+                        builder: (context, child) {
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                colors: [
+                                  widget.themeColor.withValues(
+                                      alpha: 0.2 +
+                                          _sparkleController.value * 0.15),
+                                  widget.themeColor.withValues(alpha: 0.05),
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      widget.themeColor.withValues(alpha: 0.4),
+                                  blurRadius:
+                                      25 + _sparkleController.value * 10,
+                                  spreadRadius: 3,
+                                ),
+                              ],
+                            ),
+                            child: const Text(
+                              '📚',
+                              style: TextStyle(fontSize: 44),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      // Question text
+                      Flexible(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Text(
+                              _currentQuestion.question,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: isCompact ? 20 : 26,
+                                fontWeight: FontWeight.w800,
+                                height: 1.4,
+                                color: Colors.grey[900],
+                                letterSpacing: 0.5,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 10,
+                        runSpacing: 6,
+                        children: [
+                          _buildStatusChip(
+                              '${_currentIndex + 1}/${_shuffledQuestions.length}'),
+                          _buildStatusChip('Streak x$_currentStreak'),
+                          if (_hintUsed)
+                            _buildStatusChip('Hint used',
+                                color: Colors.orangeAccent),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
@@ -552,7 +633,8 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.lightbulb, color: Colors.white, size: 24),
+                  child: const Icon(Icons.lightbulb,
+                      color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -588,12 +670,56 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
     );
   }
 
+  Widget _buildGlowCircle(Color color, double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            color,
+            color.withValues(alpha: 0),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color,
+            blurRadius: size * 0.8,
+            spreadRadius: size * 0.1,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(String label, {Color? color}) {
+    final chipColor = color ?? widget.themeColor;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: chipColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: chipColor.withValues(alpha: 0.6)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: chipColor,
+          height: 1.2,
+        ),
+      ),
+    );
+  }
+
   List<Widget> _buildOptions(bool isCompact) {
     return List.generate(_currentQuestion.options.length, (index) {
       final option = _currentQuestion.options[index];
       final isSelected = _selectedIndex == index;
       final isCorrect = _currentQuestion.correctIndex == index;
-      
+
       Color backgroundColor;
       Color borderColor;
       Color textColor;
@@ -659,7 +785,9 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                                 : isSelected
                                     ? AppColors.error
                                     : Colors.grey.shade400)
-                            : (isSelected ? widget.themeColor : Colors.grey.shade400),
+                            : (isSelected
+                                ? widget.themeColor
+                                : Colors.grey.shade400),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -691,7 +819,8 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                         scale: _feedbackAnimation,
                         child: Icon(
                           trailingIcon,
-                          color: isCorrect ? AppColors.success : AppColors.error,
+                          color:
+                              isCorrect ? AppColors.success : AppColors.error,
                           size: isCompact ? 22 : 28,
                         ),
                       ),
@@ -707,7 +836,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
 
   Widget _buildFeedback(bool isCompact) {
     final isCorrect = _currentQuestion.isCorrect(_selectedIndex!);
-    
+
     return ScaleTransition(
       scale: _feedbackAnimation,
       child: Container(
@@ -763,7 +892,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
 
   Widget _buildNextButton() {
     final isLastQuestion = _currentIndex >= _shuffledQuestions.length - 1;
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

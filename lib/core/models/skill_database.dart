@@ -522,6 +522,5 @@ class SkillDatabase {
   static int getTotalSkillCount() => getAllSkills().length;
 
   /// Zone skill count
-  static int getZoneSkillCount(String zoneId) =>
-      getZoneSkills(zoneId).length;
+  static int getZoneSkillCount(String zoneId) => getZoneSkills(zoneId).length;
 }

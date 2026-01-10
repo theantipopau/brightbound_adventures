@@ -47,11 +47,11 @@ class MotorTarget {
 }
 
 enum TargetType {
-  tap,         // Simple tap target
-  doubleTap,   // Double tap required
-  longPress,   // Hold target
-  moving,      // Moving target to catch
-  drag,        // Drag to destination
+  tap, // Simple tap target
+  doubleTap, // Double tap required
+  longPress, // Hold target
+  moving, // Moving target to catch
+  drag, // Drag to destination
 }
 
 /// Game configuration for motor skills
@@ -188,7 +188,7 @@ class MotorGameResult {
 /// Generator for random targets
 class TargetGenerator {
   static final math.Random _random = math.Random();
-  
+
   static final List<Color> _colors = [
     Colors.red,
     Colors.blue,
@@ -207,14 +207,18 @@ class TargetGenerator {
     double difficultyMultiplier = 1.0,
   }) {
     const padding = 60.0;
-    final size = sizeOverride ?? (80 - (20 * difficultyMultiplier)).clamp(30, 80);
-    
-    final x = padding + _random.nextDouble() * (screenSize.width - 2 * padding - size);
-    final y = padding + 100 + _random.nextDouble() * (screenSize.height - 2 * padding - size - 200);
-    
+    final size =
+        sizeOverride ?? (80 - (20 * difficultyMultiplier)).clamp(30, 80);
+
+    final x = padding +
+        _random.nextDouble() * (screenSize.width - 2 * padding - size);
+    final y = padding +
+        100 +
+        _random.nextDouble() * (screenSize.height - 2 * padding - size - 200);
+
     Offset? direction;
     double? speed;
-    
+
     if (type == TargetType.moving) {
       final angle = _random.nextDouble() * 2 * math.pi;
       direction = Offset(math.cos(angle), math.sin(angle));

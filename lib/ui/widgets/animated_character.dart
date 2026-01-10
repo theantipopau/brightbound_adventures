@@ -42,7 +42,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
   late AnimationController _walkController;
   late AnimationController _particleController;
   late AnimationController _blinkController;
-  
+
   late Animation<double> _bounce;
   late Animation<double> _walkSway;
   late Animation<double> _legAnimation;
@@ -121,7 +121,8 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
   }
 
   void _startBlinking() {
-    Future.delayed(Duration(milliseconds: 2000 + math.Random().nextInt(3000)), () {
+    Future.delayed(Duration(milliseconds: 2000 + math.Random().nextInt(3000)),
+        () {
       if (mounted && widget.animation == CharacterAnimation.idle) {
         _blinkController.forward().then((_) {
           _blinkController.reverse().then((_) {
@@ -204,7 +205,9 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
               builder: (context, child) {
                 return Transform.translate(
                   offset: Offset(
-                    widget.animation == CharacterAnimation.walking ? _walkSway.value : 0,
+                    widget.animation == CharacterAnimation.walking
+                        ? _walkSway.value
+                        : 0,
                     _bounce.value,
                   ),
                   child: _buildCharacterBody(),
@@ -232,8 +235,9 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
   }
 
   Widget _buildCharacterBody() {
-    final skinColor = Color(int.parse('0xFF${widget.skinColor.replaceFirst('#', '')}'));
-    
+    final skinColor =
+        Color(int.parse('0xFF${widget.skinColor.replaceFirst('#', '')}'));
+
     // Use FittedBox to ensure the character fits within constraints
     return FittedBox(
       fit: BoxFit.contain,
@@ -297,7 +301,8 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                         height: widget.size * 0.15,
                         decoration: BoxDecoration(
                           color: _getCharacterColor().withValues(alpha: 0.8),
-                          borderRadius: BorderRadius.circular(widget.size * 0.03),
+                          borderRadius:
+                              BorderRadius.circular(widget.size * 0.03),
                         ),
                       ),
                     ),
@@ -309,7 +314,8 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                         height: widget.size * 0.15,
                         decoration: BoxDecoration(
                           color: _getCharacterColor().withValues(alpha: 0.8),
-                          borderRadius: BorderRadius.circular(widget.size * 0.03),
+                          borderRadius:
+                              BorderRadius.circular(widget.size * 0.03),
                         ),
                       ),
                     ),
@@ -393,29 +399,47 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
 
   String _getCharacterEmoji() {
     switch (widget.character.toLowerCase()) {
-      case 'bear': return '🐻';
-      case 'fox': return '🦊';
-      case 'rabbit': return '🐰';
-      case 'deer': return '🦌';
-      case 'cat': return '🐱';
-      case 'penguin': return '🐧';
-      case 'koala': return '🐨';
-      case 'panda': return '🐼';
-      default: return '🐻';
+      case 'bear':
+        return '🐻';
+      case 'fox':
+        return '🦊';
+      case 'rabbit':
+        return '🐰';
+      case 'deer':
+        return '🦌';
+      case 'cat':
+        return '🐱';
+      case 'penguin':
+        return '🐧';
+      case 'koala':
+        return '🐨';
+      case 'panda':
+        return '🐼';
+      default:
+        return '🐻';
     }
   }
 
   Color _getCharacterColor() {
     switch (widget.character.toLowerCase()) {
-      case 'bear': return const Color(0xFF8B4513);
-      case 'fox': return const Color(0xFFFF6B35);
-      case 'rabbit': return const Color(0xFFE0E0E0);
-      case 'deer': return const Color(0xFFD2691E);
-      case 'cat': return const Color(0xFFFF8C94);
-      case 'penguin': return const Color(0xFF4A90E2);
-      case 'koala': return const Color(0xFF9E9E9E);
-      case 'panda': return const Color(0xFF000000);
-      default: return const Color(0xFF8B4513);
+      case 'bear':
+        return const Color(0xFF8B4513);
+      case 'fox':
+        return const Color(0xFFFF6B35);
+      case 'rabbit':
+        return const Color(0xFFE0E0E0);
+      case 'deer':
+        return const Color(0xFFD2691E);
+      case 'cat':
+        return const Color(0xFFFF8C94);
+      case 'penguin':
+        return const Color(0xFF4A90E2);
+      case 'koala':
+        return const Color(0xFF9E9E9E);
+      case 'panda':
+        return const Color(0xFF000000);
+      default:
+        return const Color(0xFF8B4513);
     }
   }
 }
@@ -494,7 +518,7 @@ class _WalkingAvatarState extends State<WalkingAvatar>
       duration: widget.duration,
       vsync: this,
     );
-    
+
     _position = Tween<Offset>(
       begin: widget.startPosition,
       end: widget.endPosition,
@@ -524,8 +548,9 @@ class _WalkingAvatarState extends State<WalkingAvatar>
       animation: _moveController,
       builder: (context, child) {
         final isMoving = _moveController.isAnimating;
-        final direction = widget.endPosition.dx > widget.startPosition.dx ? 1.0 : -1.0;
-        
+        final direction =
+            widget.endPosition.dx > widget.startPosition.dx ? 1.0 : -1.0;
+
         return Positioned(
           left: _position.value.dx,
           top: _position.value.dy,
@@ -535,8 +560,8 @@ class _WalkingAvatarState extends State<WalkingAvatar>
               character: widget.character,
               skinColor: widget.skinColor,
               size: widget.size,
-              animation: isMoving 
-                  ? CharacterAnimation.walking 
+              animation: isMoving
+                  ? CharacterAnimation.walking
                   : CharacterAnimation.idle,
             ),
           ),

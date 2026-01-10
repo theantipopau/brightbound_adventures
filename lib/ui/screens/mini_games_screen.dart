@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'dart:async';
+import 'package:brightbound_adventures/features/mini_games/memory_match_game.dart';
+import 'package:brightbound_adventures/features/mini_games/pattern_puzzle_game.dart';
+import 'package:brightbound_adventures/features/mini_games/word_search_game.dart';
 
 /// Improved Mini Games Screen with enhanced GUI and better gameplay
 class MiniGamesScreen extends StatefulWidget {
@@ -10,7 +13,8 @@ class MiniGamesScreen extends StatefulWidget {
   State<MiniGamesScreen> createState() => _MiniGamesScreenState();
 }
 
-class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderStateMixin {
+class _MiniGamesScreenState extends State<MiniGamesScreen>
+    with TickerProviderStateMixin {
   late AnimationController _entranceController;
   late AnimationController _floatController;
 
@@ -21,7 +25,7 @@ class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderSt
       duration: const Duration(milliseconds: 800),
       vsync: this,
     )..forward();
-    
+
     _floatController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
@@ -59,7 +63,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderSt
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                      icon: const Icon(Icons.arrow_back,
+                          color: Colors.white, size: 28),
                       onPressed: () => Navigator.pop(context),
                     ),
                     const Expanded(
@@ -99,19 +104,23 @@ class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderSt
                     final height = constraints.maxHeight;
                     final isWide = width > 600;
                     final crossAxisCount = isWide ? 2 : 1;
-                    
+
                     // Calculate card size to fit without scrolling
                     final padding = 20.0;
                     final spacing = 20.0;
-                    final availableWidth = width - (padding * 2) - (isWide ? spacing : 0);
+                    final availableWidth =
+                        width - (padding * 2) - (isWide ? spacing : 0);
                     final cardWidth = availableWidth / crossAxisCount;
                     final availableHeight = height - (padding * 2);
-                    final rowCount = (4 / crossAxisCount).ceil();
-                    final cardHeight = (availableHeight - (spacing * (rowCount - 1))) / rowCount;
-                    
+                    final rowCount =
+                        (6 / crossAxisCount).ceil(); // Updated for 6 games
+                    final cardHeight =
+                        (availableHeight - (spacing * (rowCount - 1))) /
+                            rowCount;
+
                     // Use the smaller dimension to maintain aspect ratio
                     final cardSize = math.min(cardWidth * 0.9, cardHeight);
-                    
+
                     return AnimatedBuilder(
                       animation: _entranceController,
                       builder: (context, child) {
@@ -126,9 +135,11 @@ class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderSt
                               index: 0,
                               emoji: '🎯',
                               title: 'Target\nPractice',
-                              description: 'Tap the targets\nbefore time runs out!',
+                              description:
+                                  'Tap the targets\nbefore time runs out!',
                               color: Colors.red,
-                              game: () => _launchGame(context, 'target_practice'),
+                              game: () =>
+                                  _launchGame(context, 'target_practice'),
                             ),
                             _buildGameCard(
                               index: 1,
@@ -136,13 +147,20 @@ class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderSt
                               title: 'Memory\nMatch',
                               description: 'Find matching\npairs quickly!',
                               color: Colors.deepPurple,
-                              game: () => _launchGame(context, 'memory_match'),
+                              game: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const MemoryMatchGame(difficulty: 'easy'),
+                                ),
+                              ),
                             ),
                             _buildGameCard(
                               index: 2,
                               emoji: '⏱️',
                               title: 'Speed\nMath',
-                              description: 'Solve problems\nas fast as you can!',
+                              description:
+                                  'Solve problems\nas fast as you can!',
                               color: Colors.orange,
                               game: () => _launchGame(context, 'speed_round'),
                             ),
@@ -153,6 +171,34 @@ class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderSt
                               description: 'Match word color\nwith the name!',
                               color: Colors.cyan,
                               game: () => _launchGame(context, 'color_splash'),
+                            ),
+                            _buildGameCard(
+                              index: 4,
+                              emoji: '🧩',
+                              title: 'Pattern\nPuzzle',
+                              description: 'Complete the\nsequence!',
+                              color: Colors.indigo,
+                              game: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const PatternPuzzleGame(
+                                      difficulty: 'easy'),
+                                ),
+                              ),
+                            ),
+                            _buildGameCard(
+                              index: 5,
+                              emoji: '🔤',
+                              title: 'Word\nSearch',
+                              description: 'Find hidden\nwords in the grid!',
+                              color: Colors.teal,
+                              game: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const WordSearchGame(difficulty: 'easy'),
+                                ),
+                              ),
                             ),
                           ],
                         );
@@ -185,7 +231,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderSt
     return AnimatedBuilder(
       animation: Listenable.merge([animation, _floatController]),
       builder: (context, child) {
-        final float = math.sin(_floatController.value * math.pi + index * 0.5) * 4;
+        final float =
+            math.sin(_floatController.value * math.pi + index * 0.5) * 4;
         final scale = animation.value;
         final opacity = animation.value;
 
@@ -295,7 +342,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderSt
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.play_arrow_rounded, color: color, size: 24),
+                                  Icon(Icons.play_arrow_rounded,
+                                      color: color, size: 24),
                                   const SizedBox(width: 6),
                                   Text(
                                     'PLAY',
@@ -333,7 +381,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen> with TickerProviderSt
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
           return SlideTransition(
             position: animation.drive(tween),
             child: child,
@@ -373,7 +422,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   List<String> memoryCards = [];
   List<int> flippedIndices = [];
   List<int> matchedIndices = [];
-  
+
   // Speed Math game state
   int mathAnswer = 0;
   String mathQuestion = '';
@@ -593,7 +642,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: timeRemaining < 10 ? Colors.red : Colors.white,
+                            color:
+                                timeRemaining < 10 ? Colors.red : Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
@@ -605,7 +655,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           child: Text(
                             '$timeRemaining"',
                             style: TextStyle(
-                              color: timeRemaining < 10 ? Colors.white : _getGameColor,
+                              color: timeRemaining < 10
+                                  ? Colors.white
+                                  : _getGameColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
                             ),
@@ -670,7 +722,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               Align(
                 alignment: Alignment.topLeft,
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                  icon: const Icon(Icons.arrow_back,
+                      color: Colors.white, size: 28),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -867,7 +920,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _handleMemoryCardTap(int index) {
-    if (flippedIndices.length >= 2 || matchedIndices.contains(index) || flippedIndices.contains(index)) {
+    if (flippedIndices.length >= 2 ||
+        matchedIndices.contains(index) ||
+        flippedIndices.contains(index)) {
       return;
     }
 
@@ -926,7 +981,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 40),
           ...mathOptions.map((option) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 8),
                 child: ElevatedButton(
                   onPressed: () => _checkMathAnswer(option),
                   style: ElevatedButton.styleFrom(
@@ -1005,23 +1061,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             spacing: 16,
             runSpacing: 16,
             alignment: WrapAlignment.center,
-            children: colorOptions.map((color) => GestureDetector(
-                  onTap: () => _checkColorAnswer(color),
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withValues(alpha: 0.4),
-                          blurRadius: 12,
+            children: colorOptions
+                .map((color) => GestureDetector(
+                      onTap: () => _checkColorAnswer(color),
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: color.withValues(alpha: 0.4),
+                              blurRadius: 12,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                )).toList(),
+                      ),
+                    ))
+                .toList(),
           ),
         ],
       ),
@@ -1059,7 +1117,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             margin: const EdgeInsets.symmetric(horizontal: 32),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [_getGameColor.withValues(alpha: 0.2), _getGameColor.withValues(alpha: 0.1)],
+                colors: [
+                  _getGameColor.withValues(alpha: 0.2),
+                  _getGameColor.withValues(alpha: 0.1)
+                ],
               ),
               borderRadius: BorderRadius.circular(24),
             ),
@@ -1100,7 +1161,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 label: const Text('Exit'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 ),
               ),
               const SizedBox(width: 16),
@@ -1109,7 +1171,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => GameScreen(gameType: widget.gameType),
+                      builder: (context) =>
+                          GameScreen(gameType: widget.gameType),
                     ),
                   );
                 },
@@ -1117,7 +1180,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 label: const Text('Play Again'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _getGameColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 ),
               ),
             ],

@@ -6,13 +6,13 @@ import 'dart:convert';
 class AdaptiveDifficultyService extends ChangeNotifier {
   static const String _performanceKey = 'adaptive_difficulty_performance';
   static const int _historyLength = 5; // Track last 5 answers per skill
-  
+
   // Map of skillId -> list of recent correct/incorrect (true/false)
   final Map<String, List<bool>> _performanceHistory = {};
-  
+
   // Map of skillId -> current difficulty level (1-3)
   final Map<String, int> _skillDifficulty = {};
-  
+
   bool _initialized = false;
 
   bool get initialized => _initialized;
@@ -20,20 +20,20 @@ class AdaptiveDifficultyService extends ChangeNotifier {
   /// Initialize the service and load performance history
   Future<void> initialize() async {
     if (_initialized) return;
-    
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final historyJson = prefs.getString(_performanceKey);
-      
+
       if (historyJson != null) {
         final data = json.decode(historyJson) as Map<String, dynamic>;
-        
+
         // Load performance history
         final history = data['history'] as Map<String, dynamic>? ?? {};
         for (final entry in history.entries) {
           _performanceHistory[entry.key] = List<bool>.from(entry.value as List);
         }
-        
+
         // Load difficulty levels
         final difficulty = data['difficulty'] as Map<String, dynamic>? ?? {};
         for (final entry in difficulty.entries) {
@@ -43,7 +43,7 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error loading adaptive difficulty: $e');
     }
-    
+
     _initialized = true;
     notifyListeners();
   }
@@ -62,17 +62,17 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     if (!_performanceHistory.containsKey(skillId)) {
       _performanceHistory[skillId] = [];
     }
-    
+
     _performanceHistory[skillId]!.add(wasCorrect);
-    
+
     // Keep only last N answers
     if (_performanceHistory[skillId]!.length > _historyLength) {
       _performanceHistory[skillId]!.removeAt(0);
     }
-    
+
     // Adjust difficulty based on recent performance
     await _adjustDifficulty(skillId);
-    
+
     // Persist changes
     await _saveToStorage();
     notifyListeners();
@@ -84,30 +84,30 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     if (history == null || history.length < 3) {
       return; // Need at least 3 answers to adjust
     }
-    
+
     final currentDifficulty = _skillDifficulty[skillId] ?? 1;
     final recentCorrect = history.where((correct) => correct).length;
     final totalRecent = history.length;
     final accuracy = recentCorrect / totalRecent;
-    
+
     // Check last 3 answers for consecutive patterns
-    final lastThree = history.length >= 3 
-        ? history.sublist(history.length - 3) 
-        : history;
+    final lastThree =
+        history.length >= 3 ? history.sublist(history.length - 3) : history;
     final threeInARow = lastThree.length == 3 && lastThree.every((c) => c);
-    final twoWrongInRow = history.length >= 2 && 
-        !history[history.length - 1] && 
+    final twoWrongInRow = history.length >= 2 &&
+        !history[history.length - 1] &&
         !history[history.length - 2];
-    
+
     int newDifficulty = currentDifficulty;
-    
+
     // Increase difficulty if:
     // - 3 correct in a row, OR
     // - Accuracy >= 90% and not at max difficulty
     if (threeInARow || (accuracy >= 0.9 && currentDifficulty < 3)) {
       newDifficulty = (currentDifficulty + 1).clamp(1, 3);
       if (newDifficulty != currentDifficulty) {
-        debugPrint('📈 Increasing difficulty for $skillId: $currentDifficulty → $newDifficulty');
+        debugPrint(
+            '📈 Increasing difficulty for $skillId: $currentDifficulty → $newDifficulty');
       }
     }
     // Decrease difficulty if:
@@ -116,10 +116,11 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     else if (twoWrongInRow || (accuracy < 0.4 && currentDifficulty > 1)) {
       newDifficulty = (currentDifficulty - 1).clamp(1, 3);
       if (newDifficulty != currentDifficulty) {
-        debugPrint('📉 Decreasing difficulty for $skillId: $currentDifficulty → $newDifficulty');
+        debugPrint(
+            '📉 Decreasing difficulty for $skillId: $currentDifficulty → $newDifficulty');
       }
     }
-    
+
     _skillDifficulty[skillId] = newDifficulty;
   }
 
@@ -132,7 +133,7 @@ class AdaptiveDifficultyService extends ChangeNotifier {
   double getRecentAccuracy(String skillId) {
     final history = _performanceHistory[skillId];
     if (history == null || history.isEmpty) return 0.0;
-    
+
     final correct = history.where((c) => c).length;
     return correct / history.length;
   }
@@ -142,11 +143,11 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     final difficulty = getDifficultyForSkill(skillId);
     final accuracy = getRecentAccuracy(skillId);
     final history = _performanceHistory[skillId];
-    
+
     if (history == null || history.isEmpty) {
       return 'Starting at level $difficulty';
     }
-    
+
     if (accuracy >= 0.8) {
       return 'Great work! Level $difficulty';
     } else if (accuracy >= 0.6) {
@@ -196,8 +197,9 @@ class AdaptiveDifficultyService extends ChangeNotifier {
       'averageAccuracy': _performanceHistory.isEmpty
           ? 0.0
           : _performanceHistory.values
-              .map((h) => h.where((c) => c).length / h.length)
-              .reduce((a, b) => a + b) / _performanceHistory.length,
+                  .map((h) => h.where((c) => c).length / h.length)
+                  .reduce((a, b) => a + b) /
+              _performanceHistory.length,
     };
   }
 }

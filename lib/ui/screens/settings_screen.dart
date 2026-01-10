@@ -72,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               // Header
               _buildHeader(),
-              
+
               // Content
               Expanded(
                 child: _buildContent(),
@@ -134,9 +134,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Gameplay Settings
           _buildSection(
             title: '🎮 Gameplay',
@@ -152,9 +152,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildDifficultySlider(),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // About Section
           _buildSection(
             title: 'ℹ️ About',

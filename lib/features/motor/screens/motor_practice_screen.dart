@@ -35,7 +35,7 @@ class _MotorPracticeScreenState extends State<MotorPracticeScreen> {
 
     // Update skill progress
     final skillProvider = Provider.of<SkillProvider>(context, listen: false);
-    
+
     skillProvider.updateSkillProgress(
       skillId: widget.skillId,
       sessionAccuracy: result.accuracy,

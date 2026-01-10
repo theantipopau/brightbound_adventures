@@ -28,7 +28,8 @@ class AvatarDisplayCard extends StatelessWidget {
                 height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(int.parse('0xFF${_getSkinColorHex(avatar.skinColor)}')),
+                  color: Color(
+                      int.parse('0xFF${_getSkinColorHex(avatar.skinColor)}')),
                   border: Border.all(
                     color: AppColors.primary,
                     width: 3,
@@ -49,7 +50,7 @@ class AvatarDisplayCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Avatar name
               Text(
                 avatar.name,
@@ -58,7 +59,7 @@ class AvatarDisplayCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
-              
+
               // Character type
               Text(
                 _formatCharacterName(avatar.baseCharacter),
@@ -67,12 +68,13 @@ class AvatarDisplayCard extends StatelessWidget {
                     ),
               ),
               const SizedBox(height: 12),
-              
+
               // Level and XP bar
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
@@ -93,18 +95,21 @@ class AvatarDisplayCard extends StatelessWidget {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
-                            value: avatar.experiencePoints / Constants.xpPerLevel,
+                            value:
+                                avatar.experiencePoints / Constants.xpPerLevel,
                             minHeight: 6,
                             backgroundColor: AppColors.divider,
-                            valueColor: const AlwaysStoppedAnimation(AppColors.secondary),
+                            valueColor: const AlwaysStoppedAnimation(
+                                AppColors.secondary),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${avatar.experiencePoints}/${Constants.xpPerLevel} XP',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
                         ),
                       ],
                     ),
@@ -206,7 +211,9 @@ class _CharacterOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : AppColors.surface,
+      color: isSelected
+          ? AppColors.primary.withValues(alpha: 0.1)
+          : AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
@@ -280,7 +287,8 @@ class SkinColorPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = CosmeticsLibrary.getSkinColorsForCharacter(selectedCharacter);
+    final colors =
+        CosmeticsLibrary.getSkinColorsForCharacter(selectedCharacter);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

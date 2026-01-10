@@ -33,29 +33,29 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
   Timer? _targetSpawnTimer;
   Timer? _movementTimer;
   final AudioManager _audioManager = AudioManager();
-  
+
   final List<Duration> _reactionTimes = [];
   DateTime? _targetSpawnTime;
-  
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  
+
   // For tap feedback
   final List<_TapFeedback> _tapFeedbacks = [];
 
   @override
   void initState() {
     super.initState();
-    
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     )..repeat(reverse: true);
-    
+
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    
+
     _timeRemaining = widget.config.roundDuration;
     _startCountdown();
   }
@@ -75,7 +75,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
         timer.cancel();
         return;
       }
-      
+
       setState(() {
         _countdown--;
         if (_countdown <= 0) {
@@ -92,14 +92,14 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
       _isPlaying = true;
       _timeRemaining = widget.config.roundDuration;
     });
-    
+
     // Start game timer
     _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-      
+
       setState(() {
         _timeRemaining = _timeRemaining - const Duration(seconds: 1);
         if (_timeRemaining.inSeconds <= 0) {
@@ -108,12 +108,13 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
         }
       });
     });
-    
+
     // Spawn initial targets
     _spawnTarget();
-    
+
     // Schedule target spawning
-    _targetSpawnTimer = Timer.periodic(const Duration(milliseconds: 1500), (timer) {
+    _targetSpawnTimer =
+        Timer.periodic(const Duration(milliseconds: 1500), (timer) {
       if (!mounted || !_isPlaying) {
         timer.cancel();
         return;
@@ -122,7 +123,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
         _spawnTarget();
       }
     });
-    
+
     // Update moving targets
     _movementTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
       if (!mounted || !_isPlaying) {
@@ -135,25 +136,28 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
 
   void _spawnTarget() {
     if (!_isPlaying || !mounted) return;
-    
+
     final screenSize = MediaQuery.of(context).size;
     final types = widget.config.targetTypes;
     final type = types[math.Random().nextInt(types.length)];
-    
+
     final target = TargetGenerator.generateTarget(
       screenSize: screenSize,
       type: type,
       difficultyMultiplier: widget.config.difficultyMultiplier,
     );
-    
+
     setState(() {
       _targets.add(target);
       _targetSpawnTime = DateTime.now();
     });
-    
+
     // Auto-remove tap targets after a delay
     if (type == TargetType.tap || type == TargetType.moving) {
-      Future.delayed(Duration(milliseconds: (3000 / widget.config.difficultyMultiplier).round()), () {
+      Future.delayed(
+          Duration(
+              milliseconds:
+                  (3000 / widget.config.difficultyMultiplier).round()), () {
         if (mounted && _targets.any((t) => t.id == target.id)) {
           setState(() {
             _targets.removeWhere((t) => t.id == target.id);
@@ -166,20 +170,24 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
 
   void _updateMovingTargets() {
     if (!mounted) return;
-    
+
     final screenSize = MediaQuery.of(context).size;
     const dt = 0.016; // ~60fps
-    
+
     setState(() {
       _targets = _targets.map((target) {
-        if (target.type != TargetType.moving || target.direction == null || target.speed == null) {
+        if (target.type != TargetType.moving ||
+            target.direction == null ||
+            target.speed == null) {
           return target;
         }
-        
-        var newX = target.position.dx + target.direction!.dx * target.speed! * dt;
-        var newY = target.position.dy + target.direction!.dy * target.speed! * dt;
+
+        var newX =
+            target.position.dx + target.direction!.dx * target.speed! * dt;
+        var newY =
+            target.position.dy + target.direction!.dy * target.speed! * dt;
         var newDirection = target.direction!;
-        
+
         // Bounce off walls
         if (newX < 20 || newX > screenSize.width - 20 - target.size) {
           newDirection = Offset(-newDirection.dx, newDirection.dy);
@@ -189,7 +197,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
           newDirection = Offset(newDirection.dx, -newDirection.dy);
           newY = newY.clamp(120, screenSize.height - 120 - target.size);
         }
-        
+
         return target.copyWith(
           position: Offset(newX, newY),
           direction: newDirection,
@@ -200,38 +208,38 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
 
   void _onTargetHit(MotorTarget target) {
     if (!_isPlaying) return;
-    
+
     // Record reaction time
     if (_targetSpawnTime != null) {
       _reactionTimes.add(DateTime.now().difference(_targetSpawnTime!));
     }
-    
+
     // Play correct answer sound
     _audioManager.playCorrectAnswer();
-    
+
     // Add tap feedback
     setState(() {
       _targets.removeWhere((t) => t.id == target.id);
       _score += target.points;
       _targetsHit++;
-      
+
       _tapFeedbacks.add(_TapFeedback(
         position: target.position + Offset(target.size / 2, target.size / 2),
         points: target.points,
         createdAt: DateTime.now(),
       ));
     });
-    
+
     // Clean up old tap feedbacks
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         setState(() {
-          _tapFeedbacks.removeWhere((f) => 
-            DateTime.now().difference(f.createdAt).inMilliseconds > 500);
+          _tapFeedbacks.removeWhere((f) =>
+              DateTime.now().difference(f.createdAt).inMilliseconds > 500);
         });
       }
     });
-    
+
     // Spawn new target
     if (_targets.length < 3) {
       _spawnTarget();
@@ -243,11 +251,11 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
       _isPlaying = false;
       _targets.clear();
     });
-    
+
     _gameTimer?.cancel();
     _targetSpawnTimer?.cancel();
     _movementTimer?.cancel();
-    
+
     if (_currentRound < widget.config.rounds) {
       // Next round
       Future.delayed(const Duration(seconds: 2), () {
@@ -269,11 +277,13 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
   void _completeGame() {
     final totalTargets = _targetsHit + _targetsMissed;
     final avgReaction = _reactionTimes.isNotEmpty
-        ? Duration(milliseconds: _reactionTimes
-            .map((d) => d.inMilliseconds)
-            .reduce((a, b) => a + b) ~/ _reactionTimes.length)
+        ? Duration(
+            milliseconds: _reactionTimes
+                    .map((d) => d.inMilliseconds)
+                    .reduce((a, b) => a + b) ~/
+                _reactionTimes.length)
         : Duration.zero;
-    
+
     widget.onGameComplete(MotorGameResult(
       targetsHit: _targetsHit,
       totalTargets: totalTargets,
@@ -303,21 +313,23 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
             children: [
               // Background pattern
               _buildBackgroundPattern(),
-              
+
               // Game header
               _buildHeader(),
-              
+
               // Targets
               ..._targets.map((target) => _buildTarget(target)),
-              
+
               // Tap feedbacks
               ..._tapFeedbacks.map((feedback) => _buildTapFeedback(feedback)),
-              
+
               // Countdown overlay
               if (_showCountdown) _buildCountdownOverlay(),
-              
+
               // Round end overlay
-              if (!_isPlaying && !_showCountdown && _currentRound <= widget.config.rounds)
+              if (!_isPlaying &&
+                  !_showCountdown &&
+                  _currentRound <= widget.config.rounds)
                 _buildRoundEndOverlay(),
             ],
           ),
@@ -358,7 +370,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
               icon: const Icon(Icons.close, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),
             ),
-            
+
             // Round info
             Column(
               children: [
@@ -376,13 +388,14 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
                 ),
               ],
             ),
-            
+
             // Score and timer
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.amber.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(20),
@@ -405,9 +418,13 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
                 Text(
                   '⏱️ ${_timeRemaining.inSeconds}s',
                   style: TextStyle(
-                    color: _timeRemaining.inSeconds <= 5 ? Colors.red : Colors.white70,
+                    color: _timeRemaining.inSeconds <= 5
+                        ? Colors.red
+                        : Colors.white70,
                     fontSize: 14,
-                    fontWeight: _timeRemaining.inSeconds <= 5 ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: _timeRemaining.inSeconds <= 5
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
               ],
@@ -427,9 +444,8 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
         child: AnimatedBuilder(
           animation: _pulseAnimation,
           builder: (context, child) {
-            final scale = target.type == TargetType.moving 
-                ? _pulseAnimation.value 
-                : 1.0;
+            final scale =
+                target.type == TargetType.moving ? _pulseAnimation.value : 1.0;
             return Transform.scale(
               scale: scale,
               child: child,
@@ -474,7 +490,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
   Widget _buildTapFeedback(_TapFeedback feedback) {
     final age = DateTime.now().difference(feedback.createdAt).inMilliseconds;
     final progress = (age / 500).clamp(0.0, 1.0);
-    
+
     return Positioned(
       left: feedback.position.dx - 20,
       top: feedback.position.dy - 40 - (progress * 30),
@@ -610,13 +626,13 @@ class _ArenaPainter extends CustomPainter {
       ..color = Colors.white.withValues(alpha: 0.05)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-    
+
     // Draw arena circles
     final center = Offset(size.width / 2, size.height / 2);
     for (int i = 1; i <= 4; i++) {
       canvas.drawCircle(center, size.width * 0.15 * i, paint);
     }
-    
+
     // Draw crosshairs
     canvas.drawLine(
       Offset(0, size.height / 2),

@@ -10,7 +10,7 @@ class LocalStorageService {
 
   Future<void> initializeHive() async {
     await Hive.initFlutter();
-    
+
     // Open boxes
     await Hive.openBox(skillsBoxName);
     await Hive.openBox(avatarBoxName);
@@ -152,7 +152,8 @@ class LocalStorageService {
         skinColor: data['skinColor'],
         outfitId: data['outfitId'],
         unlockedOutfits: List<String>.from(data['unlockedOutfits'] ?? []),
-        unlockedAccessories: List<String>.from(data['unlockedAccessories'] ?? []),
+        unlockedAccessories:
+            List<String>.from(data['unlockedAccessories'] ?? []),
         experiencePoints: data['experiencePoints'] ?? 0,
         level: data['level'] ?? 1,
         createdAt: DateTime.parse(data['createdAt']),

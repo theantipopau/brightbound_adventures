@@ -26,8 +26,7 @@ class Achievement {
     this.unlockedAt,
   });
 
-  double get progressPercent => 
-      (currentProgress / requirement).clamp(0.0, 1.0);
+  double get progressPercent => (currentProgress / requirement).clamp(0.0, 1.0);
 
   Achievement copyWith({
     String? id,
@@ -57,12 +56,12 @@ class Achievement {
 }
 
 enum AchievementCategory {
-  learning,     // Skill-related achievements
-  exploration,  // Zone exploration achievements
-  streak,       // Daily streak achievements
-  social,       // Player interaction achievements
-  mastery,      // Mastery-level achievements
-  special,      // Special/seasonal achievements
+  learning, // Skill-related achievements
+  exploration, // Zone exploration achievements
+  streak, // Daily streak achievements
+  social, // Player interaction achievements
+  mastery, // Mastery-level achievements
+  special, // Special/seasonal achievements
 }
 
 enum AchievementTier {
@@ -162,6 +161,15 @@ class AchievementDatabase {
       requirement: 7,
     ),
     Achievement(
+      id: 'streak_14',
+      name: 'Fortnight Fighter',
+      description: 'Play 14 days in a row',
+      emoji: '💪',
+      category: AchievementCategory.streak,
+      tier: AchievementTier.gold,
+      requirement: 14,
+    ),
+    Achievement(
       id: 'streak_30',
       name: 'Dedicated Learner',
       description: 'Play 30 days in a row',
@@ -169,6 +177,71 @@ class AchievementDatabase {
       category: AchievementCategory.streak,
       tier: AchievementTier.platinum,
       requirement: 30,
+    ),
+    Achievement(
+      id: 'streak_100',
+      name: 'Unstoppable',
+      description: 'Play 100 days in a row',
+      emoji: '🔱',
+      category: AchievementCategory.streak,
+      tier: AchievementTier.platinum,
+      requirement: 100,
+    ),
+
+    // Star Milestone Achievements
+    Achievement(
+      id: 'stars_10',
+      name: 'Stargazer',
+      description: 'Collect 10 stars',
+      emoji: '⭐',
+      category: AchievementCategory.learning,
+      tier: AchievementTier.bronze,
+      requirement: 10,
+    ),
+    Achievement(
+      id: 'stars_25',
+      name: 'Star Collector',
+      description: 'Collect 25 stars',
+      emoji: '🌠',
+      category: AchievementCategory.learning,
+      tier: AchievementTier.bronze,
+      requirement: 25,
+    ),
+    Achievement(
+      id: 'stars_50',
+      name: 'Constellation',
+      description: 'Collect 50 stars',
+      emoji: '✨',
+      category: AchievementCategory.learning,
+      tier: AchievementTier.silver,
+      requirement: 50,
+    ),
+    Achievement(
+      id: 'stars_100',
+      name: 'Supernova',
+      description: 'Collect 100 stars',
+      emoji: '💫',
+      category: AchievementCategory.learning,
+      tier: AchievementTier.gold,
+      requirement: 100,
+    ),
+    Achievement(
+      id: 'stars_250',
+      name: 'Stellar Champion',
+      description: 'Collect 250 stars',
+      emoji: '🌟',
+      category: AchievementCategory.learning,
+      tier: AchievementTier.gold,
+      requirement: 250,
+    ),
+    Achievement(
+      id: 'stars_500',
+      name: 'Cosmic Legend',
+      description: 'Collect 500 stars',
+      emoji: '🌌',
+      category: AchievementCategory.learning,
+      tier: AchievementTier.platinum,
+      requirement: 500,
     ),
 
     // Mastery Achievements
@@ -261,16 +334,12 @@ class AchievementDatabase {
 
   /// Get achievements by category
   static List<Achievement> getByCategory(AchievementCategory category) {
-    return allAchievements
-        .where((a) => a.category == category)
-        .toList();
+    return allAchievements.where((a) => a.category == category).toList();
   }
 
   /// Get achievements by tier
   static List<Achievement> getByTier(AchievementTier tier) {
-    return allAchievements
-        .where((a) => a.tier == tier)
-        .toList();
+    return allAchievements.where((a) => a.tier == tier).toList();
   }
 }
 

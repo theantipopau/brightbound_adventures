@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:brightbound_adventures/core/models/daily_challenge.dart';
-import 'package:brightbound_adventures/core/services/skill_provider.dart';
-import 'package:brightbound_adventures/ui/themes/app_theme.dart';
+import '../../core/models/daily_challenge.dart';
 
 /// Daily Skill Challenges Screen
 /// Features rotating daily challenges with rewards
@@ -20,7 +17,8 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
   @override
   void initState() {
     super.initState();
-    challenges = DailyChallengeGenerator.generateDailyChallenges(DateTime.now());
+    challenges =
+        DailyChallengeGenerator.generateDailyChallenges(DateTime.now());
     completedChallenges = {};
     for (final challenge in challenges) {
       completedChallenges[challenge.id] = false;
@@ -34,10 +32,10 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
     final now = DateTime.now();
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
     final difference = tomorrow.difference(now);
-    
+
     final hours = difference.inHours;
     final minutes = difference.inMinutes % 60;
-    
+
     return '${hours}h ${minutes}m';
   }
 
@@ -88,7 +86,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${completedCount}/${challenges.length} Completed',
+                            '$completedCount/${challenges.length} Completed',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 14,
@@ -106,7 +104,8 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.timer, size: 14, color: Colors.white),
+                                const Icon(Icons.timer,
+                                    size: 14, color: Colors.white),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Resets in ${_getTimeUntilReset()}',
@@ -152,7 +151,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Rewards preview
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -213,7 +212,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
                   const Text(
                     'Today\'s Challenges',
@@ -266,14 +265,10 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isCompleted
-              ? Colors.grey[200]
-              : Colors.white,
+          color: isCompleted ? Colors.grey[200] : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isCompleted
-                ? Colors.grey[400]!
-                : Colors.grey[300]!,
+            color: isCompleted ? Colors.grey[400]! : Colors.grey[300]!,
             width: 2,
           ),
           boxShadow: [
@@ -301,7 +296,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
               ),
             ),
             const SizedBox(width: 16),
-            
+
             // Challenge details
             Expanded(
               child: Column(
@@ -312,9 +307,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isCompleted
-                          ? Colors.grey[400]
-                          : Colors.black,
+                      color: isCompleted ? Colors.grey[400] : Colors.black,
                       decoration: isCompleted
                           ? TextDecoration.lineThrough
                           : TextDecoration.none,
@@ -325,9 +318,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                     challenge.description,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isCompleted
-                          ? Colors.grey[400]
-                          : Colors.grey[600],
+                      color: isCompleted ? Colors.grey[400] : Colors.grey[600],
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -336,7 +327,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            
+
             // Reward and status
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -430,7 +421,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
     setState(() {
       completedChallenges[challengeId] = true;
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('✨ Challenge Completed! +10 XP'),

@@ -30,20 +30,20 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   bool _showFeedback = false;
   bool _isCorrect = false;
   final AudioManager _audioManager = AudioManager();
-  
+
   late AnimationController _pageController;
   late AnimationController _sparkleController;
   late AnimationController _characterController;
   late Animation<double> _pageAnimation;
   late Animation<double> _sparkleAnimation;
   late Animation<double> _characterBounce;
-  
+
   final List<_FloatingElement> _floatingElements = [];
 
   @override
   void initState() {
     super.initState();
-    
+
     _pageController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -52,7 +52,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       parent: _pageController,
       curve: Curves.easeOutBack,
     );
-    
+
     _sparkleController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -61,7 +61,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       parent: _sparkleController,
       curve: Curves.easeOut,
     );
-    
+
     _characterController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -69,7 +69,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
     _characterBounce = Tween<double>(begin: 0, end: -10).animate(
       CurvedAnimation(parent: _characterController, curve: Curves.easeInOut),
     );
-    
+
     _pageController.forward();
     _generateFloatingElements();
   }
@@ -77,7 +77,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   void _generateFloatingElements() {
     final random = math.Random();
     final emojis = ['📚', '✨', '🌟', '📖', '✏️', '🎭', '💫', '🦋'];
-    
+
     for (int i = 0; i < 12; i++) {
       _floatingElements.add(_FloatingElement(
         emoji: emojis[random.nextInt(emojis.length)],
@@ -101,17 +101,17 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
 
   void _selectAnswer(int index) {
     if (_showFeedback) return;
-    
+
     setState(() {
       _selectedAnswer = index;
       _showFeedback = true;
       _isCorrect = index == _currentQuestion.correctIndex;
-      
+
       if (_isCorrect) {
         _correctAnswers++;
         _currentStreak++;
         _sparkleController.forward(from: 0);
-        
+
         // Play appropriate celebration sound based on streak
         if (_currentStreak >= 3) {
           _audioManager.playStreak(_currentStreak);
@@ -123,7 +123,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
         _audioManager.playIncorrectAnswer();
       }
     });
-    
+
     Future.delayed(const Duration(milliseconds: 2000), () {
       if (mounted) {
         _nextQuestion();
@@ -143,14 +143,14 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       });
     } else {
       // Game complete
-      final xpEarned = _correctAnswers * 15 + 
+      final xpEarned = _correctAnswers * 15 +
           (_correctAnswers == widget.questions.length ? 25 : 0);
-      
+
       // Play celebration sound for perfect score
       if (_correctAnswers == widget.questions.length) {
         _audioManager.playPerfectScore();
       }
-      
+
       widget.onFinish(_correctAnswers, widget.questions.length, xpEarned);
     }
   }
@@ -175,7 +175,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
             children: [
               // Floating background elements
               ..._buildFloatingElements(),
-              
+
               // Main content
               Column(
                 children: [
@@ -184,10 +184,10 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                   _buildProgressIndicator(),
                 ],
               ),
-              
+
               // Character guide
               _buildCharacterGuide(),
-              
+
               // Sparkles for correct answer
               if (_showFeedback && _isCorrect) _buildSparkles(),
             ],
@@ -202,7 +202,10 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       return AnimatedBuilder(
         animation: _characterController,
         builder: (context, child) {
-          final offset = math.sin(DateTime.now().millisecondsSinceEpoch / 1000 * element.speed) * 20;
+          final offset = math.sin(DateTime.now().millisecondsSinceEpoch /
+                  1000 *
+                  element.speed) *
+              20;
           return Positioned(
             left: MediaQuery.of(context).size.width * element.x,
             top: MediaQuery.of(context).size.height * element.y + offset,
@@ -323,7 +326,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 16),
                 ],
-                
+
                 // Question text
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -336,7 +339,8 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: MediaQuery.of(context).size.width < 600 ? 18 : 20,
+                      fontSize:
+                          MediaQuery.of(context).size.width < 600 ? 18 : 20,
                       fontWeight: FontWeight.w600,
                       height: 1.5,
                     ),
@@ -344,14 +348,14 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Answer options
                 ..._currentQuestion.options.asMap().entries.map((entry) {
                   return _buildAnswerOption(entry.key, entry.value);
                 }),
-                
+
                 // Feedback section
                 if (_showFeedback) ...[
                   const SizedBox(height: 16),
@@ -368,11 +372,11 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   Widget _buildAnswerOption(int index, String text) {
     final isSelected = _selectedAnswer == index;
     final isCorrectAnswer = index == _currentQuestion.correctIndex;
-    
+
     Color bgColor = Colors.white.withValues(alpha: 0.1);
     Color borderColor = Colors.white.withValues(alpha: 0.3);
     Color textColor = Colors.white;
-    
+
     if (_showFeedback) {
       if (isCorrectAnswer) {
         bgColor = Colors.green.withValues(alpha: 0.3);
@@ -387,7 +391,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       bgColor = Colors.purple.withValues(alpha: 0.3);
       borderColor = Colors.purple.shade300;
     }
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Material(
@@ -428,8 +432,10 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                     text,
                     style: TextStyle(
                       color: textColor,
-                      fontSize: MediaQuery.of(context).size.width < 600 ? 14 : 16,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize:
+                          MediaQuery.of(context).size.width < 600 ? 14 : 16,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                       height: 1.3,
                     ),
                     maxLines: 4,
@@ -453,8 +459,8 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _isCorrect 
-            ? Colors.green.withValues(alpha: 0.2) 
+        color: _isCorrect
+            ? Colors.green.withValues(alpha: 0.2)
             : Colors.orange.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -515,7 +521,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
               } else {
                 dotColor = Colors.white24;
               }
-              
+
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: index == _currentIndex ? 24 : 12,
@@ -524,7 +530,11 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                   color: dotColor,
                   borderRadius: BorderRadius.circular(6),
                   boxShadow: index == _currentIndex
-                      ? [BoxShadow(color: Colors.purple.withValues(alpha: 0.5), blurRadius: 8)]
+                      ? [
+                          BoxShadow(
+                              color: Colors.purple.withValues(alpha: 0.5),
+                              blurRadius: 8)
+                        ]
                       : null,
                 ),
               );
@@ -544,12 +554,14 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                     ),
                     backgroundColor: Colors.purple.shade700,
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 );
               },
               icon: const Icon(Icons.lightbulb_outline, color: Colors.amber),
-              label: const Text('Need a hint?', style: TextStyle(color: Colors.amber)),
+              label: const Text('Need a hint?',
+                  style: TextStyle(color: Colors.amber)),
             ),
         ],
       ),
@@ -618,7 +630,7 @@ class _FloatingElement {
 class _SparklePainter extends CustomPainter {
   final double progress;
   final List<_Sparkle> sparkles = [];
-  
+
   _SparklePainter(this.progress) {
     final random = math.Random(42);
     for (int i = 0; i < 20; i++) {
@@ -630,22 +642,22 @@ class _SparklePainter extends CustomPainter {
       ));
     }
   }
-  
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.amber.withValues(alpha: 1.0 - progress)
       ..style = PaintingStyle.fill;
-    
+
     for (final sparkle in sparkles) {
       final x = size.width * sparkle.x;
       final y = size.height * sparkle.y - (progress * 100);
       final sparkleSize = sparkle.size * (1 - progress);
-      
+
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(sparkle.angle + progress * math.pi);
-      
+
       // Draw 4-pointed star
       final path = Path();
       path.moveTo(0, -sparkleSize);
@@ -657,12 +669,12 @@ class _SparklePainter extends CustomPainter {
       path.lineTo(-sparkleSize, 0);
       path.lineTo(-sparkleSize * 0.3, -sparkleSize * 0.3);
       path.close();
-      
+
       canvas.drawPath(path, paint);
       canvas.restore();
     }
   }
-  
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
@@ -672,7 +684,7 @@ class _Sparkle {
   final double y;
   final double size;
   final double angle;
-  
+
   _Sparkle({
     required this.x,
     required this.y,

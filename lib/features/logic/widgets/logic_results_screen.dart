@@ -95,9 +95,15 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
   }
 
   String get _messageText {
-    if (_percentage >= 1.0) return 'You conquered the peak! Your logic is unbeatable!';
-    if (_percentage >= 0.7) return 'Amazing climb! You\'re getting close to the summit!';
-    if (_percentage >= 0.4) return 'Good effort! Every step gets you closer!';
+    if (_percentage >= 1.0) {
+      return 'You conquered the peak! Your logic is unbeatable!';
+    }
+    if (_percentage >= 0.7) {
+      return 'Amazing climb! You\'re getting close to the summit!';
+    }
+    if (_percentage >= 0.4) {
+      return 'Good effort! Every step gets you closer!';
+    }
     return 'The mountain awaits! Keep practicing your logic skills!';
   }
 
@@ -510,14 +516,16 @@ class _MountainResultsPainter extends CustomPainter {
 
     // Only draw portion of path based on climb progress
     final pathMetrics = climbPath.computeMetrics().first;
-    final extractPath =
-        pathMetrics.extractPath(0, pathMetrics.length * climbProgress * animProgress);
+    final extractPath = pathMetrics.extractPath(
+        0, pathMetrics.length * climbProgress * animProgress);
     canvas.drawPath(extractPath, pathPaint);
 
     // Climber position
     if (animProgress > 0.3) {
       final climbPoint = pathMetrics
-          .getTangentForOffset(pathMetrics.length * climbProgress * math.min(1.0, animProgress * 1.2))
+          .getTangentForOffset(pathMetrics.length *
+              climbProgress *
+              math.min(1.0, animProgress * 1.2))
           ?.position;
 
       if (climbPoint != null) {

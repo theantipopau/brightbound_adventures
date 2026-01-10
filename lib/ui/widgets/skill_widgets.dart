@@ -19,7 +19,8 @@ class SkillCard extends StatefulWidget {
   State<SkillCard> createState() => _SkillCardState();
 }
 
-class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMixin {
+class _SkillCardState extends State<SkillCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   bool _isHovered = false;
 
@@ -74,13 +75,17 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
     final skillColor = _getSkillColor();
     final emoji = _getSkillEmoji();
     final isLocked = widget.showLockOverlay;
-    
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        transform: Matrix4.identity()..scale(_isHovered && !isLocked ? 1.02 : 1.0),
+        transform: Matrix4.diagonal3Values(
+          _isHovered && !isLocked ? 1.02 : 1.0,
+          _isHovered && !isLocked ? 1.02 : 1.0,
+          1.0,
+        ),
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -95,14 +100,14 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isLocked 
-                  ? Colors.grey.shade300 
+              color: isLocked
+                  ? Colors.grey.shade300
                   : skillColor.withValues(alpha: _isHovered ? 0.6 : 0.3),
               width: _isHovered ? 3 : 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: isLocked 
+                color: isLocked
                     ? Colors.black.withValues(alpha: 0.05)
                     : skillColor.withValues(alpha: _isHovered ? 0.3 : 0.15),
                 blurRadius: _isHovered ? 20 : 12,
@@ -124,7 +129,8 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
                     AnimatedBuilder(
                       animation: _pulseController,
                       builder: (context, child) {
-                        final pulse = isLocked ? 0.0 : _pulseController.value * 0.15;
+                        final pulse =
+                            isLocked ? 0.0 : _pulseController.value * 0.15;
                         return Container(
                           width: 70,
                           height: 70,
@@ -138,13 +144,15 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
                                     ],
                             ),
                             borderRadius: BorderRadius.circular(16),
-                            boxShadow: isLocked ? null : [
-                              BoxShadow(
-                                color: skillColor.withValues(alpha: 0.3),
-                                blurRadius: 12,
-                                spreadRadius: 1,
-                              ),
-                            ],
+                            boxShadow: isLocked
+                                ? null
+                                : [
+                                    BoxShadow(
+                                      color: skillColor.withValues(alpha: 0.3),
+                                      blurRadius: 12,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
                           ),
                           child: Center(
                             child: Text(
@@ -156,7 +164,7 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
                       },
                     ),
                     const SizedBox(width: 16),
-                    
+
                     // Middle: Skill info
                     Expanded(
                       child: Column(
@@ -164,24 +172,32 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
                         children: [
                           Text(
                             widget.skill.name,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: isLocked ? Colors.grey : Colors.grey.shade800,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: isLocked
+                                      ? Colors.grey
+                                      : Colors.grey.shade800,
+                                ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             widget.skill.description,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: isLocked ? Colors.grey : AppColors.textSecondary,
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: isLocked
+                                          ? Colors.grey
+                                          : AppColors.textSecondary,
+                                    ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 10),
-                          
+
                           // Progress bar with glow
                           Container(
                             height: 8,
@@ -195,23 +211,29 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
                               child: Container(
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
-                                    colors: isLocked 
+                                    colors: isLocked
                                         ? [Colors.grey, Colors.grey.shade400]
-                                        : [skillColor, skillColor.withValues(alpha: 0.7)],
+                                        : [
+                                            skillColor,
+                                            skillColor.withValues(alpha: 0.7)
+                                          ],
                                   ),
                                   borderRadius: BorderRadius.circular(4),
-                                  boxShadow: isLocked ? null : [
-                                    BoxShadow(
-                                      color: skillColor.withValues(alpha: 0.4),
-                                      blurRadius: 6,
-                                    ),
-                                  ],
+                                  boxShadow: isLocked
+                                      ? null
+                                      : [
+                                          BoxShadow(
+                                            color: skillColor.withValues(
+                                                alpha: 0.4),
+                                            blurRadius: 6,
+                                          ),
+                                        ],
                                 ),
                               ),
                             ),
                           ),
                           const SizedBox(height: 8),
-                          
+
                           // Stats row
                           Row(
                             children: [
@@ -233,14 +255,14 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
                               Row(
                                 children: List.generate(5, (i) {
                                   return Icon(
-                                    i < widget.skill.difficulty 
-                                        ? Icons.star 
+                                    i < widget.skill.difficulty
+                                        ? Icons.star
                                         : Icons.star_border,
                                     size: 14,
-                                    color: isLocked 
-                                        ? Colors.grey.shade400 
-                                        : (i < widget.skill.difficulty 
-                                            ? Colors.amber 
+                                    color: isLocked
+                                        ? Colors.grey.shade400
+                                        : (i < widget.skill.difficulty
+                                            ? Colors.amber
                                             : Colors.grey.shade300),
                                   );
                                 }),
@@ -250,7 +272,7 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
                         ],
                       ),
                     ),
-                    
+
                     // Right: Play button
                     Container(
                       width: 50,
@@ -258,21 +280,29 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
                       decoration: BoxDecoration(
                         gradient: isLocked
                             ? LinearGradient(
-                                colors: [Colors.grey.shade300, Colors.grey.shade400],
+                                colors: [
+                                  Colors.grey.shade300,
+                                  Colors.grey.shade400
+                                ],
                               )
                             : LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [skillColor, skillColor.withValues(alpha: 0.8)],
+                                colors: [
+                                  skillColor,
+                                  skillColor.withValues(alpha: 0.8)
+                                ],
                               ),
                         shape: BoxShape.circle,
-                        boxShadow: isLocked ? null : [
-                          BoxShadow(
-                            color: skillColor.withValues(alpha: 0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        boxShadow: isLocked
+                            ? null
+                            : [
+                                BoxShadow(
+                                  color: skillColor.withValues(alpha: 0.4),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                       ),
                       child: Icon(
                         isLocked ? Icons.lock : Icons.play_arrow,
@@ -290,7 +320,8 @@ class _SkillCardState extends State<SkillCard> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildMiniStat(String label, String value, Color color, bool isLocked) {
+  Widget _buildMiniStat(
+      String label, String value, Color color, bool isLocked) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -384,7 +415,7 @@ class ProgressionStatusWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final total = mastered + practising + introduced + locked;
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -393,7 +424,9 @@ class ProgressionStatusWidget extends StatelessWidget {
           children: [
             Text(
               'Learning Progress',
-              style: Theme.of(context).textTheme.titleMedium
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -404,7 +437,8 @@ class ProgressionStatusWidget extends StatelessWidget {
                 size: 140,
                 backgroundColor: AppColors.primary,
                 progressColor: AppColors.success,
-                centerText: '${((mastered + practising) / (total > 0 ? total : 1) * 100).toStringAsFixed(0)}%',
+                centerText:
+                    '${((mastered + practising) / (total > 0 ? total : 1) * 100).toStringAsFixed(0)}%',
                 textStyle: Theme.of(context).textTheme.titleLarge,
               ),
             ),
@@ -462,13 +496,17 @@ class ProgressionStatusWidget extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           count.toString(),
-          style: Theme.of(context).textTheme.titleSmall
+          style: Theme.of(context)
+              .textTheme
+              .titleSmall
               ?.copyWith(color: color, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.labelSmall
+          style: Theme.of(context)
+              .textTheme
+              .labelSmall
               ?.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
@@ -495,7 +533,8 @@ class ZoneProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final completionPercentage = totalSkills > 0 ? (masteredSkills / totalSkills) * 100 : 0;
+    final completionPercentage =
+        totalSkills > 0 ? (masteredSkills / totalSkills) * 100 : 0;
 
     return Card(
       child: InkWell(
@@ -511,7 +550,9 @@ class ZoneProgressCard extends StatelessWidget {
                 children: [
                   Text(
                     zoneName,
-                    style: Theme.of(context).textTheme.titleMedium
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const Icon(
@@ -532,7 +573,9 @@ class ZoneProgressCard extends StatelessWidget {
                   ),
                   Text(
                     '${completionPercentage.toStringAsFixed(0)}%',
-                    style: Theme.of(context).textTheme.labelMedium
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelMedium
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -552,7 +595,9 @@ class ZoneProgressCard extends StatelessWidget {
               // Accuracy
               Text(
                 'Average Accuracy: ${(averageAccuracy * 100).toStringAsFixed(0)}%',
-                style: Theme.of(context).textTheme.labelSmall
+                style: Theme.of(context)
+                    .textTheme
+                    .labelSmall
                     ?.copyWith(color: AppColors.textSecondary),
               ),
             ],

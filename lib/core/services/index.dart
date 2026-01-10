@@ -10,3 +10,6 @@ export 'adaptive_difficulty_service.dart';
 export 'audio_manager.dart';
 export 'cosmetic_unlock_service.dart';
 export 'service_registry.dart';
+export 'streak_service.dart';
+export 'keyboard_navigation_service.dart';
+export 'sound_effects_service.dart';

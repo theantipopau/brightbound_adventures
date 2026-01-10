@@ -102,7 +102,8 @@ class _TrophyRoomScreenState extends State<TrophyRoomScreen>
                           child: LinearProgressIndicator(
                             value: progress,
                             minHeight: 12,
-                            backgroundColor: Colors.white.withValues(alpha: 0.2),
+                            backgroundColor:
+                                Colors.white.withValues(alpha: 0.2),
                             valueColor: const AlwaysStoppedAnimation<Color>(
                               Colors.amber,
                             ),
@@ -235,9 +236,8 @@ class _TrophyRoomScreenState extends State<TrophyRoomScreen>
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
-            color: isSelected
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.3),
+            color:
+                isSelected ? Colors.white : Colors.white.withValues(alpha: 0.3),
           ),
         ),
       ),
@@ -248,9 +248,8 @@ class _TrophyRoomScreenState extends State<TrophyRoomScreen>
     // Filter by category if selected
     var filtered = achievements;
     if (_selectedCategory != null) {
-      filtered = achievements
-          .where((a) => a.category == _selectedCategory)
-          .toList();
+      filtered =
+          achievements.where((a) => a.category == _selectedCategory).toList();
     }
 
     if (filtered.isEmpty) {

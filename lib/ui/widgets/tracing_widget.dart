@@ -54,7 +54,8 @@ class _TracingWidgetState extends State<TracingWidget> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: widget.color.withValues(alpha: 0.3), width: 4),
+            border: Border.all(
+                color: widget.color.withValues(alpha: 0.3), width: 4),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
@@ -73,7 +74,8 @@ class _TracingWidgetState extends State<TracingWidget> {
                     fontSize: 200,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey.shade200,
-                    fontFamily: 'Fredoka', // Assuming this font exists or use default
+                    fontFamily:
+                        'Fredoka', // Assuming this font exists or use default
                   ),
                 ),
               ),

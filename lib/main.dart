@@ -7,7 +7,7 @@ import 'package:brightbound_adventures/ui/screens/index.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize all services via registry
   final registry = ServiceRegistry();
   await registry.initializeAll();
@@ -16,11 +16,17 @@ void main() async {
     MultiProvider(
       providers: [
         Provider<LocalStorageService>(create: (_) => registry.storage),
-        ChangeNotifierProvider<AchievementService>.value(value: registry.achievements),
+        Provider<SoundEffectsService>(create: (_) => registry.soundEffects),
+        ChangeNotifierProvider<AchievementService>.value(
+            value: registry.achievements),
         ChangeNotifierProvider<ShopService>.value(value: registry.shop),
-        ChangeNotifierProvider<AdaptiveDifficultyService>.value(value: registry.adaptiveDifficulty),
-        ChangeNotifierProvider<AudioManager>.value(value: registry.audioManager),
-        ChangeNotifierProvider<CosmeticUnlockService>.value(value: registry.cosmeticUnlock),
+        ChangeNotifierProvider<AdaptiveDifficultyService>.value(
+            value: registry.adaptiveDifficulty),
+        ChangeNotifierProvider<AudioManager>.value(
+            value: registry.audioManager),
+        ChangeNotifierProvider<CosmeticUnlockService>.value(
+            value: registry.cosmeticUnlock),
+        ChangeNotifierProvider<StreakService>.value(value: registry.streak),
         ChangeNotifierProvider<AvatarProvider>(
           create: (_) {
             final provider = AvatarProvider();
@@ -63,7 +69,8 @@ class BrightBoundApp extends StatelessWidget {
         '/word-woods': (context) => const ZoneDetailScreen(
               zoneId: 'word_woods',
               zoneName: '🌲 Word Woods',
-              zoneDescription: 'Explore literacy, reading, and communication skills',
+              zoneDescription:
+                  'Explore literacy, reading, and communication skills',
               zoneColor: AppColors.wordWoodsColor,
             ),
         '/number-nebula': (context) => const ZoneDetailScreen(
@@ -81,7 +88,8 @@ class BrightBoundApp extends StatelessWidget {
         '/story-springs': (context) => const ZoneDetailScreen(
               zoneId: 'story_springs',
               zoneName: '📖 Story Springs',
-              zoneDescription: 'Create stories, express emotions, develop characters',
+              zoneDescription:
+                  'Create stories, express emotions, develop characters',
               zoneColor: AppColors.storyspringsColor,
             ),
         '/adventure-arena': (context) => const ZoneDetailScreen(
@@ -115,7 +123,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Logo animation
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 1500),
@@ -127,13 +135,13 @@ class _SplashScreenState extends State<SplashScreen>
     _logoRotation = Tween<double>(begin: -0.2, end: 0.0).animate(
       CurvedAnimation(parent: _logoController, curve: Curves.easeOutBack),
     );
-    
+
     // Stars animation
     _starsController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
     )..repeat();
-    
+
     // Text animation
     _textController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -146,12 +154,12 @@ class _SplashScreenState extends State<SplashScreen>
       begin: const Offset(0, 0.3),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeOut));
-    
+
     // Start animations in sequence
     _logoController.forward().then((_) {
       _textController.forward();
     });
-    
+
     _checkAppState();
   }
 
@@ -166,13 +174,13 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _checkAppState() async {
     // Load avatar from storage
     await context.read<AvatarProvider>().loadAvatar();
-    
+
     await Future.delayed(const Duration(seconds: 3));
-    
+
     if (!mounted) return;
 
     final avatarProvider = context.read<AvatarProvider>();
-    
+
     if (!avatarProvider.hasAvatar) {
       // First time user - go to avatar creation
       if (mounted) {
@@ -195,9 +203,9 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1A1B4B),  // Deep night blue
-              Color(0xFF2D3A8C),  // Rich purple-blue
-              Color(0xFF4A6FA5),  // Twilight blue
+              Color(0xFF1A1B4B), // Deep night blue
+              Color(0xFF2D3A8C), // Rich purple-blue
+              Color(0xFF4A6FA5), // Twilight blue
             ],
           ),
         ),
@@ -213,7 +221,7 @@ class _SplashScreenState extends State<SplashScreen>
                 );
               },
             ),
-            
+
             // Main content
             SafeArea(
               child: Center(
@@ -237,14 +245,15 @@ class _SplashScreenState extends State<SplashScreen>
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Color(0xFFFF6B9D),  // Pink
-                                    Color(0xFFFF9A5C),  // Orange
-                                    Color(0xFFFFD93D),  // Gold
+                                    Color(0xFFFF6B9D), // Pink
+                                    Color(0xFFFF9A5C), // Orange
+                                    Color(0xFFFFD93D), // Gold
                                   ],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFFF6B9D).withValues(alpha: 0.5),
+                                    color: const Color(0xFFFF6B9D)
+                                        .withValues(alpha: 0.5),
                                     blurRadius: 30,
                                     spreadRadius: 5,
                                   ),
@@ -260,7 +269,8 @@ class _SplashScreenState extends State<SplashScreen>
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.3),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.3),
                                         width: 3,
                                       ),
                                     ),
@@ -282,7 +292,8 @@ class _SplashScreenState extends State<SplashScreen>
                                           color: Colors.white,
                                           shadows: [
                                             Shadow(
-                                              color: Colors.black.withValues(alpha: 0.3),
+                                              color: Colors.black
+                                                  .withValues(alpha: 0.3),
                                               blurRadius: 4,
                                               offset: const Offset(2, 2),
                                             ),
@@ -299,7 +310,7 @@ class _SplashScreenState extends State<SplashScreen>
                       },
                     ),
                     const SizedBox(height: 40),
-                    
+
                     // Animated title
                     SlideTransition(
                       position: _textSlide,
@@ -348,7 +359,7 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ),
                     const SizedBox(height: 60),
-                    
+
                     // Loading indicator
                     FadeTransition(
                       opacity: _textOpacity,
@@ -359,7 +370,8 @@ class _SplashScreenState extends State<SplashScreen>
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: LinearProgressIndicator(
-                                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                                backgroundColor:
+                                    Colors.white.withValues(alpha: 0.2),
                                 valueColor: const AlwaysStoppedAnimation(
                                   Color(0xFF4ECDC4),
                                 ),
@@ -382,7 +394,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
             ),
-            
+
             // Bottom decorations
             Positioned(
               bottom: 20,
@@ -431,40 +443,42 @@ class _SplashScreenState extends State<SplashScreen>
 
 class _StarFieldPainter extends CustomPainter {
   final double animation;
-  
+
   _StarFieldPainter(this.animation);
-  
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..color = Colors.white;
-    
+
     // Draw twinkling stars
     for (int i = 0; i < 50; i++) {
       final x = (i * 37 % size.width.toInt()).toDouble();
       final y = (i * 53 % size.height.toInt()).toDouble();
-      final twinkle = (0.3 + 0.7 * ((animation * 3 + i * 0.1) % 1.0)).clamp(0.0, 1.0);
+      final twinkle =
+          (0.3 + 0.7 * ((animation * 3 + i * 0.1) % 1.0)).clamp(0.0, 1.0);
       final starSize = 1.0 + (i % 3);
-      
+
       paint.color = Colors.white.withValues(alpha: twinkle);
       canvas.drawCircle(Offset(x, y), starSize, paint);
     }
-    
+
     // Draw a few larger glowing stars
     for (int i = 0; i < 8; i++) {
       final x = (i * 97 + 50) % size.width;
       final y = (i * 71 + 30) % size.height;
-      final glow = (0.4 + 0.6 * ((animation * 2 + i * 0.3) % 1.0)).clamp(0.0, 1.0);
-      
+      final glow =
+          (0.4 + 0.6 * ((animation * 2 + i * 0.3) % 1.0)).clamp(0.0, 1.0);
+
       // Glow effect
       paint.color = const Color(0xFFFFD93D).withValues(alpha: glow * 0.3);
       canvas.drawCircle(Offset(x, y), 8, paint);
-      
+
       // Core
       paint.color = Colors.white.withValues(alpha: glow);
       canvas.drawCircle(Offset(x, y), 3, paint);
     }
   }
-  
+
   @override
   bool shouldRepaint(covariant _StarFieldPainter oldDelegate) {
     return oldDelegate.animation != animation;

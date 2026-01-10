@@ -84,7 +84,7 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
   }
 
   bool get _isPerfect => widget.accuracy >= 1.0;
-  
+
   int get _starsEarned {
     if (widget.accuracy >= 0.9) return 3;
     if (widget.accuracy >= 0.7) return 2;
@@ -101,10 +101,18 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
   }
 
   String get _messageText {
-    if (widget.accuracy >= 0.95) return 'Incredible reflexes! You\'re unstoppable!';
-    if (widget.accuracy >= 0.85) return 'Amazing coordination! Keep it up!';
-    if (widget.accuracy >= 0.70) return 'Great job! Your skills are improving!';
-    if (widget.accuracy >= 0.50) return 'Good effort! Practice makes perfect!';
+    if (widget.accuracy >= 0.95) {
+      return 'Incredible reflexes! You\'re unstoppable!';
+    }
+    if (widget.accuracy >= 0.85) {
+      return 'Amazing coordination! Keep it up!';
+    }
+    if (widget.accuracy >= 0.70) {
+      return 'Great job! Your skills are improving!';
+    }
+    if (widget.accuracy >= 0.50) {
+      return 'Good effort! Practice makes perfect!';
+    }
     return 'Don\'t give up! Every champion started somewhere!';
   }
 
@@ -133,7 +141,8 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
                   builder: (context, child) {
                     return CustomPaint(
                       size: MediaQuery.of(context).size,
-                      painter: _ConfettiPainter(_medalRotation.value / (2 * math.pi)),
+                      painter: _ConfettiPainter(
+                          _medalRotation.value / (2 * math.pi)),
                     );
                   },
                 ),
@@ -373,7 +382,8 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
           children: List.generate(3, (index) {
             final isEarned = index < _starsEarned;
             final delay = index * 0.2;
-            final animValue = ((_statsAnimation.value - delay) / 0.6).clamp(0.0, 1.0);
+            final animValue =
+                ((_statsAnimation.value - delay) / 0.6).clamp(0.0, 1.0);
 
             return Transform.scale(
               scale: animValue,
@@ -497,7 +507,7 @@ class _ConfettiPainter extends CustomPainter {
       final x = random.nextDouble() * size.width;
       final baseY = random.nextDouble() * 0.3;
       final y = (baseY + progress) * size.height * 1.5;
-      
+
       if (y > size.height) continue;
 
       final paint = Paint()
@@ -505,7 +515,7 @@ class _ConfettiPainter extends CustomPainter {
         ..style = PaintingStyle.fill;
 
       final confettiSize = 4 + random.nextDouble() * 8;
-      
+
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(progress * math.pi * 4 + i);

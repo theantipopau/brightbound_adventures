@@ -36,7 +36,7 @@ class _NumeracyGameState extends State<NumeracyGame>
   bool _showHint = false;
   bool _hintUsed = false;
   final AudioManager _audioManager = AudioManager();
-  
+
   late AnimationController _feedbackController;
   late Animation<double> _feedbackAnimation;
   late AnimationController _progressController;
@@ -47,7 +47,7 @@ class _NumeracyGameState extends State<NumeracyGame>
   void initState() {
     super.initState();
     _shuffledQuestions = List.from(widget.questions)..shuffle(Random());
-    
+
     _feedbackController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -56,7 +56,7 @@ class _NumeracyGameState extends State<NumeracyGame>
       parent: _feedbackController,
       curve: Curves.elasticOut,
     );
-    
+
     _progressController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -86,17 +86,17 @@ class _NumeracyGameState extends State<NumeracyGame>
 
   void _selectAnswer(int index) {
     if (_answered) return;
-    
+
     setState(() {
       _selectedIndex = index;
       _answered = true;
       final isCorrect = _currentQuestion.isCorrect(index);
-      
+
       if (isCorrect) {
         _correctCount++;
         _currentStreak++;
         _starController.forward(from: 0);
-        
+
         // Play appropriate celebration sound based on streak
         if (_currentStreak >= 3) {
           _audioManager.playStreak(_currentStreak);
@@ -108,7 +108,7 @@ class _NumeracyGameState extends State<NumeracyGame>
         _audioManager.playIncorrectAnswer();
       }
     });
-    
+
     _feedbackController.forward(from: 0);
   }
 
@@ -129,12 +129,12 @@ class _NumeracyGameState extends State<NumeracyGame>
 
   void _completeGame() {
     final accuracy = _correctCount / _shuffledQuestions.length;
-    
+
     // Play celebration sound for perfect score
     if (accuracy == 1.0) {
       _audioManager.playPerfectScore();
     }
-    
+
     widget.onComplete?.call(accuracy, _correctCount, _shuffledQuestions.length);
   }
 
@@ -182,7 +182,8 @@ class _NumeracyGameState extends State<NumeracyGame>
             padding: const EdgeInsets.only(right: 16),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
@@ -306,7 +307,8 @@ class _NumeracyGameState extends State<NumeracyGame>
             height: 40,
             color: widget.themeColor.withValues(alpha: 0.3),
           ),
-          _buildScoreItem('🎯', 'Questions', '${_currentIndex + 1}/${_shuffledQuestions.length}'),
+          _buildScoreItem('🎯', 'Questions',
+              '${_currentIndex + 1}/${_shuffledQuestions.length}'),
           Container(
             width: 1,
             height: 40,
@@ -359,7 +361,8 @@ class _NumeracyGameState extends State<NumeracyGame>
           child: Opacity(
             opacity: value,
             child: Container(
-              padding: EdgeInsets.all(MediaQuery.of(context).size.width < 600 ? 20 : 28),
+              padding: EdgeInsets.all(
+                  MediaQuery.of(context).size.width < 600 ? 20 : 28),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -412,7 +415,10 @@ class _NumeracyGameState extends State<NumeracyGame>
                     ),
                     child: Text(
                       _getQuestionTypeEmoji(),
-                      style: TextStyle(fontSize: MediaQuery.of(context).size.width < 600 ? 40 : 48),
+                      style: TextStyle(
+                          fontSize: MediaQuery.of(context).size.width < 600
+                              ? 40
+                              : 48),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -421,7 +427,8 @@ class _NumeracyGameState extends State<NumeracyGame>
                     child: Text(
                       _currentQuestion.question,
                       style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width < 600 ? 22 : 28,
+                        fontSize:
+                            MediaQuery.of(context).size.width < 600 ? 22 : 28,
                         fontWeight: FontWeight.w800,
                         height: 1.5,
                         color: Colors.grey[900],
@@ -489,11 +496,11 @@ class _NumeracyGameState extends State<NumeracyGame>
       final option = entry.value;
       final isSelected = _selectedIndex == index;
       final isCorrect = _currentQuestion.correctIndex == index;
-      
+
       Color backgroundColor;
       Color borderColor;
       IconData? trailingIcon;
-      
+
       if (_answered) {
         if (isCorrect) {
           backgroundColor = Colors.green[50]!;
@@ -508,12 +515,10 @@ class _NumeracyGameState extends State<NumeracyGame>
           borderColor = Colors.grey[300]!;
         }
       } else {
-        backgroundColor = isSelected 
+        backgroundColor = isSelected
             ? widget.themeColor.withValues(alpha: 0.1)
             : Colors.white;
-        borderColor = isSelected 
-            ? widget.themeColor 
-            : Colors.grey[300]!;
+        borderColor = isSelected ? widget.themeColor : Colors.grey[300]!;
       }
 
       return Padding(
@@ -551,7 +556,9 @@ class _NumeracyGameState extends State<NumeracyGame>
                     height: 36,
                     decoration: BoxDecoration(
                       color: _answered
-                          ? (isCorrect ? Colors.green : (isSelected ? Colors.red : Colors.grey[300]))
+                          ? (isCorrect
+                              ? Colors.green
+                              : (isSelected ? Colors.red : Colors.grey[300]))
                           : widget.themeColor.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
@@ -562,7 +569,9 @@ class _NumeracyGameState extends State<NumeracyGame>
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                           color: _answered
-                              ? (isCorrect || isSelected ? Colors.white : Colors.grey[600])
+                              ? (isCorrect || isSelected
+                                  ? Colors.white
+                                  : Colors.grey[600])
                               : widget.themeColor,
                         ),
                       ),
@@ -573,10 +582,16 @@ class _NumeracyGameState extends State<NumeracyGame>
                     child: Text(
                       option,
                       style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width < 600 ? 16 : 18,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: _answered 
-                            ? (isCorrect ? Colors.green[800] : (isSelected ? Colors.red[800] : Colors.grey[600]))
+                        fontSize:
+                            MediaQuery.of(context).size.width < 600 ? 16 : 18,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: _answered
+                            ? (isCorrect
+                                ? Colors.green[800]
+                                : (isSelected
+                                    ? Colors.red[800]
+                                    : Colors.grey[600]))
                             : Colors.black87,
                         height: 1.3,
                       ),
@@ -604,7 +619,7 @@ class _NumeracyGameState extends State<NumeracyGame>
 
   Widget _buildFeedback() {
     final isCorrect = _currentQuestion.isCorrect(_selectedIndex ?? -1);
-    
+
     return ScaleTransition(
       scale: _feedbackAnimation,
       child: Container(

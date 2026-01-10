@@ -158,7 +158,8 @@ class CountingQuestions {
       options: ['7', '8', '9', '10'],
       correctIndex: 1,
       hint: 'Add 2 to 6',
-      explanation: 'Counting by 2s: 2, 4, 6, 8, 10! We skip a number each time.',
+      explanation:
+          'Counting by 2s: 2, 4, 6, 8, 10! We skip a number each time.',
       difficulty: 2,
     ),
     NumeracyQuestion(
@@ -765,7 +766,8 @@ class PatternQuestions {
       options: ['14', '15', '16', '17'],
       correctIndex: 2,
       hint: 'The gap increases: +1, +2, +3, +4, +?',
-      explanation: 'Add increasing amounts: 1+1=2, 2+2=4, 4+3=7, 7+4=11, 11+5=16!',
+      explanation:
+          'Add increasing amounts: 1+1=2, 2+2=4, 4+3=7, 7+4=11, 11+5=16!',
       difficulty: 3,
       type: NumeracyQuestionType.patternRecognition,
     ),
@@ -787,7 +789,8 @@ class PlaceValueQuestions {
       options: ['2', '3', '23', '5'],
       correctIndex: 0,
       hint: 'The tens place is on the left',
-      explanation: 'In 23, the 2 is in the tens place (worth 20) and 3 is in the ones place.',
+      explanation:
+          'In 23, the 2 is in the tens place (worth 20) and 3 is in the ones place.',
       difficulty: 1,
     ),
     NumeracyQuestion(
@@ -797,7 +800,8 @@ class PlaceValueQuestions {
       options: ['4', '5', '45', '9'],
       correctIndex: 1,
       hint: 'The ones place is on the right',
-      explanation: 'In 45, the 5 is in the ones place (worth 5) and 4 is in the tens place.',
+      explanation:
+          'In 45, the 5 is in the ones place (worth 5) and 4 is in the tens place.',
       difficulty: 1,
     ),
     NumeracyQuestion(
@@ -848,7 +852,8 @@ class PlaceValueQuestions {
       options: ['5', '50', '500', '5000'],
       correctIndex: 2,
       hint: 'The 5 is in the hundreds place',
-      explanation: 'In 527, the 5 is in the hundreds place, so its value is 500!',
+      explanation:
+          'In 527, the 5 is in the hundreds place, so its value is 500!',
       difficulty: 2,
     ),
     NumeracyQuestion(
@@ -899,7 +904,8 @@ class PlaceValueQuestions {
       options: ['4,000', '4,500', '5,000', '4,600'],
       correctIndex: 2,
       hint: 'Look at the hundreds digit (5). Is it 5 or more?',
-      explanation: '4,567 rounds to 5,000. The hundreds digit (5) means round up!',
+      explanation:
+          '4,567 rounds to 5,000. The hundreds digit (5) means round up!',
       difficulty: 3,
     ),
   ];
@@ -993,7 +999,7 @@ class MathFactsQuestions {
       explanation: '3 + 4 = 7. Near doubles help!',
       difficulty: 1,
     ),
-    
+
     // Level 2 - Addition facts to 20
     NumeracyQuestion(
       id: 'mf_add_9',
@@ -1055,7 +1061,7 @@ class MathFactsQuestions {
       explanation: '7 + 6 = 13. One less than 7 + 7!',
       difficulty: 2,
     ),
-    
+
     // Level 2 - Subtraction facts within 10
     NumeracyQuestion(
       id: 'mf_sub_1',
@@ -1097,7 +1103,7 @@ class MathFactsQuestions {
       explanation: '9 - 3 = 6. Use your addition facts!',
       difficulty: 2,
     ),
-    
+
     // Level 3 - Multiplication facts 2s, 5s, 10s
     NumeracyQuestion(
       id: 'mf_mult_1',
@@ -1179,7 +1185,7 @@ class MathFactsQuestions {
       explanation: '4 × 4 = 16. Another square number!',
       difficulty: 3,
     ),
-    
+
     // Number bonds to 10
     NumeracyQuestion(
       id: 'mf_bond_1',

@@ -16,22 +16,25 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  
+
   final List<OnboardingPage> _pages = [
     const OnboardingPage(
       emoji: '🌟',
       title: 'Welcome to BrightBound Adventures!',
-      description: 'Embark on an amazing learning journey through 5 magical worlds!',
+      description:
+          'Embark on an amazing learning journey through 5 magical worlds!',
     ),
     const OnboardingPage(
       emoji: '🗺️',
       title: 'Explore the World Map',
-      description: 'Travel between zones to discover new activities and challenges!',
+      description:
+          'Travel between zones to discover new activities and challenges!',
     ),
     const OnboardingPage(
       emoji: '⭐',
       title: 'Earn XP & Level Up',
-      description: 'Complete activities to earn XP, level up, and unlock new zones!',
+      description:
+          'Complete activities to earn XP, level up, and unlock new zones!',
     ),
     const OnboardingPage(
       emoji: '🏆',
@@ -98,7 +101,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ),
-              
+
               // Pages
               Expanded(
                 child: PageView.builder(
@@ -112,7 +115,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   },
                 ),
               ),
-              
+
               // Page indicator
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -131,9 +134,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Next/Get Started button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -148,9 +151,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ),
                   child: Text(
-                    _currentPage == _pages.length - 1
-                        ? 'Get Started!'
-                        : 'Next',
+                    _currentPage == _pages.length - 1 ? 'Get Started!' : 'Next',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -158,7 +159,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 32),
             ],
           ),
@@ -192,9 +193,9 @@ class OnboardingPage extends StatelessWidget {
             emoji,
             style: const TextStyle(fontSize: 120),
           ),
-          
+
           const SizedBox(height: 48),
-          
+
           // Title
           Text(
             title,
@@ -206,9 +207,9 @@ class OnboardingPage extends StatelessWidget {
               height: 1.2,
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Description
           Text(
             description,

@@ -1,16 +1,16 @@
 import 'package:brightbound_adventures/core/services/index.dart';
 
 /// Centralized service initialization and access
-/// 
+///
 /// Consolidates all service initialization logic in one place,
 /// making the app dependency graph clear and testable.
-/// 
+///
 /// Usage:
 /// ```dart
 /// // In main():
 /// final registry = ServiceRegistry();
 /// await registry.initializeAll();
-/// 
+///
 /// // Access services:
 /// registry.storage
 /// registry.achievements
@@ -30,6 +30,8 @@ class ServiceRegistry {
   late AdaptiveDifficultyService _adaptiveDifficulty;
   late AudioManager _audioManager;
   late CosmeticUnlockService _cosmeticUnlock;
+  late StreakService _streak;
+  late SoundEffectsService _soundEffects;
 
   // Getters
   LocalStorageService get storage => _storage;
@@ -38,9 +40,11 @@ class ServiceRegistry {
   AdaptiveDifficultyService get adaptiveDifficulty => _adaptiveDifficulty;
   AudioManager get audioManager => _audioManager;
   CosmeticUnlockService get cosmeticUnlock => _cosmeticUnlock;
+  StreakService get streak => _streak;
+  SoundEffectsService get soundEffects => _soundEffects;
 
   /// Initialize all services in dependency order
-  /// 
+  ///
   /// Storage must be initialized first, as other services depend on it.
   Future<void> initializeAll() async {
     // 1. Initialize storage first (required by other services)
@@ -63,5 +67,13 @@ class ServiceRegistry {
 
     _cosmeticUnlock = CosmeticUnlockService();
     // No async init needed for cosmetics
+
+    // 4. Initialize streak tracking
+    _streak = StreakService();
+    await _streak.initialize();
+
+    // 5. Initialize sound effects
+    _soundEffects = SoundEffectsService();
+    await _soundEffects.initialize();
   }
 }

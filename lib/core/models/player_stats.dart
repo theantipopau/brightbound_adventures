@@ -21,20 +21,22 @@ class PlayerStats {
     Map<String, bool>? unlockedZones,
     DateTime? lastPlayed,
     DateTime? createdAt,
-  })  : zoneXp = zoneXp ?? {
-          'word_woods': 0,
-          'number_nebula': 0,
-          'story_springs': 0,
-          'puzzle_peaks': 0,
-          'adventure_arena': 0,
-        },
-        unlockedZones = unlockedZones ?? {
-          'word_woods': true, // First zone always unlocked
-          'number_nebula': false,
-          'story_springs': false,
-          'puzzle_peaks': false,
-          'adventure_arena': false,
-        },
+  })  : zoneXp = zoneXp ??
+            {
+              'word_woods': 0,
+              'number_nebula': 0,
+              'story_springs': 0,
+              'puzzle_peaks': 0,
+              'adventure_arena': 0,
+            },
+        unlockedZones = unlockedZones ??
+            {
+              'word_woods': true, // First zone always unlocked
+              'number_nebula': false,
+              'story_springs': false,
+              'puzzle_peaks': false,
+              'adventure_arena': false,
+            },
         lastPlayed = lastPlayed ?? DateTime.now(),
         createdAt = createdAt ?? DateTime.now();
 
@@ -74,7 +76,7 @@ class PlayerStats {
   bool addXp(int xp, {String? zone}) {
     final oldLevel = currentLevel;
     totalXp += xp;
-    
+
     if (zone != null && zoneXp.containsKey(zone)) {
       zoneXp[zone] = (zoneXp[zone] ?? 0) + xp;
     }
@@ -182,7 +184,8 @@ class PlayerStats {
       activitiesCompleted: json['activitiesCompleted'] as int? ?? 0,
       totalPlayTimeMinutes: json['totalPlayTimeMinutes'] as int? ?? 0,
       zoneXp: Map<String, int>.from(json['zoneXp'] as Map? ?? {}),
-      unlockedZones: Map<String, bool>.from(json['unlockedZones'] as Map? ?? {}),
+      unlockedZones:
+          Map<String, bool>.from(json['unlockedZones'] as Map? ?? {}),
       lastPlayed: DateTime.parse(json['lastPlayed'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
@@ -236,7 +239,7 @@ class XpRewards {
   static const int dailyChallengeCompleted = 200;
   static const int achievementUnlocked = 100;
   static const int streakBonus = 50; // Per day streak
-  
+
   /// Calculate XP for activity based on performance
   static int calculateActivityXp({
     required int score,
@@ -245,7 +248,7 @@ class XpRewards {
     bool isDailyChallenge = false,
   }) {
     int xp = activityCompleted;
-    
+
     // Bonus for high performance
     if (score == maxScore) {
       xp += perfectScore;
@@ -259,17 +262,17 @@ class XpRewards {
         xp += 25;
       }
     }
-    
+
     // First time bonus
     if (isFirstTime) {
       xp += firstTimeBonus;
     }
-    
+
     // Daily challenge bonus
     if (isDailyChallenge) {
       xp += dailyChallengeCompleted;
     }
-    
+
     return xp;
   }
 }

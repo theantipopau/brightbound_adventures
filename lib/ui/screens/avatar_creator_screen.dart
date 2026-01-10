@@ -302,37 +302,62 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
 
   Widget _buildAppBar() {
     final titles = [
-      'Welcome!',
-      'Choose Character',
-      'Pick Colors',
-      'Ready to Go!'
+      '👋 Welcome!',
+      '🎭 Choose Your Hero',
+      '🎨 Pick Your Style',
+      '🚀 Ready to Learn!'
     ];
-    final emojis = ['👋', '🎭', '🎨', '🚀'];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _getStepColor(_currentStep).withValues(alpha: 0.1),
+            Colors.transparent,
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
       child: Row(
         children: [
-          Text(emojis[_currentStep], style: const TextStyle(fontSize: 32)),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Step ${_currentStep + 1} of 4',
-                style: TextStyle(
-                  color: _getStepColor(_currentStep),
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _getStepColor(_currentStep).withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              titles[_currentStep].split(' ')[0],
+              style: const TextStyle(fontSize: 28),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Step ${_currentStep + 1} of 4',
+                  style: TextStyle(
+                    color: _getStepColor(_currentStep),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              Text(
-                titles[_currentStep],
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  titles[_currentStep].split(' ').skip(1).join(' '),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                      ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -361,7 +386,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     boxShadow: isActive
                         ? [
                             BoxShadow(
-                              color: _getStepColor(index).withValues(alpha: 0.4),
+                              color:
+                                  _getStepColor(index).withValues(alpha: 0.4),
                               blurRadius: 8,
                               spreadRadius: 2,
                             ),
@@ -407,145 +433,153 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 600;
         final isTinyScreen = constraints.maxHeight < 500; // Very small phones
-        
+
         return SingleChildScrollView(
-      padding: EdgeInsets.all(isTinyScreen ? 12 : (isCompact ? 16 : 24)),
-      child: Column(
-        children: [
-          SizedBox(height: isTinyScreen ? 4 : (isCompact ? 10 : 20)),
-          // Animated character showcase - reduced size for tiny screens
-          SizedBox(
-            height: isTinyScreen ? 100 : (isCompact ? 120 : 180),
-            child: AnimatedBuilder(
-              animation: _characterShowcaseController,
-              builder: (context, child) {
-                final index =
-                    (_characterShowcaseController.value * 4).floor() % 4;
-                final char = _characters[index];
-                return AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
-                  child: AnimatedCharacter(
-                    key: ValueKey(char['id']),
-                    character: char['id'],
-                    size: isTinyScreen ? 60 : (isCompact ? 80 : 100),
-                    animation: CharacterAnimation.celebrating,
-                    showParticles: true,
+          padding: EdgeInsets.all(isTinyScreen ? 12 : (isCompact ? 16 : 24)),
+          child: Column(
+            children: [
+              SizedBox(height: isTinyScreen ? 4 : (isCompact ? 10 : 20)),
+              // Animated character showcase - reduced size for tiny screens
+              SizedBox(
+                height: isTinyScreen ? 100 : (isCompact ? 120 : 180),
+                child: AnimatedBuilder(
+                  animation: _characterShowcaseController,
+                  builder: (context, child) {
+                    final index =
+                        (_characterShowcaseController.value * 4).floor() % 4;
+                    final char = _characters[index];
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 500),
+                      child: AnimatedCharacter(
+                        key: ValueKey(char['id']),
+                        character: char['id'],
+                        size: isTinyScreen ? 60 : (isCompact ? 80 : 100),
+                        animation: CharacterAnimation.celebrating,
+                        showParticles: true,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: isTinyScreen ? 8 : (isCompact ? 12 : 24)),
+
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [AppColors.primary, AppColors.secondary],
+                ).createShader(bounds),
+                child: Text(
+                  'Welcome, Adventurer!',
+                  style: TextStyle(
+                    fontSize: isTinyScreen ? 20 : (isCompact ? 24 : 32),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                );
-              },
-            ),
-          ),
-          SizedBox(height: isTinyScreen ? 8 : (isCompact ? 12 : 24)),
-
-          ShaderMask(
-            shaderCallback: (bounds) => const LinearGradient(
-              colors: [AppColors.primary, AppColors.secondary],
-            ).createShader(bounds),
-            child: Text(
-              'Welcome, Adventurer!',
-              style: TextStyle(
-                fontSize: isTinyScreen ? 20 : (isCompact ? 24 : 32),
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+                  textAlign: TextAlign.center,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          SizedBox(height: isTinyScreen ? 4 : (isCompact ? 8 : 12)),
-          Text(
-            'Your learning journey begins here.\nFirst, tell us your name!',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                  fontSize: isTinyScreen ? 12 : (isCompact ? 14 : 16),
-                ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: isTinyScreen ? 12 : (isCompact ? 20 : 40)),
-
-          // Name input
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: TextField(
-              controller: _nameController,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: isTinyScreen ? 18 : (isCompact ? 20 : 24),
-                fontWeight: FontWeight.bold,
+              SizedBox(height: isTinyScreen ? 4 : (isCompact ? 8 : 12)),
+              Text(
+                'Your learning journey begins here.\nFirst, tell us your name!',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                      fontSize: isTinyScreen ? 12 : (isCompact ? 14 : 16),
+                    ),
+                textAlign: TextAlign.center,
               ),
-              decoration: InputDecoration(
-                hintText: 'Type your name...',
-                hintStyle: TextStyle(
-                  color: Colors.grey.shade400,
-                  fontWeight: FontWeight.normal,
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.only(left: 16),
-                  child: Text('✨', style: TextStyle(fontSize: isTinyScreen ? 18 : (isCompact ? 20 : 24))),
-                ),
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Text('✨', style: TextStyle(fontSize: isTinyScreen ? 18 : (isCompact ? 20 : 24))),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide(
-                      color: AppColors.primary.withValues(alpha: 0.3), width: 2),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide:
-                      const BorderSide(color: AppColors.primary, width: 3),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: isCompact ? 16 : 20, horizontal: 24),
-              ),
-              onSubmitted: (_) => _nextStep(),
-            ),
-          ),
-          SizedBox(height: isCompact ? 16 : 24),
+              SizedBox(height: isTinyScreen ? 12 : (isCompact ? 20 : 40)),
 
-          // Fun tip
-          Container(
-            padding: EdgeInsets.all(isCompact ? 12 : 16),
-            decoration: BoxDecoration(
-              color: AppColors.secondary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              children: [
-                Text('💡', style: TextStyle(fontSize: isCompact ? 24 : 28)),
-                SizedBox(width: isCompact ? 8 : 12),
-                Expanded(
-                  child: Text(
-                    'Your character will walk around the world map!',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.secondary,
-                          fontSize: isCompact ? 13 : 14,
-                        ),
+              // Name input
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: _nameController,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isTinyScreen ? 18 : (isCompact ? 20 : 24),
+                    fontWeight: FontWeight.bold,
                   ),
+                  decoration: InputDecoration(
+                    hintText: 'Type your name...',
+                    hintStyle: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontWeight: FontWeight.normal,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: Text('✨',
+                          style: TextStyle(
+                              fontSize:
+                                  isTinyScreen ? 18 : (isCompact ? 20 : 24))),
+                    ),
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: Text('✨',
+                          style: TextStyle(
+                              fontSize:
+                                  isTinyScreen ? 18 : (isCompact ? 20 : 24))),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          width: 2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide:
+                          const BorderSide(color: AppColors.primary, width: 3),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: isCompact ? 16 : 20, horizontal: 24),
+                  ),
+                  onSubmitted: (_) => _nextStep(),
                 ),
-              ],
-            ),
+              ),
+              SizedBox(height: isCompact ? 16 : 24),
+
+              // Fun tip
+              Container(
+                padding: EdgeInsets.all(isCompact ? 12 : 16),
+                decoration: BoxDecoration(
+                  color: AppColors.secondary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: AppColors.secondary.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Text('💡', style: TextStyle(fontSize: isCompact ? 24 : 28)),
+                    SizedBox(width: isCompact ? 8 : 12),
+                    Expanded(
+                      child: Text(
+                        'Your character will walk around the world map!',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.secondary,
+                              fontSize: isCompact ? 13 : 14,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
         );
       },
     );
@@ -557,12 +591,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
         final isCompact = constraints.maxHeight < 600;
         final isTiny = constraints.maxHeight < 500;
         final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
-        
-        // Calculate available height for grid
-        final headerHeight = isTiny ? 120.0 : (isCompact ? 140.0 : 180.0);
-        final footerHeight = isTiny ? 60.0 : (isCompact ? 80.0 : 100.0);
-        final gridHeight = constraints.maxHeight - headerHeight - footerHeight;
-        
+
         return Column(
           children: [
             // Header section
@@ -595,11 +624,14 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildAnimationButton('Idle', CharacterAnimation.idle, '😊', isCompact),
-                        _buildAnimationButton('Walk', CharacterAnimation.walking, '🚶', isCompact),
-                        _buildAnimationButton('Jump', CharacterAnimation.jumping, '🦘', isCompact),
                         _buildAnimationButton(
-                            'Celebrate', CharacterAnimation.celebrating, '🎉', isCompact),
+                            'Idle', CharacterAnimation.idle, '😊', isCompact),
+                        _buildAnimationButton('Walk',
+                            CharacterAnimation.walking, '🚶', isCompact),
+                        _buildAnimationButton('Jump',
+                            CharacterAnimation.jumping, '🦘', isCompact),
+                        _buildAnimationButton('Celebrate',
+                            CharacterAnimation.celebrating, '🎉', isCompact),
                       ],
                     ),
                   ),
@@ -619,183 +651,191 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 ),
                 itemCount: _characters.length,
                 itemBuilder: (context, index) {
-              final character = _characters[index];
-              final isSelected = _selectedCharacter == character['id'];
+                  final character = _characters[index];
+                  final isSelected = _selectedCharacter == character['id'];
 
-              return TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.0, end: 1.0),
-                duration: Duration(milliseconds: 300 + (index * 50)),
-                curve: Curves.elasticOut,
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: value,
-                    child: child,
-                  );
-                },
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedCharacter = character['id'];
-                      _selectedColor = CosmeticsLibrary.getSkinColorsForCharacter(
-                          character['id'])[0];
-                    });
-                    HapticFeedback.mediumImpact();
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    decoration: BoxDecoration(
-                      gradient: isSelected
-                          ? LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                (character['color'] as Color).withValues(alpha: 0.1),
-                                Colors.white,
-                              ],
-                            )
-                          : null,
-                      color: isSelected ? null : Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: isSelected
-                            ? character['color']
-                            : Colors.grey.shade200,
-                        width: isSelected ? 4 : 2,
-                      ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color:
-                                    (character['color'] as Color).withValues(alpha: 0.3),
-                                blurRadius: 16,
-                                spreadRadius: 2,
-                              ),
-                            ]
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                    ),
-                    child: LayoutBuilder(
-                      builder: (context, cardConstraints) {
-                        final isNarrow = cardConstraints.maxWidth < 150;
-                        
-                        return Stack(
-                          children: [
-                            if (isSelected)
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    color: character['color'],
-                                    shape: BoxShape.circle,
+                  return TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: Duration(milliseconds: 300 + (index * 50)),
+                    curve: Curves.elasticOut,
+                    builder: (context, value, child) {
+                      return Transform.scale(
+                        scale: value,
+                        child: child,
+                      );
+                    },
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedCharacter = character['id'];
+                          _selectedColor =
+                              CosmeticsLibrary.getSkinColorsForCharacter(
+                                  character['id'])[0];
+                        });
+                        HapticFeedback.mediumImpact();
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        decoration: BoxDecoration(
+                          gradient: isSelected
+                              ? LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    (character['color'] as Color)
+                                        .withValues(alpha: 0.1),
+                                    Colors.white,
+                                  ],
+                                )
+                              : null,
+                          color: isSelected ? null : Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: isSelected
+                                ? character['color']
+                                : Colors.grey.shade200,
+                            width: isSelected ? 4 : 2,
+                          ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: (character['color'] as Color)
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 16,
+                                    spreadRadius: 2,
                                   ),
-                                  child: const Icon(Icons.check,
-                                      color: Colors.white, size: 18),
-                                ),
-                              ),
-                            Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // Animated character preview
-                                  AnimatedCharacter(
-                                    character: character['id'],
-                                    size: isNarrow ? 50 : (isSelected ? 70 : 60),
-                                    animation: isSelected
-                                        ? _previewAnimation
-                                        : CharacterAnimation.idle,
-                                    showParticles:
-                                        isSelected && _previewAnimation == CharacterAnimation.celebrating,
-                                  ),
-                                  SizedBox(height: isNarrow ? 4 : 8),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                                    child: Text(
-                                      character['name'],
-                                      style: TextStyle(
-                                        fontSize: isNarrow ? 12 : 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: isSelected
-                                            ? character['color']
-                                            : AppColors.textPrimary,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                                    child: Text(
-                                      character['trait'],
-                                      style: TextStyle(
-                                        fontSize: isNarrow ? 10 : 11,
-                                        color: AppColors.textSecondary,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                ]
+                              : [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
-                              ),
-                            ),
-                          ],
-                        );
-                      },
+                        ),
+                        child: LayoutBuilder(
+                          builder: (context, cardConstraints) {
+                            final isNarrow = cardConstraints.maxWidth < 150;
+
+                            return Stack(
+                              children: [
+                                if (isSelected)
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: Container(
+                                      width: 28,
+                                      height: 28,
+                                      decoration: BoxDecoration(
+                                        color: character['color'],
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.check,
+                                          color: Colors.white, size: 18),
+                                    ),
+                                  ),
+                                Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // Animated character preview
+                                      AnimatedCharacter(
+                                        character: character['id'],
+                                        size: isNarrow
+                                            ? 50
+                                            : (isSelected ? 70 : 60),
+                                        animation: isSelected
+                                            ? _previewAnimation
+                                            : CharacterAnimation.idle,
+                                        showParticles: isSelected &&
+                                            _previewAnimation ==
+                                                CharacterAnimation.celebrating,
+                                      ),
+                                      SizedBox(height: isNarrow ? 4 : 8),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4),
+                                        child: Text(
+                                          character['name'],
+                                          style: TextStyle(
+                                            fontSize: isNarrow ? 12 : 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: isSelected
+                                                ? character['color']
+                                                : AppColors.textPrimary,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4),
+                                        child: Text(
+                                          character['trait'],
+                                          style: TextStyle(
+                                            fontSize: isNarrow ? 10 : 11,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        
-        // Selected character description
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            isCompact ? 12 : 24,
-            isTiny ? 4 : (isCompact ? 8 : 16),
-            isCompact ? 12 : 24,
-            isCompact ? 12 : 24,
-          ),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: Container(
-              key: ValueKey(_selectedCharacter),
-              padding: EdgeInsets.all(isCompact ? 12 : 16),
-              decoration: BoxDecoration(
-                color: _characters
-                    .firstWhere((c) => c['id'] == _selectedCharacter)['color']
-                    .withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                _characters.firstWhere(
-                    (c) => c['id'] == _selectedCharacter)['description'],
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: isTiny ? 12 : (isCompact ? 13 : 14),
-                    ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                  );
+                },
               ),
             ),
-          ),
-        ),
-      ],
+
+            // Selected character description
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                isCompact ? 12 : 24,
+                isTiny ? 4 : (isCompact ? 8 : 16),
+                isCompact ? 12 : 24,
+                isCompact ? 12 : 24,
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Container(
+                  key: ValueKey(_selectedCharacter),
+                  padding: EdgeInsets.all(isCompact ? 12 : 16),
+                  decoration: BoxDecoration(
+                    color: _characters
+                        .firstWhere(
+                            (c) => c['id'] == _selectedCharacter)['color']
+                        .withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    _characters.firstWhere(
+                        (c) => c['id'] == _selectedCharacter)['description'],
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: isTiny ? 12 : (isCompact ? 13 : 14),
+                        ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildAnimationButton(
-      String label, CharacterAnimation animation, String emoji, bool isCompact) {
+  Widget _buildAnimationButton(String label, CharacterAnimation animation,
+      String emoji, bool isCompact) {
     final isSelected = _previewAnimation == animation;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isCompact ? 2 : 4),
@@ -807,7 +847,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.symmetric(
-            horizontal: isCompact ? 8 : 12, 
+            horizontal: isCompact ? 8 : 12,
             vertical: isCompact ? 6 : 8,
           ),
           decoration: BoxDecoration(
@@ -854,12 +894,12 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 600;
         final isTiny = constraints.maxHeight < 500;
-        
+
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Spacer(flex: 1),
-            
+
             // Large animated preview
             AnimatedCharacter(
               character: _selectedCharacter,
@@ -912,19 +952,22 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                           color: colorValue,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isSelected ? AppColors.tertiary : Colors.white,
+                            color:
+                                isSelected ? AppColors.tertiary : Colors.white,
                             width: isSelected ? 4 : 3,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: colorValue.withValues(alpha: isSelected ? 0.5 : 0.3),
+                              color: colorValue.withValues(
+                                  alpha: isSelected ? 0.5 : 0.3),
                               blurRadius: isSelected ? 12 : 8,
                               spreadRadius: isSelected ? 3 : 0,
                             ),
                           ],
                         ),
                         child: isSelected
-                            ? Icon(Icons.check, color: Colors.white, size: isCompact ? 24 : 32)
+                            ? Icon(Icons.check,
+                                color: Colors.white, size: isCompact ? 24 : 32)
                             : null,
                       ),
                     );
@@ -932,7 +975,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 ),
               ),
             ),
-            
+
             const Spacer(flex: 1),
           ],
         );
@@ -944,143 +987,150 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 600;
-        
+
         return SingleChildScrollView(
-      padding: EdgeInsets.all(isCompact ? 12 : 24),
-      child: Column(
-        children: [
-          // Large animated preview with enhanced visuals
-          Container(
-            padding: EdgeInsets.all(isCompact ? 16 : 24),
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: [
-                  _getStepColor(_currentStep).withValues(alpha: 0.2),
-                  _getStepColor(_currentStep).withValues(alpha: 0.05),
-                  Colors.transparent,
-                ],
+          padding: EdgeInsets.all(isCompact ? 12 : 24),
+          child: Column(
+            children: [
+              // Large animated preview with enhanced visuals
+              Container(
+                padding: EdgeInsets.all(isCompact ? 16 : 24),
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    colors: [
+                      _getStepColor(_currentStep).withValues(alpha: 0.2),
+                      _getStepColor(_currentStep).withValues(alpha: 0.05),
+                      Colors.transparent,
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: AnimatedCharacter(
+                  character: _selectedCharacter,
+                  skinColor: _selectedColor,
+                  size: isCompact ? 100 : 140, // Reduced from 120:180
+                  animation: CharacterAnimation.celebrating,
+                  showParticles: true,
+                ),
               ),
-              shape: BoxShape.circle,
-            ),
-            child: AnimatedCharacter(
-              character: _selectedCharacter,
-              skinColor: _selectedColor,
-              size: isCompact ? 120 : 180, // Increased from 100:140 to 120:180
-              animation: CharacterAnimation.celebrating,
-              showParticles: true,
-            ),
-          ),
-          SizedBox(height: isCompact ? 12 : 20),
+              SizedBox(height: isCompact ? 8 : 12), // Reduced spacing
 
-          // Name badge
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isCompact ? 16 : 24, 
-              vertical: isCompact ? 8 : 12,
-            ),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primary, AppColors.secondary],
-              ),
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+              // Name badge
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isCompact ? 16 : 24,
+                  vertical: isCompact ? 6 : 10, // Reduced vertical padding
                 ),
-              ],
-            ),
-            child: Text(
-              _nameController.text,
-              style: TextStyle(
-                fontSize: isCompact ? 20 : 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.secondary],
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  _nameController.text,
+                  style: TextStyle(
+                    fontSize: isCompact ? 20 : 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
-          ),
-          SizedBox(height: isCompact ? 12 : 24),
+              SizedBox(height: isCompact ? 12 : 24),
 
-          // Summary card
-          Container(
-            padding: EdgeInsets.all(isCompact ? 16 : 20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+              // Summary card
+              Container(
+                padding:
+                    EdgeInsets.all(isCompact ? 12 : 16), // Reduced from 16:20
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                _buildSummaryRow('🏷️', 'Name', _nameController.text, isCompact),
-                Divider(height: isCompact ? 16 : 24),
-                _buildSummaryRow(
-                    '🎭',
-                    'Character',
-                    _characters.firstWhere(
-                        (c) => c['id'] == _selectedCharacter)['name'], isCompact),
-                Divider(height: isCompact ? 16 : 24),
-                _buildSummaryRow(
-                    '✨',
-                    'Trait',
-                    _characters.firstWhere(
-                        (c) => c['id'] == _selectedCharacter)['trait'], isCompact),
-              ],
-            ),
-          ),
-          SizedBox(height: isCompact ? 12 : 24),
-
-          // Ready message
-          Container(
-            padding: EdgeInsets.all(isCompact ? 12 : 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.success.withValues(alpha: 0.1),
-                  AppColors.secondary.withValues(alpha: 0.1),
-                ],
+                child: Column(
+                  children: [
+                    _buildSummaryRow(
+                        '🏷️', 'Name', _nameController.text, isCompact),
+                    Divider(height: isCompact ? 12 : 16), // Reduced height
+                    _buildSummaryRow(
+                        '🎭',
+                        'Character',
+                        _characters.firstWhere(
+                            (c) => c['id'] == _selectedCharacter)['name'],
+                        isCompact),
+                    Divider(height: isCompact ? 12 : 16), // Reduced height
+                    _buildSummaryRow(
+                        '✨',
+                        'Trait',
+                        _characters.firstWhere(
+                            (c) => c['id'] == _selectedCharacter)['trait'],
+                        isCompact),
+                  ],
+                ),
               ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
-            ),
-            child: Column(
-              children: [
-                Text('🎉', style: TextStyle(fontSize: isCompact ? 32 : 40)),
-                SizedBox(height: isCompact ? 8 : 12),
-                Text(
-                  'Your adventure awaits!',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.success,
-                        fontSize: isCompact ? 18 : 22,
-                      ),
+              SizedBox(height: isCompact ? 8 : 16), // Reduced from 12:24
+
+              // Ready message
+              Container(
+                padding:
+                    EdgeInsets.all(isCompact ? 10 : 16), // Reduced from 12:20
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.success.withValues(alpha: 0.1),
+                      AppColors.secondary.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: AppColors.success.withValues(alpha: 0.3)),
                 ),
-                SizedBox(height: isCompact ? 4 : 8),
-                Text(
-                  'Your character will explore the world map\nand learn amazing things!',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: isCompact ? 13 : 14,
-                      ),
-                  textAlign: TextAlign.center,
+                child: Column(
+                  children: [
+                    Text('🎉', style: TextStyle(fontSize: isCompact ? 32 : 40)),
+                    SizedBox(height: isCompact ? 8 : 12),
+                    Text(
+                      'Your adventure awaits!',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.success,
+                            fontSize: isCompact ? 18 : 22,
+                          ),
+                    ),
+                    SizedBox(height: isCompact ? 4 : 8),
+                    Text(
+                      'Your character will explore the world map\nand learn amazing things!',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                            fontSize: isCompact ? 13 : 14,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
         );
       },
     );
   }
 
-  Widget _buildSummaryRow(String emoji, String label, String value, bool isCompact) {
+  Widget _buildSummaryRow(
+      String emoji, String label, String value, bool isCompact) {
     return Row(
       children: [
         Text(emoji, style: TextStyle(fontSize: isCompact ? 20 : 24)),
@@ -1126,82 +1176,87 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isCompact = constraints.maxWidth < 400;
-          
+
           return Row(
-        children: [
-          if (_currentStep > 0)
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () {
-                  _previousStep();
-                  HapticFeedback.lightImpact();
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: isCompact ? 12 : 16),
-                  side:
-                      BorderSide(color: _getStepColor(_currentStep), width: 2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.arrow_back, color: _getStepColor(_currentStep), size: isCompact ? 20 : 24),
-                    SizedBox(width: isCompact ? 4 : 8),
-                    Text(
-                      'Back',
-                      style: TextStyle(
-                        fontSize: isCompact ? 14 : 16,
-                        fontWeight: FontWeight.bold,
-                        color: _getStepColor(_currentStep),
+            children: [
+              if (_currentStep > 0)
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      _previousStep();
+                      HapticFeedback.lightImpact();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(vertical: isCompact ? 12 : 16),
+                      side: BorderSide(
+                          color: _getStepColor(_currentStep), width: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          if (_currentStep > 0) SizedBox(width: isCompact ? 8 : 16),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {
-                if (_currentStep < 3) {
-                  _nextStep();
-                } else {
-                  _createAvatar();
-                }
-                HapticFeedback.mediumImpact();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _getStepColor(_currentStep),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: isCompact ? 12 : 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 4,
-                shadowColor: _getStepColor(_currentStep).withValues(alpha: 0.4),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    _currentStep < 3 ? 'Continue' : '🚀 Start Adventure!',
-                    style: TextStyle(
-                      fontSize: isCompact ? 14 : 16,
-                      fontWeight: FontWeight.bold,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.arrow_back,
+                            color: _getStepColor(_currentStep),
+                            size: isCompact ? 20 : 24),
+                        SizedBox(width: isCompact ? 4 : 8),
+                        Text(
+                          'Back',
+                          style: TextStyle(
+                            fontSize: isCompact ? 14 : 16,
+                            fontWeight: FontWeight.bold,
+                            color: _getStepColor(_currentStep),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  if (_currentStep < 3) ...[
-                    SizedBox(width: isCompact ? 4 : 8),
-                    Icon(Icons.arrow_forward, size: isCompact ? 20 : 24),
-                  ],
-                ],
+                ),
+              if (_currentStep > 0) SizedBox(width: isCompact ? 8 : 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_currentStep < 3) {
+                      _nextStep();
+                    } else {
+                      _createAvatar();
+                    }
+                    HapticFeedback.mediumImpact();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _getStepColor(_currentStep),
+                    foregroundColor: Colors.white,
+                    padding:
+                        EdgeInsets.symmetric(vertical: isCompact ? 12 : 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 4,
+                    shadowColor:
+                        _getStepColor(_currentStep).withValues(alpha: 0.4),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _currentStep < 3 ? 'Continue' : '🚀 Start Adventure!',
+                        style: TextStyle(
+                          fontSize: isCompact ? 14 : 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (_currentStep < 3) ...[
+                        SizedBox(width: isCompact ? 4 : 8),
+                        Icon(Icons.arrow_forward, size: isCompact ? 20 : 24),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
-      );
+            ],
+          );
         },
       ),
     );

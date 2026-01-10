@@ -32,8 +32,9 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
   List<NumeracyQuestion> _getQuestionsForSkill() {
     // Get adaptive difficulty level
     final adaptiveDifficulty = context.read<AdaptiveDifficultyService>();
-    final difficulty = adaptiveDifficulty.getDifficultyForSkill(widget.skill.id);
-    
+    final difficulty =
+        adaptiveDifficulty.getDifficultyForSkill(widget.skill.id);
+
     switch (widget.skill.id) {
       case 'skill_counting':
       case 'skill_number_recognition':
@@ -57,8 +58,9 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
   List<NumeracyQuestion> _getGenericQuestions() {
     // Use question generator for skills without specific banks
     final adaptiveDifficulty = context.read<AdaptiveDifficultyService>();
-    final difficulty = adaptiveDifficulty.getDifficultyForSkill(widget.skill.id);
-    
+    final difficulty =
+        adaptiveDifficulty.getDifficultyForSkill(widget.skill.id);
+
     try {
       return NumberNebulaQuestionGenerator.generate(
         skill: widget.skill.name,
@@ -71,11 +73,13 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
         NumeracyQuestion(
           id: '${widget.skill.id}_1',
           skillId: widget.skill.id,
-          question: 'This skill is coming soon!\nWould you like to practice anyway?',
+          question:
+              'This skill is coming soon!\nWould you like to practice anyway?',
           options: ['Yes, let\'s practice!', 'I\'ll wait', 'Tell me more'],
           correctIndex: 0,
           hint: 'The first option is always ready to go!',
-          explanation: 'More questions for ${widget.skill.name} are being added.',
+          explanation:
+              'More questions for ${widget.skill.name} are being added.',
           difficulty: 1,
         ),
       ];
@@ -122,7 +126,7 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
     }
 
     final questions = _getQuestionsForSkill();
-    
+
     if (questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(
@@ -143,8 +147,8 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
               Text(
                 'We\'re preparing new challenges for ${widget.skill.name}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                      color: Colors.grey[600],
+                    ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),

@@ -89,7 +89,8 @@ class _RpgCharacterState extends State<RpgCharacter>
               width: widget.size,
               height: widget.size,
               decoration: BoxDecoration(
-                color: widget.backgroundColor ?? Colors.white.withValues(alpha: 0.9),
+                color: widget.backgroundColor ??
+                    Colors.white.withValues(alpha: 0.9),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -145,7 +146,7 @@ class RpgMovementController {
 
     final direction = targetPosition! - currentPosition;
     final distance = direction.distance;
-    
+
     if (distance < speed * deltaTime) {
       // Reached target
       currentPosition = targetPosition!;
@@ -218,9 +219,10 @@ class _RpgMovementWidgetState extends State<RpgMovementWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = RpgMovementController(
-      currentPosition: _normalizePosition(widget.waypoints[widget.currentWaypointIndex]),
+      currentPosition:
+          _normalizePosition(widget.waypoints[widget.currentWaypointIndex]),
       speed: 200,
     );
 

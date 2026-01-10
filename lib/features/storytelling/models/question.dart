@@ -54,7 +54,8 @@ class StorySequencingQuestions {
       ],
       correctIndex: 1,
       hint: 'Think about what you need before you start making it',
-      explanation: 'First, you get bread and ingredients. Then make it, then eat it!',
+      explanation:
+          'First, you get bread and ingredients. Then make it, then eat it!',
       difficulty: 1,
       imageEmoji: '🥪',
     ),
@@ -77,7 +78,8 @@ class StorySequencingQuestions {
     StoryQuestion(
       id: 'seq_3',
       skillId: 'skill_story_sequencing',
-      question: 'Put this story in order: A caterpillar becomes a butterfly.\nWhat happens SECOND?',
+      question:
+          'Put this story in order: A caterpillar becomes a butterfly.\nWhat happens SECOND?',
       options: [
         'It builds a cocoon',
         'It hatches from an egg',
@@ -103,14 +105,16 @@ class StorySequencingQuestions {
       ],
       correctIndex: 2,
       hint: 'Dig → Plant → Water → Then what starts to happen?',
-      explanation: 'Dig hole → Plant seed → Water it → Plant grows → Flower blooms!',
+      explanation:
+          'Dig hole → Plant seed → Water it → Plant grows → Flower blooms!',
       difficulty: 2,
       imageEmoji: '🌱',
     ),
     StoryQuestion(
       id: 'seq_5',
       skillId: 'skill_story_sequencing',
-      question: 'Sarah bakes cookies. What happens BEFORE she puts them in the oven?',
+      question:
+          'Sarah bakes cookies. What happens BEFORE she puts them in the oven?',
       options: [
         'She lets them cool',
         'She mixes the ingredients',
@@ -127,7 +131,8 @@ class StorySequencingQuestions {
     StoryQuestion(
       id: 'seq_6',
       skillId: 'skill_story_sequencing',
-      question: 'A rainy day story: It\'s sunny, then clouds appear, then it rains. What happens NEXT?',
+      question:
+          'A rainy day story: It\'s sunny, then clouds appear, then it rains. What happens NEXT?',
       options: [
         'More clouds appear',
         'A rainbow might appear',
@@ -143,7 +148,8 @@ class StorySequencingQuestions {
     StoryQuestion(
       id: 'seq_7',
       skillId: 'skill_story_sequencing',
-      question: 'Jack climbs a beanstalk to find treasure. Put in order: He plants magic beans, climbs the beanstalk, finds a giant, returns with gold. What\'s the THIRD event?',
+      question:
+          'Jack climbs a beanstalk to find treasure. Put in order: He plants magic beans, climbs the beanstalk, finds a giant, returns with gold. What\'s the THIRD event?',
       options: [
         'Plants magic beans',
         'Climbs the beanstalk',
@@ -152,7 +158,8 @@ class StorySequencingQuestions {
       ],
       correctIndex: 2,
       hint: 'He climbs up THEN meets someone',
-      explanation: 'Plant → Beanstalk grows → Climb → Meet giant → Get gold → Return home!',
+      explanation:
+          'Plant → Beanstalk grows → Climb → Meet giant → Get gold → Return home!',
       difficulty: 3,
       imageEmoji: '🏰',
     ),
@@ -211,7 +218,8 @@ class EmotionRecognitionQuestions {
       options: ['Jealous 😒', 'Grateful 🙏', 'Relaxed 😌', 'Curious 🧐'],
       correctIndex: 0,
       hint: 'When someone has what you want...',
-      explanation: 'Leo feels jealous because his friend has the toy he wanted.',
+      explanation:
+          'Leo feels jealous because his friend has the toy he wanted.',
       difficulty: 2,
       type: StoryQuestionType.emotionMatch,
       imageEmoji: '🎁',
@@ -236,7 +244,8 @@ class EmotionRecognitionQuestions {
       options: ['Angry', 'Nervous', 'Sleepy', 'Hungry'],
       correctIndex: 1,
       hint: 'New situations can bring mixed feelings',
-      explanation: 'Alex can feel both excited about new friends AND nervous about the unknown!',
+      explanation:
+          'Alex can feel both excited about new friends AND nervous about the unknown!',
       difficulty: 3,
       type: StoryQuestionType.emotionMatch,
       imageEmoji: '🏫',
@@ -245,10 +254,16 @@ class EmotionRecognitionQuestions {
       id: 'emo_7',
       skillId: 'skill_emotion_recognition',
       question: 'Zoe\'s grandma is moving far away. Zoe feels sad but also...',
-      options: ['Hopeful they\'ll visit', 'Angry at everyone', 'Happy she\'s leaving', 'Nothing else'],
+      options: [
+        'Hopeful they\'ll visit',
+        'Angry at everyone',
+        'Happy she\'s leaving',
+        'Nothing else'
+      ],
       correctIndex: 0,
       hint: 'Even in sad times, we can look forward to something',
-      explanation: 'Zoe feels sad AND hopeful - sad about distance but hopeful about future visits!',
+      explanation:
+          'Zoe feels sad AND hopeful - sad about distance but hopeful about future visits!',
       difficulty: 3,
       type: StoryQuestionType.emotionMatch,
       imageEmoji: '✈️',
@@ -267,7 +282,8 @@ class DescriptiveLanguageQuestions {
     StoryQuestion(
       id: 'desc_1',
       skillId: 'skill_descriptive_language',
-      question: 'Which sentence is MORE descriptive?\n\n"The dog ran." vs "The fluffy brown dog ran quickly."',
+      question:
+          'Which sentence is MORE descriptive?\n\n"The dog ran." vs "The fluffy brown dog ran quickly."',
       options: [
         'The dog ran.',
         'The fluffy brown dog ran quickly.',
@@ -276,7 +292,8 @@ class DescriptiveLanguageQuestions {
       ],
       correctIndex: 1,
       hint: 'Which one paints a better picture in your mind?',
-      explanation: 'Adding adjectives (fluffy, brown) and adverbs (quickly) makes writing more vivid!',
+      explanation:
+          'Adding adjectives (fluffy, brown) and adverbs (quickly) makes writing more vivid!',
       difficulty: 1,
       imageEmoji: '🐕',
     ),
@@ -287,7 +304,8 @@ class DescriptiveLanguageQuestions {
       options: ['big', 'golden', 'ran', 'happy'],
       correctIndex: 1,
       hint: 'What color is the sun? What does it look like?',
-      explanation: '"Golden" describes the sun\'s color and makes the sentence more interesting!',
+      explanation:
+          '"Golden" describes the sun\'s color and makes the sentence more interesting!',
       difficulty: 1,
       imageEmoji: '☀️',
     ),
@@ -295,10 +313,16 @@ class DescriptiveLanguageQuestions {
       id: 'desc_3',
       skillId: 'skill_descriptive_language',
       question: 'Which word best describes a kitten?',
-      options: ['Tiny and soft', 'Huge and rough', 'Old and grey', 'Fast and loud'],
+      options: [
+        'Tiny and soft',
+        'Huge and rough',
+        'Old and grey',
+        'Fast and loud'
+      ],
       correctIndex: 0,
       hint: 'Think about what kittens look and feel like',
-      explanation: 'Kittens are usually tiny and soft - these words describe them accurately!',
+      explanation:
+          'Kittens are usually tiny and soft - these words describe them accurately!',
       difficulty: 1,
       imageEmoji: '🐱',
     ),
@@ -315,14 +339,16 @@ class DescriptiveLanguageQuestions {
       ],
       correctIndex: 1,
       hint: 'Which one talks about how something smells?',
-      explanation: 'Good writers use all 5 senses - sight, sound, smell, taste, and touch!',
+      explanation:
+          'Good writers use all 5 senses - sight, sound, smell, taste, and touch!',
       difficulty: 2,
       imageEmoji: '🎂',
     ),
     StoryQuestion(
       id: 'desc_5',
       skillId: 'skill_descriptive_language',
-      question: 'Make this better: "The storm was bad."\n\nWhich is most descriptive?',
+      question:
+          'Make this better: "The storm was bad."\n\nWhich is most descriptive?',
       options: [
         'The storm was very bad.',
         'The storm was really bad.',
@@ -331,7 +357,8 @@ class DescriptiveLanguageQuestions {
       ],
       correctIndex: 2,
       hint: 'Use action words and strong adjectives!',
-      explanation: '"Fierce," "howled," and "crashed" paint a vivid picture of the storm!',
+      explanation:
+          '"Fierce," "howled," and "crashed" paint a vivid picture of the storm!',
       difficulty: 2,
       imageEmoji: '⛈️',
     ),
@@ -348,7 +375,8 @@ class DescriptiveLanguageQuestions {
       ],
       correctIndex: 2,
       hint: 'Show what the body does when scared, don\'t just say "scared"',
-      explanation: 'Describing physical reactions (trembling, pounding heart) SHOWS emotions!',
+      explanation:
+          'Describing physical reactions (trembling, pounding heart) SHOWS emotions!',
       difficulty: 3,
       imageEmoji: '😰',
     ),
@@ -364,7 +392,8 @@ class DescriptiveLanguageQuestions {
       ],
       correctIndex: 2,
       hint: 'Look for "like" or "as" comparing two things',
-      explanation: 'Similes compare things using "like" or "as" to make writing more interesting!',
+      explanation:
+          'Similes compare things using "like" or "as" to make writing more interesting!',
       difficulty: 3,
       imageEmoji: '❄️',
     ),
@@ -424,14 +453,16 @@ class DialogueCreationQuestions {
       ],
       correctIndex: 1,
       hint: 'Pirates have a special way of talking!',
-      explanation: 'Good dialogue matches the character - pirates say "arrr" and talk about treasure!',
+      explanation:
+          'Good dialogue matches the character - pirates say "arrr" and talk about treasure!',
       difficulty: 2,
       imageEmoji: '🏴‍☠️',
     ),
     StoryQuestion(
       id: 'dial_4',
       skillId: 'skill_dialogue_creation',
-      question: 'Instead of always writing "said," which word shows someone is ANGRY?',
+      question:
+          'Instead of always writing "said," which word shows someone is ANGRY?',
       options: [
         '"Stop!" he whispered.',
         '"Stop!" he shouted.',
@@ -440,7 +471,8 @@ class DialogueCreationQuestions {
       ],
       correctIndex: 1,
       hint: 'When angry, people speak loudly!',
-      explanation: '"Shouted" shows anger better than "said" - use strong verbs!',
+      explanation:
+          '"Shouted" shows anger better than "said" - use strong verbs!',
       difficulty: 2,
       imageEmoji: '😠',
     ),
@@ -457,14 +489,16 @@ class DialogueCreationQuestions {
       ],
       correctIndex: 1,
       hint: 'How do real friends talk to each other?',
-      explanation: 'Natural dialogue sounds like real speech - casual and friendly!',
+      explanation:
+          'Natural dialogue sounds like real speech - casual and friendly!',
       difficulty: 3,
       imageEmoji: '🤝',
     ),
     StoryQuestion(
       id: 'dial_6',
       skillId: 'skill_dialogue_creation',
-      question: 'What makes this dialogue boring?\n\n"Hi," said Tom.\n"Hi," said Sue.\n"How are you?" said Tom.\n"Fine," said Sue.',
+      question:
+          'What makes this dialogue boring?\n\n"Hi," said Tom.\n"Hi," said Sue.\n"How are you?" said Tom.\n"Fine," said Sue.',
       options: [
         'Too many characters',
         'Too much "said" and short answers',
@@ -473,7 +507,8 @@ class DialogueCreationQuestions {
       ],
       correctIndex: 1,
       hint: 'Notice how every line is very similar...',
-      explanation: 'Vary your dialogue! Use different speaking verbs and longer, interesting responses!',
+      explanation:
+          'Vary your dialogue! Use different speaking verbs and longer, interesting responses!',
       difficulty: 3,
       imageEmoji: '📝',
     ),
@@ -500,7 +535,8 @@ class PlotStructureQuestions {
       ],
       correctIndex: 1,
       hint: 'What do readers need to know first?',
-      explanation: 'The beginning introduces WHO the story is about and WHERE it happens!',
+      explanation:
+          'The beginning introduces WHO the story is about and WHERE it happens!',
       difficulty: 1,
       imageEmoji: '📖',
     ),
@@ -516,7 +552,8 @@ class PlotStructureQuestions {
       ],
       correctIndex: 2,
       hint: 'Stories need a satisfying finish!',
-      explanation: 'The ending resolves the problem and shows how things turned out!',
+      explanation:
+          'The ending resolves the problem and shows how things turned out!',
       difficulty: 1,
       imageEmoji: '🎬',
     ),
@@ -524,7 +561,8 @@ class PlotStructureQuestions {
     StoryQuestion(
       id: 'plot_3',
       skillId: 'skill_plot_structure',
-      question: 'What is the PROBLEM in this story?\n\n"A mouse wanted cheese but a cat blocked the kitchen."',
+      question:
+          'What is the PROBLEM in this story?\n\n"A mouse wanted cheese but a cat blocked the kitchen."',
       options: [
         'The mouse is hungry',
         'There\'s no cheese',
@@ -533,7 +571,8 @@ class PlotStructureQuestions {
       ],
       correctIndex: 2,
       hint: 'What\'s stopping the mouse from getting what it wants?',
-      explanation: 'The problem (conflict) is what the character must overcome - the cat!',
+      explanation:
+          'The problem (conflict) is what the character must overcome - the cat!',
       difficulty: 2,
       imageEmoji: '🐱',
     ),
@@ -549,7 +588,8 @@ class PlotStructureQuestions {
       ],
       correctIndex: 1,
       hint: 'The middle is where the action happens!',
-      explanation: 'The middle shows the character trying to solve their problem!',
+      explanation:
+          'The middle shows the character trying to solve their problem!',
       difficulty: 2,
       imageEmoji: '⚡',
     ),
@@ -557,7 +597,8 @@ class PlotStructureQuestions {
     StoryQuestion(
       id: 'plot_5',
       skillId: 'skill_plot_structure',
-      question: 'What story element is MISSING?\n\n"Once upon a time there was a princess. She lived happily ever after."',
+      question:
+          'What story element is MISSING?\n\n"Once upon a time there was a princess. She lived happily ever after."',
       options: [
         'A beginning',
         'An ending',
@@ -566,7 +607,8 @@ class PlotStructureQuestions {
       ],
       correctIndex: 2,
       hint: 'What happened BETWEEN the beginning and end?',
-      explanation: 'This story has beginning and end but no middle with a problem to solve!',
+      explanation:
+          'This story has beginning and end but no middle with a problem to solve!',
       difficulty: 3,
       imageEmoji: '👸',
     ),
@@ -582,7 +624,8 @@ class PlotStructureQuestions {
       ],
       correctIndex: 1,
       hint: 'It\'s the peak of excitement!',
-      explanation: 'The climax is the most exciting part - when the problem is finally faced!',
+      explanation:
+          'The climax is the most exciting part - when the problem is finally faced!',
       difficulty: 3,
       imageEmoji: '🎢',
     ),
@@ -658,7 +701,8 @@ class CharacterDevelopmentQuestions {
       ],
       correctIndex: 1,
       hint: 'Villains create conflict in stories',
-      explanation: 'Villains often oppose the hero, creating the story\'s conflict!',
+      explanation:
+          'Villains often oppose the hero, creating the story\'s conflict!',
       difficulty: 2,
       imageEmoji: '🦹',
     ),
@@ -675,7 +719,8 @@ class CharacterDevelopmentQuestions {
       ],
       correctIndex: 2,
       hint: 'Real people aren\'t perfect...',
-      explanation: 'Realistic characters have both good and bad traits, like real people!',
+      explanation:
+          'Realistic characters have both good and bad traits, like real people!',
       difficulty: 3,
       imageEmoji: '🎭',
     ),

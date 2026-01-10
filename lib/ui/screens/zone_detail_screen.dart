@@ -34,7 +34,9 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
     super.initState();
     // Trigger lazy initialization of skills when zone is first entered
     Future.microtask(() {
-      context.read<SkillProvider>().initializeSkills();
+      if (mounted) {
+        context.read<SkillProvider>().initializeSkills();
+      }
     });
   }
 
@@ -49,18 +51,8 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       body: Consumer<SkillProvider>(
         builder: (context, skillProvider, _) {
           if (!skillProvider.isInitialized) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Loading skills...',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
+            return const BrightBoundLoading(
+              message: 'Loading skills...',
             );
           }
 
@@ -85,38 +77,27 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
           return CustomScrollView(
             slivers: [
-              // Zone header with gradient
+              // Enhanced zone header with animated character
               SliverAppBar(
                 automaticallyImplyLeading: false,
                 expandedHeight: 200,
                 floating: false,
                 pinned: true,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
                 flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          widget.zoneColor,
-                          widget.zoneColor.withValues(alpha: 0.7),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.zoneDescription,
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
+                  background: Consumer<AvatarProvider>(
+                    builder: (context, avatarProvider, _) {
+                      return EnhancedZoneHeader(
+                        zoneId: widget.zoneId,
+                        zoneName: widget.zoneName,
+                        zoneDescription: widget.zoneDescription,
+                        zoneColor: widget.zoneColor,
+                        avatar: avatarProvider.avatar,
+                      );
+                    },
                   ),
                 ),
               ),
@@ -143,7 +124,9 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                       Expanded(
                         child: Text(
                           '${zoneSkills.length} Skills',
-                          style: Theme.of(context).textTheme.titleMedium
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -190,9 +173,11 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: SkillCard(
                           skill: skill,
-                          onTap: isLocked ? null : () {
-                            _showSkillDetail(context, skill);
-                          },
+                          onTap: isLocked
+                              ? null
+                              : () {
+                                  _showSkillDetail(context, skill);
+                                },
                           showLockOverlay: isLocked,
                         ),
                       );
@@ -232,13 +217,17 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                       children: [
                         Text(
                           skill.name,
-                          style: Theme.of(context).textTheme.titleLarge
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           skill.description,
-                          style: Theme.of(context).textTheme.bodyMedium
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
                               ?.copyWith(color: AppColors.textSecondary),
                         ),
                       ],
@@ -282,7 +271,9 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
               if (skill.state != SkillState.locked) ...[
                 Text(
                   'Progress to Next Level',
-                  style: Theme.of(context).textTheme.titleMedium
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
@@ -383,7 +374,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   void _launchSkillPractice(BuildContext context, Skill skill) {
     // Choose the appropriate practice screen based on zone
     Widget practiceScreen;
-    
+
     if (widget.zoneId == 'number_nebula') {
       practiceScreen = NumeracyPracticeScreen(
         skill: skill,
@@ -414,7 +405,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => practiceScreen),
+      FadeSlidePageRoute(page: practiceScreen),
     );
   }
 }

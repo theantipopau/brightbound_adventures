@@ -110,7 +110,7 @@ class DailyChallengeCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            
+
             // Description
             Text(
               challenge.description,

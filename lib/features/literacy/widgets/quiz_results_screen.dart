@@ -38,7 +38,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
   late AnimationController _celebrationController;
   late AnimationController _scoreController;
   late Animation<double> _scoreAnimation;
-  
+
   int _xpAwarded = 0;
   bool _leveledUp = false;
   int? _previousLevel;
@@ -46,12 +46,12 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _celebrationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..forward();
-    
+
     _scoreController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -60,11 +60,11 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
       parent: _scoreController,
       curve: Curves.easeOutBack,
     );
-    
+
     Future.delayed(const Duration(milliseconds: 300), () {
       _scoreController.forward();
     });
-    
+
     _processResults();
   }
 
@@ -84,7 +84,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
     if (widget.hintsUsed == 0 && widget.accuracy >= 0.7) {
       _xpAwarded += 10; // Bonus for no hints
     }
-    
+
     // Update skill progress
     final skillProvider = context.read<SkillProvider>();
     skillProvider.updateSkillProgress(
@@ -92,7 +92,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
       sessionAccuracy: widget.accuracy,
       sessionHints: widget.hintsUsed,
     );
-    
+
     // Award XP
     final avatarProvider = context.read<AvatarProvider>();
     if (avatarProvider.hasAvatar) {
@@ -111,13 +111,14 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
 
     // Track achievements
     final achievementService = AchievementService();
-    await achievementService.trackQuestionAnswered(true); // Track correct answers
-    
+    await achievementService
+        .trackQuestionAnswered(true); // Track correct answers
+
     // Check for perfect score
     if (widget.accuracy >= 1.0) {
       await achievementService.trackPerfectScore();
     }
-    
+
     // Show any newly unlocked achievements
     if (mounted) {
       for (final achievement in achievementService.recentlyUnlocked) {
@@ -160,7 +161,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
           child: Column(
             children: [
               const SizedBox(height: 20),
-              
+
               // Performance emoji
               ScaleTransition(
                 scale: _scoreAnimation,
@@ -170,24 +171,24 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Title
               Text(
                 'Quiz Complete!',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: widget.themeColor,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: widget.themeColor,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 widget.skillName,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.grey.shade600,
-                ),
+                      color: Colors.grey.shade600,
+                    ),
               ),
               const SizedBox(height: 24),
-              
+
               // Stars
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -198,14 +199,18 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                       animation: _celebrationController,
                       builder: (context, child) {
                         final delay = index * 0.2;
-                        final progress = ((_celebrationController.value - delay) / (1 - delay)).clamp(0.0, 1.0);
+                        final progress =
+                            ((_celebrationController.value - delay) /
+                                    (1 - delay))
+                                .clamp(0.0, 1.0);
                         return Transform.scale(
-                          scale: index < _starCount ? (0.5 + 0.5 * progress) : 0.8,
+                          scale:
+                              index < _starCount ? (0.5 + 0.5 * progress) : 0.8,
                           child: Icon(
                             index < _starCount ? Icons.star : Icons.star_border,
                             size: 48,
-                            color: index < _starCount 
-                                ? Colors.amber 
+                            color: index < _starCount
+                                ? Colors.amber
                                 : Colors.grey.shade300,
                           ),
                         );
@@ -215,7 +220,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                 }),
               ),
               const SizedBox(height: 32),
-              
+
               // Score card
               Container(
                 padding: const EdgeInsets.all(24),
@@ -260,7 +265,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                     const SizedBox(height: 24),
                     const Divider(),
                     const SizedBox(height: 16),
-                    
+
                     // Stats row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -268,7 +273,8 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                         _buildStatItem(
                           icon: Icons.check_circle,
                           color: AppColors.success,
-                          value: '${widget.correctAnswers}/${widget.totalQuestions}',
+                          value:
+                              '${widget.correctAnswers}/${widget.totalQuestions}',
                           label: 'Correct',
                         ),
                         _buildStatItem(
@@ -288,7 +294,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                   ],
                 ),
               ),
-              
+
               // Level up notification
               if (_leveledUp) ...[
                 const SizedBox(height: 24),
@@ -338,9 +344,9 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                   ),
                 ),
               ],
-              
+
               const SizedBox(height: 32),
-              
+
               // Action buttons
               Row(
                 children: [
