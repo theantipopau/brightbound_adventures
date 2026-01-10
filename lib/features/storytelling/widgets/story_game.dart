@@ -297,59 +297,123 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.purple.shade900.withValues(alpha: 0.8),
-                Colors.indigo.shade900.withValues(alpha: 0.8),
+                Colors.purple.shade900.withValues(alpha: 0.85),
+                Colors.indigo.shade900.withValues(alpha: 0.85),
               ],
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
-                color: Colors.purple.withValues(alpha: 0.3),
+                color: Colors.purple.withValues(alpha: 0.4),
+                blurRadius: 30,
+                offset: const Offset(0, 15),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 20,
-                offset: const Offset(0, 10),
+                offset: const Offset(0, 8),
               ),
             ],
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-              width: 2,
+              color: Colors.white.withValues(alpha: 0.25),
+              width: 2.5,
             ),
           ),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(28),
             child: Column(
               children: [
-                // Question emoji
+                // Question emoji - animated with bounce
                 if (_currentQuestion.imageEmoji != null) ...[
-                  Text(
-                    _currentQuestion.imageEmoji!,
-                    style: const TextStyle(fontSize: 64),
+                  AnimatedBuilder(
+                    animation: _pageController,
+                    builder: (context, _) {
+                      final bounce = math.sin(_pageController.value * 3.14159 * 2) * 12;
+                      final scale = 0.92 + math.sin(_pageController.value * 3.14159) * 0.1;
+                      return Transform.translate(
+                        offset: Offset(0, bounce),
+                        child: Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                colors: [
+                                  Colors.purple.withValues(alpha: 0.3),
+                                  Colors.purple.withValues(alpha: 0.1),
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.purple.withValues(alpha: 0.5),
+                                  blurRadius: 20,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              _currentQuestion.imageEmoji!,
+                              style: const TextStyle(fontSize: 72),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                 ],
 
-                // Question text
+                // Question text with better styling
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.black26,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    _currentQuestion.question,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize:
-                          MediaQuery.of(context).size.width < 600 ? 18 : 20,
-                      fontWeight: FontWeight.w600,
-                      height: 1.5,
+                    color: Colors.black26.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      width: 1.5,
                     ),
-                    maxLines: 10,
-                    overflow: TextOverflow.ellipsis,
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        _currentQuestion.question,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize:
+                              MediaQuery.of(context).size.width < 600 ? 20 : 24,
+                          fontWeight: FontWeight.w700,
+                          height: 1.6,
+                          letterSpacing: 0.3,
+                        ),
+                        maxLines: 12,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 12),
+                      // Question counter
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.purple.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          'Question ${_currentIndex + 1} of ${widget.questions.length}',
+                          style: const TextStyle(
+                            color: Colors.purpleAccent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
 
                 // Answer options
                 ..._currentQuestion.options.asMap().entries.map((entry) {
@@ -358,7 +422,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
 
                 // Feedback section
                 if (_showFeedback) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   _buildFeedback(),
                 ],
               ],

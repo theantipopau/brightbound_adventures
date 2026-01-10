@@ -257,70 +257,118 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.blueGrey.shade800.withValues(alpha: 0.9),
-              Colors.blueGrey.shade900.withValues(alpha: 0.9),
+              Colors.blueGrey.shade800.withValues(alpha: 0.92),
+              Colors.blueGrey.shade900.withValues(alpha: 0.92),
             ],
           ),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(32),
           boxShadow: [
+            BoxShadow(
+              color: Colors.teal.withValues(alpha: 0.25),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 20,
-              offset: const Offset(0, 10),
+              offset: const Offset(0, 8),
             ),
           ],
           border: Border.all(
-            color: Colors.teal.withValues(alpha: 0.3),
-            width: 2,
+            color: Colors.teal.withValues(alpha: 0.4),
+            width: 2.5,
           ),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              // Question emoji
+              // Question emoji - animated
               if (_currentQuestion.imageEmoji != null) ...[
                 AnimatedBuilder(
                   animation: _pulseAnimation,
                   builder: (context, child) {
-                    return Transform.scale(
-                      scale: _showFeedback ? 1.0 : _pulseAnimation.value,
-                      child: child,
+                    final bounce = math.sin(_pulseAnimation.value * 3.14159 * 2) * 10;
+                    final scale = 0.94 + math.sin(_pulseAnimation.value * 3.14159) * 0.08;
+                    return Transform.translate(
+                      offset: Offset(0, bounce),
+                      child: Transform.scale(
+                        scale: scale,
+                        child: Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                Colors.teal.withValues(alpha: 0.3),
+                                Colors.teal.withValues(alpha: 0.08),
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.teal.withValues(alpha: 0.5),
+                                blurRadius: 25,
+                                spreadRadius: 5,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            _currentQuestion.imageEmoji!,
+                            style: const TextStyle(fontSize: 64),
+                          ),
+                        ),
+                      ),
                     );
                   },
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.teal.withValues(alpha: 0.2),
-                    ),
-                    child: Text(
-                      _currentQuestion.imageEmoji!,
-                      style: const TextStyle(fontSize: 56),
-                    ),
-                  ),
                 ),
                 const SizedBox(height: 20),
               ],
 
               // Question text
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  _currentQuestion.question,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: MediaQuery.of(context).size.width < 600 ? 16 : 18,
-                    fontWeight: FontWeight.w600,
-                    height: 1.5,
+                  color: Colors.black.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    width: 1.5,
                   ),
-                  maxLines: 8,
-                  overflow: TextOverflow.ellipsis,
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      _currentQuestion.question,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.width < 600 ? 18 : 22,
+                        fontWeight: FontWeight.w700,
+                        height: 1.6,
+                        letterSpacing: 0.3,
+                      ),
+                      maxLines: 10,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 12),
+                    // Question counter
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.teal.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        'Question ${_currentIndex + 1} of ${widget.questions.length}',
+                        style: const TextStyle(
+                          color: Colors.tealAccent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 

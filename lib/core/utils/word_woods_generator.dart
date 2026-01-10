@@ -116,14 +116,24 @@ class WordWoodsQuestionGenerator {
           difficulty: 1,
         );
       },
-      // Sight words (NEW!)
+      // Sight words with context - more challenging
       () {
-        final word = EnhancedQuestionGenerator.getUnusedValue(
-          'sight_word_easy',
-          WordBanks.beginnerSightWords,
-        );
-        final wrongWords =
-            WordBanks.beginnerSightWords.where((w) => w != word).toList();
+        final sightWordQuestions = {
+          'the': 'Complete: "___ cat sat down.',
+          'and': 'Complete: "I like apples ___ oranges.',
+          'is': 'Complete: "She ___ very clever.',
+          'you': 'Complete: "Hello, how are ___?"',
+          'said': 'Complete: "She ___ goodbye.',
+          'was': 'Complete: "It ___ a sunny day.',
+          'are': 'Complete: "We ___ happy.",',
+          'his': 'Complete: "This is ___ ball."',
+          'have': 'Complete: "I ___ a pet dog."',
+          'from': 'Complete: "I come ___ Australia."',
+        };
+        
+        final word = sightWordQuestions.keys.toList()[_random.nextInt(sightWordQuestions.length)];
+        final question = sightWordQuestions[word]!;
+        final wrongWords = sightWordQuestions.keys.where((w) => w != word).toList();
         wrongWords.shuffle(_random);
         final options = EnhancedQuestionGenerator.smartShuffle(
           [word, ...wrongWords.take(3)],
@@ -133,26 +143,39 @@ class WordWoodsQuestionGenerator {
         return LiteracyQuestion(
           id: 'easy_sight_${word}_$index',
           skillId: 'sight_words',
-          question: 'Find the word: "$word"',
+          question: question,
           options: options,
           correctIndex: options.indexOf(word),
-          hint: 'Look carefully at each letter.',
-          explanation: 'Great! "$word" is a sight word you should know!',
+          hint: 'Read the sentence carefully. Which word makes sense?',
+          explanation: '"$word" completes the sentence correctly!',
           difficulty: 1,
         );
       },
-      // Simple spelling - improved
+      // Simple spelling - improved with actual misspellings
       () {
         final words = {
-          'cat': ['cat', 'kat', 'cot', 'bat'],
-          'dog': ['dog', 'dag', 'dig', 'log'],
-          'sun': ['sun', 'son', 'san', 'bun'],
-          'bat': ['bat', 'bet', 'bot', 'bad'],
-          'pig': ['pig', 'peg', 'big', 'pit'],
+          'cat': ['cat', 'kat', 'catt', 'cet'],
+          'dog': ['dog', 'dag', 'dug', 'dug'],
+          'sun': ['sun', 'son', 'sun', 'sunn'],
+          'bat': ['bat', 'batt', 'bet', 'baht'],
+          'pig': ['pig', 'peg', 'pyg', 'piq'],
+          'run': ['run', 'runn', 'ren', 'ruen'],
+          'fun': ['fun', 'funn', 'fon', 'fune'],
+          'cup': ['cup', 'cupp', 'cop', 'kup'],
+          'sit': ['sit', 'sitt', 'set', 'syt'],
+          'hat': ['hat', 'hatt', 'het', 'hatt'],
+          'rat': ['rat', 'ratt', 'ret', 'raht'],
+          'mat': ['mat', 'mitt', 'met', 'maht'],
         };
         final entry = words.entries.elementAt(_random.nextInt(words.length));
+        // Remove duplicates from misspellings
+        final uniqueOptions = entry.value.toSet().toList();
+        // Ensure we have exactly 4 options
+        final finalOptions = uniqueOptions.length >= 4 
+          ? uniqueOptions.take(4).toList()
+          : [...uniqueOptions, '${entry.key}x', '${entry.key}h', '${entry.key}z'].take(4).toList();
         final shuffled =
-            EnhancedQuestionGenerator.smartShuffle(entry.value, entry.key);
+            EnhancedQuestionGenerator.smartShuffle(finalOptions, entry.key);
 
         return LiteracyQuestion(
           id: 'easy_spell_${entry.key}_$index',

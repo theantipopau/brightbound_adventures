@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/features/literacy/models/question.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/widgets/responsive_quiz_layout.dart';
 
 /// Multiple choice quiz game for literacy skills
 class MultipleChoiceGame extends StatefulWidget {
@@ -225,81 +226,35 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
         ],
       ),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isCompact = constraints.maxHeight < 700;
-            final spacing = isCompact ? 6.0 : 12.0;
-            final isWideLayout = constraints.maxWidth >= 960;
+        child: Column(
+          children: [
+            // Progress bar
+            LinearProgressIndicator(
+              value: _progress,
+              backgroundColor: widget.themeColor.withValues(alpha: 0.2),
+              valueColor: AlwaysStoppedAnimation(widget.themeColor),
+              minHeight: 8,
+            ),
 
-            final questionPanel = Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildScoreCard(isCompact),
-                SizedBox(height: spacing),
-                Flexible(flex: 2, child: _buildQuestionCard(isCompact)),
-                if (_showHint && _currentQuestion.hint != null) ...[
-                  SizedBox(height: spacing),
-                  _buildHintCard(),
-                  SizedBox(height: spacing),
-                ],
-              ],
-            );
-
-            final optionsPanel = Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Flexible(
-                  flex: 3,
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(),
-                    children: _buildOptions(isCompact),
-                  ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: ScreenBreakpoints.getHorizontalPadding(context),
+                  vertical: 12,
                 ),
-                if (_answered) ...[
-                  SizedBox(height: spacing),
-                  _buildFeedback(isCompact),
-                ],
-              ],
-            );
-
-            return Column(
-              children: [
-                // Progress bar
-                LinearProgressIndicator(
-                  value: _progress,
-                  backgroundColor: widget.themeColor.withValues(alpha: 0.2),
-                  valueColor: AlwaysStoppedAnimation(widget.themeColor),
-                  minHeight: 4,
+                child: ResponsiveQuizLayout(
+                  scoreCard: _buildScoreCard(false),
+                  questionCard: _buildQuestionCard(false),
+                  optionsArea: _buildOptionsArea(),
+                  feedbackWidget: _answered ? _buildFeedback(false) : null,
+                  maxWidth: ScreenBreakpoints.getMaxContentWidth(context),
                 ),
+              ),
+            ),
 
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.all(isCompact ? 8 : 16),
-                    child: isWideLayout
-                        ? Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(child: questionPanel),
-                              SizedBox(width: spacing),
-                              Expanded(child: optionsPanel),
-                            ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              questionPanel,
-                              SizedBox(height: spacing),
-                              optionsPanel,
-                            ],
-                          ),
-                  ),
-                ),
-
-                // Next button
-                if (_answered) _buildNextButton(),
-              ],
-            );
-          },
+            // Next button
+            if (_answered) _buildNextButton(),
+          ],
         ),
       ),
     );
@@ -594,75 +549,94 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
     return AnimatedBuilder(
       animation: _bounceController,
       builder: (context, child) {
-        return Transform.scale(
-          scale: 1.0 + (_bounceController.value * 0.05),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.amber.shade50,
-                  Colors.amber.shade100,
+        final bounce = sin(_bounceController.value * 3.14159) * 6;
+        final scale = 1.0 + (sin(_bounceController.value * 3.14159) * 0.06);
+        return Transform.translate(
+          offset: Offset(0, bounce),
+          child: Transform.scale(
+            scale: scale,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.amber.shade50,
+                    Colors.orange.shade50,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.amber.shade400,
+                  width: 2.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.amber.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.amber.shade400,
-                width: 2,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Animated icon
+                  AnimatedBuilder(
+                    animation: _sparkleController,
+                    builder: (context, _) {
+                      final iconScale = 0.9 + sin(_sparkleController.value * 3.14159) * 0.1;
+                      return Transform.scale(
+                        scale: iconScale,
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.amber.withValues(alpha: 0.6),
+                                blurRadius: 12,
+                                spreadRadius: 3,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.lightbulb,
+                              color: Colors.white, size: 28),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hint for You',
+                          style: TextStyle(
+                            color: Colors.amber.shade900,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _currentQuestion.hint!,
+                          style: TextStyle(
+                            color: Colors.amber.shade900,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.amber.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.amber,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.amber.withValues(alpha: 0.5),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.lightbulb,
-                      color: Colors.white, size: 24),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '💡 Hint:',
-                        style: TextStyle(
-                          color: Colors.amber.shade900,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _currentQuestion.hint!,
-                        style: TextStyle(
-                          color: Colors.amber.shade900,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ),
         );
@@ -714,6 +688,19 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
     );
   }
 
+  Widget _buildOptionsArea() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_showHint && _currentQuestion.hint != null) ...[
+          _buildHintCard(),
+          const SizedBox(height: 12),
+        ],
+        ..._buildOptions(false),
+      ],
+    );
+  }
+
   List<Widget> _buildOptions(bool isCompact) {
     return List.generate(_currentQuestion.options.length, (index) {
       final option = _currentQuestion.options[index];
@@ -754,32 +741,20 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
       }
 
       return Padding(
-        padding: EdgeInsets.only(bottom: isCompact ? 8 : 12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          child: Material(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(16),
-            child: InkWell(
-              onTap: _answered ? null : () => _selectAnswer(index),
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isCompact ? 16 : 20,
-                  vertical: isCompact ? 12 : 16,
-                ),
+        padding: EdgeInsets.only(bottom: 12),
+        child: HoverCard(
+          backgroundColor: backgroundColor,
+          borderColor: borderColor,
+          enabled: !_answered,
+          onTap: _answered ? null : () => _selectAnswer(index),
+          child: Row(
+            children: [
+              // Option letter
+              Container(
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: borderColor, width: 2),
-                ),
-                child: Row(
-                  children: [
-                    // Option letter
-                    Container(
-                      width: isCompact ? 28 : 36,
-                      height: isCompact ? 28 : 36,
-                      decoration: BoxDecoration(
-                        color: _answered
+                  color: _answered
                             ? (isCorrect
                                 ? AppColors.success
                                 : isSelected
@@ -821,16 +796,13 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                           trailingIcon,
                           color:
                               isCorrect ? AppColors.success : AppColors.error,
-                          size: isCompact ? 22 : 28,
+                          size: 28,
                         ),
                       ),
                   ],
                 ),
-              ),
             ),
-          ),
-        ),
-      );
+        );
     });
   }
 
@@ -894,48 +866,29 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
     final isLastQuestion = _currentIndex >= _shuffledQuestions.length - 1;
 
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _nextQuestion,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: widget.themeColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+      padding: const EdgeInsets.all(16),
+      child: HoverButton(
+        backgroundColor: widget.themeColor,
+        hoverColor: widget.themeColor.withValues(alpha: 0.9),
+        onPressed: _nextQuestion,
+        tooltip: isLastQuestion ? 'See Results' : 'Next Question',
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              isLastQuestion ? 'See Results' : 'Next Question',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  isLastQuestion ? 'See Results' : 'Next Question',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  isLastQuestion ? Icons.emoji_events : Icons.arrow_forward,
-                ),
-              ],
+            const SizedBox(width: 8),
+            Icon(
+              isLastQuestion ? Icons.celebration : Icons.arrow_forward,
+              color: Colors.white,
             ),
-          ),
+          ],
         ),
       ),
     );

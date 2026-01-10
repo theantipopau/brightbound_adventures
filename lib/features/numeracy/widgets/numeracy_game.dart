@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/widgets/responsive_quiz_layout.dart';
 
 /// Multiple choice quiz game for numeracy skills
 class NumeracyGame extends StatefulWidget {
@@ -213,32 +214,17 @@ class _NumeracyGameState extends State<NumeracyGame>
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Score display
-                    _buildScoreCard(),
-                    const SizedBox(height: 20),
-
-                    // Question card
-                    _buildQuestionCard(),
-                    const SizedBox(height: 20),
-
-                    // Hint display
-                    if (_showHint && _currentQuestion.hint != null)
-                      _buildHintCard(),
-                    if (_showHint) const SizedBox(height: 16),
-
-                    // Options
-                    ..._buildOptions(),
-
-                    // Feedback and explanation
-                    if (_answered) ...[
-                      const SizedBox(height: 20),
-                      _buildFeedback(),
-                    ],
-                  ],
+                padding: EdgeInsets.symmetric(
+                  horizontal: ScreenBreakpoints.getHorizontalPadding(context),
+                  vertical: 16,
+                ),
+                child: ResponsiveQuizLayout(
+                  scoreCard: _buildScoreCard(),
+                  questionCard: _buildQuestionCard(),
+                  optionsArea: _buildOptionsArea(),
+                  feedbackWidget:
+                      _answered ? _buildFeedback() : null,
+                  maxWidth: ScreenBreakpoints.getMaxContentWidth(context),
                 ),
               ),
             ),
@@ -247,15 +233,12 @@ class _NumeracyGameState extends State<NumeracyGame>
             if (_answered)
               Container(
                 padding: const EdgeInsets.all(16),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: widget.themeColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
+                child: HoverButton(
+                  backgroundColor: widget.themeColor,
+                  hoverColor: widget.themeColor.withValues(alpha: 0.9),
+                  tooltip: _currentIndex < _shuffledQuestions.length - 1
+                      ? "Press 'Enter' or click Next"
+                      : "Press 'Enter' or click See Results",
                   onPressed: _nextQuestion,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -267,6 +250,7 @@ class _NumeracyGameState extends State<NumeracyGame>
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -274,6 +258,7 @@ class _NumeracyGameState extends State<NumeracyGame>
                         _currentIndex < _shuffledQuestions.length - 1
                             ? Icons.arrow_forward
                             : Icons.celebration,
+                        color: Colors.white,
                       ),
                     ],
                   ),
@@ -374,7 +359,7 @@ class _NumeracyGameState extends State<NumeracyGame>
                 ),
                 borderRadius: BorderRadius.circular(32),
                 border: Border.all(
-                  color: widget.themeColor.withValues(alpha: 0.2),
+                  color: widget.themeColor.withValues(alpha: 0.25),
                   width: 3,
                 ),
                 boxShadow: [
@@ -394,49 +379,80 @@ class _NumeracyGameState extends State<NumeracyGame>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Animated icon with glow
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        colors: [
-                          widget.themeColor.withValues(alpha: 0.2),
-                          widget.themeColor.withValues(alpha: 0.05),
-                        ],
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: widget.themeColor.withValues(alpha: 0.4),
-                          blurRadius: 30,
-                          spreadRadius: 3,
+                  // Animated icon with enhanced glow and bounce
+                  AnimatedBuilder(
+                    animation: _feedbackController,
+                    builder: (context, _) {
+                      final bounce = sin(_feedbackController.value * 3.14159 * 2) * 8;
+                      final scale = 0.95 + sin(_feedbackController.value * 3.14159) * 0.08;
+                      return Transform.translate(
+                        offset: Offset(0, bounce),
+                        child: Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                colors: [
+                                  widget.themeColor.withValues(alpha: 0.25),
+                                  widget.themeColor.withValues(alpha: 0.08),
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: widget.themeColor.withValues(alpha: 0.5),
+                                  blurRadius: 35,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              _getQuestionTypeEmoji(),
+                              style: TextStyle(
+                                  fontSize: MediaQuery.of(context).size.width < 600
+                                      ? 48
+                                      : 56),
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      _getQuestionTypeEmoji(),
-                      style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width < 600
-                              ? 40
-                              : 48),
-                    ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: Text(
                       _currentQuestion.question,
                       style: TextStyle(
                         fontSize:
-                            MediaQuery.of(context).size.width < 600 ? 22 : 28,
+                            MediaQuery.of(context).size.width < 600 ? 23 : 30,
                         fontWeight: FontWeight.w800,
                         height: 1.5,
                         color: Colors.grey[900],
-                        letterSpacing: 0.3,
+                        letterSpacing: 0.4,
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 8,
                       overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  // Question difficulty indicator
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: widget.themeColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Question ${_currentIndex + 1} of ${_shuffledQuestions.length}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: widget.themeColor,
+                        letterSpacing: 0.3,
+                      ),
                     ),
                   ),
                 ],
@@ -466,27 +482,87 @@ class _NumeracyGameState extends State<NumeracyGame>
   Widget _buildHintCard() {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.amber[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber[300]!),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.amber[50]!,
+            Colors.orange[50]!,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.amber[300]!,
+          width: 2.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.amber.withValues(alpha: 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('💡', style: TextStyle(fontSize: 24)),
-          const SizedBox(width: 12),
+          // Animated hint icon
+          AnimatedBuilder(
+            animation: _feedbackController,
+            builder: (context, _) {
+              final scale = 0.95 + sin(_feedbackController.value * 3.14159) * 0.05;
+              return Transform.scale(
+                scale: scale,
+                child: const Text('💡', style: TextStyle(fontSize: 28)),
+              );
+            },
+          ),
+          const SizedBox(width: 16),
           Expanded(
-            child: Text(
-              _currentQuestion.hint!,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.amber[900],
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hint',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber[900],
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _currentQuestion.hint!,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.amber[900],
+                    height: 1.4,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildOptionsArea() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Hint display
+        if (_showHint && _currentQuestion.hint != null) ...[
+          _buildHintCard(),
+          const SizedBox(height: 16),
+        ],
+        // Options
+        ..._buildOptions(),
+      ],
     );
   }
 
@@ -523,94 +599,72 @@ class _NumeracyGameState extends State<NumeracyGame>
 
       return Padding(
         padding: const EdgeInsets.only(bottom: 12),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: _answered ? null : () => _selectAnswer(index),
-            borderRadius: BorderRadius.circular(16),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: borderColor,
-                  width: isSelected || (_answered && isCorrect) ? 3 : 2,
+        child: HoverCard(
+          backgroundColor: backgroundColor,
+          borderColor: borderColor,
+          enabled: !_answered,
+          onTap: _answered ? null : () => _selectAnswer(index),
+          child: Row(
+            children: [
+              // Option letter badge
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: _answered
+                      ? (isCorrect
+                          ? Colors.green
+                          : (isSelected ? Colors.red : Colors.grey[300]))
+                      : widget.themeColor.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
                 ),
-                boxShadow: isSelected && !_answered
-                    ? [
-                        BoxShadow(
-                          color: widget.themeColor.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Row(
-                children: [
-                  // Option letter badge
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
+                child: Center(
+                  child: Text(
+                    String.fromCharCode(65 + index), // A, B, C, D
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                       color: _answered
-                          ? (isCorrect
-                              ? Colors.green
-                              : (isSelected ? Colors.red : Colors.grey[300]))
-                          : widget.themeColor.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        String.fromCharCode(65 + index), // A, B, C, D
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: _answered
-                              ? (isCorrect || isSelected
-                                  ? Colors.white
-                                  : Colors.grey[600])
-                              : widget.themeColor,
-                        ),
-                      ),
+                          ? (isCorrect || isSelected
+                              ? Colors.white
+                              : Colors.grey[600])
+                          : widget.themeColor,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      option,
-                      style: TextStyle(
-                        fontSize:
-                            MediaQuery.of(context).size.width < 600 ? 16 : 18,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: _answered
-                            ? (isCorrect
-                                ? Colors.green[800]
-                                : (isSelected
-                                    ? Colors.red[800]
-                                    : Colors.grey[600]))
-                            : Colors.black87,
-                        height: 1.3,
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (trailingIcon != null)
-                    ScaleTransition(
-                      scale: _feedbackAnimation,
-                      child: Icon(
-                        trailingIcon,
-                        color: isCorrect ? Colors.green : Colors.red,
-                        size: 28,
-                      ),
-                    ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  option,
+                  style: TextStyle(
+                    fontSize:
+                        MediaQuery.of(context).size.width < 600 ? 16 : 18,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color: _answered
+                        ? (isCorrect
+                            ? Colors.green[800]
+                            : (isSelected
+                                ? Colors.red[800]
+                                : Colors.grey[600]))
+                        : Colors.black87,
+                    height: 1.3,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (trailingIcon != null)
+                ScaleTransition(
+                  scale: _feedbackAnimation,
+                  child: Icon(
+                    trailingIcon,
+                    color: isCorrect ? Colors.green : Colors.red,
+                    size: 28,
+                  ),
+                ),
+            ],
           ),
         ),
       );
@@ -623,14 +677,28 @@ class _NumeracyGameState extends State<NumeracyGame>
     return ScaleTransition(
       scale: _feedbackAnimation,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: isCorrect ? Colors.green[50] : Colors.red[50],
-          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isCorrect
+                ? [Colors.green[50]!, Colors.green[100]!]
+                : [Colors.red[50]!, Colors.orange[50]!],
+          ),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isCorrect ? Colors.green : Colors.red,
-            width: 2,
+            width: 3,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: (isCorrect ? Colors.green : Colors.red)
+                  .withValues(alpha: 0.3),
+              blurRadius: 20,
+              spreadRadius: 4,
+            ),
+          ],
         ),
         child: Column(
           children: [
@@ -640,46 +708,130 @@ class _NumeracyGameState extends State<NumeracyGame>
                 if (isCorrect)
                   ScaleTransition(
                     scale: _starAnimation,
-                    child: const Text('⭐', style: TextStyle(fontSize: 32)),
+                    child: const Text('⭐', style: TextStyle(fontSize: 40)),
                   ),
-                const SizedBox(width: 8),
-                Text(
-                  isCorrect ? 'Stellar Work! 🚀' : 'Not quite! 🌙',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: isCorrect ? Colors.green[700] : Colors.red[700],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    isCorrect ? 'Excellent! 🎉' : 'Try Again! 💪',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: isCorrect ? Colors.green[700] : Colors.red[700],
+                      letterSpacing: 0.5,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 if (isCorrect)
                   ScaleTransition(
                     scale: _starAnimation,
-                    child: const Text('⭐', style: TextStyle(fontSize: 32)),
+                    child: const Text('⭐', style: TextStyle(fontSize: 40)),
                   ),
               ],
             ),
+            const SizedBox(height: 16),
+            // Progress indicator
+            if (isCorrect)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.green.withValues(alpha: 0.2),
+                      Colors.green.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.green.withValues(alpha: 0.5),
+                    width: 1.5,
+                  ),
+                ),
+                child: Text(
+                  '+1 Star Earned!',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green[700],
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.orange.withValues(alpha: 0.2),
+                      Colors.red.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.red.withValues(alpha: 0.5),
+                    width: 1.5,
+                  ),
+                ),
+                child: Text(
+                  'The correct answer: ${_currentQuestion.options[_currentQuestion.correctIndex]}',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red[700],
+                    letterSpacing: 0.2,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             if (_currentQuestion.explanation != null) ...[
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.8),
+                      Colors.blue[50]!.withValues(alpha: 0.6),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.blue.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('📚', style: TextStyle(fontSize: 20)),
+                    const Text('💡', style: TextStyle(fontSize: 24)),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        _currentQuestion.explanation!,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[800],
-                          height: 1.4,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Learn:',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue[700],
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _currentQuestion.explanation!,
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.grey[800],
+                              height: 1.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

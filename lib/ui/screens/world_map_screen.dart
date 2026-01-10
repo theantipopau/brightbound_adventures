@@ -701,40 +701,74 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           child: Transform.translate(
             offset: Offset(0, bounce),
             child: SizedBox(
-              width: 70,
-              height: 90,
+              width: 85,
+              height: 105,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Character
-                  SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: AnimatedCharacter(
-                      character: avatar.baseCharacter,
-                      skinColor: avatar.skinColor,
-                      size: 50,
-                      animation: isMoving
-                          ? CharacterAnimation.walking
-                          : CharacterAnimation.idle,
-                      showParticles: false,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  // Name tag
+                  // Character with enhanced container
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    width: 62,
+                    height: 62,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.secondary],
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.primary.withValues(alpha: 0.2),
+                          AppColors.secondary.withValues(alpha: 0.1),
+                        ],
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.4),
+                        width: 2.5,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          blurRadius: 16,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        AnimatedCharacter(
+                          character: avatar.baseCharacter,
+                          skinColor: avatar.skinColor,
+                          size: 60,
+                          animation: isMoving
+                              ? CharacterAnimation.walking
+                              : CharacterAnimation.idle,
+                          showParticles: false,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  // Enhanced name tag
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.primary, AppColors.secondary],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
@@ -742,10 +776,37 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       avatar.name,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.3,
                       ),
                       overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  // Level badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.amber.withValues(alpha: 0.5),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      'Lv.${avatar.level}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.2,
+                      ),
                     ),
                   ),
                 ],
@@ -770,15 +831,24 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           GestureDetector(
             onTap: () => _showAppInfoDialog(context),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0.98),
+                    Colors.blue.shade50.withValues(alpha: 0.95),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  width: 2,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -786,21 +856,22 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                     child: Image.asset(
                       'assets/images/logo.png',
-                      width: 28,
-                      height: 28,
+                      width: 32,
+                      height: 32,
                       errorBuilder: (_, __, ___) =>
-                          const Text('🌟', style: TextStyle(fontSize: 20)),
+                          const Text('🌟', style: TextStyle(fontSize: 24)),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   const Text(
                     'BrightBound',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 15,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ],
@@ -808,49 +879,71 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             ),
           ),
 
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
 
-          // Player switcher button
+          // Player switcher button - Enhanced
           GestureDetector(
             onTap: () => _showPlayerSwitcher(context),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0.98),
+                    AppColors.primary.withValues(alpha: 0.08),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3), width: 2),
+                    color: AppColors.primary.withValues(alpha: 0.35), width: 2.5),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 8,
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('👤', style: TextStyle(fontSize: 16)),
-                  const SizedBox(width: 4),
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary,
+                          AppColors.secondary,
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Text('👤', style: TextStyle(fontSize: 16)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Text(
                     avatar.name,
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
                       color: AppColors.primary,
+                      letterSpacing: 0.3,
                     ),
                   ),
-                  const SizedBox(width: 2),
+                  const SizedBox(width: 4),
                   const Icon(Icons.swap_horiz,
-                      size: 16, color: AppColors.primary),
+                      size: 18, color: AppColors.primary),
                 ],
               ),
             ),
           ),
 
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
 
-          // Daily streak indicator
+          // Daily streak indicator - Enhanced
           GestureDetector(
             onTap: () => _showStreakDialog(context, streakService),
             child: StreakWidget(
@@ -861,33 +954,41 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
           const Spacer(),
 
-          // Star counter
+          // Star counter - Enhanced
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFFFD700), Color(0xFFFFA000)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.4),
+                width: 2,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.amber.withValues(alpha: 0.4),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: Colors.amber.withValues(alpha: 0.6),
+                  blurRadius: 16,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('⭐', style: TextStyle(fontSize: 18)),
-                const SizedBox(width: 6),
+                const Text('⭐', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 8),
                 Text(
                   '$totalStars',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 19,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
@@ -1801,7 +1902,7 @@ class _ZoneIslandState extends State<_ZoneIsland> {
       builder: (context, child) {
         final float = math.sin(
                 widget.floatAnimation.value * math.pi + widget.zone.order) *
-            6; // Increased float
+            8; // Increased float for more dynamics
 
         return Transform.translate(
           offset: Offset(0, float),
@@ -1811,21 +1912,28 @@ class _ZoneIslandState extends State<_ZoneIsland> {
             child: GestureDetector(
               onTap: widget.onTap,
               child: Container(
-                width: 140, // Increased from 120
-                height: 160, // Increased from 140
+                width: 160, // Increased from 140
+                height: 180, // Increased from 160
                 decoration: (widget.isSelected || _isHovered)
                     ? BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(28),
                         border: Border.all(
                           color: Colors.white,
-                          width: 4,
+                          width: 5,
                         ),
                         boxShadow: [
+                          // Primary glow
                           BoxShadow(
                             color: widget.zone.color
-                                .withValues(alpha: _isHovered ? 0.9 : 0.7),
-                            blurRadius: _isHovered ? 30 : 20,
-                            spreadRadius: _isHovered ? 8 : 5,
+                                .withValues(alpha: _isHovered ? 1.0 : 0.8),
+                            blurRadius: _isHovered ? 45 : 30,
+                            spreadRadius: _isHovered ? 12 : 8,
+                          ),
+                          // Secondary glow
+                          BoxShadow(
+                            color: widget.zone.color.withValues(alpha: 0.3),
+                            blurRadius: _isHovered ? 60 : 40,
+                            spreadRadius: _isHovered ? 20 : 12,
                           ),
                         ],
                       )
@@ -1837,48 +1945,48 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                     Positioned(
                       bottom: 0,
                       child: Container(
-                        width: 100,
-                        height: 25,
+                        width: 120,
+                        height: 30,
                         decoration: BoxDecoration(
                           gradient: RadialGradient(
                             colors: [
-                              Colors.black.withValues(alpha: 0.25),
-                              Colors.black.withValues(alpha: 0.05),
+                              Colors.black.withValues(alpha: 0.35),
+                              Colors.black.withValues(alpha: 0.1),
                               Colors.transparent,
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(50),
+                          borderRadius: BorderRadius.circular(60),
                         ),
                       ),
                     ),
 
                     // Island base with better 3D effect
                     Positioned(
-                      bottom: 18,
+                      bottom: 20,
                       child: Container(
-                        width: 115,
-                        height: 35,
+                        width: 130,
+                        height: 42,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
                               widget.isUnlocked
-                                  ? widget.zone.color.withValues(alpha: 0.7)
-                                  : Colors.grey.withValues(alpha: 0.5),
+                                  ? widget.zone.color.withValues(alpha: 0.8)
+                                  : Colors.grey.withValues(alpha: 0.6),
                               widget.isUnlocked
-                                  ? widget.zone.color.withValues(alpha: 0.4)
-                                  : Colors.grey.withValues(alpha: 0.3),
+                                  ? widget.zone.color.withValues(alpha: 0.5)
+                                  : Colors.grey.withValues(alpha: 0.4),
                             ],
                           ),
                           borderRadius: const BorderRadius.vertical(
-                            bottom: Radius.circular(50),
+                            bottom: Radius.circular(60),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.15),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
                             ),
                           ],
                         ),
@@ -1887,31 +1995,31 @@ class _ZoneIslandState extends State<_ZoneIsland> {
 
                     // Main island body with glow
                     Positioned(
-                      bottom: 30,
+                      bottom: 35,
                       child: Container(
-                        width: 115,
-                        height: 100,
+                        width: 130,
+                        height: 115,
                         decoration: BoxDecoration(
                           gradient: RadialGradient(
-                            center: const Alignment(0, -0.5),
+                            center: const Alignment(0, -0.4),
                             colors: widget.isUnlocked
                                 ? [
+                                    widget.zone.color.withValues(alpha: 1.0),
                                     widget.zone.color.withValues(alpha: 0.95),
-                                    widget.zone.color,
                                     widget.zone.color.withValues(alpha: 0.85),
                                   ]
                                 : [
-                                    Colors.grey.shade300,
-                                    Colors.grey.shade500,
+                                    Colors.grey.shade400,
                                     Colors.grey.shade600,
+                                    Colors.grey.shade700,
                                   ],
                           ),
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(28),
                           border: Border.all(
                             color: widget.isCurrentZone
                                 ? Colors.white
-                                : Colors.white.withValues(alpha: 0.6),
-                            width: widget.isCurrentZone ? 5 : 3,
+                                : Colors.white.withValues(alpha: 0.7),
+                            width: widget.isCurrentZone ? 6 : 3.5,
                           ),
                           boxShadow: [
                             // Inner glow
@@ -1919,23 +2027,23 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                               color: (widget.isUnlocked
                                       ? widget.zone.color
                                       : Colors.grey)
-                                  .withValues(alpha: 0.6),
-                              blurRadius: widget.isCurrentZone ? 25 : 15,
-                              spreadRadius: widget.isCurrentZone ? 6 : 3,
+                                  .withValues(alpha: 0.7),
+                              blurRadius: widget.isCurrentZone ? 35 : 20,
+                              spreadRadius: widget.isCurrentZone ? 8 : 4,
                             ),
                             // Outer shadow for depth
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
+                              color: Colors.black.withValues(alpha: 0.25),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
                             ),
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(21),
+                          borderRadius: BorderRadius.circular(25),
                           child: Stack(
                             children: [
-                              // Shimmer effect for unlocked zones
+                              // Shimmer effect for unlocked zones - enhanced
                               if (widget.isUnlocked)
                                 Positioned.fill(
                                   child: AnimatedBuilder(
@@ -1950,7 +2058,7 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                               Colors.white
                                                   .withValues(alpha: 0.0),
                                               Colors.white
-                                                  .withValues(alpha: 0.15),
+                                                  .withValues(alpha: 0.2),
                                               Colors.white
                                                   .withValues(alpha: 0.0),
                                             ],
@@ -1972,30 +2080,41 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    // Emoji or lock
-                                    Text(
-                                      widget.isUnlocked
-                                          ? widget.zone.emoji
-                                          : '🔒',
-                                      style: TextStyle(
-                                        fontSize: widget.isUnlocked
-                                            ? 36
-                                            : 28, // Increased size
-                                      ),
+                                    // Emoji or lock with bounce animation
+                                    AnimatedBuilder(
+                                      animation: widget.floatAnimation,
+                                      builder: (context, _) {
+                                        final scale = 0.95 + math.sin(widget.floatAnimation.value * 3.14159) * 0.08;
+                                        return Transform.scale(
+                                          scale: scale,
+                                          child: Text(
+                                            widget.isUnlocked
+                                                ? widget.zone.emoji
+                                                : '🔒',
+                                            style: TextStyle(
+                                              fontSize: widget.isUnlocked
+                                                  ? 44
+                                                  : 32,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
-                                    const SizedBox(height: 4),
-                                    // Zone name
+                                    const SizedBox(height: 6),
+                                    // Zone name with better styling
                                     Text(
                                       widget.zone.name.split(' ').first,
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.5,
                                         shadows: [
                                           Shadow(
                                             color: Colors.black
-                                                .withValues(alpha: 0.5),
-                                            blurRadius: 6,
+                                                .withValues(alpha: 0.6),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
                                           ),
                                         ],
                                       ),
@@ -2003,7 +2122,7 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                     // Stars progress - only show if unlocked
                                     if (widget.isUnlocked)
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 4),
+                                        padding: const EdgeInsets.only(top: 6),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
@@ -2018,12 +2137,15 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                                 (widget.starsEarned /
                                                         maxStarsPerSection)
                                                     .ceil();
-                                            return Icon(
-                                              filled
-                                                  ? Icons.star
-                                                  : Icons.star_border,
-                                              size: 12,
-                                              color: Colors.amber,
+                                            return Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 2),
+                                              child: Icon(
+                                                filled
+                                                    ? Icons.star
+                                                    : Icons.star_border,
+                                                size: 14,
+                                                color: Colors.amber.shade300,
+                                              ),
                                             );
                                           }),
                                         ),
@@ -2037,55 +2159,65 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                       ),
                     ),
 
-                    // Current zone indicator
+                    // Current zone indicator - enhanced
                     if (widget.isCurrentZone)
                       Positioned(
-                        top: 0,
+                        top: -2,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
+                            horizontal: 10,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white,
+                                Colors.amber.shade100,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 4,
+                                color: Colors.amber.withValues(alpha: 0.6),
+                                blurRadius: 8,
+                                spreadRadius: 2,
                               ),
                             ],
                           ),
                           child: const Text(
                             '📍 HERE',
                             style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.4,
                             ),
                           ),
                         ),
                       ),
 
-                    // Locked indicator
+                    // Locked indicator - enhanced
                     if (!widget.isUnlocked)
                       Positioned(
-                        top: 5,
+                        top: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
+                            horizontal: 8,
+                            vertical: 3,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.red.shade400,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withValues(alpha: 0.4),
+                                blurRadius: 6,
+                                spreadRadius: 1,
+                              ),
+                            ],
                           ),
-                          child: Text(
-                            '${widget.zone.requiredStars}⭐',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: const Text(
+                            '🔒',
+                            style: TextStyle(fontSize: 14),
                           ),
                         ),
                       ),
