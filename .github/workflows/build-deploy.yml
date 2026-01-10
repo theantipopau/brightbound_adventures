@@ -76,13 +76,19 @@ jobs:
         run: npm install -g wrangler
       
       - name: Deploy to Cloudflare
+        if: env.CLOUDFLARE_API_TOKEN != ''
         run: wrangler pages deploy build/web --project-name=playbrightbound
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       
       - name: Deployment notification
+        if: env.CLOUDFLARE_API_TOKEN != ''
         run: echo "✅ Deployed to https://playbrightbound.pages.dev"
+      
+      - name: Deployment skipped notification
+        if: env.CLOUDFLARE_API_TOKEN == ''
+        run: echo "⚠️ Cloudflare deployment skipped - secrets not configured. Configure CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in GitHub secrets."
 
   build-android:
     name: Build Android APK
