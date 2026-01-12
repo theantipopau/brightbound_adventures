@@ -7,6 +7,8 @@ class LocalStorageService {
   static const String avatarBoxName = 'avatar';
   static const String progressBoxName = 'game_progress';
   static const String settingsBoxName = 'settings';
+  static const String dailyChallengesBoxName = 'daily_challenges';
+  static const String completedChallengesBoxName = 'completed_challenges';
 
   Future<void> initializeHive() async {
     await Hive.initFlutter();
@@ -16,6 +18,8 @@ class LocalStorageService {
     await Hive.openBox(avatarBoxName);
     await Hive.openBox(progressBoxName);
     await Hive.openBox(settingsBoxName);
+    await Hive.openBox(dailyChallengesBoxName);
+    await Hive.openBox(completedChallengesBoxName);
   }
 
   // Skills operations
@@ -97,6 +101,44 @@ class LocalStorageService {
   Future<void> deleteSetting(String key) async {
     final box = Hive.box(settingsBoxName);
     await box.delete(key);
+  }
+
+  // Daily Challenge operations
+  Future<void> saveDailyChallenges(
+      String dateString, List<DailyChallenge> challenges) async {
+    final box = Hive.box(dailyChallengesBoxName);
+    final json = challenges.map((c) => c.toJson()).toList();
+    await box.put(dateString, json);
+  }
+
+  List<DailyChallenge> getDailyChallenges(String dateString) {
+    final box = Hive.box(dailyChallengesBoxName);
+    final json = box.get(dateString) as List?;
+    if (json == null || json.isEmpty) return [];
+    return json
+        .map((item) => DailyChallenge.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+  }
+
+  Future<void> saveCompletedChallenges(
+      Map<String, DailyChallenge> challenges) async {
+    final box = Hive.box(completedChallengesBoxName);
+    final json = challenges.map(
+      (key, value) => MapEntry(key, value.toJson()),
+    );
+    await box.put('completed', json);
+  }
+
+  Future<Map<String, DailyChallenge>> getCompletedChallenges() async {
+    final box = Hive.box(completedChallengesBoxName);
+    final json = box.get('completed') as Map?;
+    if (json == null || json.isEmpty) return {};
+
+    final result = <String, DailyChallenge>{};
+    json.forEach((key, value) {
+      result[key] = DailyChallenge.fromJson(Map<String, dynamic>.from(value));
+    });
+    return result;
   }
 
   // Helper methods for serialization

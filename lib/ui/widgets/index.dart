@@ -19,3 +19,4 @@ export 'quiz_results_celebration.dart';
 export 'modern_shop_item_card.dart';
 export 'transitions.dart';
 export 'mastery_certificate.dart';
+export 'confetti_burst.dart';

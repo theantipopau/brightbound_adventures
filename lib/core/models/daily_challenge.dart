@@ -58,9 +58,39 @@ class DailyChallenge {
       currentProgress: currentProgress ?? this.currentProgress,
     );
   }
-}
 
-/// Generator for daily challenges
+  /// Serialize to JSON
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'description': description,
+    'zoneId': zoneId,
+    'skillId': skillId,
+    'targetScore': targetScore,
+    'xpReward': xpReward,
+    'emoji': emoji,
+    'date': date.toIso8601String(),
+    'isCompleted': isCompleted,
+    'currentProgress': currentProgress,
+  };
+
+  /// Deserialize from JSON
+  static DailyChallenge fromJson(Map<String, dynamic> json) {
+    return DailyChallenge(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      zoneId: json['zoneId'] as String,
+      skillId: json['skillId'] as String,
+      targetScore: json['targetScore'] as int,
+      xpReward: json['xpReward'] as int,
+      emoji: json['emoji'] as String,
+      date: DateTime.parse(json['date'] as String),
+      isCompleted: json['isCompleted'] as bool? ?? false,
+      currentProgress: json['currentProgress'] as int? ?? 0,
+    );
+  }
+}
 class DailyChallengeGenerator {
   /// Challenge templates for each zone
   static const List<Map<String, dynamic>> _challengeTemplates = [

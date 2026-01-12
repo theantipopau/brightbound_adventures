@@ -659,3 +659,113 @@ class SequenceLogicQuestions {
     return questions.where((q) => q.difficulty <= level).toList();
   }
 }
+
+/// Higher-order thinking logic questions (Evaluate/Create levels)
+/// ACARA codes: ACMNA015, ACMNA029, ACMNA043
+class HigherOrderThinkingLogicQuestions {
+  static const List<LogicQuestion> questions = [
+    // Evaluate level (Level 5)
+    LogicQuestion(
+      id: 'hot_logic_1',
+      skillId: 'skill_logical_reasoning',
+      question: 'Two solutions to a puzzle: A) Red, Blue, Green pattern | B) Red, Green, Blue pattern. Which is correct?',
+      options: ['A is correct', 'B is correct', 'Both are correct', 'Neither is correct'],
+      correctIndex: 2,
+      hint: 'Can there be multiple valid patterns?',
+      explanation: 'Both A and B are valid patterns! Logic often has multiple correct solutions.',
+      difficulty: 4,
+      type: LogicQuestionType.multipleChoice,
+      imageEmoji: '🎨',
+    ),
+    LogicQuestion(
+      id: 'hot_logic_2',
+      skillId: 'skill_logical_reasoning',
+      question: 'Three statements: (1) All dogs bark. (2) Max is a dog. (3) Max barks. Is this valid reasoning?',
+      options: ['No, Max might not bark', 'Yes, the conclusion follows logically', 'Maybe, depends on Max\'s mood', 'Cannot determine'],
+      correctIndex: 1,
+      hint: 'Does statement 3 logically follow from 1 and 2?',
+      explanation: 'If all dogs bark AND Max is a dog, then Max MUST bark. Valid deductive reasoning!',
+      difficulty: 5,
+      type: LogicQuestionType.multipleChoice,
+      imageEmoji: '🐕',
+    ),
+    LogicQuestion(
+      id: 'hot_logic_3',
+      skillId: 'skill_logical_reasoning',
+      question: 'Which problem-solving strategy is best? A) Try everything randomly B) Identify pattern, test hypothesis',
+      options: ['A is faster', 'B is better and more efficient', 'Both are equally good', 'Neither works'],
+      correctIndex: 1,
+      hint: 'Which method reduces wasted effort?',
+      explanation: 'Strategy B (pattern recognition → hypothesis → testing) is more efficient and logical',
+      difficulty: 5,
+      type: LogicQuestionType.multipleChoice,
+      imageEmoji: '🧠',
+    ),
+    LogicQuestion(
+      id: 'hot_logic_4',
+      skillId: 'skill_logical_reasoning',
+      question: 'Why might a pattern fail? (Rule: 1, 2, 4, 8, ___ should be 16)',
+      options: ['The pattern is wrong', 'Numbers might not always double', 'Context determines if pattern applies', 'There\'s always a reason'],
+      correctIndex: 2,
+      hint: 'Are all patterns universal?',
+      explanation: 'Context matters: the pattern works in math, but not all real-world sequences follow it',
+      difficulty: 5,
+      type: LogicQuestionType.multipleChoice,
+      imageEmoji: '📊',
+    ),
+
+    // Create level (Level 6)
+    LogicQuestion(
+      id: 'hot_logic_5',
+      skillId: 'skill_logical_reasoning',
+      question: 'Create your own pattern rule. Which is best? A) Red, Blue B) Red, Blue, Green, Red, Blue, Green',
+      options: ['A is better', 'B shows more complete pattern understanding', 'Both equal', 'Neither is good'],
+      correctIndex: 1,
+      hint: 'Which demonstrates clearer pattern recognition?',
+      explanation: 'B shows a complete cycle revealing the pattern more clearly: repeat of 3-color sequence',
+      difficulty: 6,
+      type: LogicQuestionType.multipleChoice,
+      imageEmoji: '🔄',
+    ),
+    LogicQuestion(
+      id: 'hot_logic_6',
+      skillId: 'skill_logical_reasoning',
+      question: 'Design a logic puzzle rule. If A=1, B=2, and you want C to equal 5, how would you make it work?',
+      options: ['C = A + B + 2', 'C = A × B + 1', 'C = B × 2 + 1', 'All could work'],
+      correctIndex: 3,
+      hint: 'Test each formula',
+      explanation: 'All three work! A+B+2=5, A×B+1=3 (no), B×2+1=5. Multiple solutions exist!',
+      difficulty: 6,
+      type: LogicQuestionType.multipleChoice,
+      imageEmoji: '🧩',
+    ),
+    LogicQuestion(
+      id: 'hot_logic_7',
+      skillId: 'skill_logical_reasoning',
+      question: 'Analyze an error: A student says "2+3 could equal 6". Why is this wrong logically?',
+      options: ['It just is', '2+3 always equals 5 in all systems, math is absolute', 'The system changed', 'Logic requires consistency'],
+      correctIndex: 3,
+      hint: 'What makes logic valid?',
+      explanation: 'Logic requires consistent rules; if we change definitions, it\'s no longer standard math',
+      difficulty: 6,
+      type: LogicQuestionType.multipleChoice,
+      imageEmoji: '➕',
+    ),
+    LogicQuestion(
+      id: 'hot_logic_8',
+      skillId: 'skill_logical_reasoning',
+      question: 'Create a counterexample: "All shortcuts save time." What beats this statement?',
+      options: ['Shortcuts always help', 'A shortcut that creates problems later', 'Shortcuts sometimes fail', 'Impossible to disprove'],
+      correctIndex: 1,
+      hint: 'Find an exception to prove it wrong',
+      explanation: 'A shortcut that causes problems later (like cutting corners in homework = wrong answers)',
+      difficulty: 6,
+      type: LogicQuestionType.multipleChoice,
+      imageEmoji: '❌',
+    ),
+  ];
+
+  static List<LogicQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}

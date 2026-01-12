@@ -1,4 +1,7 @@
 /// Question model for numeracy activities
+/// 
+/// Enhanced with support for curriculum metadata (ACARA, NAPLAN, Bloom's taxonomy)
+/// via optional metadata field for Phase 7+ integration.
 class NumeracyQuestion {
   final String id;
   final String skillId;
@@ -10,6 +13,7 @@ class NumeracyQuestion {
   final int difficulty; // 1-5
   final NumeracyQuestionType type;
   final String? imageAsset; // Optional visual for the question
+  final dynamic metadata; // QuestionMetadata (optional for backwards compatibility)
 
   const NumeracyQuestion({
     required this.id,
@@ -22,11 +26,15 @@ class NumeracyQuestion {
     this.difficulty = 1,
     this.type = NumeracyQuestionType.multipleChoice,
     this.imageAsset,
+    this.metadata,
   });
 
   String get correctAnswer => options[correctIndex];
 
   bool isCorrect(int selectedIndex) => selectedIndex == correctIndex;
+  
+  /// Returns the difficulty as a double (0.0-5.0)
+  double get difficultyValue => difficulty.toDouble();
 }
 
 /// Types of numeracy questions
@@ -1226,6 +1234,456 @@ class MathFactsQuestions {
       hint: '9 + ? = 10',
       explanation: '9 + 1 = 10. Just one more!',
       difficulty: 2,
+    ),
+  ];
+
+  static List<NumeracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for decimals (Gap Fix - Years 4-6)
+/// ACARA codes: ACMNA079, ACMNA100, ACMNA127
+class DecimalQuestions {
+  static const List<NumeracyQuestion> questions = [
+    // Level 1 - Decimal notation introduction (Year 4)
+    NumeracyQuestion(
+      id: 'dec_1',
+      skillId: 'skill_decimals',
+      question: 'What does the 5 represent in 2.5?',
+      options: ['5 ones', '5 tenths', '5 tens', '5 hundredths'],
+      correctIndex: 1,
+      hint: 'The digit after the decimal point is...',
+      explanation: 'In 2.5, the 5 is in the tenths place. 2.5 = 2 ones + 5 tenths',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'dec_2',
+      skillId: 'skill_decimals',
+      question: '0.3 + 0.4 = ?',
+      options: ['0.6', '0.7', '0.8', '0.9'],
+      correctIndex: 1,
+      hint: '3 tenths + 4 tenths = ?',
+      explanation: '0.3 + 0.4 = 0.7 (3 tenths + 4 tenths = 7 tenths)',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'dec_3',
+      skillId: 'skill_decimals',
+      question: 'Which decimal is larger: 1.2 or 1.7?',
+      options: ['1.2', '1.7', 'They are equal', 'Cannot compare'],
+      correctIndex: 1,
+      hint: 'Compare the tenths place',
+      explanation: '1.7 > 1.2 because 7 tenths > 2 tenths',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'dec_4',
+      skillId: 'skill_decimals',
+      question: '3.0 - 1.5 = ?',
+      options: ['1.4', '1.5', '1.6', '1.7'],
+      correctIndex: 1,
+      hint: 'Think: 3 - 1.5 = ?',
+      explanation: '3.0 - 1.5 = 1.5. Breaking down: 3 - 1 = 2, then 2 - 0.5 = 1.5',
+      difficulty: 2,
+    ),
+
+    // Level 2 - Hundredths and comparison (Year 5)
+    NumeracyQuestion(
+      id: 'dec_5',
+      skillId: 'skill_decimals',
+      question: 'What does 0.25 represent?',
+      options: ['2 hundredths, 5 tenths', '2 tenths, 5 hundredths', '25 hundredths', '25 tenths'],
+      correctIndex: 2,
+      hint: 'Count the decimal places',
+      explanation: '0.25 = 25 hundredths = 2 tenths and 5 hundredths',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'dec_6',
+      skillId: 'skill_decimals',
+      question: 'Order from smallest to largest: 0.4, 0.04, 0.14',
+      options: ['0.04, 0.14, 0.4', '0.4, 0.14, 0.04', '0.14, 0.04, 0.4', '0.04, 0.4, 0.14'],
+      correctIndex: 0,
+      hint: 'Convert to hundredths: 0.40, 0.04, 0.14',
+      explanation: '0.04 < 0.14 < 0.4 (remember: compare digit by digit from left)',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'dec_7',
+      skillId: 'skill_decimals',
+      question: '1.5 + 2.3 = ?',
+      options: ['3.7', '3.8', '3.9', '4.0'],
+      correctIndex: 1,
+      hint: '1 + 2 = 3, then 0.5 + 0.3 = ?',
+      explanation: '1.5 + 2.3 = 3.8 (0.5 + 0.3 = 0.8, so total is 3.8)',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'dec_8',
+      skillId: 'skill_decimals',
+      question: 'What is 0.1 × 3?',
+      options: ['0.2', '0.3', '0.4', '0.5'],
+      correctIndex: 1,
+      hint: '0.1 + 0.1 + 0.1 = ?',
+      explanation: '0.1 × 3 = 0.3 (three tenths)',
+      difficulty: 3,
+    ),
+
+    // Level 3 - Decimal operations and applications (Year 6)
+    NumeracyQuestion(
+      id: 'dec_9',
+      skillId: 'skill_decimals',
+      question: 'A drink costs \$2.45. You pay \$5. How much change?',
+      options: ['\$2.45', '\$2.50', '\$2.55', '\$3.55'],
+      correctIndex: 2,
+      hint: '\$5.00 - \$2.45 = ?',
+      explanation: '\$5.00 - \$2.45 = \$2.55 (real-world money application)',
+      difficulty: 4,
+    ),
+    NumeracyQuestion(
+      id: 'dec_10',
+      skillId: 'skill_decimals',
+      question: '3.25 + 1.75 + 2.5 = ?',
+      options: ['6.5', '7.0', '7.5', '8.0'],
+      correctIndex: 2,
+      hint: 'Add the ones, then add the decimals',
+      explanation: '3.25 + 1.75 + 2.5 = 7.5 (multi-step decimal addition)',
+      difficulty: 4,
+    ),
+    NumeracyQuestion(
+      id: 'dec_11',
+      skillId: 'skill_decimals',
+      question: 'If 5 apples cost \$3.50, what does 1 apple cost?',
+      options: ['\$0.60', '\$0.70', '\$0.80', '\$0.90'],
+      correctIndex: 1,
+      hint: '\$3.50 ÷ 5 = ?',
+      explanation: '\$3.50 ÷ 5 = \$0.70 per apple (division application)',
+      difficulty: 4,
+    ),
+    NumeracyQuestion(
+      id: 'dec_12',
+      skillId: 'skill_decimals',
+      question: '6.4 - 2.8 = ?',
+      options: ['3.4', '3.5', '3.6', '3.7'],
+      correctIndex: 2,
+      hint: 'Rewrite as 6.4 - 2.8. Think: 6.4 - 3 + 0.2',
+      explanation: '6.4 - 2.8 = 3.6 (subtraction with regrouping)',
+      difficulty: 4,
+    ),
+    NumeracyQuestion(
+      id: 'dec_13',
+      skillId: 'skill_decimals',
+      question: 'Which is the best estimate: 7.8 + 2.1?',
+      options: ['8', '9', '10', '11'],
+      correctIndex: 1,
+      hint: 'Round to nearest whole number',
+      explanation: '7.8 ≈ 8, 2.1 ≈ 2, so 8 + 2 = 10... but 7.8 + 2.1 is closer to 10',
+      difficulty: 4,
+    ),
+  ];
+
+  static List<NumeracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for data interpretation and statistics (Gap Fix - Years 3-6)
+/// ACARA codes: ACMSP069, ACMSP088, ACMSP111, ACMSP147
+class DataInterpretationQuestions {
+  static const List<NumeracyQuestion> questions = [
+    // Level 1 - Simple data reading (Year 3)
+    NumeracyQuestion(
+      id: 'data_1',
+      skillId: 'skill_data_interpretation',
+      question: 'How many students like pizza? (From: Pizza 5, Burgers 3, Salad 2)',
+      options: ['2', '3', '5', '10'],
+      correctIndex: 2,
+      hint: 'Find "Pizza" in the list',
+      explanation: 'Pizza is liked by 5 students',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'data_2',
+      skillId: 'skill_data_interpretation',
+      question: 'Which has more votes? (Red 7, Blue 4, Green 5)',
+      options: ['Red', 'Blue', 'Green', 'Red and Blue'],
+      correctIndex: 0,
+      hint: '7 is greater than 4 and 5',
+      explanation: 'Red has 7 votes, which is more than Blue (4) and Green (5)',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'data_3',
+      skillId: 'skill_data_interpretation',
+      question: 'What is the difference between the most and least popular? (Mon 8, Tue 5, Wed 3)',
+      options: ['3', '4', '5', '8'],
+      correctIndex: 2,
+      hint: '8 - 3 = ?',
+      explanation: 'Monday (8) - Wednesday (3) = 5 (range)',
+      difficulty: 2,
+    ),
+
+    // Level 2 - Graph reading and analysis (Year 4)
+    NumeracyQuestion(
+      id: 'data_4',
+      skillId: 'skill_data_interpretation',
+      question: 'In a bar graph, the x-axis shows months and y-axis shows temperature. Which is the hottest month?',
+      options: ['The month with tallest bar', 'The month with shortest bar', 'The first month', 'The last month'],
+      correctIndex: 0,
+      hint: 'Higher bars = higher values',
+      explanation: 'In a bar graph, the tallest bar represents the highest value',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'data_5',
+      skillId: 'skill_data_interpretation',
+      question: 'Class scores: 80, 85, 90, 85, 80. What is the mode?',
+      options: ['80', '85', '90', '87'],
+      correctIndex: 1,
+      hint: 'Mode is the number that appears most often',
+      explanation: '85 appears twice, while 80 and 90 appear once each. Mode = 85',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'data_6',
+      skillId: 'skill_data_interpretation',
+      question: 'Test results: 70, 75, 80, 85, 90. What is the median?',
+      options: ['70', '75', '80', '85'],
+      correctIndex: 2,
+      hint: 'Median is the middle value when ordered',
+      explanation: 'Ordered: 70, 75, 80, 85, 90. Middle value (median) = 80',
+      difficulty: 3,
+    ),
+
+    // Level 3 - Data analysis and estimation (Year 5-6)
+    NumeracyQuestion(
+      id: 'data_7',
+      skillId: 'skill_data_interpretation',
+      question: 'Average test score: (80 + 85 + 75 + 90) ÷ 4 = ?',
+      options: ['80', '82', '82.5', '85'],
+      correctIndex: 2,
+      hint: 'Sum all and divide by count',
+      explanation: '(80 + 85 + 75 + 90) ÷ 4 = 330 ÷ 4 = 82.5 (mean)',
+      difficulty: 4,
+    ),
+    NumeracyQuestion(
+      id: 'data_8',
+      skillId: 'skill_data_interpretation',
+      question: 'If a survey shows 60% prefer dogs and 40% prefer cats, how many prefer dogs out of 100 people?',
+      options: ['40', '50', '60', '70'],
+      correctIndex: 2,
+      hint: '60% of 100 = ?',
+      explanation: '60% of 100 = (60/100) × 100 = 60 people',
+      difficulty: 4,
+    ),
+    NumeracyQuestion(
+      id: 'data_9',
+      skillId: 'skill_data_interpretation',
+      question: 'A shop sells apples (25%), oranges (35%), bananas (40%). Which is most popular?',
+      options: ['Apples', 'Oranges', 'Bananas', 'Apples and Oranges'],
+      correctIndex: 2,
+      hint: '40% is larger than 35% and 25%',
+      explanation: 'Bananas at 40% is the highest percentage',
+      difficulty: 4,
+    ),
+    NumeracyQuestion(
+      id: 'data_10',
+      skillId: 'skill_data_interpretation',
+      question: 'Student heights: 140cm, 145cm, 142cm, 148cm, 141cm. Which measures the spread of data?',
+      options: ['Mode', 'Median', 'Range', 'Mean'],
+      correctIndex: 2,
+      hint: 'Range = highest - lowest',
+      explanation: 'Range = 148 - 140 = 8cm (shows how spread out the data is)',
+      difficulty: 4,
+    ),
+  ];
+
+  static List<NumeracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Advanced geometry questions (Gap Fix - Years 4-6)
+/// ACARA codes: ACMMG062, ACMMG087, ACMMG112, ACMMG143
+class AdvancedGeometryQuestions {
+  static const List<NumeracyQuestion> questions = [
+    // Level 1 - 3D shapes identification (Year 4)
+    NumeracyQuestion(
+      id: 'geo3d_1',
+      skillId: 'skill_geometry_3d',
+      question: 'What 3D shape is a soccer ball?',
+      options: ['Cube', 'Sphere', 'Cylinder', 'Pyramid'],
+      correctIndex: 1,
+      hint: 'It rolls in all directions',
+      explanation: 'A soccer ball is a sphere (or nearly spherical)',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'geo3d_2',
+      skillId: 'skill_geometry_3d',
+      question: 'How many faces does a cube have?',
+      options: ['4', '6', '8', '12'],
+      correctIndex: 1,
+      hint: 'Think of a die',
+      explanation: 'A cube has 6 square faces',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'geo3d_3',
+      skillId: 'skill_geometry_3d',
+      question: 'What 3D shape is a can of soup?',
+      options: ['Cone', 'Cylinder', 'Prism', 'Sphere'],
+      correctIndex: 1,
+      hint: 'It has circular top and bottom',
+      explanation: 'A soup can is a cylinder',
+      difficulty: 2,
+    ),
+    NumeracyQuestion(
+      id: 'geo3d_4',
+      skillId: 'skill_geometry_3d',
+      question: 'A pyramid has a square base. How many vertices does it have?',
+      options: ['4', '5', '8', '9'],
+      correctIndex: 1,
+      hint: '4 at base + 1 at top',
+      explanation: 'A square pyramid has 5 vertices (4 at base + 1 apex)',
+      difficulty: 3,
+    ),
+
+    // Level 2 - 3D properties and transformations (Year 5)
+    NumeracyQuestion(
+      id: 'geo3d_5',
+      skillId: 'skill_geometry_3d',
+      question: 'If you flip a shape vertically, which transformation is this?',
+      options: ['Rotation', 'Translation', 'Reflection', 'Scaling'],
+      correctIndex: 2,
+      hint: 'Mirror image',
+      explanation: 'A vertical flip is a reflection (mirror image)',
+      difficulty: 3,
+    ),
+    NumeracyQuestion(
+      id: 'geo3d_6',
+      skillId: 'skill_geometry_3d',
+      question: 'What is the volume of a rectangular prism: length 5cm, width 3cm, height 2cm?',
+      options: ['10', '15', '30', '60'],
+      correctIndex: 2,
+      hint: 'Volume = length × width × height',
+      explanation: '5 × 3 × 2 = 30 cubic cm',
+      difficulty: 4,
+    ),
+    NumeracyQuestion(
+      id: 'geo3d_7',
+      skillId: 'skill_geometry_3d',
+      question: 'How many edges does a triangular prism have?',
+      options: ['6', '8', '9', '12'],
+      correctIndex: 2,
+      hint: '3 on top triangle, 3 on bottom, 3 connecting',
+      explanation: 'A triangular prism has 9 edges',
+      difficulty: 4,
+    ),
+    NumeracyQuestion(
+      id: 'geo3d_8',
+      skillId: 'skill_geometry_3d',
+      question: 'If you rotate a shape 90° clockwise, by how many degrees should you rotate to return to original?',
+      options: ['90°', '180°', '270°', '360°'],
+      correctIndex: 2,
+      hint: '3 × 90° = ?',
+      explanation: '3 more 90° rotations (270° total) returns to original position',
+      difficulty: 4,
+    ),
+  ];
+
+  static List<NumeracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Higher-order thinking numeracy questions (Evaluate/Create levels)
+/// Addresses Bloom's taxonomy gap: Evaluate (5.0) and Create (6.0)
+class HigherOrderThinkingNumeracyQuestions {
+  static const List<NumeracyQuestion> questions = [
+    // Evaluate level (Level 5)
+    NumeracyQuestion(
+      id: 'hot_eval_1',
+      skillId: 'skill_problem_solving',
+      question: 'Two solutions: A) 5 + 3 = 8, B) 5 + 3 = 9. Which is correct and why?',
+      options: ['A is correct: 5 + 3 = 8', 'B is correct: 5 + 3 = 9', 'Both could be correct', 'Neither is correct'],
+      correctIndex: 0,
+      hint: 'Count on your fingers',
+      explanation: 'A is correct. 5 + 3 = 8. We can verify by counting: 5, 6, 7, 8',
+      difficulty: 4,
+    ),
+    NumeracyQuestion(
+      id: 'hot_eval_2',
+      skillId: 'skill_problem_solving',
+      question: 'A shop has 2 methods to calculate discount. Method 1: Take \$5 off. Method 2: Take 20% off a \$25 item. Which saves more?',
+      options: ['Method 1 saves \$5', 'Method 2 saves \$5', 'Methods save equally', 'Cannot determine'],
+      correctIndex: 1,
+      hint: '20% of \$25 = ?',
+      explanation: 'Method 1: \$5 off. Method 2: 20% of \$25 = \$5 off. Both save equally!',
+      difficulty: 5,
+    ),
+    NumeracyQuestion(
+      id: 'hot_eval_3',
+      skillId: 'skill_problem_solving',
+      question: 'Which number sentence best checks if 24 ÷ 3 = 8?',
+      options: ['24 - 3 = 21', '24 ÷ 8 = 3', '3 + 3 + 3 = 9', '8 + 8 + 8 = 24'],
+      correctIndex: 1,
+      hint: 'Division and multiplication are inverse operations',
+      explanation: '24 ÷ 8 = 3 checks it, OR 8 × 3 = 24 checks it. Both confirm the answer.',
+      difficulty: 5,
+    ),
+    NumeracyQuestion(
+      id: 'hot_eval_4',
+      skillId: 'skill_problem_solving',
+      question: 'Average of 5 scores is 80. One score was 100. Without calculating, is the average of remaining 4 scores above or below 80?',
+      options: ['Definitely above 80', 'Definitely below 80', 'Could be either', 'Exactly 80'],
+      correctIndex: 1,
+      hint: 'Removing a score above the average lowers the average',
+      explanation: 'Since 100 > 80, removing it lowers the average. Remaining average < 80',
+      difficulty: 5,
+    ),
+
+    // Create level (Level 6)
+    NumeracyQuestion(
+      id: 'hot_create_1',
+      skillId: 'skill_problem_solving',
+      question: 'Create a number story for 12 ÷ 3 = 4',
+      options: ['12 apples shared among 3 friends, 4 each', 'I have 3 apples and 12 oranges', 'The total is 12 and 3', '3 + 4 = 12'],
+      correctIndex: 0,
+      hint: 'Division is splitting/sharing',
+      explanation: '12 ÷ 3 = 4 means 12 items split 3 ways gives 4 items per way',
+      difficulty: 5,
+    ),
+    NumeracyQuestion(
+      id: 'hot_create_2',
+      skillId: 'skill_problem_solving',
+      question: 'If a store profits \$50 per item. How many items must sell to reach \$500 profit? Create and solve.',
+      options: ['10 items', '15 items', 'Cannot determine', '50 items'],
+      correctIndex: 0,
+      hint: '\$500 ÷ \$50 = ?',
+      explanation: '\$500 ÷ \$50 per item = 10 items. Problem: Profit × Quantity = Total Profit',
+      difficulty: 5,
+    ),
+    NumeracyQuestion(
+      id: 'hot_create_3',
+      skillId: 'skill_problem_solving',
+      question: 'Design a fair game where you roll a die and want to make it more likely to win. How would you change the rules?',
+      options: ['Award points for rolling 1-4', 'Award points for rolling 6 only', 'Award points for rolling 1, 2, or 6', 'Award same points for all outcomes'],
+      correctIndex: 0,
+      hint: 'Higher probability = more favorable outcomes',
+      explanation: 'Rolling 1-4 gives 4/6 chance of winning vs 1 or 2 outcomes with 1/6 or 2/6 chance',
+      difficulty: 6,
+    ),
+    NumeracyQuestion(
+      id: 'hot_create_4',
+      skillId: 'skill_problem_solving',
+      question: 'Invent a discount system where 3 items give better value than 1 item, but worse value than buying 4 items.',
+      options: ['Price per item: 1=\$10, 3=\$28, 4=\$36', 'Price per item: 1=\$10, 3=\$32, 4=\$36', 'Price per item: 1=\$10, 3=\$24, 4=\$36', 'Not possible to design'],
+      correctIndex: 0,
+      hint: 'Compare price per item: 1=\$10/item, 3=\$9.33/item, 4=\$9/item means 3 is middle value',
+      explanation: 'Option A: 1=\$10/item, 3=\$9.33/item, 4=\$9/item. 3 gives better value than 1, worse than 4!',
+      difficulty: 6,
     ),
   ];
 

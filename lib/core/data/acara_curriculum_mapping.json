@@ -1,0 +1,570 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "last_updated": "2026-01-11",
+    "curriculum": "ACARA v9 (Australian Curriculum, Assessment and Reporting Authority)",
+    "alignment": "NAPLAN Test Preparation",
+    "total_standards": 120,
+    "total_skills": 42,
+    "total_contexts": 20
+  },
+  
+  "word_woods": {
+    "zone_name": "🌲 Word Woods",
+    "zone_description": "Literacy, Reading & Communication Skills",
+    "naplan_strands": ["Reading", "Spelling", "Grammar", "Punctuation", "Vocabulary"],
+    "skills": [
+      {
+        "id": "homophones",
+        "name": "Homophones",
+        "description": "Words that sound the same but have different meanings",
+        "acara_standards": [
+          {
+            "code": "ACELA1440",
+            "year_level": "Year 3",
+            "domain": "Literacy",
+            "strand": "Phonics and word knowledge",
+            "content_descriptor": "Understand how to identify and use homophones",
+            "achievement_standard": "Students can identify homophones in context and use them correctly in writing"
+          },
+          {
+            "code": "ACELA1557",
+            "year_level": "Year 5",
+            "domain": "Literacy",
+            "strand": "Phonics and word knowledge",
+            "content_descriptor": "Recognise and use homophones and homophones in sentences",
+            "achievement_standard": "Students demonstrate understanding through proofreading and editing"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Spelling",
+          "sub_strand": "Common confusion pairs",
+          "item_format": "Multiple choice - select correct homophone",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "social_media",
+            "description": "Friend posted: 'I through the ball to.' Identify spelling error.",
+            "difficulty": 2,
+            "cognitive_level": "Apply"
+          },
+          {
+            "context": "emails",
+            "description": "Email: 'Their going to the beach.' Which homophone is wrong?",
+            "difficulty": 2,
+            "cognitive_level": "Understand"
+          },
+          {
+            "context": "stories",
+            "description": "Story uses 'wear' instead of 'where'. Identify and fix.",
+            "difficulty": 3,
+            "cognitive_level": "Analyze"
+          }
+        ]
+      },
+      {
+        "id": "apostrophes",
+        "name": "Apostrophes (Contractions & Possessives)",
+        "description": "Using apostrophes in contractions (don't) and possessives (cat's)",
+        "acara_standards": [
+          {
+            "code": "ACELA1452",
+            "year_level": "Year 4",
+            "domain": "Literacy",
+            "strand": "Grammar, spelling and punctuation",
+            "content_descriptor": "Use apostrophes in contractions and possessives",
+            "achievement_standard": "Students accurately use apostrophes in simple contractions and possessives"
+          },
+          {
+            "code": "ACELA1565",
+            "year_level": "Year 5",
+            "domain": "Literacy",
+            "strand": "Grammar, spelling and punctuation",
+            "content_descriptor": "Distinguish between different types of apostrophes",
+            "achievement_standard": "Students distinguish between contractions and possessives and use correctly"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Punctuation",
+          "sub_strand": "Apostrophe usage",
+          "item_format": "Multiple choice - select correct apostrophe use",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "dialogue",
+            "description": "'Don't worry,' she said. Which is correct: dont, don't, don't?",
+            "difficulty": 2,
+            "cognitive_level": "Understand"
+          },
+          {
+            "context": "emails",
+            "description": "Correct the sentence: 'The cats toys are in the box.'",
+            "difficulty": 3,
+            "cognitive_level": "Apply"
+          }
+        ]
+      },
+      {
+        "id": "compound_words",
+        "name": "Compound Words",
+        "description": "Words made from two smaller words",
+        "acara_standards": [
+          {
+            "code": "ACELA1436",
+            "year_level": "Year 2",
+            "domain": "Literacy",
+            "strand": "Phonics and word knowledge",
+            "content_descriptor": "Identify compound words",
+            "achievement_standard": "Students recognize and can split compound words into component parts"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Vocabulary",
+          "sub_strand": "Word structure and analysis",
+          "item_format": "Drag and drop - match halves to make compound words",
+          "year_levels": ["Year 3"]
+        },
+        "contexts": [
+          {
+            "context": "instructions",
+            "description": "Recipe says 'Add butter to the cupcake mixture.' Identify compound word.",
+            "difficulty": 1,
+            "cognitive_level": "Remember"
+          }
+        ]
+      },
+      {
+        "id": "synonyms",
+        "name": "Synonyms & Antonyms",
+        "description": "Words with similar meanings (happy/joyful) and opposite meanings",
+        "acara_standards": [
+          {
+            "code": "ACELA1446",
+            "year_level": "Year 3",
+            "domain": "Literacy",
+            "strand": "Vocabulary",
+            "content_descriptor": "Understand synonyms and antonyms",
+            "achievement_standard": "Students can identify and use synonyms and antonyms in context"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Vocabulary",
+          "sub_strand": "Word relationships",
+          "item_format": "Multiple choice - select synonym or antonym",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "stories",
+            "description": "In the story, 'bright' is used. Which synonym would fit: shiny, dark, large?",
+            "difficulty": 2,
+            "cognitive_level": "Understand"
+          },
+          {
+            "context": "advertisements",
+            "description": "Ad says 'This product is STRONG!' What's an antonym?",
+            "difficulty": 2,
+            "cognitive_level": "Apply"
+          }
+        ]
+      },
+      {
+        "id": "comprehension",
+        "name": "Reading Comprehension",
+        "description": "Understanding written passages and answering questions",
+        "acara_standards": [
+          {
+            "code": "ACELY1688",
+            "year_level": "Year 3",
+            "domain": "Literacy",
+            "strand": "Reading",
+            "content_descriptor": "Read and understand texts to retrieve information",
+            "achievement_standard": "Students demonstrate understanding of literal and inferred information"
+          },
+          {
+            "code": "ACELY1740",
+            "year_level": "Year 5",
+            "domain": "Literacy",
+            "strand": "Reading",
+            "content_descriptor": "Analyse how texts use language to communicate ideas",
+            "achievement_standard": "Students analyze author's purpose and infer implied information"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Reading",
+          "sub_strand": "Comprehension (literal, inferential)",
+          "item_format": "Multiple choice - answer after reading passage",
+          "year_levels": ["Year 3", "Year 5", "Year 7", "Year 9"]
+        },
+        "contexts": [
+          {
+            "context": "stories",
+            "description": "Read short narrative. Answer: What was the character's problem?",
+            "difficulty": 2,
+            "cognitive_level": "Understand"
+          },
+          {
+            "context": "informational",
+            "description": "Read article about climate. Infer: Why was this information important?",
+            "difficulty": 3,
+            "cognitive_level": "Analyze"
+          },
+          {
+            "context": "news_articles",
+            "description": "Read news article. Answer: What does the headline suggest will happen?",
+            "difficulty": 3,
+            "cognitive_level": "Analyze"
+          }
+        ]
+      },
+      {
+        "id": "grammar_tenses",
+        "name": "Verb Tenses (Past, Present, Future)",
+        "description": "Understanding and using correct verb tenses",
+        "acara_standards": [
+          {
+            "code": "ACELA1450",
+            "year_level": "Year 3",
+            "domain": "Literacy",
+            "strand": "Grammar and punctuation",
+            "content_descriptor": "Use past, present and future tenses mostly appropriately",
+            "achievement_standard": "Students use correct tenses in writing and speaking with few errors"
+          },
+          {
+            "code": "ACELA1560",
+            "year_level": "Year 5",
+            "domain": "Literacy",
+            "strand": "Grammar and punctuation",
+            "content_descriptor": "Use past, present and future tenses appropriately",
+            "achievement_standard": "Students consistently use correct tenses across all writing"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Grammar",
+          "sub_strand": "Verb tenses",
+          "item_format": "Fill-in-blank or multiple choice - select correct tense",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "stories",
+            "description": "Complete: 'Yesterday, I _____ (go) to the park.'",
+            "difficulty": 2,
+            "cognitive_level": "Apply"
+          },
+          {
+            "context": "emails",
+            "description": "Fix tense: 'She go to school every day.' (was/is/will be)",
+            "difficulty": 2,
+            "cognitive_level": "Apply"
+          }
+        ]
+      }
+    ]
+  },
+
+  "number_nebula": {
+    "zone_name": "🌌 Number Nebula",
+    "zone_description": "Numeracy, Math & Problem Solving",
+    "naplan_strands": ["Number", "Fractions", "Measurement", "Patterns", "Algebra"],
+    "skills": [
+      {
+        "id": "place_value",
+        "name": "Place Value (Units, Tens, Hundreds)",
+        "description": "Understanding place value in whole numbers",
+        "acara_standards": [
+          {
+            "code": "ACMNA015",
+            "year_level": "Year 2",
+            "domain": "Numeracy",
+            "strand": "Number and Algebra",
+            "content_descriptor": "Understand place value: units, tens, hundreds",
+            "achievement_standard": "Students can identify place value and represent numbers in multiple ways"
+          },
+          {
+            "code": "ACMNA053",
+            "year_level": "Year 3",
+            "domain": "Numeracy",
+            "strand": "Number and Algebra",
+            "content_descriptor": "Recognise and represent three-digit numbers",
+            "achievement_standard": "Students partition and represent three-digit numbers in expanded form"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Number",
+          "sub_strand": "Place value understanding",
+          "item_format": "Multiple choice - identify place value of digit",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "shopping",
+            "description": "If price is $347, the 4 is in the _____ place.",
+            "difficulty": 1,
+            "cognitive_level": "Remember"
+          },
+          {
+            "context": "time",
+            "description": "In the year 2025, what place value does the 2 represent?",
+            "difficulty": 2,
+            "cognitive_level": "Understand"
+          }
+        ]
+      },
+      {
+        "id": "fractions",
+        "name": "Fractions (1/2, 1/3, 1/4, 3/4)",
+        "description": "Recognizing and understanding fractions",
+        "acara_standards": [
+          {
+            "code": "ACMNA072",
+            "year_level": "Year 3",
+            "domain": "Numeracy",
+            "strand": "Number and Algebra",
+            "content_descriptor": "Recognise and describe one-half, one-quarter, three-quarters, one-third",
+            "achievement_standard": "Students identify fractions of shapes and can partition shapes into equal parts"
+          },
+          {
+            "code": "ACMNA115",
+            "year_level": "Year 4",
+            "domain": "Numeracy",
+            "strand": "Number and Algebra",
+            "content_descriptor": "Recognise, find and write fractions",
+            "achievement_standard": "Students represent fractions and recognize equivalent fractions"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Fractions",
+          "sub_strand": "Fraction recognition and comparison",
+          "item_format": "Multiple choice or visual - identify fraction of shape",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "cooking",
+            "description": "Recipe needs 3/4 cup flour. You have 1/4. How much more?",
+            "difficulty": 3,
+            "cognitive_level": "Apply"
+          },
+          {
+            "context": "pizza",
+            "description": "Pizza cut into 4 pieces. You eat 1. What fraction remains?",
+            "difficulty": 1,
+            "cognitive_level": "Remember"
+          },
+          {
+            "context": "shopping",
+            "description": "Shirt on sale for 1/2 off original $40 price. Sale price?",
+            "difficulty": 3,
+            "cognitive_level": "Apply"
+          }
+        ]
+      },
+      {
+        "id": "addition_subtraction",
+        "name": "Addition & Subtraction (within 100, then 1000)",
+        "description": "Adding and subtracting whole numbers",
+        "acara_standards": [
+          {
+            "code": "ACMNA030",
+            "year_level": "Year 2",
+            "domain": "Numeracy",
+            "strand": "Number and Algebra",
+            "content_descriptor": "Add and subtract two-digit numbers",
+            "achievement_standard": "Students add and subtract two-digit numbers using flexible strategies"
+          },
+          {
+            "code": "ACMNA054",
+            "year_level": "Year 3",
+            "domain": "Numeracy",
+            "strand": "Number and Algebra",
+            "content_descriptor": "Add and subtract three-digit numbers",
+            "achievement_standard": "Students use efficient strategies to add and subtract three-digit numbers"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Number",
+          "sub_strand": "Basic operations",
+          "item_format": "Multiple choice or fill-in - solve addition/subtraction",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "shopping",
+            "description": "You have $50. Buy item for $17. How much left?",
+            "difficulty": 2,
+            "cognitive_level": "Apply"
+          },
+          {
+            "context": "sports",
+            "description": "Team A scored 45 points. Team B scored 38. Difference?",
+            "difficulty": 2,
+            "cognitive_level": "Apply"
+          }
+        ]
+      },
+      {
+        "id": "multiplication_division",
+        "name": "Multiplication & Division (2x, 5x, 10x tables)",
+        "description": "Understanding multiplication and division concepts",
+        "acara_standards": [
+          {
+            "code": "ACMNA063",
+            "year_level": "Year 3",
+            "domain": "Numeracy",
+            "strand": "Number and Algebra",
+            "content_descriptor": "Represent and solve multiplication problems",
+            "achievement_standard": "Students represent multiplication as repeated groups and arrays"
+          },
+          {
+            "code": "ACMNA078",
+            "year_level": "Year 4",
+            "domain": "Numeracy",
+            "strand": "Number and Algebra",
+            "content_descriptor": "Recall multiplication facts",
+            "achievement_standard": "Students recall multiplication facts for 2x, 3x, 5x, 10x tables"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Number",
+          "sub_strand": "Multiplication and division",
+          "item_format": "Multiple choice - solve fact or word problem",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "shopping",
+            "description": "Each apple costs $3. You buy 5. Total cost?",
+            "difficulty": 2,
+            "cognitive_level": "Apply"
+          },
+          {
+            "context": "games",
+            "description": "20 marbles shared equally among 5 friends. Each gets?",
+            "difficulty": 2,
+            "cognitive_level": "Apply"
+          }
+        ]
+      },
+      {
+        "id": "patterns",
+        "name": "Number Patterns (Sequences, Odd/Even)",
+        "description": "Identifying and extending number patterns",
+        "acara_standards": [
+          {
+            "code": "ACMNA024",
+            "year_level": "Year 2",
+            "domain": "Numeracy",
+            "strand": "Number and Algebra",
+            "content_descriptor": "Represent odd and even numbers",
+            "achievement_standard": "Students identify odd and even numbers and understand the pattern"
+          },
+          {
+            "code": "ACMNA064",
+            "year_level": "Year 3",
+            "domain": "Numeracy",
+            "strand": "Number and Algebra",
+            "content_descriptor": "Investigate and describe patterns",
+            "achievement_standard": "Students extend patterns and describe the rule"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Patterns",
+          "sub_strand": "Number sequence patterns",
+          "item_format": "Multiple choice or fill-in - continue pattern",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "games",
+            "description": "Pattern: 2, 4, 6, 8, _____. What's next?",
+            "difficulty": 1,
+            "cognitive_level": "Remember"
+          },
+          {
+            "context": "calendar",
+            "description": "Calendar pattern: 1, 8, 15, 22, _____. (every 7 days)",
+            "difficulty": 2,
+            "cognitive_level": "Understand"
+          }
+        ]
+      }
+    ]
+  },
+
+  "puzzle_peaks": {
+    "zone_name": "🧠 Puzzle Peaks",
+    "zone_description": "Logic, Patterns & Advanced Thinking",
+    "naplan_strands": ["Reasoning", "Geometry", "Measurement", "Problem Solving"],
+    "skills": [
+      {
+        "id": "measurement_length",
+        "name": "Measurement (Length, Height, Distance)",
+        "description": "Comparing and measuring lengths",
+        "acara_standards": [
+          {
+            "code": "ACMMG039",
+            "year_level": "Year 2",
+            "domain": "Numeracy",
+            "strand": "Measurement and Geometry",
+            "content_descriptor": "Compare and order objects by length",
+            "achievement_standard": "Students compare and order objects by length using direct comparison"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Measurement",
+          "sub_strand": "Length and distance",
+          "item_format": "Multiple choice - compare measurements",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "building",
+            "description": "If one block is 5cm, and you stack 4, total height?",
+            "difficulty": 2,
+            "cognitive_level": "Apply"
+          }
+        ]
+      }
+    ]
+  },
+
+  "story_springs": {
+    "zone_name": "📖 Story Springs",
+    "zone_description": "Creative Writing & Expression",
+    "naplan_strands": ["Writing", "Vocabulary", "Expression"],
+    "skills": [
+      {
+        "id": "story_elements",
+        "name": "Story Elements (Character, Setting, Plot)",
+        "description": "Understanding components of narratives",
+        "acara_standards": [
+          {
+            "code": "ACELT1587",
+            "year_level": "Year 3",
+            "domain": "Literacy",
+            "strand": "Literature",
+            "content_descriptor": "Identify and describe story elements",
+            "achievement_standard": "Students identify character, setting, and major events in narratives"
+          }
+        ],
+        "naplan_alignment": {
+          "strand": "Reading",
+          "sub_strand": "Text analysis and interpretation",
+          "item_format": "Multiple choice or short answer - identify story element",
+          "year_levels": ["Year 3", "Year 5"]
+        },
+        "contexts": [
+          {
+            "context": "stories",
+            "description": "In story, character was brave because... (identify motivation)",
+            "difficulty": 3,
+            "cognitive_level": "Analyze"
+          }
+        ]
+      }
+    ]
+  }
+}

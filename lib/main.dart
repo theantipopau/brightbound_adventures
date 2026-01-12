@@ -38,6 +38,9 @@ void main() async {
           create: (_) => SkillProvider(registry.storage),
           // Lazy initialization: skills will be loaded on first zone entry
         ),
+        ChangeNotifierProvider<DailyChallengeService>.value(
+            value: registry.dailyChallenge),
+        Provider<HapticService>(create: (_) => registry.haptic),
       ],
       child: const BrightBoundApp(),
     ),

@@ -14,26 +14,32 @@ class PuzzlePeaksQuestionGenerator {
     final questions = <LogicQuestion>[];
 
     for (int i = 0; i < count; i++) {
-      questions.add(_generateSingleQuestion(difficulty, i));
+      questions.add(_generateSingleQuestion(skill, difficulty, i));
     }
 
     return questions;
   }
 
-  static LogicQuestion _generateSingleQuestion(int difficulty, int index) {
+  static LogicQuestion _generateSingleQuestion(
+      String skill, int difficulty, int index) {
     if (difficulty <= 2) {
-      return _generateEasyQuestion(index);
+      return _generateEasyQuestion(skill, difficulty, index);
     } else if (difficulty <= 4) {
-      return _generateMediumQuestion(index);
+      return _generateMediumQuestion(skill, difficulty, index);
     } else {
-      return _generateHardQuestion(index);
+      return _generateHardQuestion(skill, difficulty, index);
     }
   }
 
-  static LogicQuestion _generateEasyQuestion(int index) {
-    final questionTypes = [
-      // Simple patterns
-      () {
+  static LogicQuestion _generateEasyQuestion(
+      String skill, int difficulty, int index) {
+    final s = skill.toLowerCase();
+    final bool isAll = s == 'all' || s.isEmpty;
+    final questionTypes = <LogicQuestion Function()>[];
+
+    // Simple patterns
+    if (isAll || s.contains('pattern')) {
+      questionTypes.add(() {
         final patterns = [
           {
             'pattern': '🔴 🔵 🔴 🔵 🔴',
@@ -59,7 +65,7 @@ class PuzzlePeaksQuestionGenerator {
 
         final pattern = patterns[_random.nextInt(patterns.length)];
         return LogicQuestion(
-          id: 'easy_$index',
+          id: 'easy_pat_$index',
           skillId: 'patterns',
           question: 'What comes next in the pattern?\n${pattern['pattern']} ?',
           options: pattern['options'] as List<String>,
@@ -68,9 +74,12 @@ class PuzzlePeaksQuestionGenerator {
           difficulty: 1,
           type: LogicQuestionType.patternCompletion,
         );
-      },
-      // Shape matching
-      () {
+      });
+    }
+
+    // Shape matching
+    if (isAll || s.contains('shape')) {
+      questionTypes.add(() {
         final shapes = [
           {
             'question': 'Which shape has 3 sides?',
@@ -91,7 +100,7 @@ class PuzzlePeaksQuestionGenerator {
 
         final shape = shapes[_random.nextInt(shapes.length)];
         return LogicQuestion(
-          id: 'easy_$index',
+          id: 'easy_shape_$index',
           skillId: 'shapes',
           question: shape['question'] as String,
           options: shape['options'] as List<String>,
@@ -100,9 +109,12 @@ class PuzzlePeaksQuestionGenerator {
           difficulty: 1,
           type: LogicQuestionType.shapeMatching,
         );
-      },
-      // Simple sorting
-      () {
+      });
+    }
+
+    // Simple sorting
+    if (isAll || s.contains('sorting') || s.contains('belong')) {
+      questionTypes.add(() {
         final sorting = [
           {
             'question': 'Which item does NOT belong?\n🍎 🍌 🍇 🚗',
@@ -118,7 +130,7 @@ class PuzzlePeaksQuestionGenerator {
 
         final sort = sorting[_random.nextInt(sorting.length)];
         return LogicQuestion(
-          id: 'easy_$index',
+          id: 'easy_sort_$index',
           skillId: 'sorting',
           question: sort['question'] as String,
           options: sort['options'] as List<String>,
@@ -127,16 +139,25 @@ class PuzzlePeaksQuestionGenerator {
           difficulty: 1,
           type: LogicQuestionType.multipleChoice,
         );
-      },
-    ];
+      });
+    }
+
+    if (questionTypes.isEmpty) {
+      return _generateEasyQuestion('all', difficulty, index);
+    }
 
     return questionTypes[_random.nextInt(questionTypes.length)]();
   }
 
-  static LogicQuestion _generateMediumQuestion(int index) {
-    final questionTypes = [
-      // Number patterns
-      () {
+  static LogicQuestion _generateMediumQuestion(
+      String skill, int difficulty, int index) {
+    final s = skill.toLowerCase();
+    final bool isAll = s == 'all' || s.isEmpty;
+    final questionTypes = <LogicQuestion Function()>[];
+
+    // Number patterns
+    if (isAll || s.contains('pattern')) {
+      questionTypes.add(() {
         final start = _random.nextInt(5) + 1;
         final increment = [2, 3, 5][_random.nextInt(3)];
         final sequence = List.generate(4, (i) => start + i * increment);
@@ -154,7 +175,7 @@ class PuzzlePeaksQuestionGenerator {
         ]..shuffle(_random);
 
         return LogicQuestion(
-          id: 'med_$index',
+          id: 'med_pat_$index',
           skillId: 'patterns',
           question: 'What number comes next?\n${sequence.join(', ')}, ?',
           options: options,
@@ -163,9 +184,12 @@ class PuzzlePeaksQuestionGenerator {
           difficulty: 3,
           type: LogicQuestionType.patternCompletion,
         );
-      },
-      // Spatial reasoning
-      () {
+      });
+    }
+
+    // Spatial reasoning
+    if (isAll || s.contains('spatial')) {
+      questionTypes.add(() {
         final spatial = [
           {
             'question': 'A box is to the LEFT of a ball. Where is the ball?',
@@ -197,7 +221,7 @@ class PuzzlePeaksQuestionGenerator {
 
         final sp = spatial[_random.nextInt(spatial.length)];
         return LogicQuestion(
-          id: 'med_$index',
+          id: 'med_spat_$index',
           skillId: 'spatial',
           question: sp['question'] as String,
           options: sp['options'] as List<String>,
@@ -206,9 +230,12 @@ class PuzzlePeaksQuestionGenerator {
           difficulty: 3,
           type: LogicQuestionType.spatialReasoning,
         );
-      },
-      // Logic puzzles
-      () {
+      });
+    }
+
+    // Logic puzzles
+    if (isAll || s.contains('logic')) {
+      questionTypes.add(() {
         final puzzles = [
           {
             'question':
@@ -232,7 +259,7 @@ class PuzzlePeaksQuestionGenerator {
 
         final puzzle = puzzles[_random.nextInt(puzzles.length)];
         return LogicQuestion(
-          id: 'med_$index',
+          id: 'med_log_$index',
           skillId: 'logic',
           question: puzzle['question'] as String,
           options: puzzle['options'] as List<String>,
@@ -241,16 +268,25 @@ class PuzzlePeaksQuestionGenerator {
           difficulty: 3,
           type: LogicQuestionType.logicPuzzle,
         );
-      },
-    ];
+      });
+    }
+
+    if (questionTypes.isEmpty) {
+      return _generateMediumQuestion('all', difficulty, index);
+    }
 
     return questionTypes[_random.nextInt(questionTypes.length)]();
   }
 
-  static LogicQuestion _generateHardQuestion(int index) {
-    final questionTypes = [
-      // Complex patterns
-      () {
+  static LogicQuestion _generateHardQuestion(
+      String skill, int difficulty, int index) {
+    final s = skill.toLowerCase();
+    final bool isAll = s == 'all' || s.isEmpty;
+    final questionTypes = <LogicQuestion Function()>[];
+
+    // Complex patterns
+    if (isAll || s.contains('pattern')) {
+      questionTypes.add(() {
         final patterns = [
           {
             'question': 'What comes next?\n2, 4, 8, 16, ?',
@@ -271,7 +307,7 @@ class PuzzlePeaksQuestionGenerator {
 
         final pattern = patterns[_random.nextInt(patterns.length)];
         return LogicQuestion(
-          id: 'hard_$index',
+          id: 'hard_pat_$index',
           skillId: 'patterns',
           question: pattern['question'] as String,
           options: pattern['options'] as List<String>,
@@ -280,9 +316,12 @@ class PuzzlePeaksQuestionGenerator {
           difficulty: 5,
           type: LogicQuestionType.patternCompletion,
         );
-      },
-      // Deductive reasoning
-      () {
+      });
+    }
+
+    // Deductive reasoning
+    if (isAll || s.contains('logic') || s.contains('reasoning')) {
+      questionTypes.add(() {
         final deductive = [
           {
             'question':
@@ -308,7 +347,7 @@ class PuzzlePeaksQuestionGenerator {
 
         final ded = deductive[_random.nextInt(deductive.length)];
         return LogicQuestion(
-          id: 'hard_$index',
+          id: 'hard_ded_$index',
           skillId: 'reasoning',
           question: ded['question'] as String,
           options: ded['options'] as List<String>,
@@ -318,9 +357,12 @@ class PuzzlePeaksQuestionGenerator {
           difficulty: 5,
           type: LogicQuestionType.logicPuzzle,
         );
-      },
-      // Problem solving
-      () {
+      });
+    }
+
+    // Problem solving
+    if (isAll || s.contains('problem') || s.contains('solving')) {
+      questionTypes.add(() {
         final problems = [
           {
             'question':
@@ -346,7 +388,7 @@ class PuzzlePeaksQuestionGenerator {
 
         final prob = problems[_random.nextInt(problems.length)];
         return LogicQuestion(
-          id: 'hard_$index',
+          id: 'hard_prob_$index',
           skillId: 'problem_solving',
           question: prob['question'] as String,
           options: prob['options'] as List<String>,
@@ -356,8 +398,12 @@ class PuzzlePeaksQuestionGenerator {
           difficulty: 5,
           type: LogicQuestionType.logicPuzzle,
         );
-      },
-    ];
+      });
+    }
+
+    if (questionTypes.isEmpty) {
+      return _generateHardQuestion('all', difficulty, index);
+    }
 
     return questionTypes[_random.nextInt(questionTypes.length)]();
   }

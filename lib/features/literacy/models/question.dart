@@ -1,4 +1,7 @@
 /// Question model for literacy activities
+/// 
+/// Enhanced with support for curriculum metadata (ACARA, NAPLAN, Bloom's taxonomy)
+/// via optional metadata field for Phase 7+ integration.
 class LiteracyQuestion {
   final String id;
   final String skillId;
@@ -8,6 +11,7 @@ class LiteracyQuestion {
   final String? hint;
   final String? explanation;
   final int difficulty; // 1-5
+  final dynamic metadata; // QuestionMetadata (optional for backwards compatibility)
 
   const LiteracyQuestion({
     required this.id,
@@ -18,11 +22,15 @@ class LiteracyQuestion {
     this.hint,
     this.explanation,
     this.difficulty = 1,
+    this.metadata,
   });
 
   String get correctAnswer => options[correctIndex];
 
   bool isCorrect(int selectedIndex) => selectedIndex == correctIndex;
+  
+  /// Returns the difficulty as a double (0.0-5.0)
+  double get difficultyValue => difficulty.toDouble();
 }
 
 /// Question bank for homophones skill
@@ -660,6 +668,166 @@ class SpellingQuestions {
       hint: 'One "m", two "r"s',
       explanation: '"Tomorrow" is spelled: t-o-m-o-r-r-o-w',
       difficulty: 2,
+    ),
+  ];
+
+  static List<LiteracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for reading comprehension (Gap Fix - Years 2-6)
+/// ACARA codes: ACELY1646, ACELY1660, ACELY1674, ACELY1688
+class ComprehensionQuestions {
+  static const List<LiteracyQuestion> questions = [
+    // Level 1 - Simple comprehension (Year 2)
+    LiteracyQuestion(
+      id: 'comp_1',
+      skillId: 'skill_comprehension',
+      question: 'Read: "The cat sat on the mat." Where did the cat sit?',
+      options: ['on the floor', 'on the mat', 'on the table', 'on the chair'],
+      correctIndex: 1,
+      hint: 'Look for where the cat sat',
+      explanation: 'The sentence says the cat sat "on the mat"',
+      difficulty: 1,
+    ),
+    LiteracyQuestion(
+      id: 'comp_2',
+      skillId: 'skill_comprehension',
+      question: 'Read: "Mia went to the park with her dog." Who went to the park?',
+      options: ['Mia\'s cat', 'Mia and her dog', 'The dog alone', 'Mia\'s friend'],
+      correctIndex: 1,
+      hint: 'Who does "her" refer to?',
+      explanation: 'Mia went to the park with her dog (both of them went)',
+      difficulty: 1,
+    ),
+    LiteracyQuestion(
+      id: 'comp_3',
+      skillId: 'skill_comprehension',
+      question: 'Read: "It was raining hard, so Tom stayed inside." Why did Tom stay inside?',
+      options: ['He was tired', 'It was raining', 'He was sick', 'The park was closed'],
+      correctIndex: 1,
+      hint: 'The word "so" tells us the reason',
+      explanation: 'Tom stayed inside because it was raining hard',
+      difficulty: 2,
+    ),
+
+    // Level 2 - Inference and details (Year 3-4)
+    LiteracyQuestion(
+      id: 'comp_4',
+      skillId: 'skill_comprehension',
+      question: 'Read: "Anna put on her coat, hat, and gloves. She grabbed her scarf." What season is it likely?',
+      options: ['Summer', 'Spring', 'Winter', 'Autumn'],
+      correctIndex: 2,
+      hint: 'What clothes do you wear in cold weather?',
+      explanation: 'Coat, hat, gloves, and scarf suggest cold winter weather',
+      difficulty: 3,
+    ),
+    LiteracyQuestion(
+      id: 'comp_5',
+      skillId: 'skill_comprehension',
+      question: 'Read: "The boy ran to the store. His mother was waiting." What can we infer?',
+      options: ['The boy was late', 'The mother was angry', 'They planned to meet', 'The store was empty'],
+      correctIndex: 2,
+      hint: 'Why would mother be waiting?',
+      explanation: 'If mother was waiting, they likely planned to meet at the store',
+      difficulty: 3,
+    ),
+
+    // Level 3 - Analysis and prediction (Year 5-6)
+    LiteracyQuestion(
+      id: 'comp_6',
+      skillId: 'skill_comprehension',
+      question: 'Read: "Sofia loved reading. Every day after school she went to the library." What can we predict?',
+      options: ['Sofia will become a teacher', 'Sofia will continue reading often', 'Sofia will not like books', 'Sofia will move away'],
+      correctIndex: 1,
+      hint: 'What does her behavior tell us?',
+      explanation: 'Her love of reading and daily library visits suggest she will continue this habit',
+      difficulty: 4,
+    ),
+    LiteracyQuestion(
+      id: 'comp_7',
+      skillId: 'skill_comprehension',
+      question: 'Read: "The main character overcame many challenges to achieve her dream." What is the theme?',
+      options: ['Failure and giving up', 'Persistence and determination', 'Fear and anxiety', 'Luck and chance'],
+      correctIndex: 1,
+      hint: 'What lesson does overcoming challenges teach?',
+      explanation: 'Overcoming challenges shows themes of persistence and determination',
+      difficulty: 4,
+    ),
+  ];
+
+  static List<LiteracyQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}
+
+/// Question bank for higher-order thinking in literacy (Evaluate/Create levels)
+/// ACARA codes: ACELY1682, ACELY1696
+class HigherOrderThinkingLiteracyQuestions {
+  static const List<LiteracyQuestion> questions = [
+    // Evaluate level (Level 4-5)
+    LiteracyQuestion(
+      id: 'hot_lit_1',
+      skillId: 'skill_critical_thinking',
+      question: 'Which sentence is written most clearly and correctly?',
+      options: ['The girl, she went to the store quickly.', 'The girl went quickly to the store.', 'The girl to the store went quickly.', 'The store the girl went to quickly.'],
+      correctIndex: 1,
+      hint: 'Look for natural word order',
+      explanation: '"The girl went quickly to the store" flows naturally and is grammatically correct',
+      difficulty: 4,
+    ),
+    LiteracyQuestion(
+      id: 'hot_lit_2',
+      skillId: 'skill_critical_thinking',
+      question: 'Read both versions. Which ending is more satisfying and why? A) "She left. The end." B) "She learned her lesson and smiled, ready for tomorrow."',
+      options: ['A is better - it\'s short', 'B is better - it gives closure and hope', 'Both are equally good', 'Neither is good'],
+      correctIndex: 1,
+      hint: 'Which gives more meaning and closure?',
+      explanation: 'B provides emotional resolution and suggests character growth, making it more satisfying',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'hot_lit_3',
+      skillId: 'skill_critical_thinking',
+      question: 'Compare: "It was a sunny day." vs "Golden sunlight streamed through the clouds." Which creates a better image?',
+      options: ['First - it\'s simpler', 'Second - it uses descriptive language', 'Both are the same', 'Neither works well'],
+      correctIndex: 1,
+      hint: 'Which helps you visualize better?',
+      explanation: 'The second uses vivid descriptive language that creates a stronger mental image',
+      difficulty: 5,
+    ),
+
+    // Create level (Level 5-6)
+    LiteracyQuestion(
+      id: 'hot_lit_4',
+      skillId: 'skill_critical_thinking',
+      question: 'Create an ending for: "She found a mysterious key in the old chest." Which ending fits best?',
+      options: ['She threw it away.', 'She used it to unlock a hidden room full of treasures.', 'She gave it to her friend.', 'She forgot about it.'],
+      correctIndex: 1,
+      hint: 'What would make an interesting story?',
+      explanation: 'Creating mystery and adventure with a discovery fits the mysterious key setup',
+      difficulty: 6,
+    ),
+    LiteracyQuestion(
+      id: 'hot_lit_5',
+      skillId: 'skill_critical_thinking',
+      question: 'Rewrite this plain sentence with better descriptive language: "The dog was happy." What would be best?',
+      options: ['The dog was really happy.', 'The dog wagged its tail joyfully, its tongue out in a wide grin.', 'The dog was very happy.', 'The happy dog was happy.'],
+      correctIndex: 1,
+      hint: 'Add specific, vivid details',
+      explanation: 'The second version shows happiness through specific actions and imagery instead of just stating it',
+      difficulty: 6,
+    ),
+    LiteracyQuestion(
+      id: 'hot_lit_6',
+      skillId: 'skill_critical_thinking',
+      question: 'Create a character description that shows personality. Which is most effective?',
+      options: ['The girl was nice.', 'Emma always shared her lunch and listened to everyone\'s problems, even those nobody liked.', 'The girl was very nice.', 'A nice girl named Emma.'],
+      correctIndex: 1,
+      hint: 'Show through actions, not just tell',
+      explanation: 'Showing through specific behaviors and actions reveals character much more effectively',
+      difficulty: 6,
     ),
   ];
 

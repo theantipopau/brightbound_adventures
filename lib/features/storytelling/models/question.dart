@@ -746,3 +746,113 @@ class CharacterDevelopmentQuestions {
     return questions.where((q) => q.difficulty <= level).toList();
   }
 }
+
+/// Higher-order thinking storytelling questions (Evaluate/Create levels)
+/// ACARA codes: ACELT1787, ACELT1799
+class HigherOrderThinkingStorytellingQuestions {
+  static const List<StoryQuestion> questions = [
+    // Evaluate level (Level 5)
+    StoryQuestion(
+      id: 'hot_story_1',
+      skillId: 'skill_story_creation',
+      question: 'Two story endings. A) "And they lived happily ever after." B) "She learned an important lesson and smiled, knowing better days lay ahead." Which is more satisfying?',
+      options: ['A is better', 'B is better', 'Both are equal', 'Neither works'],
+      correctIndex: 1,
+      hint: 'Which provides more meaning?',
+      explanation: 'B shows character growth and hope, providing deeper satisfaction than cliché "ever after"',
+      difficulty: 4,
+      type: StoryQuestionType.multipleChoice,
+      imageEmoji: '✨',
+    ),
+    StoryQuestion(
+      id: 'hot_story_2',
+      skillId: 'skill_story_creation',
+      question: 'Evaluate this plot twist: Hero thinks villain is evil, but villain is actually good. Why might this be problematic?',
+      options: ['Twists are always good', 'No setup for reader, feels fake', 'Too confusing', 'Not a real problem'],
+      correctIndex: 1,
+      hint: 'Does the story prepare the reader?',
+      explanation: 'Without clues hinting at the twist, it feels cheap and unearned. Good twists need setup!',
+      difficulty: 5,
+      type: StoryQuestionType.multipleChoice,
+      imageEmoji: '🔄',
+    ),
+    StoryQuestion(
+      id: 'hot_story_3',
+      skillId: 'skill_story_creation',
+      question: 'Two character descriptions. A) "He was mean." B) "He never listened, always interrupted, and mocked others\' ideas." Which shows character better?',
+      options: ['A is stronger', 'B is stronger', 'Both equal', 'Neither works'],
+      correctIndex: 1,
+      hint: 'Which lets you SEE the character?',
+      explanation: 'B shows meanness through specific behaviors instead of just telling, making character vivid',
+      difficulty: 5,
+      type: StoryQuestionType.multipleChoice,
+      imageEmoji: '👤',
+    ),
+    StoryQuestion(
+      id: 'hot_story_4',
+      skillId: 'skill_story_creation',
+      question: 'Assess this dialogue: "Hi." "Hi." "How are you?" "Good." Why is this weak?',
+      options: ['Too short', 'No personality/emotion shown', 'Too many words', 'Nothing wrong'],
+      correctIndex: 1,
+      hint: 'What can readers learn from dialogue?',
+      explanation: 'Good dialogue reveals character, emotion, and conflict. This is generic and flat.',
+      difficulty: 5,
+      type: StoryQuestionType.multipleChoice,
+      imageEmoji: '💬',
+    ),
+
+    // Create level (Level 6)
+    StoryQuestion(
+      id: 'hot_story_5',
+      skillId: 'skill_story_creation',
+      question: 'Create a story twist. What\'s most important?',
+      options: ['Make it shocking', 'Plant subtle clues early so readers feel clever discovering it', 'Don\'t tell anyone', 'Make it confusing'],
+      correctIndex: 1,
+      hint: 'Think about reader experience',
+      explanation: 'Best twists have foreshadowing - readers enjoy realizing they missed subtle hints!',
+      difficulty: 6,
+      type: StoryQuestionType.multipleChoice,
+      imageEmoji: '🎬',
+    ),
+    StoryQuestion(
+      id: 'hot_story_6',
+      skillId: 'skill_story_creation',
+      question: 'Design a character with growth. Most important element?',
+      options: ['Make them like you', 'Show a clear flaw and how they overcome it through the story', 'Make them perfect', 'Keep them static'],
+      correctIndex: 1,
+      hint: 'What makes growth believable?',
+      explanation: 'Starting flaw → struggle → growth is the arc readers connect with most',
+      difficulty: 6,
+      type: StoryQuestionType.multipleChoice,
+      imageEmoji: '📈',
+    ),
+    StoryQuestion(
+      id: 'hot_story_7',
+      skillId: 'skill_story_creation',
+      question: 'Create a theme for your story. How should you show it?',
+      options: ['Tell readers the lesson directly', 'Show it through character actions and consequences', 'Put it in footnotes', 'Don\'t show themes'],
+      correctIndex: 1,
+      hint: 'How do readers truly learn themes?',
+      explanation: 'Readers engage most when they discover themes through story events, not when told directly',
+      difficulty: 6,
+      type: StoryQuestionType.multipleChoice,
+      imageEmoji: '📚',
+    ),
+    StoryQuestion(
+      id: 'hot_story_8',
+      skillId: 'skill_story_creation',
+      question: 'Revise a weak beginning. Original: "A girl walked to school. It was a nice day." What\'s crucial?',
+      options: ['Add more detail', 'Hook reader with a question, problem, or vivid image', 'Add more characters', 'Use longer sentences'],
+      correctIndex: 1,
+      hint: 'What makes readers WANT to keep reading?',
+      explanation: 'Strong openings create intrigue or tension that makes readers curious to continue',
+      difficulty: 6,
+      type: StoryQuestionType.multipleChoice,
+      imageEmoji: '🚀',
+    ),
+  ];
+
+  static List<StoryQuestion> getByDifficulty(int level) {
+    return questions.where((q) => q.difficulty <= level).toList();
+  }
+}

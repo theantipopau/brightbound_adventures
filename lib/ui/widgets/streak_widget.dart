@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/services/streak_service.dart';
+import 'package:brightbound_adventures/core/services/streak_enhanced_service.dart';
 
 /// Widget to display the current streak with animation
 class StreakWidget extends StatefulWidget {
@@ -279,6 +280,345 @@ class _StreakWidgetState extends State<StreakWidget>
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Enhanced compact streak display with growing flame animation
+class EnhancedStreakWidget extends StatefulWidget {
+  final StreakService streakService;
+  final VoidCallback? onMilestoneReached;
+
+  const EnhancedStreakWidget({
+    super.key,
+    required this.streakService,
+    this.onMilestoneReached,
+  });
+
+  @override
+  State<EnhancedStreakWidget> createState() => _EnhancedStreakWidgetState();
+}
+
+class _EnhancedStreakWidgetState extends State<EnhancedStreakWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _flameScaleAnimation;
+  late Animation<double> _pulseAnimation;
+  late StreakEnhancedService _enhancedService;
+
+  @override
+  void initState() {
+    super.initState();
+    _enhancedService = StreakEnhancedService(widget.streakService);
+    
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+
+    // Flame scale grows with streak
+    _flameScaleAnimation = Tween<double>(
+      begin: _enhancedService.getFlameScale() * 0.9,
+      end: _enhancedService.getFlameScale() * 1.1,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Pulse animation
+    _pulseAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void didUpdateWidget(EnhancedStreakWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update animation if streak changed
+    if (oldWidget.streakService.currentStreak !=
+        widget.streakService.currentStreak) {
+      _flameScaleAnimation = Tween<double>(
+        begin: _enhancedService.getFlameScale() * 0.9,
+        end: _enhancedService.getFlameScale() * 1.1,
+      ).animate(CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ));
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final streak = widget.streakService.currentStreak;
+    final nextMilestone = _enhancedService.getNextMilestone();
+    final color = _enhancedService.getStreakColor(streak);
+
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                color.withValues(alpha: 0.85),
+                color.withValues(alpha: 0.65),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(
+                    alpha: 0.3 + (_pulseAnimation.value * 0.4)),
+                blurRadius: 12 + (_pulseAnimation.value * 8),
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Growing flame icon
+              Transform.scale(
+                scale: streak > 0 ? _flameScaleAnimation.value : 0.8,
+                child: Text(
+                  _enhancedService.getMilestoneEmoji(),
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Streak counter
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$streak',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  Text(
+                    '${nextMilestone.daysUntil} to ${nextMilestone.nextMilestone}',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Milestone celebration card (displayed when streak milestone reached)
+class StreakMilestoneCard extends StatefulWidget {
+  final int milestone;
+  final VoidCallback onDismiss;
+
+  const StreakMilestoneCard({
+    super.key,
+    required this.milestone,
+    required this.onDismiss,
+  });
+
+  @override
+  State<StreakMilestoneCard> createState() => _StreakMilestoneCardState();
+}
+
+class _StreakMilestoneCardState extends State<StreakMilestoneCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Determine milestone level and reward
+    String? rewardOutfitId;
+    String celebrationMessage;
+    Color celebrationColor;
+
+    switch (widget.milestone) {
+      case 3:
+        rewardOutfitId = 'outfit_fire_starter';
+        celebrationMessage = '🎉 3-Day Streak! You\'re on fire!';
+        celebrationColor = const Color(0xFF00BCD4);
+        break;
+      case 7:
+        rewardOutfitId = 'outfit_week_warrior';
+        celebrationMessage = '👏 Week Warrior! 7 Days!';
+        celebrationColor = const Color(0xFF4CAF50);
+        break;
+      case 14:
+        rewardOutfitId = 'outfit_fortnight_hero';
+        celebrationMessage = '⭐ Fortnight Hero! 14 Days!';
+        celebrationColor = const Color(0xFF2196F3);
+        break;
+      case 30:
+        rewardOutfitId = 'outfit_monthly_legend';
+        celebrationMessage = '👑 Monthly Legend! 30 Days!';
+        celebrationColor = const Color(0xFFFFC400);
+        break;
+      case 50:
+        rewardOutfitId = 'outfit_epic_challenger';
+        celebrationMessage = '🏆 Epic Challenger! 50 Days!';
+        celebrationColor = const Color(0xFFFF6F00);
+        break;
+      case 100:
+        rewardOutfitId = 'outfit_legendary_master';
+        celebrationMessage = '🏆 LEGENDARY MASTER! 100 DAYS!';
+        celebrationColor = const Color(0xFF9C27B0);
+        break;
+      default:
+        celebrationMessage = '🎊 Milestone Reached!';
+        celebrationColor = Colors.blue;
+    }
+
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                celebrationColor.withValues(alpha: 0.2),
+                celebrationColor.withValues(alpha: 0.1),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: celebrationColor.withValues(alpha: 0.6),
+              width: 2.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: celebrationColor.withValues(alpha: 0.4),
+                blurRadius: 30,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Celebration text
+              Text(
+                celebrationMessage,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: celebrationColor,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Reward outfit preview (text for now)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+              ),
+                decoration: BoxDecoration(
+                  color: celebrationColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: celebrationColor.withValues(alpha: 0.4),
+                    width: 1.5,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      '🎁 New Outfit Unlocked!',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: celebrationColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      rewardOutfitId ?? 'Special Reward',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Dismiss button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: celebrationColor,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: widget.onDismiss,
+                child: const Text(
+                  'Awesome! Keep Going! 🚀',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

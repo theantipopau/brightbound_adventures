@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 class AudioManager extends ChangeNotifier {
   static final AudioManager _instance = AudioManager._internal();
@@ -14,6 +15,9 @@ class AudioManager extends ChangeNotifier {
   double _musicVolume = 0.3;
   double _sfxVolume = 0.8;
   String? _currentMusicTrack;
+
+  // Cache for failed assets to prevent console spam
+  final Set<String> _failedAssets = {};
 
   bool get isMusicEnabled => _isMusicEnabled;
   bool get isSfxEnabled => _isSfxEnabled;
@@ -55,19 +59,33 @@ class AudioManager extends ChangeNotifier {
   Future<void> playMusic(String assetPath) async {
     if (!_isMusicEnabled) return;
     if (_currentMusicTrack == assetPath) return; // Already playing
+    if (_failedAssets.contains(assetPath)) return;
 
     try {
       await _musicPlayer.play(AssetSource(assetPath));
       _currentMusicTrack = assetPath;
     } catch (e) {
-      debugPrint('Error playing music: $e');
+      if (!_failedAssets.contains(assetPath)) {
+        _failedAssets.add(assetPath);
+        debugPrint('Note: Music asset $assetPath not found or failed to load. Silencing music.');
+      }
     }
   }
 
   /// Play zone-specific background music
   Future<void> playZoneMusic(String zoneId) async {
-    final musicPath = 'sounds/music/zones/$zoneId.mp3';
-    await playMusic(musicPath);
+    // Some common variations just in case
+    final variations = [
+      'sounds/music/zones/$zoneId.mp3',
+      'sounds/music/zones/${zoneId.replaceAll('_', '-')}.mp3',
+    ];
+    
+    for (final musicPath in variations) {
+      if (!_failedAssets.contains(musicPath)) {
+        await playMusic(musicPath);
+        if (_currentMusicTrack == musicPath) break;
+      }
+    }
   }
 
   /// Play menu/world map music
@@ -81,10 +99,21 @@ class AudioManager extends ChangeNotifier {
 
   Future<void> playSfx(String assetPath) async {
     if (!_isSfxEnabled) return;
+    
+    // Check cache first to avoid console noise
+    if (_failedAssets.contains(assetPath)) {
+      _triggerHapticFallback(assetPath);
+      return;
+    }
+
     try {
       // Create a temporary player for SFX to allow overlapping sounds
       final player = AudioPlayer();
       await player.setVolume(_sfxVolume);
+      
+      // On web, assets missing often cause CORS/404 errors that can't be caught by try/catch 
+      // around 'play' easily because they happen in the browser's fetch.
+      // We log it once and then skip.
       await player.play(AssetSource(assetPath));
 
       // Dispose player after completion
@@ -92,7 +121,24 @@ class AudioManager extends ChangeNotifier {
         player.dispose();
       });
     } catch (e) {
-      debugPrint('Error playing SFX: $e');
+      if (!_failedAssets.contains(assetPath)) {
+        _failedAssets.add(assetPath);
+        debugPrint('Note: SFX asset $assetPath not found. Using haptic fallback.');
+      }
+      _triggerHapticFallback(assetPath);
+    }
+  }
+
+  /// Trigger haptic/system sound feedback when asset is missing
+  void _triggerHapticFallback(String assetPath) {
+    if (assetPath.contains('click') || assetPath.contains('button')) {
+      SystemSound.play(SystemSoundType.click);
+    } else if (assetPath.contains('correct') || assetPath.contains('perfect')) {
+      HapticFeedback.mediumImpact();
+    } else if (assetPath.contains('wrong') || assetPath.contains('incorrect')) {
+      HapticFeedback.heavyImpact();
+    } else {
+      HapticFeedback.selectionClick();
     }
   }
 

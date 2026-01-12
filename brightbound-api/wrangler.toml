@@ -1,0 +1,27 @@
+name = "brightbound-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-12"
+workers_dev = true
+
+[build]
+command = "npm install && npx tsc"
+cwd = "."
+
+[env.production]
+name = "brightbound-api"
+routes = [
+  { pattern = "api.brightbound.workers.dev/*", zone_name = "workers.dev" }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "brightbound_db"
+database_id = "3b34c767-4ba7-484a-81dd-acc1944c3c75"
+
+[env.production.d1_databases]
+binding = "DB"
+database_name = "brightbound_db"
+database_id = "3b34c767-4ba7-484a-81dd-acc1944c3c75"
+
+[triggers]
+crons = ["0 0 * * *"]

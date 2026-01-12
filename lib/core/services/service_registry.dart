@@ -32,6 +32,8 @@ class ServiceRegistry {
   late CosmeticUnlockService _cosmeticUnlock;
   late StreakService _streak;
   late SoundEffectsService _soundEffects;
+  late DailyChallengeService _dailyChallenge;
+  late HapticService _haptic;
 
   // Getters
   LocalStorageService get storage => _storage;
@@ -42,6 +44,8 @@ class ServiceRegistry {
   CosmeticUnlockService get cosmeticUnlock => _cosmeticUnlock;
   StreakService get streak => _streak;
   SoundEffectsService get soundEffects => _soundEffects;
+  DailyChallengeService get dailyChallenge => _dailyChallenge;
+  HapticService get haptic => _haptic;
 
   /// Initialize all services in dependency order
   ///
@@ -75,5 +79,13 @@ class ServiceRegistry {
     // 5. Initialize sound effects
     _soundEffects = SoundEffectsService();
     await _soundEffects.initialize();
+
+    // 6. Initialize daily challenges
+    _dailyChallenge = DailyChallengeService(_storage);
+    await _dailyChallenge.initialize();
+
+    // 7. Initialize haptic service
+    _haptic = HapticService();
+    // No async init needed for haptic
   }
 }

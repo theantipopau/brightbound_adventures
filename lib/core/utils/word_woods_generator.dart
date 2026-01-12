@@ -2,35 +2,103 @@ import 'dart:math';
 import 'package:brightbound_adventures/features/literacy/models/question.dart';
 import 'package:brightbound_adventures/core/utils/enhanced_question_generator.dart';
 import 'package:brightbound_adventures/core/utils/literacy_skill_questions.dart';
+import 'package:brightbound_adventures/core/utils/australian_naplan_questions.dart';
 
 /// Enhanced question generator for Word Woods (Literacy)
 /// Uses skill-specific question banks with curated, relevant content
 class WordWoodsQuestionGenerator {
+  static final Random _random = Random();
+
   /// Generate questions for different literacy skills and difficulty levels
   static List<LiteracyQuestion> generate({
     required String skill,
     required int difficulty,
     int count = 10,
   }) {
-    // Use skill-specific question banks
+    // 1. Try to get curated questions from the bank
     final bankQuestions = LiteracySkillQuestions.getQuestions(
       skill: skill,
       difficulty: difficulty,
       count: count,
     );
 
-    if (bankQuestions.isNotEmpty) {
-      return bankQuestions;
+    final questions = <LiteracyQuestion>[...bankQuestions];
+
+    // 2. Mix in some NAPLAN questions if appropriate (30% chance)
+    if (questions.length < count) {
+      final naplanCount = (count - questions.length);
+      for (int i = 0; i < naplanCount; i++) {
+        if (_random.nextDouble() < 0.4) { // 40% chance for NAPLAN
+          final naplan = _fromNAPLAN(skill, difficulty, i);
+          if (naplan != null) {
+            questions.add(naplan);
+          }
+        }
+      }
     }
 
-    // Fallback to legacy generation if skill not found
-    final questions = <LiteracyQuestion>[];
-    for (int i = 0; i < count; i++) {
-      final question = _generateUniqueQuestion(skill, difficulty, i);
-      EnhancedQuestionGenerator.markAsUsed(question.id);
-      questions.add(question);
+    // 3. Fallback to procedural generation if still needed
+    if (questions.length < count) {
+      final remaining = count - questions.length;
+      for (int i = 0; i < remaining; i++) {
+        final question = _generateUniqueQuestion(skill, difficulty, questions.length + i);
+        EnhancedQuestionGenerator.markAsUsed(question.id);
+        questions.add(question);
+      }
     }
-    return questions;
+
+    // Sort to mix curated and procedural
+    questions.shuffle(_random);
+    return questions.take(count).toList();
+  }
+
+  /// Adapt NAPLAN question format to LiteracyQuestion format
+  static LiteracyQuestion? _fromNAPLAN(String skill, int difficulty, int index) {
+    String topic = 'spelling';
+    final s = skill.toLowerCase();
+    
+    if (s.contains('spell')) {
+      topic = 'spelling';
+    } else if (s.contains('read') || s.contains('comprehension')) {
+      topic = 'reading';
+    } else if (s.contains('grammar') || s.contains('sentence')) {
+      topic = 'grammar';
+    } else if (s.contains('vocab')) {
+      topic = 'vocabulary';
+    } else if (s.contains('punct')) {
+      topic = 'punctuation';
+    } else {
+      return null; // No matching NAPLAN topic
+    }
+
+    Map<String, dynamic> data;
+    if (difficulty >= 3) {
+      data = AustralianNAPLANQuestions.generateYear3Literacy(topic, difficulty);
+    } else {
+      data = AustralianNAPLANQuestions.generateYear1Literacy(topic, difficulty);
+    }
+
+    if (!data.containsKey('question') || !data.containsKey('options')) return null;
+
+    final options = List<String>.from(data['options']);
+    final answerStr = data['answer']?.toString();
+    int correctIdx = 0;
+    
+    if (answerStr != null) {
+      correctIdx = options.indexOf(answerStr);
+      if (correctIdx == -1) correctIdx = 0;
+    }
+
+    return LiteracyQuestion(
+      id: 'naplan_lit_${topic}_${difficulty}_$index',
+      skillId: skill,
+      question: data['question'] as String,
+      options: options,
+      correctIndex: correctIdx,
+      explanation: data['explanation'] as String?,
+      hint: 'This is a NAPLAN-style practice question.',
+      difficulty: difficulty,
+    );
   }
 
   static LiteracyQuestion _generateUniqueQuestion(

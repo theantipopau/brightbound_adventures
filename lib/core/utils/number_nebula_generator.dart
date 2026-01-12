@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
 import 'package:brightbound_adventures/core/utils/enhanced_question_generator.dart';
+import 'package:brightbound_adventures/core/utils/australian_naplan_questions.dart';
 
 /// Comprehensive question generator for Number Nebula (Numeracy/Math)
 /// Now with 10x more variety and no repetition!
@@ -29,29 +30,48 @@ class NumberNebulaQuestionGenerator {
       String skill, int difficulty, int index) {
     // Try to generate a question that wasn't used recently
     for (int attempt = 0; attempt < 5; attempt++) {
-      final question = _generateSingleQuestion(difficulty, index);
+      final question = _generateSingleQuestion(skill, difficulty, index);
       if (!EnhancedQuestionGenerator.wasRecentlyUsed(question.id)) {
         return question;
       }
     }
     // If all attempts failed, return the last one anyway
-    return _generateSingleQuestion(difficulty, index);
+    return _generateSingleQuestion(skill, difficulty, index);
   }
 
-  static NumeracyQuestion _generateSingleQuestion(int difficulty, int index) {
+  static NumeracyQuestion _generateSingleQuestion(
+      String skill, int difficulty, int index) {
     if (difficulty <= 2) {
-      return _generateEasyQuestion(index);
+      return _generateEasyQuestion(skill, difficulty, index);
     } else if (difficulty <= 4) {
-      return _generateMediumQuestion(index);
+      return _generateMediumQuestion(skill, difficulty, index);
     } else {
-      return _generateHardQuestion(index);
+      return _generateHardQuestion(skill, difficulty, index);
     }
   }
 
-  static NumeracyQuestion _generateEasyQuestion(int index) {
-    final questionTypes = [
-      // Simple addition (expanded)
-      () {
+  static NumeracyQuestion _generateEasyQuestion(
+      String skill, int difficulty, int index) {
+    final s = skill.toLowerCase();
+    final bool isAll = s == 'all' || s.isEmpty;
+
+    final questionTypes = <NumeracyQuestion Function()>[];
+
+    // Simple addition
+    if (isAll ||
+        s.contains('addition') ||
+        s.contains('plus') ||
+        s.contains('sum')) {
+      // 40% chance to use Australian NAPLAN question
+      if (_random.nextDouble() < 0.4) {
+        questionTypes.add(() => _fromNAPLAN(
+            AustralianNAPLANQuestions.generateYear1Numeracy(
+                'addition', difficulty),
+            'skill_addition',
+            'easy_add_naplan_$index'));
+      }
+
+      questionTypes.add(() {
         final a =
             EnhancedQuestionGenerator.getUnusedNumber('addition_easy_a', 1, 5);
         final b =
@@ -74,9 +94,24 @@ class NumberNebulaQuestionGenerator {
               '$a + $b = $answer. Count: ${List.generate(a, (i) => '👆').join()} + ${List.generate(b, (i) => '👆').join()} = $answer!',
           difficulty: 1,
         );
-      },
-      // Counting with emojis
-      () {
+      });
+    }
+
+    // Counting with emojis
+    if (isAll ||
+        s.contains('counting') ||
+        s.contains('recognition') ||
+        s.contains('how many')) {
+      // 40% chance to use Australian context
+      if (_random.nextDouble() < 0.4) {
+        final topic = _random.nextBool() ? 'counting' : 'money';
+        questionTypes.add(() => _fromNAPLAN(
+            AustralianNAPLANQuestions.generateYear1Numeracy(topic, difficulty),
+            'skill_counting',
+            'easy_count_naplan_$index'));
+      }
+
+      questionTypes.add(() {
         final count =
             EnhancedQuestionGenerator.getUnusedNumber('count_easy', 2, 8);
         final emojis = ['⭐', '🍎', '🌸', '🎈', '🐱', '🚗', '🏀', '🍪'];
@@ -99,9 +134,24 @@ class NumberNebulaQuestionGenerator {
           difficulty: 1,
           type: NumeracyQuestionType.counting,
         );
-      },
-      // Simple subtraction
-      () {
+      });
+    }
+
+    // Simple subtraction
+    if (isAll ||
+        s.contains('subtraction') ||
+        s.contains('minus') ||
+        s.contains('take away')) {
+      // 40% chance to use Australian context
+      if (_random.nextDouble() < 0.4) {
+        questionTypes.add(() => _fromNAPLAN(
+            AustralianNAPLANQuestions.generateYear1Numeracy(
+                'subtraction', difficulty),
+            'skill_subtraction',
+            'easy_sub_naplan_$index'));
+      }
+
+      questionTypes.add(() {
         final a = EnhancedQuestionGenerator.getUnusedNumber(
             'subtraction_easy_a', 5, 10);
         final b = EnhancedQuestionGenerator.getUnusedNumber(
@@ -125,9 +175,15 @@ class NumberNebulaQuestionGenerator {
               '$a - $b = $answer. If you have $a things and take $b away, $answer are left!',
           difficulty: 1,
         );
-      },
-      // Number sequencing
-      () {
+      });
+    }
+
+    // Number sequencing
+    if (isAll ||
+        s.contains('sequencing') ||
+        s.contains('ordering') ||
+        s.contains('patterns')) {
+      questionTypes.add(() {
         final start =
             EnhancedQuestionGenerator.getUnusedNumber('sequence_easy', 1, 15);
         final answer = start + 1;
@@ -149,9 +205,15 @@ class NumberNebulaQuestionGenerator {
               'After $start comes $answer! Keep counting: ${start - 1}, $start, $answer, ${answer + 1}',
           difficulty: 1,
         );
-      },
-      // Simple comparing
-      () {
+      });
+    }
+
+    // Simple comparing
+    if (isAll ||
+        s.contains('comparing') ||
+        s.contains('bigger') ||
+        s.contains('smaller')) {
+      questionTypes.add(() {
         final a = EnhancedQuestionGenerator.getUnusedNumber('compare_a', 1, 10);
         final b = EnhancedQuestionGenerator.getUnusedNumber('compare_b', 1, 10);
         final answer = a > b ? a : b;
@@ -176,16 +238,26 @@ class NumberNebulaQuestionGenerator {
           explanation: '$answer is bigger than ${a > b ? b : a}!',
           difficulty: 1,
         );
-      },
-    ];
+      });
+    }
+
+    if (questionTypes.isEmpty) {
+      return _generateEasyQuestion('all', difficulty, index);
+    }
 
     return questionTypes[_random.nextInt(questionTypes.length)]();
   }
 
-  static NumeracyQuestion _generateMediumQuestion(int index) {
-    final questionTypes = [
-      // Addition with larger numbers
-      () {
+  static NumeracyQuestion _generateMediumQuestion(
+      String skill, int difficulty, int index) {
+    final s = skill.toLowerCase();
+    final bool isAll = s == 'all' || s.isEmpty;
+
+    final questionTypes = <NumeracyQuestion Function()>[];
+
+    // Addition with larger numbers
+    if (isAll || s.contains('addition')) {
+      questionTypes.add(() {
         final a =
             EnhancedQuestionGenerator.getUnusedNumber('addition_med_a', 10, 50);
         final b =
@@ -208,9 +280,21 @@ class NumberNebulaQuestionGenerator {
           explanation: '$a + $b = $answer',
           difficulty: 3,
         );
-      },
-      // Multiplication
-      () {
+      });
+    }
+
+    // Multiplication
+    if (isAll || s.contains('multiplication') || s.contains('groups')) {
+      // 40% chance to use Australian context
+      if (_random.nextDouble() < 0.4) {
+        questionTypes.add(() => _fromNAPLAN(
+            AustralianNAPLANQuestions.generateYear3Numeracy(
+                'multiplication', difficulty),
+            'skill_multiplication',
+            'med_mult_naplan_$index'));
+      }
+
+      questionTypes.add(() {
         final a =
             EnhancedQuestionGenerator.getUnusedNumber('mult_med_a', 2, 10);
         final b =
@@ -233,9 +317,12 @@ class NumberNebulaQuestionGenerator {
           explanation: '$a × $b = $answer. That\'s $a groups of $b things!',
           difficulty: 3,
         );
-      },
-      // Word problems with context
-      () {
+      });
+    }
+
+    // Word problems with context
+    if (isAll || s.contains('word') || s.contains('multi_step')) {
+      questionTypes.add(() {
         final a =
             EnhancedQuestionGenerator.getUnusedNumber('word_med_a', 5, 20);
         final b = EnhancedQuestionGenerator.getUnusedNumber('word_med_b', 1, a);
@@ -257,9 +344,12 @@ class NumberNebulaQuestionGenerator {
           explanation: 'Start with $a and subtract $b: $a - $b = $answer',
           difficulty: 3,
         );
-      },
-      // Skip counting
-      () {
+      });
+    }
+
+    // Skip counting
+    if (isAll || s.contains('patterns') || s.contains('skip')) {
+      questionTypes.add(() {
         final skip = [2, 5, 10][_random.nextInt(3)];
         final start = skip *
             EnhancedQuestionGenerator.getUnusedNumber('skip_start', 1, 5);
@@ -283,9 +373,12 @@ class NumberNebulaQuestionGenerator {
               'Counting by ${skip}s: ${sequence.join(', ')}, $answer. We add $skip each time!',
           difficulty: 3,
         );
-      },
-      // Place value
-      () {
+      });
+    }
+
+    // Place value
+    if (isAll || s.contains('place value')) {
+      questionTypes.add(() {
         final tens =
             EnhancedQuestionGenerator.getUnusedNumber('place_tens', 1, 9);
         final ones =
@@ -313,16 +406,35 @@ class NumberNebulaQuestionGenerator {
               '$tens tens = ${tens * 10} and $ones ones = $ones, so ${tens * 10} + $ones = $answer',
           difficulty: 3,
         );
-      },
-    ];
+      });
+    }
+
+    if (questionTypes.isEmpty) {
+      return _generateMediumQuestion('all', difficulty, index);
+    }
 
     return questionTypes[_random.nextInt(questionTypes.length)]();
   }
 
-  static NumeracyQuestion _generateHardQuestion(int index) {
-    final questionTypes = [
-      // Division
-      () {
+  static NumeracyQuestion _generateHardQuestion(
+      String skill, int difficulty, int index) {
+    final s = skill.toLowerCase();
+    final bool isAll = s == 'all' || s.isEmpty;
+
+    final questionTypes = <NumeracyQuestion Function()>[];
+
+    // Division
+    if (isAll || s.contains('division')) {
+      // 40% chance to use Australian context
+      if (_random.nextDouble() < 0.4) {
+        questionTypes.add(() => _fromNAPLAN(
+            AustralianNAPLANQuestions.generateYear3Numeracy(
+                'division', difficulty),
+            'skill_division',
+            'hard_div_naplan_$index'));
+      }
+
+      questionTypes.add(() {
         final b =
             EnhancedQuestionGenerator.getUnusedNumber('div_hard_b', 2, 12);
         final answer =
@@ -345,9 +457,21 @@ class NumberNebulaQuestionGenerator {
           explanation: '$a ÷ $b = $answer. Check: $answer × $b = $a ✓',
           difficulty: 5,
         );
-      },
-      // Fractions
-      () {
+      });
+    }
+
+    // Fractions
+    if (isAll || s.contains('fraction')) {
+      // 40% chance to use Australian context
+      if (_random.nextDouble() < 0.4) {
+        questionTypes.add(() => _fromNAPLAN(
+            AustralianNAPLANQuestions.generateYear3Numeracy(
+                'fractions', difficulty),
+            'skill_fractions',
+            'hard_frac_naplan_$index'));
+      }
+
+      questionTypes.add(() {
         final fractions = [
           {'value': '1/2', 'desc': 'one half', 'decimal': 0.5},
           {'value': '1/3', 'desc': 'one third', 'decimal': 0.33},
@@ -376,9 +500,12 @@ class NumberNebulaQuestionGenerator {
           explanation: '${correct['value']} means ${correct['desc']}!',
           difficulty: 5,
         );
-      },
-      // Multi-step word problems
-      () {
+      });
+    }
+
+    // Multi-step word problems
+    if (isAll || s.contains('word') || s.contains('multi_step')) {
+      questionTypes.add(() {
         final boxes =
             EnhancedQuestionGenerator.getUnusedNumber('word_hard_a', 3, 12);
         final perBox =
@@ -403,9 +530,15 @@ class NumberNebulaQuestionGenerator {
           explanation: '$boxes groups of $perBox = $boxes × $perBox = $answer',
           difficulty: 5,
         );
-      },
-      // Order of operations (PEMDAS basics)
-      () {
+      });
+    }
+
+    // Order of operations (PEMDAS basics)
+    if (isAll ||
+        s.contains('order') ||
+        s.contains('operations') ||
+        s.contains('pemdas')) {
+      questionTypes.add(() {
         final a = EnhancedQuestionGenerator.getUnusedNumber('pemdas_a', 2, 10);
         final b = EnhancedQuestionGenerator.getUnusedNumber('pemdas_b', 2, 10);
         final c = EnhancedQuestionGenerator.getUnusedNumber('pemdas_c', 1, 10);
@@ -431,9 +564,12 @@ class NumberNebulaQuestionGenerator {
               'First: $a × $b = ${a * b}. Then: ${a * b} + $c = $answer',
           difficulty: 5,
         );
-      },
-      // Percentages (intro level)
-      () {
+      });
+    }
+
+    // Percentages (intro level)
+    if (isAll || s.contains('percent')) {
+      questionTypes.add(() {
         final total = [10, 20, 50, 100][_random.nextInt(4)];
         final percent = [10, 25, 50, 75][_random.nextInt(4)];
         final answer = (total * percent / 100).round();
@@ -454,9 +590,55 @@ class NumberNebulaQuestionGenerator {
           explanation: '$percent% of $total = $answer',
           difficulty: 5,
         );
-      },
-    ];
+      });
+    }
+
+    // Measurement & Conversions
+    if (isAll || s.contains('measurement') || s.contains('conversion')) {
+      questionTypes.add(() => _fromNAPLAN(
+          AustralianNAPLANQuestions.generateYear3Numeracy(
+              'measurement', difficulty),
+          'skill_measurement',
+          'hard_measure_naplan_$index'));
+    }
+
+    if (questionTypes.isEmpty) {
+      return _generateHardQuestion('all', difficulty, index);
+    }
 
     return questionTypes[_random.nextInt(questionTypes.length)]();
+  }
+
+  static NumeracyQuestion _fromNAPLAN(
+      Map<String, dynamic> naplan, String skillId, String id) {
+    final List<String> options = [];
+    int correctIndex = 0;
+
+    if (naplan.containsKey('options')) {
+      options.addAll((naplan['options'] as List).map((e) => e.toString()));
+      correctIndex = options.indexOf(naplan['answer'].toString());
+    } else {
+      // Generate options if none provided
+      final answer = int.tryParse(naplan['answer'].toString()) ?? 0;
+      final wrongs =
+          EnhancedQuestionGenerator.generatePlausibleWrongAnswers(answer, 3);
+      options.add(answer.toString());
+      options.addAll(wrongs.map((w) => w.toString()));
+      final shuffled =
+          EnhancedQuestionGenerator.smartShuffle(options, answer.toString());
+      options.clear();
+      options.addAll(shuffled);
+      correctIndex = options.indexOf(answer.toString());
+    }
+
+    return NumeracyQuestion(
+      id: id,
+      skillId: skillId,
+      question: naplan['question'] ?? 'No question text',
+      options: options,
+      correctIndex: correctIndex,
+      difficulty: naplan['difficulty'] ?? 1,
+      explanation: naplan['explanation'],
+    );
   }
 }

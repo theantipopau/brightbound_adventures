@@ -24,6 +24,14 @@ class LiteracySkillQuestions {
     'Inference': InferenceQuestions(),
     'skill_sentence_formation': SentenceFormationQuestions(),
     'Sentence Formation': SentenceFormationQuestions(),
+    'skill_letter_recognition': LetterRecognitionQuestions(),
+    'Letter Recognition': LetterRecognitionQuestions(),
+    'skill_phoneme_awareness': PhonemeAwarenessQuestions(),
+    'Phoneme Awareness': PhonemeAwarenessQuestions(),
+    'skill_blending_sounds': BlendingSoundsQuestions(),
+    'Blending Sounds': BlendingSoundsQuestions(),
+    'skill_story_structure': StoryStructureQuestions(),
+    'Story Structure': StoryStructureQuestions(),
   };
 
   static List<LiteracyQuestion> getQuestions({
@@ -1335,4 +1343,169 @@ class SentenceFormationQuestions extends SkillQuestionBank {
       difficulty: 5,
     ),
   ];
+}
+
+class LetterRecognitionQuestions extends SkillQuestionBank {
+  @override
+  List<LiteracyQuestion> get easyQuestions => [
+        LiteracyQuestion(
+          id: 'letter_1',
+          skillId: 'letter_recognition',
+          question: 'Find the uppercase letter A:',
+          options: ['A', 'a', 'B', 'o'],
+          correctIndex: 0,
+          difficulty: 1,
+        ),
+        LiteracyQuestion(
+          id: 'letter_2',
+          skillId: 'letter_recognition',
+          question: 'Find the lowercase letter b:',
+          options: ['B', 'b', 'd', 'p'],
+          correctIndex: 1,
+          difficulty: 1,
+        ),
+      ];
+
+  @override
+  List<LiteracyQuestion> get mediumQuestions => [
+        LiteracyQuestion(
+          id: 'letter_med_1',
+          skillId: 'letter_recognition',
+          question: 'Which letter comes after E in the alphabet?',
+          options: ['F', 'D', 'G', 'H'],
+          correctIndex: 0,
+          difficulty: 3,
+        ),
+      ];
+
+  @override
+  List<LiteracyQuestion> get hardQuestions => [
+        LiteracyQuestion(
+          id: 'letter_hard_1',
+          skillId: 'letter_recognition',
+          question: 'Which of these is a vowel?',
+          options: ['E', 'B', 'C', 'D'],
+          correctIndex: 0,
+          difficulty: 5,
+        ),
+      ];
+}
+
+class PhonemeAwarenessQuestions extends SkillQuestionBank {
+  @override
+  List<LiteracyQuestion> get easyQuestions => [
+        LiteracyQuestion(
+          id: 'phoneme_1',
+          skillId: 'phoneme_awareness',
+          question: 'What is the first sound in "Cat"?',
+          options: ['/k/', '/s/', '/t/', '/a/'],
+          correctIndex: 0,
+          difficulty: 1,
+        ),
+      ];
+
+  @override
+  List<LiteracyQuestion> get mediumQuestions => [
+        LiteracyQuestion(
+          id: 'phoneme_med_1',
+          skillId: 'phoneme_awareness',
+          question: 'Which word starts with the same sound as "Sun"?',
+          options: ['Star', 'Big', 'Cat', 'Run'],
+          correctIndex: 0,
+          difficulty: 3,
+        ),
+      ];
+
+  @override
+  List<LiteracyQuestion> get hardQuestions => [
+        LiteracyQuestion(
+          id: 'phoneme_hard_1',
+          skillId: 'phoneme_awareness',
+          question: 'How many sounds are in "Shop"?',
+          options: ['3', '4', '2', '5'],
+          correctIndex: 0, // /sh/ /o/ /p/
+          difficulty: 5,
+        ),
+      ];
+}
+
+class BlendingSoundsQuestions extends SkillQuestionBank {
+  @override
+  List<LiteracyQuestion> get easyQuestions => [
+        LiteracyQuestion(
+          id: 'blend_1',
+          skillId: 'blending_sounds',
+          question: 'Blend these sounds: /d/ /o/ /g/',
+          options: ['dog', 'dig', 'dot', 'log'],
+          correctIndex: 0,
+          difficulty: 1,
+        ),
+      ];
+
+  @override
+  List<LiteracyQuestion> get mediumQuestions => [
+        LiteracyQuestion(
+          id: 'blend_med_1',
+          skillId: 'blending_sounds',
+          question: 'Blend these sounds: /f/ /l/ /o/ /p/',
+          options: ['flop', 'flip', 'top', 'fog'],
+          correctIndex: 0,
+          difficulty: 3,
+        ),
+      ];
+
+  @override
+  List<LiteracyQuestion> get hardQuestions => [
+        LiteracyQuestion(
+          id: 'blend_hard_1',
+          skillId: 'blending_sounds',
+          question: 'Which word has these sounds: /s/ /t/ /r/ /ee/ /m/?',
+          options: ['stream', 'steam', 'scream', 'street'],
+          correctIndex: 0,
+          difficulty: 5,
+        ),
+      ];
+}
+
+class StoryStructureQuestions extends SkillQuestionBank {
+  @override
+  List<LiteracyQuestion> get easyQuestions => [
+        LiteracyQuestion(
+          id: 'story_struct_1',
+          skillId: 'story_structure',
+          question: 'Where do we usually find the introduction in a story?',
+          options: ['At the beginning', 'In the middle', 'At the end', 'Nowhere'],
+          correctIndex: 0,
+          difficulty: 1,
+        ),
+      ];
+
+  @override
+  List<LiteracyQuestion> get mediumQuestions => [
+        LiteracyQuestion(
+          id: 'story_struct_med_1',
+          skillId: 'story_structure',
+          question: 'What part of the story introduces the main problem?',
+          options: ['Rising action', 'Conclusion', 'Introduction', 'Title'],
+          correctIndex: 0,
+          difficulty: 3,
+        ),
+      ];
+
+  @override
+  List<LiteracyQuestion> get hardQuestions => [
+        LiteracyQuestion(
+          id: 'story_struct_hard_1',
+          skillId: 'story_structure',
+          question: 'The climax of a story is:',
+          options: [
+            'The most exciting turning point',
+            'The first sentence',
+            'The list of characters',
+            'The publisher info'
+          ],
+          correctIndex: 0,
+          difficulty: 5,
+        ),
+      ];
 }

@@ -76,6 +76,7 @@ jobs:
         run: npm install -g wrangler
       
       - name: Deploy Flutter Game to playbrightbound
+        # Only runs on main branch push, secrets are available
         run: wrangler pages deploy build/web --project-name=playbrightbound
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -97,6 +98,7 @@ jobs:
         run: npm install -g wrangler
       
       - name: Deploy Website to brightbound-adventures
+        # Only runs on main branch push, secrets are available
         run: wrangler pages deploy website --project-name=brightbound-adventures
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

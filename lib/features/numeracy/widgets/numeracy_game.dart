@@ -1,9 +1,13 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
+import 'package:brightbound_adventures/core/services/haptic_service.dart';
+import 'package:brightbound_adventures/core/services/animation_service.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/responsive_quiz_layout.dart';
+import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 
 /// Multiple choice quiz game for numeracy skills
 class NumeracyGame extends StatefulWidget {
@@ -43,6 +47,10 @@ class _NumeracyGameState extends State<NumeracyGame>
   late AnimationController _progressController;
   late AnimationController _starController;
   late Animation<double> _starAnimation;
+  late AnimationController _shakeController;
+  
+  // Confetti tracking
+  bool _showConfetti = false;
 
   @override
   void initState() {
@@ -71,6 +79,12 @@ class _NumeracyGameState extends State<NumeracyGame>
       parent: _starController,
       curve: Curves.elasticOut,
     );
+
+    // Shake animation controller for wrong answers
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
   }
 
   @override
@@ -78,6 +92,7 @@ class _NumeracyGameState extends State<NumeracyGame>
     _feedbackController.dispose();
     _progressController.dispose();
     _starController.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
 
@@ -87,6 +102,9 @@ class _NumeracyGameState extends State<NumeracyGame>
 
   void _selectAnswer(int index) {
     if (_answered) return;
+
+    // Get haptic service from provider
+    final hapticService = context.read<HapticService>();
 
     setState(() {
       _selectedIndex = index;
@@ -98,6 +116,21 @@ class _NumeracyGameState extends State<NumeracyGame>
         _currentStreak++;
         _starController.forward(from: 0);
 
+        // Show confetti
+        setState(() {
+          _showConfetti = true;
+        });
+        Future.delayed(const Duration(milliseconds: 2200), () {
+          if (mounted) {
+            setState(() {
+              _showConfetti = false;
+            });
+          }
+        });
+
+        // Haptic feedback - strong vibration
+        hapticService.onCorrectAnswer();
+
         // Play appropriate celebration sound based on streak
         if (_currentStreak >= 3) {
           _audioManager.playStreak(_currentStreak);
@@ -106,6 +139,14 @@ class _NumeracyGameState extends State<NumeracyGame>
         }
       } else {
         _currentStreak = 0;
+
+        // Screen shake animation
+        _shakeController.forward(from: 0);
+
+        // Haptic feedback - double tap pattern
+        hapticService.onWrongAnswer();
+
+        // Play incorrect sound
         _audioManager.playIncorrectAnswer();
       }
     });
@@ -202,51 +243,68 @@ class _NumeracyGameState extends State<NumeracyGame>
         ],
       ),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // Progress bar
-            LinearProgressIndicator(
-              value: _progress,
-              backgroundColor: widget.themeColor.withValues(alpha: 0.2),
-              valueColor: AlwaysStoppedAnimation(widget.themeColor),
-              minHeight: 8,
-            ),
+            // Main content with shake animation
+            AnimatedBuilder(
+              animation: _shakeController,
+              builder: (context, child) {
+                // Calculate shake offset
+                final shakeOffset = AnimationService.getShakeOffset(
+                  _shakeController.value,
+                  intensity: 8.0,
+                );
 
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: ScreenBreakpoints.getHorizontalPadding(context),
-                  vertical: 16,
-                ),
-                child: ResponsiveQuizLayout(
-                  scoreCard: _buildScoreCard(),
-                  questionCard: _buildQuestionCard(),
-                  optionsArea: _buildOptionsArea(),
-                  feedbackWidget:
-                      _answered ? _buildFeedback() : null,
-                  maxWidth: ScreenBreakpoints.getMaxContentWidth(context),
-                ),
-              ),
-            ),
+                return Transform.translate(
+                  offset: shakeOffset,
+                  child: child,
+                );
+              },
+              child: Column(
+                children: [
+                  // Progress bar
+                  LinearProgressIndicator(
+                    value: _progress,
+                    backgroundColor: widget.themeColor.withValues(alpha: 0.2),
+                    valueColor: AlwaysStoppedAnimation(widget.themeColor),
+                    minHeight: 8,
+                  ),
 
-            // Next button
-            if (_answered)
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: HoverButton(
-                  backgroundColor: widget.themeColor,
-                  hoverColor: widget.themeColor.withValues(alpha: 0.9),
-                  tooltip: _currentIndex < _shuffledQuestions.length - 1
-                      ? "Press 'Enter' or click Next"
-                      : "Press 'Enter' or click See Results",
-                  onPressed: _nextQuestion,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _currentIndex < _shuffledQuestions.length - 1
-                            ? 'Next Question'
-                            : 'See Results',
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ScreenBreakpoints.getHorizontalPadding(context),
+                        vertical: 16,
+                      ),
+                      child: ResponsiveQuizLayout(
+                        scoreCard: _buildScoreCard(),
+                        questionCard: _buildQuestionCard(),
+                        optionsArea: _buildOptionsArea(),
+                        feedbackWidget:
+                            _answered ? _buildFeedback() : null,
+                        maxWidth: ScreenBreakpoints.getMaxContentWidth(context),
+                      ),
+                    ),
+                  ),
+
+                  // Next button
+                  if (_answered)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      child: HoverButton(
+                        backgroundColor: widget.themeColor,
+                        hoverColor: widget.themeColor.withValues(alpha: 0.9),
+                        tooltip: _currentIndex < _shuffledQuestions.length - 1
+                            ? "Press 'Enter' or click Next"
+                            : "Press 'Enter' or click See Results",
+                        onPressed: _nextQuestion,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _currentIndex < _shuffledQuestions.length - 1
+                                  ? 'Next Question'
+                                  : 'See Results',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -263,6 +321,27 @@ class _NumeracyGameState extends State<NumeracyGame>
                     ],
                   ),
                 ),
+              ),
+                ],
+              ),
+            ),
+
+            // Confetti overlay
+            if (_showConfetti)
+              ConfettiBurst(
+                center: Offset(
+                  MediaQuery.of(context).size.width / 2,
+                  MediaQuery.of(context).size.height / 3,
+                ),
+                duration: const Duration(milliseconds: 2000),
+                particleCount: 50,
+                colors: [
+                  widget.themeColor,
+                  Colors.yellow,
+                  Colors.green,
+                  Colors.blue,
+                  Colors.pink,
+                ],
               ),
           ],
         ),

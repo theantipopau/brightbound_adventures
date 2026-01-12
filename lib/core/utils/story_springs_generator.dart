@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:brightbound_adventures/features/storytelling/models/question.dart';
+import 'story_springs_questions.dart';
 
 /// Comprehensive question generator for Story Springs (Storytelling & Creative Writing)
 class StorySpringsQuestionGenerator {
@@ -12,15 +13,44 @@ class StorySpringsQuestionGenerator {
     int count = 10,
   }) {
     final questions = <StoryQuestion>[];
+    
+    // 1. Get curated questions from the bank
+    final curatedBank = StorySpringsSkillQuestions.getQuestionsForSkill(skill, difficulty);
+    
+    // 2. Mix in some questions from the model bank if available
+    final modelBank = _getModelBankForSkill(skill);
+    
+    final fullPool = [...curatedBank, ...modelBank];
+    
+    if (fullPool.isNotEmpty) {
+      final pool = List<StoryQuestion>.from(fullPool)..shuffle(_random);
+      final uniqueCount = min(count, pool.length);
+      questions.addAll(pool.take(uniqueCount));
+    }
 
-    for (int i = 0; i < count; i++) {
-      questions.add(_generateSingleQuestion(difficulty, i));
+    // 3. Fallback to procedural generation if pool is too small
+    if (questions.length < count) {
+      final remaining = count - questions.length;
+      for (int i = 0; i < remaining; i++) {
+        questions.add(_generateProceduralQuestion(skill, difficulty, i));
+      }
     }
 
     return questions;
   }
 
-  static StoryQuestion _generateSingleQuestion(int difficulty, int index) {
+  static List<StoryQuestion> _getModelBankForSkill(String skill) {
+    final s = skill.toLowerCase();
+    if (s.contains('sequencing')) return StorySequencingQuestions.questions;
+    if (s.contains('emotion')) return EmotionRecognitionQuestions.questions;
+    if (s.contains('description')) return DescriptiveLanguageQuestions.questions;
+    if (s.contains('dialogue')) return DialogueCreationQuestions.questions;
+    if (s.contains('plot')) return PlotStructureQuestions.questions;
+    if (s.contains('character')) return CharacterDevelopmentQuestions.questions;
+    return [];
+  }
+
+  static StoryQuestion _generateProceduralQuestion(String skill, int difficulty, int index) {
     if (difficulty <= 2) {
       return _generateEasyQuestion(index);
     } else if (difficulty <= 4) {
