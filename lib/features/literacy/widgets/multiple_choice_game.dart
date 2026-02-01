@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/features/literacy/models/question.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
+import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/responsive_quiz_layout.dart';
 
@@ -38,6 +39,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   bool _hintUsed = false;
   int _hintsUsedTotal = 0;
   final AudioManager _audioManager = AudioManager();
+  final HapticService _hapticService = HapticService();
 
   late AnimationController _feedbackController;
   late Animation<double> _feedbackAnimation;
@@ -113,9 +115,11 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
           _audioManager.playStreak(_currentStreak);
         } else {
           _audioManager.playCorrectAnswer();
-        }
+        _hapticService.onCorrectAnswer();
       } else {
         _currentStreak = 0;
+        _audioManager.playIncorrectAnswer();
+        _hapticService.onWrong
         _audioManager.playIncorrectAnswer();
       }
     });
@@ -740,15 +744,20 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
         }
       }
 
-      return Padding(
-        padding: EdgeInsets.only(bottom: 12),
-        child: HoverCard(
-          backgroundColor: backgroundColor,
-          borderColor: borderColor,
+      return PaSemantics(
+          label: 'Option ${String.fromCharCode(65 + index)}: $option',
+          selected: isSelected,
+          button: true,
           enabled: !_answered,
-          onTap: _answered ? null : () => _selectAnswer(index),
-          child: Row(
-            children: [
+          child: HoverCard(
+            backgroundColor: backgroundColor,
+            borderColor: borderColor,
+            enabled: !_answered,
+            onTap: _answered ? null : () => _selectAnswer(index),
+            child: Row(
+              children: [
+                // Option letter
+              children: [
               // Option letter
               Container(
                 width: 36,
@@ -802,6 +811,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                   ],
                 ),
             ),
+          ),
         );
     });
   }

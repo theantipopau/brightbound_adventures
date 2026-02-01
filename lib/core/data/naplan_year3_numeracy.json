@@ -1,0 +1,47 @@
+{
+    "meta": {
+      "subject": "Numeracy",
+      "year_level": 3,
+      "source": "NAPLAN 2023 Adapted",
+      "version": "1.0"
+    },
+    "questions": [
+      {
+        "id": "NUM-Y3-001",
+        "question": "Which number is ten more than 48?",
+        "options": ["38", "58", "49", "148"],
+        "correct_index": 1,
+        "difficulty": 1,
+        "topic": "number",
+        "hint": "Count up by 10 from 48."
+      },
+      {
+        "id": "NUM-Y3-002",
+        "question": "Sam bought a pie for $4.50 and a juice for $2.50. How much did he spend?",
+        "options": ["$6.00", "$6.50", "$7.00", "$7.50"],
+        "correct_index": 2,
+        "difficulty": 2,
+        "topic": "money",
+        "hint": "Add 4 dollars + 2 dollars, then 50 cents + 50 cents."
+      },
+      {
+        "id": "NUM-Y3-003",
+        "question": "What shape has 4 equal sides and 4 corners?",
+        "options": ["Rectangle", "Triangle", "Square", "Circle"],
+        "correct_index": 2,
+        "difficulty": 1,
+        "topic": "geometry",
+        "hint": "It looks like a box."
+      },
+      {
+        "id": "NUM-Y3-004",
+        "question": "A bus leaves at 8:30 am and arrives 30 minutes later. What time does it arrive?",
+        "options": ["8:00 am", "9:00 am", "9:30 am", "8:60 am"],
+        "correct_index": 1,
+        "difficulty": 2,
+        "topic": "time",
+        "hint": "Add 30 minutes to 8:30."
+      }
+    ]
+  }
+  

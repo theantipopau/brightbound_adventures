@@ -89,6 +89,10 @@ class _EnhancedZoneHeaderState extends State<EnhancedZoneHeader>
       case 'adventure_arena':
       case 'adventure-arena':
         return ['🏆', '⭐', '🎖️', '🌟', '🎯', '🔥'];
+      case 'science-explorers':
+        return ['🔬', '🧬', '🧪', '🔭', '🪐', '🦠'];
+      case 'creative-corner':
+        return ['🎨', '🖌️', '🎵', '🎹', '🎻', '🎷'];
       default:
         return ['✨', '⭐', '💫', '🌟'];
     }

@@ -678,15 +678,20 @@ class _NumeracyGameState extends State<NumeracyGame>
 
       return Padding(
         padding: const EdgeInsets.only(bottom: 12),
-        child: HoverCard(
-          backgroundColor: backgroundColor,
-          borderColor: borderColor,
+        child: Semantics(
+          label: 'Option ${String.fromCharCode(65 + index)}: $option',
+          selected: isSelected,
+          button: true,
           enabled: !_answered,
-          onTap: _answered ? null : () => _selectAnswer(index),
-          child: Row(
-            children: [
-              // Option letter badge
-              Container(
+          child: HoverCard(
+            backgroundColor: backgroundColor,
+            borderColor: borderColor,
+            enabled: !_answered,
+            onTap: _answered ? null : () => _selectAnswer(index),
+            child: Row(
+              children: [
+                // Option letter badge
+                Container(
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(

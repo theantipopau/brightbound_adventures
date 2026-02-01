@@ -1,0 +1,66 @@
+{
+  "meta": {
+    "subject": "Science",
+    "year_level": 3,
+    "source": "ACARA v9",
+    "version": "1.0",
+    "topics": [
+      "Biological Sciences",
+      "Chemical Sciences",
+      "Earth and Space Sciences",
+      "Physical Sciences"
+    ]
+  },
+  "questions": [
+    {
+      "id": "SCI-Y3-BIO-001",
+      "question": "Which of these is a living thing?",
+      "options": ["A Rock", "A Car", "A Tree", "A Cloud"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "Biological Sciences",
+      "hint": "It grows and needs water."
+    },
+    {
+      "id": "SCI-Y3-EARTH-001",
+      "question": "What causes day and night?",
+      "options": [
+        "The Sun goes to sleep",
+        "The Earth spins (rotates)",
+        "The Moon blocks the Sun",
+        "The clouds cover the Sun"
+      ],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "Earth and Space Sciences",
+      "hint": "The Earth is like a spinning top."
+    },
+    {
+      "id": "SCI-Y3-PHYS-001",
+      "question": "Which object produces heat?",
+      "options": ["An ice cube", "A toaster", "A spoon", "A book"],
+      "correct_index": 1,
+      "difficulty": 1,
+      "topic": "Physical Sciences",
+      "hint": "We use it to make toast hot."
+    },
+    {
+      "id": "SCI-Y3-CHEM-001",
+      "question": "What happens to ice when it gets hot?",
+      "options": ["It melts into water", "It turns into a rock", "It stays the same", "It gets harder"],
+      "correct_index": 0,
+      "difficulty": 1,
+      "topic": "Chemical Sciences",
+      "hint": "Think about a snowman in summer."
+    },
+    {
+      "id": "SCI-Y3-BIO-002",
+      "question": "What covering does a bird have?",
+      "options": ["Scales", "Fur", "Feathers", "Shell"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "Biological Sciences",
+      "hint": "They help birds fly."
+    }
+  ]
+}

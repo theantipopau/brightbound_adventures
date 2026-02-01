@@ -99,6 +99,28 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       requiredStars: 10,
     ),
     const ZoneData(
+      id: 'science-explorers',
+      name: 'Science Explorers',
+      emoji: '🔬',
+      color: Color(0xFF4DB6AC), // Teal
+      // Top left
+      position: Offset(0.30, 0.25),
+      description: 'Discover the world!',
+      order: 4,
+      requiredStars: 15,
+    ),
+    const ZoneData(
+      id: 'creative-corner',
+      name: 'Creative Corner',
+      emoji: '🎨',
+      color: Color(0xFFFFB74D), // Orange
+      // Top right
+      position: Offset(0.70, 0.20),
+      description: 'Draw and make music!',
+      order: 5,
+      requiredStars: 20,
+    ),
+    const ZoneData(
       id: 'puzzle-peaks',
       name: 'Puzzle Peaks',
       emoji: '🧩',

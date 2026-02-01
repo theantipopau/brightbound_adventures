@@ -9,6 +9,7 @@ import 'package:brightbound_adventures/features/numeracy/screens/numeracy_practi
 import 'package:brightbound_adventures/features/storytelling/screens/story_practice_screen.dart';
 import 'package:brightbound_adventures/features/logic/screens/logic_practice_screen.dart';
 import 'package:brightbound_adventures/features/motor/screens/motor_practice_screen.dart';
+import 'package:brightbound_adventures/features/science/screens/science_practice_screen.dart';
 
 class ZoneDetailScreen extends StatefulWidget {
   final String zoneId;
@@ -394,6 +395,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       practiceScreen = MotorPracticeScreen(
         skillId: skill.id,
         skillName: skill.name,
+      );
+    } else if (widget.zoneId == 'science_explorers') {
+      practiceScreen = SciencePracticeScreen(
+        skillId: skill.id,
       );
     } else {
       // Default to literacy practice screen for other zones (Word Woods)

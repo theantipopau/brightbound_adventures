@@ -447,6 +447,10 @@ class SkillDatabase {
         return puzzlepeaksSkills;
       case 'adventure_arena':
         return adventureArenaSkills;
+      case 'science_explorers':
+        return scienceExplorersSkills;
+      case 'creative_corner':
+        return creativeCornerSkills;
       default:
         return [];
     }
@@ -460,8 +464,63 @@ class SkillDatabase {
       ...storyspringsSkills,
       ...puzzlepeaksSkills,
       ...adventureArenaSkills,
+      ...scienceExplorersSkills,
+      ...creativeCornerSkills,
     ];
   }
+
+  // SCIENCE EXPLORERS - Science & Discovery
+  static final List<Skill> scienceExplorersSkills = [
+    Skill(
+      id: 'skill_biological_sciences',
+      name: 'Living Things',
+      description: 'Understand living and non-living things',
+      strand: 'science',
+      state: SkillState.introduced,
+      lastPracticed: DateTime.now(),
+      difficulty: 1,
+    ),
+    Skill(
+      id: 'skill_earth_sciences',
+      name: 'Earth & Space',
+      description: 'Day, night, seasons, and weather',
+      strand: 'science',
+      state: SkillState.introduced,
+      lastPracticed: DateTime.now(),
+      difficulty: 2,
+    ),
+    Skill(
+      id: 'skill_physical_sciences',
+      name: 'Heat & Light',
+      description: 'How things move and change energy',
+      strand: 'science',
+      state: SkillState.introduced,
+      lastPracticed: DateTime.now(),
+      difficulty: 2,
+    ),
+  ];
+
+  // CREATIVE CORNER - Arts & Music
+  static final List<Skill> creativeCornerSkills = [
+    Skill(
+      id: 'skill_visual_arts',
+      name: 'Colors & Shapes',
+      description: 'Mixing colors and identifying shapes',
+      strand: 'arts',
+      state: SkillState.introduced,
+      lastPracticed: DateTime.now(),
+      difficulty: 1,
+    ),
+    Skill(
+      id: 'skill_music',
+      name: 'Rhythm & Beats',
+      description: 'Clap along to the beat',
+      strand: 'arts',
+      state: SkillState.introduced,
+      lastPracticed: DateTime.now(),
+      difficulty: 1,
+    ),
+  ];
 
   /// Get NAPLAN high-risk skills only
   static List<Skill> getNaplanHighRiskSkills() {

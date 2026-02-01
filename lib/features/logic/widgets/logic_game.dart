@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
+import 'package:brightbound_adventures/core/services/haptic_service.dart';
+import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 import '../models/question.dart';
 
 /// Interactive logic puzzle game with mountain/peaks theme
@@ -82,6 +85,9 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
   void _selectAnswer(int index) {
     if (_showFeedback) return;
 
+    // Get haptic service
+    final hapticService = context.read<HapticService>();
+
     setState(() {
       _selectedAnswer = index;
       _showFeedback = true;
@@ -91,6 +97,9 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
         _correctAnswers++;
         _currentStreak++;
         _celebrationController.forward(from: 0);
+        
+        // Haptic feedback
+        hapticService.onCorrectAnswer();
 
         // Play appropriate celebration sound based on streak
         if (_currentStreak >= 3) {
@@ -100,6 +109,10 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
         }
       } else {
         _currentStreak = 0;
+        
+        // Haptic feedback
+        hapticService.onWrongAnswer();
+
         _audioManager.playIncorrectAnswer();
       }
     });
@@ -421,12 +434,17 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
       } else if (isSelected && !isCorrectAnswer) {
         bgColor = Colors.red.withValues(alpha: 0.3);
         borderColor = Colors.red;
-        textColor = Colors.redAccent;
-        icon = Icons.cancel;
-      }
-    } else if (isSelected) {
-      bgColor = Colors.teal.withValues(alpha: 0.3);
-      borderColor = Colors.tealAccent;
+        textCSemantics(
+        label: 'Option ${index + 1}: $text',
+        selected: isSelected,
+        button: true,
+        enabled: !_showFeedback,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _showFeedback ? null : () => _selectAnswer(index),
+            borderRadius: BorderRadius.circular(16),
+        borderColor = Colors.tealAccent;
     }
 
     return Padding(
@@ -606,17 +624,30 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCelebration() {
-    return AnimatedBuilder(
-      animation: _celebrationController,
-      builder: (context, child) {
-        return Positioned.fill(
-          child: IgnorePointer(
-            child: CustomPaint(
-              painter: _StarBurstPainter(_celebrationController.value),
-            ),
+  Widget _bStack(
+      children: [
+        AnimatedBuilder(
+          animation: _celebrationController,
+          builder: (context, child) {
+            return Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: _StarBurstPainter(_celebrationController.value),
+                ),
+              ),
+            );
+          },
+        ),
+        if (_celebrationController.isAnimating)
+          const Positioned.fill(
+             child: IgnorePointer(
+               child: ConfettiBurst(
+                 color: Colors.tealAccent,
+                 particleCount: 20,
+               ),
+             ),
           ),
-        );
+      ] );
       },
     );
   }

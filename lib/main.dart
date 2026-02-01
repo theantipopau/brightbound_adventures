@@ -101,6 +101,18 @@ class BrightBoundApp extends StatelessWidget {
               zoneDescription: 'Improve hand-eye coordination and motor skills',
               zoneColor: AppColors.adventureArenaColor,
             ),
+        '/science-explorers': (context) => const ZoneDetailScreen(
+              zoneId: 'science_explorers',
+              zoneName: '🔬 Science Explorers',
+              zoneDescription: 'Discover the world around you!',
+              zoneColor: Color(0xFF4DB6AC),
+            ),
+        '/creative-corner': (context) => const ZoneDetailScreen(
+              zoneId: 'creative_corner',
+              zoneName: '🎨 Creative Corner',
+              zoneDescription: 'Express yourself with art and music',
+              zoneColor: Color(0xFFFFB74D),
+            ),
       },
     );
   }
