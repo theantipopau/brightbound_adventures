@@ -5,9 +5,14 @@ import 'package:brightbound_adventures/features/mini_games/memory_match_game.dar
 import 'package:brightbound_adventures/features/mini_games/pattern_puzzle_game.dart';
 import 'package:brightbound_adventures/features/mini_games/word_search_game.dart';
 
+import 'package:brightbound_adventures/ui/widgets/visual_effects/particle_background.dart';
+import 'package:brightbound_adventures/ui/widgets/responsive_quiz_layout.dart';
+import 'package:brightbound_adventures/ui/widgets/visual_effects/screen_shaker.dart';
+
 /// Improved Mini Games Screen with enhanced GUI and better gameplay
 class MiniGamesScreen extends StatefulWidget {
   const MiniGamesScreen({super.key});
+
 
   @override
   State<MiniGamesScreen> createState() => _MiniGamesScreenState();
@@ -42,22 +47,30 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.purple.shade700,
-              Colors.purple.shade900,
-              Colors.indigo.shade900,
-            ],
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.purple.shade700,
+                  Colors.purple.shade900,
+                  Colors.indigo.shade900,
+                ],
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
+          const ParticleBackground(
+            particles: ['🎮', '👾', '✨', '🎲', '🧩'],
+            particleCount: 15,
+            speedMultiplier: 0.5,
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                // Header
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Row(
@@ -88,16 +101,16 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                             ),
                           ),
                         ],
-                      ),
                     ),
-                    const SizedBox(width: 48), // Balance the back button
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 48), // Balance the back button
+                ],
               ),
+            ),
 
-              // Games Grid - Responsive
-              Expanded(
-                child: LayoutBuilder(
+            // Games Grid - Responsive
+            Expanded(
+              child: LayoutBuilder(
                   builder: (context, constraints) {
                     // Determine grid layout based on available space
                     final width = constraints.maxWidth;
@@ -210,7 +223,7 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
             ],
           ),
         ),
-      ),
+      ]),
     );
   }
 
@@ -409,6 +422,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late AnimationController _gameController;
   late AnimationController _pulseController;
+  late ScreenShakeController _shakeController;
   int score = 0;
   int timeRemaining = 30;
   bool gameOver = false;
@@ -437,6 +451,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _shakeController = ScreenShakeController();
     _gameController = AnimationController(
       duration: const Duration(seconds: 30),
       vsync: this,
@@ -599,10 +614,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      body: Column(
-        children: [
-          // Header with timer and score
-          Container(
+      body: ScreenShaker(
+        controller: _shakeController,
+        child: Column(
+          children: [
+            // Header with timer and score
+            Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -702,6 +719,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             child: gameOver ? _buildGameOver() : _buildGameContent(),
           ),
         ],
+      ),
       ),
     );
   }
@@ -1018,6 +1036,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       setState(() {
         score = math.max(0, score - 5);
       });
+      _shakeController.shake();
     }
   }
 
@@ -1096,6 +1115,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       setState(() {
         score = math.max(0, score - 5);
       });
+      _shakeController.shake();
     }
   }
 

@@ -66,12 +66,22 @@ class AnimationService {
       Colors.purple,
       Colors.pink,
       Colors.orange,
+      Colors.cyanAccent,
+      Colors.amberAccent,
     ];
 
     return List.generate(count, (index) {
-      // Spread particles in all directions
-      final angle = (2 * pi * index) / count;
-      final speed = 200 + _random.nextDouble() * 300; // 200-500 px/s
+      // Explosive randomized distribution (Fountain/Firework style)
+      // Angle: Full 360 degrees but with random jitter so it doesn't look like spokes
+      final baseAngle = (2 * pi * index) / count;
+      final angleJitter = (_random.nextDouble() - 0.5) * 0.5; // +/- ~15 degrees variation
+      final angle = baseAngle + angleJitter;
+      
+      // Speed: Much higher variance for "pop" feel
+      final speed = 300 + _random.nextDouble() * 600; // 300-900 px/s
+
+      // Gravity: Slight variance to separate particles vertically over time
+      final gravityVar = 400.0 + _random.nextDouble() * 400.0;
 
       return ConfettiParticle(
         initialPosition: center,
@@ -80,9 +90,10 @@ class AnimationService {
           sin(angle) * speed,
         ),
         rotation: _random.nextDouble() * 2 * pi,
-        rotationSpeed: (_random.nextDouble() - 0.5) * 10, // -5 to 5 rad/s
+        rotationSpeed: (_random.nextDouble() - 0.5) * 25, // Fast spin
         color: colorList[_random.nextInt(colorList.length)],
-        size: 5 + _random.nextDouble() * 10, // 5-15 px
+        size: 6 + _random.nextDouble() * 14, // 6-20 px (larger variance)
+        gravity: gravityVar,
       );
     });
   }

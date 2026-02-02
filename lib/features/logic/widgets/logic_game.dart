@@ -434,7 +434,17 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
       } else if (isSelected && !isCorrectAnswer) {
         bgColor = Colors.red.withValues(alpha: 0.3);
         borderColor = Colors.red;
-        textCSemantics(
+        textColor = Colors.redAccent;
+        icon = Icons.cancel;
+      }
+    } else if (isSelected) {
+      bgColor = Colors.teal.withValues(alpha: 0.3);
+      borderColor = Colors.tealAccent;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Semantics(
         label: 'Option ${index + 1}: $text',
         selected: isSelected,
         button: true,
@@ -444,17 +454,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
           child: InkWell(
             onTap: _showFeedback ? null : () => _selectAnswer(index),
             borderRadius: BorderRadius.circular(16),
-        borderColor = Colors.tealAccent;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _showFeedback ? null : () => _selectAnswer(index),
-          borderRadius: BorderRadius.circular(16),
-          child: AnimatedContainer(
+            child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -505,7 +505,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildFeedback() {
@@ -624,7 +625,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
     );
   }
 
-  Widget _bStack(
+  Widget _buildCelebration() {
+    return Stack(
       children: [
         AnimatedBuilder(
           animation: _celebrationController,
@@ -639,16 +641,16 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
           },
         ),
         if (_celebrationController.isAnimating)
-          const Positioned.fill(
-             child: IgnorePointer(
-               child: ConfettiBurst(
-                 color: Colors.tealAccent,
-                 particleCount: 20,
-               ),
-             ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: ConfettiBurst(
+                center: MediaQuery.of(context).size.center(Offset.zero),
+                colors: const [Colors.tealAccent],
+                particleCount: 20,
+              ),
+            ),
           ),
-      ] );
-      },
+      ],
     );
   }
 

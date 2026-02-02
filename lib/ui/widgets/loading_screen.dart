@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart'; // Ensure colors available if needed
+import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 
 /// Fun loading screen with educational tips
 class LoadingScreen extends StatefulWidget {
@@ -18,10 +20,12 @@ class LoadingScreen extends StatefulWidget {
 
 class _LoadingScreenState extends State<LoadingScreen>
     with TickerProviderStateMixin {
-  late AnimationController _spinController;
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
   String _currentTip = '';
+  // Pick a random character for variety each load
+  final List<String> _characters = ['warrior', 'mage', 'rogue', 'cleric'];
+  late String _randomCharacter;
 
   static const List<String> _defaultTips = [
     '💡 Did you know? Your brain is like a muscle - the more you use it, the stronger it gets!',
@@ -42,25 +46,20 @@ class _LoadingScreenState extends State<LoadingScreen>
 
     final tips = widget.tips ?? _defaultTips;
     _currentTip = tips[Random().nextInt(tips.length)];
-
-    _spinController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat();
+    _randomCharacter = _characters[Random().nextInt(_characters.length)];
 
     _bounceController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 600), // Faster bounce for running
       vsync: this,
     )..repeat(reverse: true);
 
-    _bounceAnimation = Tween<double>(begin: 0, end: 20).animate(
+    _bounceAnimation = Tween<double>(begin: 0, end: 15).animate(
       CurvedAnimation(parent: _bounceController, curve: Curves.easeInOut),
     );
   }
 
   @override
   void dispose() {
-    _spinController.dispose();
     _bounceController.dispose();
     super.dispose();
   }
@@ -85,7 +84,7 @@ class _LoadingScreenState extends State<LoadingScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Animated loading icon
+                // Animated Character Running
                 AnimatedBuilder(
                   animation: _bounceAnimation,
                   builder: (context, child) {
@@ -94,34 +93,23 @@ class _LoadingScreenState extends State<LoadingScreen>
                       child: child,
                     );
                   },
-                  child: RotationTransition(
-                    turns: _spinController,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.purple.shade400,
-                            Colors.blue.shade400,
-                            Colors.pink.shade400,
-                          ],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.purple.withValues(alpha: 0.3),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
+                  child: Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.white.withValues(alpha: 0.8),
+                          Colors.white.withValues(alpha: 0.0),
                         ],
                       ),
-                      child: const Center(
-                        child: Text(
-                          '✨',
-                          style: TextStyle(fontSize: 48),
-                        ),
-                      ),
+                    ),
+                    child: AnimatedCharacter(
+                       character: _randomCharacter,
+                       size: 120,
+                       animation: CharacterAnimation.walking, // Looks like running with the bounce
+                       showParticles: true,
                     ),
                   ),
                 ),

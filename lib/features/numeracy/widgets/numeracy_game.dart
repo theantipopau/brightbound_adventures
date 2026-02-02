@@ -683,15 +683,21 @@ class _NumeracyGameState extends State<NumeracyGame>
           selected: isSelected,
           button: true,
           enabled: !_answered,
-          child: HoverCard(
-            backgroundColor: backgroundColor,
-            borderColor: borderColor,
-            enabled: !_answered,
+          child: InkWell(
             onTap: _answered ? null : () => _selectAnswer(index),
-            child: Row(
-              children: [
-                // Option letter badge
-                Container(
+            borderRadius: BorderRadius.circular(16),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderColor, width: 2),
+              ),
+              child: Row(
+                children: [
+                  // Option letter badge
+                  Container(
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
@@ -751,7 +757,9 @@ class _NumeracyGameState extends State<NumeracyGame>
             ],
           ),
         ),
-      );
+      ),
+    ),
+  );
     }).toList();
   }
 

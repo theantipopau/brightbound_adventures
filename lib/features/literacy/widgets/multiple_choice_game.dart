@@ -115,12 +115,12 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
           _audioManager.playStreak(_currentStreak);
         } else {
           _audioManager.playCorrectAnswer();
+        }
         _hapticService.onCorrectAnswer();
       } else {
         _currentStreak = 0;
         _audioManager.playIncorrectAnswer();
-        _hapticService.onWrong
-        _audioManager.playIncorrectAnswer();
+        _hapticService.onWrongAnswer();
       }
     });
 
@@ -744,22 +744,28 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
         }
       }
 
-      return PaSemantics(
+      return Semantics(
           label: 'Option ${String.fromCharCode(65 + index)}: $option',
           selected: isSelected,
           button: true,
           enabled: !_answered,
-          child: HoverCard(
-            backgroundColor: backgroundColor,
-            borderColor: borderColor,
-            enabled: !_answered,
-            onTap: _answered ? null : () => _selectAnswer(index),
-            child: Row(
-              children: [
-                // Option letter
-              children: [
-              // Option letter
-              Container(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: InkWell(
+              onTap: _answered ? null : () => _selectAnswer(index),
+              borderRadius: BorderRadius.circular(16),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: borderColor, width: 2),
+                ),
+                child: Row(
+                  children: [
+                    // Option letter
+                    Container(
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
@@ -810,6 +816,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                       ),
                   ],
                 ),
+              ),
             ),
           ),
         );

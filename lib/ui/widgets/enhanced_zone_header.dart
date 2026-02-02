@@ -169,12 +169,18 @@ class _EnhancedZoneHeaderState extends State<EnhancedZoneHeader>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Zone emoji with animation
-                          Transform.translate(
-                            offset: Offset(0,
-                                math.sin(_floatController.value * math.pi) * 5),
-                            child: Text(
-                              _getZoneEmoji(),
-                              style: const TextStyle(fontSize: 48),
+                          Hero(
+                            tag: 'zone_icon_${widget.zoneId}',
+                            child: Transform.translate(
+                              offset: Offset(0,
+                                  math.sin(_floatController.value * math.pi) * 5),
+                              child: Text(
+                                _getZoneEmoji(),
+                                style: const TextStyle(
+                                  fontSize: 48,
+                                  decoration: TextDecoration.none, // Fix hero flight text style
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),

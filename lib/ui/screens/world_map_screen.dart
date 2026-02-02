@@ -8,6 +8,8 @@ import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/core/utils/isometric_engine.dart';
 import 'package:brightbound_adventures/core/utils/world_map_isometric_helper.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/widgets/visual_effects/animated_cloud_background.dart';
+import 'package:brightbound_adventures/ui/widgets/visual_effects/particle_background.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:brightbound_adventures/ui/widgets/streak_widget.dart';
 import 'package:brightbound_adventures/ui/widgets/transitions.dart';
@@ -505,44 +507,30 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   Widget _buildAnimatedBackground() {
-    return AnimatedBuilder(
-      animation: _floatController,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                // Vibrant sky blue at top
-                Color.lerp(
-                  const Color(0xFF4FC3F7),
-                  const Color(0xFF29B6F6),
-                  _floatController.value,
-                )!,
-                // Bright cyan-green middle
-                Color.lerp(
-                  const Color(0xFF80DEEA),
-                  const Color(0xFFA5D6A7),
-                  _floatController.value,
-                )!,
-                // Warm sunset orange-pink at bottom
-                Color.lerp(
-                  const Color(0xFFFFCC80),
-                  const Color(0xFFF8BBD9),
-                  _floatController.value,
-                )!,
-              ],
-              stops: const [0.0, 0.5, 1.0],
-            ),
-          ),
-          child: CustomPaint(
-            painter:
-                _EnhancedBackgroundPainter(animation: _floatController.value),
-            size: Size.infinite,
-          ),
-        );
-      },
+    return Stack(
+      children: [
+        // 1. Dynamic Animated Sky (New)
+        const AnimatedCloudBackground(),
+
+        // 2. Existing Detailed Background Painter (Ground details etc)
+        AnimatedBuilder(
+          animation: _floatController,
+          builder: (context, child) {
+            return CustomPaint(
+              painter:
+                  _EnhancedBackgroundPainter(animation: _floatController.value),
+              size: Size.infinite,
+            );
+          },
+        ),
+
+        // 3. Floating Atmosphere Particles (New)
+        const ParticleBackground(
+          particles: ['✨', '🍃', '☁️', '⭐'],
+          particleCount: 15,
+          speedMultiplier: 0.3,
+        ),
+      ],
     );
   }
 
@@ -2106,17 +2094,27 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                     AnimatedBuilder(
                                       animation: widget.floatAnimation,
                                       builder: (context, _) {
-                                        final scale = 0.95 + math.sin(widget.floatAnimation.value * 3.14159) * 0.08;
+                                        final scale = 0.95 +
+                                            math.sin(widget.floatAnimation
+                                                    .value *
+                                                3.14159) *
+                                                0.08;
                                         return Transform.scale(
                                           scale: scale,
-                                          child: Text(
-                                            widget.isUnlocked
-                                                ? widget.zone.emoji
-                                                : '🔒',
-                                            style: TextStyle(
-                                              fontSize: widget.isUnlocked
-                                                  ? 44
-                                                  : 32,
+                                          child: Hero(
+                                            tag:
+                                                'zone_icon_${widget.zone.id}',
+                                            child: Text(
+                                              widget.isUnlocked
+                                                  ? widget.zone.emoji
+                                                  : '🔒',
+                                              style: TextStyle(
+                                                fontSize: widget.isUnlocked
+                                                    ? 44
+                                                    : 32,
+                                                decoration: TextDecoration
+                                                    .none, // Essential for Hero text flight
+                                              ),
                                             ),
                                           ),
                                         );

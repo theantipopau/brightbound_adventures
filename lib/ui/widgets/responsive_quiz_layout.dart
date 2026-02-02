@@ -267,60 +267,115 @@ class HoverButton extends StatefulWidget {
   State<HoverButton> createState() => _HoverButtonState();
 }
 
-class _HoverButtonState extends State<HoverButton> {
+class _HoverButtonState extends State<HoverButton> with SingleTickerProviderStateMixin {
   bool _hovered = false;
+  bool _pressed = false;
+  late AnimationController _scaleController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _scaleController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 100));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+        CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(_) {
+    if (widget.enabled) {
+      setState(() => _pressed = true);
+      _scaleController.forward();
+    }
+  }
+
+  void _handleTapUp(_) {
+    if (widget.enabled) {
+      setState(() => _pressed = false);
+      _scaleController.reverse();
+    }
+  }
+
+  void _handleTapCancel() {
+    if (widget.enabled) {
+      setState(() => _pressed = false);
+      _scaleController.reverse();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     Widget button = MouseRegion(
-      cursor: widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
+      cursor: widget.enabled
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.forbidden,
       onEnter: (_) {
         if (widget.enabled) setState(() => _hovered = true);
       },
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
+        onTapDown: _handleTapDown,
+        onTapUp: _handleTapUp,
+        onTapCancel: _handleTapCancel,
         onTap: widget.enabled ? widget.onPressed : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
-          height: widget.height,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: _hovered && widget.enabled
-                ? [
-                    widget.hoverColor,
-                    widget.hoverColor.withValues(alpha: 0.85),
-                  ]
-                : [
-                    widget.backgroundColor,
-                    widget.backgroundColor.withValues(alpha: 0.9),
-                  ],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: _hovered && widget.enabled ? 0.5 : 0.2),
-              width: _hovered && widget.enabled ? 2.5 : 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (_hovered && widget.enabled ? widget.hoverColor : widget.backgroundColor)
-                    .withValues(alpha: _hovered && widget.enabled ? 0.5 : 0.2),
-                blurRadius: _hovered && widget.enabled ? 24 : 12,
-                offset: Offset(0, _hovered && widget.enabled ? 8 : 4),
-                spreadRadius: _hovered && widget.enabled ? 2 : 0,
-              ),
-            ],
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) => Transform.scale(
+            scale: _scaleAnimation.value,
+            child: child,
           ),
-          transform: (_hovered && widget.enabled)
-            ? Matrix4.translationValues(0, -3, 0)
-            : Matrix4.identity(),
-          child: Center(
-            child: AnimatedOpacity(
-              opacity: widget.enabled ? 1.0 : 0.65,
-              duration: const Duration(milliseconds: 200),
-              child: widget.child,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            height: widget.height,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: _hovered && widget.enabled
+                    ? [
+                        widget.hoverColor,
+                        widget.hoverColor.withValues(alpha: 0.85),
+                      ]
+                    : [
+                        widget.backgroundColor,
+                        widget.backgroundColor.withValues(alpha: 0.9),
+                      ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(
+                    alpha: _hovered && widget.enabled ? 0.5 : 0.2),
+                width: _hovered && widget.enabled ? 2.5 : 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: (_hovered && widget.enabled
+                          ? widget.hoverColor
+                          : widget.backgroundColor)
+                      .withValues(
+                          alpha: _hovered && widget.enabled ? 0.5 : 0.2),
+                  blurRadius: _hovered && widget.enabled ? 24 : 12,
+                  offset: Offset(0, _hovered && widget.enabled ? 8 : 4),
+                  spreadRadius: _hovered && widget.enabled ? 2 : 0,
+                ),
+              ],
+            ),
+            transform: (_hovered && widget.enabled)
+                ? Matrix4.translationValues(0, -3, 0)
+                : Matrix4.identity(),
+            child: Center(
+              child: AnimatedOpacity(
+                opacity: widget.enabled ? 1.0 : 0.65,
+                duration: const Duration(milliseconds: 200),
+                child: widget.child,
+              ),
             ),
           ),
         ),
