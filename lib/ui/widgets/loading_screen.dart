@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:brightbound_adventures/ui/themes/index.dart'; // Ensure colors available if needed
+import 'package:brightbound_adventures/ui/themes/index.dart'; 
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 
-/// Fun loading screen with educational tips
+/// Fun loading screen with educational tips and animated background
 class LoadingScreen extends StatefulWidget {
   final String? message;
   final List<String>? tips;
@@ -22,10 +23,16 @@ class _LoadingScreenState extends State<LoadingScreen>
     with TickerProviderStateMixin {
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
+  late AnimationController _backgroundController;
+  
   String _currentTip = '';
   // Pick a random character for variety each load
   final List<String> _characters = ['warrior', 'mage', 'rogue', 'cleric'];
   late String _randomCharacter;
+  
+  Timer? _tipTimer;
+  int _dotCount = 0;
+  Timer? _dotTimer;
 
   static const List<String> _defaultTips = [
     '💡 Did you know? Your brain is like a muscle - the more you use it, the stronger it gets!',
@@ -38,6 +45,9 @@ class _LoadingScreenState extends State<LoadingScreen>
     '🎨 Use colors and drawings to help you remember things!',
     '🧠 Your brain loves new challenges - don\'t be afraid to try!',
     '💪 Believe in yourself! You can do amazing things!',
+    '🪐 The Number Nebula is infinite!',
+    '📝 Writers Realm is full of stories waiting to be told.',
+    '🐨 Kangaroos can jump up to 30 feet in a single hop!',
   ];
 
   @override
@@ -56,109 +66,224 @@ class _LoadingScreenState extends State<LoadingScreen>
     _bounceAnimation = Tween<double>(begin: 0, end: 15).animate(
       CurvedAnimation(parent: _bounceController, curve: Curves.easeInOut),
     );
+    
+    _backgroundController = AnimationController(
+      duration: const Duration(seconds: 10),
+      vsync: this,
+    )..repeat();
+    
+    // Cycle tips every 4 seconds
+    _tipTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentTip = tips[Random().nextInt(tips.length)];
+        });
+      }
+    });
+
+    // Animate "..." dots
+    _dotTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      if (mounted) {
+        setState(() {
+          _dotCount = (_dotCount + 1) % 4; 
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _bounceController.dispose();
+    _backgroundController.dispose();
+    _tipTimer?.cancel();
+    _dotTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Generate some random shapes for the background
+    final random = Random(42); 
+    
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.blue.shade50,
-              Colors.purple.shade50,
-              Colors.pink.shade50,
-            ],
+      body: Stack(
+        children: [
+          // Animated Background
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _backgroundController,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: _BackgroundPainter(_backgroundController.value),
+                );
+              },
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Animated Character Running
-                AnimatedBuilder(
-                  animation: _bounceAnimation,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(0, -_bounceAnimation.value),
-                      child: child,
-                    );
-                  },
-                  child: Container(
-                    width: 150,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          Colors.white.withValues(alpha: 0.8),
-                          Colors.white.withValues(alpha: 0.0),
+          
+          SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Animated Character Running
+                  AnimatedBuilder(
+                    animation: _bounceAnimation,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(0, -_bounceAnimation.value),
+                        child: child,
+                      );
+                    },
+                    child: Container(
+                      width: 150,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            Colors.white.withOpacity(0.8),
+                            Colors.white.withOpacity(0.0),
+                          ],
+                        ),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                           // Add a shadow below
+                           Positioned(
+                             bottom: 20,
+                             child: Container(
+                               width: 60,
+                               height: 10,
+                               decoration: BoxDecoration(
+                                 color: Colors.black.withOpacity(0.2),
+                                 borderRadius: BorderRadius.circular(50),
+                               ),
+                             ),
+                           ),
+                           AnimatedCharacter(
+                             character: _randomCharacter,
+                             size: 120,
+                             animation: CharacterAnimation.walking, // Looks like running with the bounce
+                             showParticles: true,
+                          ),
                         ],
                       ),
                     ),
-                    child: AnimatedCharacter(
-                       character: _randomCharacter,
-                       size: 120,
-                       animation: CharacterAnimation.walking, // Looks like running with the bounce
-                       showParticles: true,
-                    ),
                   ),
-                ),
 
-                const SizedBox(height: 40),
+                  const SizedBox(height: 40),
 
-                // Loading message
-                Text(
-                  widget.message ?? 'Loading...',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-
-                const SizedBox(height: 40),
-
-                // Educational tip
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 40),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    _currentTip,
+                  // Loading message with animated dots
+                  Text(
+                    '${widget.message ?? 'Loading'}${"." * _dotCount}',
                     style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                      height: 1.5,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(2,2))
+                      ]
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 40),
+
+                  // Educational tip card
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    transitionBuilder: (Widget child, Animation<double> animation) {
+                      return FadeTransition(opacity: animation, child: SlideTransition(
+                        position: Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(animation),
+                        child: child,
+                      ));
+                    },
+                    child: Container(
+                      key: ValueKey<String>(_currentTip), // AnimatedSwitcher needs unique key
+                      margin: const EdgeInsets.symmetric(horizontal: 40),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                        border: Border.all(color: Colors.white, width: 2)
+                      ),
+                      child: Column(
+                        children: [
+                          const Text("DID YOU KNOW?", style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey, letterSpacing: 1.5
+                          )),
+                          const SizedBox(height: 8),
+                          Text(
+                            _currentTip,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              color: Colors.black87,
+                              height: 1.4,
+                              fontFamily: 'Comic Sans MS', // Fallback fun font
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
+  }
+}
+
+class _BackgroundPainter extends CustomPainter {
+  final double animationValue;
+  final Random _random = Random(123); // Seeded for consistency
+
+  _BackgroundPainter(this.animationValue);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Gradient Background
+    final Rect rect = Offset.zero & size;
+    final Paint gradientPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+           Colors.blue.shade100,
+           Colors.purple.shade100,
+           Colors.orange.shade50,
+        ],
+      ).createShader(rect);
+    canvas.drawRect(rect, gradientPaint);
+
+    // Moving shapes
+    for(int i=0; i<10; i++) {
+       final double speed = 0.2 + (_random.nextDouble() * 0.5);
+       final double x = (_random.nextDouble() * size.width + (animationValue * size.width * speed)) % (size.width + 100) - 50;
+       final double y = _random.nextDouble() * size.height;
+       final double radius = 20 + _random.nextDouble() * 40;
+       
+       final paint = Paint()
+         ..color = Colors.white.withOpacity(0.3)
+         ..style = PaintingStyle.fill;
+         
+       canvas.drawCircle(Offset(x, y), radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) {
+     return oldDelegate.animationValue != animationValue;
   }
 }
 

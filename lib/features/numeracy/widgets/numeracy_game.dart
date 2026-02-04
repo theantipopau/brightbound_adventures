@@ -1,13 +1,15 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
-import 'package:brightbound_adventures/core/services/animation_service.dart';
+import 'package:brightbound_adventures/core/controllers/game_session_controller.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/responsive_quiz_layout.dart';
 import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
+import 'package:brightbound_adventures/ui/widgets/visual_effects/screen_shaker.dart';
 
 /// Multiple choice quiz game for numeracy skills
 class NumeracyGame extends StatefulWidget {
@@ -30,32 +32,49 @@ class NumeracyGame extends StatefulWidget {
   State<NumeracyGame> createState() => _NumeracyGameState();
 }
 
-class _NumeracyGameState extends State<NumeracyGame>
-    with TickerProviderStateMixin {
+class _NumeracyGameState extends State<NumeracyGame> with TickerProviderStateMixin {
+  late GameSessionController _gameController;
   late List<NumeracyQuestion> _shuffledQuestions;
+  
   int _currentIndex = 0;
-  int _correctCount = 0;
-  int _currentStreak = 0;
   int? _selectedIndex;
   bool _answered = false;
   bool _showHint = false;
   bool _hintUsed = false;
+  
   final AudioManager _audioManager = AudioManager();
 
   late AnimationController _feedbackController;
   late Animation<double> _feedbackAnimation;
-  late AnimationController _progressController;
   late AnimationController _starController;
+// ignore: unused_field
   late Animation<double> _starAnimation;
-  late AnimationController _shakeController;
+  late ScreenShakeController _shakeController;
   
-  // Confetti tracking
   bool _showConfetti = false;
 
   @override
   void initState() {
     super.initState();
     _shuffledQuestions = List.from(widget.questions)..shuffle(Random());
+
+    _gameController = GameSessionController(
+      maxLives: 3,
+      totalQuestions: _shuffledQuestions.length,
+      maxTimePerQuestion: 60,
+      onLifeLost: () {
+        _audioManager.playIncorrectAnswer();
+        _shakeController.shake();
+      },
+      onGameOver: () {
+         _completeGame(forced: true);
+      },
+      onLevelComplete: () {
+        _completeGame();
+      },
+    );
+    _gameController.startGame();
+    _gameController.startQuestionTimer();
 
     _feedbackController = AnimationController(
       duration: const Duration(milliseconds: 500),
@@ -64,11 +83,6 @@ class _NumeracyGameState extends State<NumeracyGame>
     _feedbackAnimation = CurvedAnimation(
       parent: _feedbackController,
       curve: Curves.elasticOut,
-    );
-
-    _progressController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
     );
 
     _starController = AnimationController(
@@ -80,81 +94,55 @@ class _NumeracyGameState extends State<NumeracyGame>
       curve: Curves.elasticOut,
     );
 
-    // Shake animation controller for wrong answers
-    _shakeController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
+    _shakeController = ScreenShakeController();
   }
 
   @override
   void dispose() {
+    _gameController.dispose();
     _feedbackController.dispose();
-    _progressController.dispose();
     _starController.dispose();
-    _shakeController.dispose();
     super.dispose();
   }
 
   NumeracyQuestion get _currentQuestion => _shuffledQuestions[_currentIndex];
 
-  double get _progress => (_currentIndex + 1) / _shuffledQuestions.length;
-
   void _selectAnswer(int index) {
-    if (_answered) return;
+    if (_answered || _gameController.state != GameState.playing) return;
 
-    // Get haptic service from provider
     final hapticService = context.read<HapticService>();
 
     setState(() {
       _selectedIndex = index;
       _answered = true;
-      final isCorrect = _currentQuestion.isCorrect(index);
-
-      if (isCorrect) {
-        _correctCount++;
-        _currentStreak++;
-        _starController.forward(from: 0);
-
-        // Show confetti
-        setState(() {
-          _showConfetti = true;
-        });
-        Future.delayed(const Duration(milliseconds: 2200), () {
-          if (mounted) {
-            setState(() {
-              _showConfetti = false;
-            });
-          }
-        });
-
-        // Haptic feedback - strong vibration
-        hapticService.onCorrectAnswer();
-
-        // Play appropriate celebration sound based on streak
-        if (_currentStreak >= 3) {
-          _audioManager.playStreak(_currentStreak);
-        } else {
-          _audioManager.playCorrectAnswer();
-        }
-      } else {
-        _currentStreak = 0;
-
-        // Screen shake animation
-        _shakeController.forward(from: 0);
-
-        // Haptic feedback - double tap pattern
-        hapticService.onWrongAnswer();
-
-        // Play incorrect sound
-        _audioManager.playIncorrectAnswer();
-      }
     });
+
+    final isCorrect = _currentQuestion.isCorrect(index);
+    _gameController.submitAnswer(isCorrect);
+
+    if (isCorrect) {
+      hapticService.onCorrectAnswer();
+      _audioManager.playCorrectAnswer();
+      _starController.forward(from: 0);
+      setState(() {
+        _showConfetti = true;
+      });
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _showConfetti = false);
+      });
+      
+      Future.delayed(const Duration(milliseconds: 1500), _nextQuestion);
+    } else {
+      hapticService.onWrongAnswer();
+      Future.delayed(const Duration(milliseconds: 2000), _nextQuestion);
+    }
 
     _feedbackController.forward(from: 0);
   }
 
   void _nextQuestion() {
+    if (_gameController.state == GameState.finished) return;
+
     if (_currentIndex < _shuffledQuestions.length - 1) {
       setState(() {
         _currentIndex++;
@@ -163,21 +151,18 @@ class _NumeracyGameState extends State<NumeracyGame>
         _showHint = false;
         _hintUsed = false;
       });
-      _progressController.forward(from: 0);
+      _gameController.startQuestionTimer();
     } else {
       _completeGame();
     }
   }
 
-  void _completeGame() {
-    final accuracy = _correctCount / _shuffledQuestions.length;
-
-    // Play celebration sound for perfect score
+  void _completeGame({bool forced = false}) {
+    final accuracy = _gameController.correctAnswers / _shuffledQuestions.length;
     if (accuracy == 1.0) {
       _audioManager.playPerfectScore();
     }
-
-    widget.onComplete?.call(accuracy, _correctCount, _shuffledQuestions.length);
+    widget.onComplete?.call(accuracy, _gameController.correctAnswers, _shuffledQuestions.length);
   }
 
   void _showHintDialog() {
@@ -188,444 +173,249 @@ class _NumeracyGameState extends State<NumeracyGame>
       });
     }
   }
+  
+  void _togglePause() {
+    if (_gameController.state == GameState.playing) {
+      _gameController.pauseGame();
+    } else if (_gameController.state == GameState.paused) {
+      _gameController.resumeGame();
+    }
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: widget.themeColor.withValues(alpha: 0.05),
-      appBar: AppBar(
-        backgroundColor: widget.themeColor,
-        foregroundColor: Colors.white,
-        title: Row(
-          children: [
-            const Text('🌌 '),
-            Text(widget.skillName),
-          ],
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            _showExitConfirmation();
-          },
-        ),
+  void _showExitConfirmation() {
+    bool wasPlaying = _gameController.state == GameState.playing;
+    if (wasPlaying) _gameController.pauseGame();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Quit Practice?'),
+        content: const Text('You will lose your current streak and points.'),
         actions: [
-          // Hint button
-          if (_currentQuestion.hint != null && !_answered)
-            IconButton(
-              icon: Icon(
-                _showHint ? Icons.lightbulb : Icons.lightbulb_outline,
-                color: _showHint ? Colors.yellow : Colors.white,
-              ),
-              onPressed: _hintUsed ? null : _showHintDialog,
-              tooltip: 'Show Hint',
-            ),
-          // Progress indicator
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${_currentIndex + 1}/${_shuffledQuestions.length}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (wasPlaying) _gameController.resumeGame();
+            },
+            child: const Text('Keep Playing'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              widget.onCancel?.call();
+            },
+            child: const Text('Quit', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
-      body: SafeArea(
-        child: Stack(
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Calculate center for confetti
+    final size = MediaQuery.of(context).size;
+    final center = Offset(size.width / 2, size.height / 3);
+
+    return AnimatedBuilder(
+      animation: _gameController,
+      builder: (context, _) {
+      return Scaffold(
+        body: Stack(
           children: [
-            // Main content with shake animation
-            AnimatedBuilder(
-              animation: _shakeController,
-              builder: (context, child) {
-                // Calculate shake offset
-                final shakeOffset = AnimationService.getShakeOffset(
-                  _shakeController.value,
-                  intensity: 8.0,
-                );
-
-                return Transform.translate(
-                  offset: shakeOffset,
-                  child: child,
-                );
-              },
-              child: Column(
-                children: [
-                  // Progress bar
-                  LinearProgressIndicator(
-                    value: _progress,
-                    backgroundColor: widget.themeColor.withValues(alpha: 0.2),
-                    valueColor: AlwaysStoppedAnimation(widget.themeColor),
-                    minHeight: 8,
-                  ),
-
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ScreenBreakpoints.getHorizontalPadding(context),
-                        vertical: 16,
-                      ),
-                      child: ResponsiveQuizLayout(
-                        scoreCard: _buildScoreCard(),
-                        questionCard: _buildQuestionCard(),
-                        optionsArea: _buildOptionsArea(),
-                        feedbackWidget:
-                            _answered ? _buildFeedback() : null,
-                        maxWidth: ScreenBreakpoints.getMaxContentWidth(context),
-                      ),
-                    ),
-                  ),
-
-                  // Next button
-                  if (_answered)
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      child: HoverButton(
-                        backgroundColor: widget.themeColor,
-                        hoverColor: widget.themeColor.withValues(alpha: 0.9),
-                        tooltip: _currentIndex < _shuffledQuestions.length - 1
-                            ? "Press 'Enter' or click Next"
-                            : "Press 'Enter' or click See Results",
-                        onPressed: _nextQuestion,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              _currentIndex < _shuffledQuestions.length - 1
-                                  ? 'Next Question'
-                                  : 'See Results',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        _currentIndex < _shuffledQuestions.length - 1
-                            ? Icons.arrow_forward
-                            : Icons.celebration,
-                        color: Colors.white,
-                      ),
+            // 1. Gradient Background
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      widget.themeColor.withValues(alpha: 0.15),
+                      Colors.white,
                     ],
                   ),
                 ),
               ),
-                ],
-              ),
             ),
+            
+            // 2. Main Game Content
+            SafeArea(
+              child: ScreenShaker(
+                controller: _shakeController,
+                child: Column(
+                  children: [
+                    _buildHeader(),
+                    
+                    // Streak Banner
+                    if (_gameController.streak > 1)
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        height: 32,
+                        width: double.infinity,
+                        color: Colors.orange.withValues(alpha: 0.15),
+                        child: Center(
+                          child: Text(
+                            '🔥 STREAK x${_gameController.streak} (${_gameController.multiplier}x Multiplier!) 🔥',
+                            style: TextStyle(
+                              color: Colors.orange[800],
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.1
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                    // Timer Bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: LinearProgressIndicator(
+                          value: _gameController.remainingTime / _gameController.maxTimePerQuestion,
+                          backgroundColor: Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation(
+                            _gameController.remainingTime < 10 ? Colors.red : widget.themeColor
+                          ),
+                          minHeight: 12,
+                        ),
+                      ),
+                    ),
 
-            // Confetti overlay
-            if (_showConfetti)
-              ConfettiBurst(
-                center: Offset(
-                  MediaQuery.of(context).size.width / 2,
-                  MediaQuery.of(context).size.height / 3,
-                ),
-                duration: const Duration(milliseconds: 2000),
-                particleCount: 50,
-                colors: [
-                  widget.themeColor,
-                  Colors.yellow,
-                  Colors.green,
-                  Colors.blue,
-                  Colors.pink,
-                ],
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildScoreCard() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            widget.themeColor.withValues(alpha: 0.1),
-            widget.themeColor.withValues(alpha: 0.2),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: widget.themeColor.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildScoreItem('⭐', 'Score', '$_correctCount'),
-          Container(
-            width: 1,
-            height: 40,
-            color: widget.themeColor.withValues(alpha: 0.3),
-          ),
-          _buildScoreItem('🎯', 'Questions',
-              '${_currentIndex + 1}/${_shuffledQuestions.length}'),
-          Container(
-            width: 1,
-            height: 40,
-            color: widget.themeColor.withValues(alpha: 0.3),
-          ),
-          _buildScoreItem(
-            '📊',
-            'Accuracy',
-            _currentIndex > 0
-                ? '${((_correctCount / (_currentIndex + (_answered ? 1 : 0))) * 100).round()}%'
-                : '-',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScoreItem(String emoji, String label, String value) {
-    return Column(
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 20)),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: widget.themeColor,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuestionCard() {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 700),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: 0.9 + (value * 0.1),
-          child: Opacity(
-            opacity: value,
-            child: Container(
-              padding: EdgeInsets.all(
-                  MediaQuery.of(context).size.width < 600 ? 20 : 28),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white,
-                    widget.themeColor.withValues(alpha: 0.08),
+                    // Quiz Layout
+                    Expanded(
+                      child: ResponsiveQuizLayout(
+                        questionCard: _buildQuestionCard(),
+                        optionsArea: _buildOptionsArea(),
+                        feedbackWidget: _answered
+                            ? _buildFeedback(_currentQuestion.isCorrect(_selectedIndex ?? -1))
+                            : null,
+                      ),
+                    ),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(32),
-                border: Border.all(
-                  color: widget.themeColor.withValues(alpha: 0.25),
-                  width: 3,
+              ),
+            ),
+            
+            // 3. Confetti Effects
+            if (_showConfetti)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: ConfettiBurst(
+                    center: center,
+                    particleCount: 40,
+                  ),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: widget.themeColor.withValues(alpha: 0.2),
-                    blurRadius: 40,
-                    offset: const Offset(0, 15),
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+              ),
+              
+            // 4. Pause Menu Overlay
+            if (_gameController.state == GameState.paused)
+              _buildPauseOverlay(),
+          ],
+        ),
+        
+        // Floating Action Button for Hints
+        floatingActionButton: (_currentQuestion.hint != null && !_answered && _gameController.state == GameState.playing)
+           ? FloatingActionButton(
+               backgroundColor: _hintUsed ? Colors.grey : Colors.amber,
+               onPressed: _hintUsed ? null : _showHintDialog,
+               child: const Icon(Icons.lightbulb),
+             )
+           : null
+      );
+    });
+  }
+
+  Widget _buildPauseOverlay() {
+    return Positioned.fill(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
+          color: Colors.black.withValues(alpha: 0.3),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                 color: Colors.white,
+                 borderRadius: BorderRadius.circular(24),
+                 boxShadow: [
+                   BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0,10))
+                 ]
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Animated icon with enhanced glow and bounce
-                  AnimatedBuilder(
-                    animation: _feedbackController,
-                    builder: (context, _) {
-                      final bounce = sin(_feedbackController.value * 3.14159 * 2) * 8;
-                      final scale = 0.95 + sin(_feedbackController.value * 3.14159) * 0.08;
-                      return Transform.translate(
-                        offset: Offset(0, bounce),
-                        child: Transform.scale(
-                          scale: scale,
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              gradient: RadialGradient(
-                                colors: [
-                                  widget.themeColor.withValues(alpha: 0.25),
-                                  widget.themeColor.withValues(alpha: 0.08),
-                                ],
-                              ),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: widget.themeColor.withValues(alpha: 0.5),
-                                  blurRadius: 35,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              _getQuestionTypeEmoji(),
-                              style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width < 600
-                                      ? 48
-                                      : 56),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                  const Text('PAUSED', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    onPressed: _togglePause, 
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('RESUME'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                      textStyle: const TextStyle(fontSize: 20)
+                    )
                   ),
-                  const SizedBox(height: 28),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Text(
-                      _currentQuestion.question,
-                      style: TextStyle(
-                        fontSize:
-                            MediaQuery.of(context).size.width < 600 ? 23 : 30,
-                        fontWeight: FontWeight.w800,
-                        height: 1.5,
-                        color: Colors.grey[900],
-                        letterSpacing: 0.4,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 8,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  // Question difficulty indicator
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: widget.themeColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'Question ${_currentIndex + 1} of ${_shuffledQuestions.length}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: widget.themeColor,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    onPressed: _showExitConfirmation, 
+                    icon: const Icon(Icons.exit_to_app, color: Colors.red),
+                    label: const Text('QUIT GAME', style: TextStyle(color: Colors.red)),
+                  )
                 ],
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  String _getQuestionTypeEmoji() {
-    switch (_currentQuestion.type) {
-      case NumeracyQuestionType.counting:
-        return '🔢';
-      case NumeracyQuestionType.numberLine:
-        return '📏';
-      case NumeracyQuestionType.visualMath:
-        return '🎨';
-      case NumeracyQuestionType.patternRecognition:
-        return '🔮';
-      default:
-        return '🌟';
-    }
-  }
-
-  Widget _buildHintCard() {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.amber[50]!,
-            Colors.orange[50]!,
+  Widget _buildQuestionCard() {
+    return HoverCard(
+      enabled: false,
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        width: double.infinity,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildIllustration(),
+            const SizedBox(height: 32),
+            Text(
+              _currentQuestion.question,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                height: 1.3,
+              ),
+            ),
+            if (_showHint) ...[
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  border: Border.all(color: Colors.amber.shade200),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.lightbulb, color: Colors.amber),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _currentQuestion.hint ?? '',
+                        style: TextStyle(color: Colors.brown.shade800, fontSize: 16),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ]
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.amber[300]!,
-          width: 2.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.amber.withValues(alpha: 0.15),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Animated hint icon
-          AnimatedBuilder(
-            animation: _feedbackController,
-            builder: (context, _) {
-              final scale = 0.95 + sin(_feedbackController.value * 3.14159) * 0.05;
-              return Transform.scale(
-                scale: scale,
-                child: const Text('💡', style: TextStyle(fontSize: 28)),
-              );
-            },
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Hint',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.amber[900],
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _currentQuestion.hint!,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.amber[900],
-                    height: 1.4,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -633,343 +423,254 @@ class _NumeracyGameState extends State<NumeracyGame>
   Widget _buildOptionsArea() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Hint display
-        if (_showHint && _currentQuestion.hint != null) ...[
-          _buildHintCard(),
-          const SizedBox(height: 16),
-        ],
-        // Options
-        ..._buildOptions(),
-      ],
+      children: List.generate(_currentQuestion.options.length, (index) {
+         final isSelected = _selectedIndex == index;
+         final isCorrect = _currentQuestion.correctIndex == index;
+         
+         Color btnColor = Colors.white;
+         Color hoverColor = widget.themeColor.withValues(alpha: 0.1);
+
+         if (_answered) {
+            if (isCorrect) {
+              btnColor = Colors.green.shade100;
+              hoverColor = Colors.green.shade200;
+            }
+            else if (isSelected) {
+              btnColor = Colors.red.shade100;
+              hoverColor = Colors.red.shade200;
+            }
+         } else if (isSelected) {
+            btnColor = widget.themeColor.withValues(alpha: 0.1);
+         }
+         
+         return Padding(
+           padding: const EdgeInsets.only(bottom: 16),
+           child: HoverButton(
+              onPressed: () => _selectAnswer(index),
+              enabled: !_answered,
+              backgroundColor: btnColor,
+              hoverColor: hoverColor,
+              height: 72,
+              child: Text(
+                 _currentQuestion.options[index],
+                 style: TextStyle(
+                    fontSize: 22, 
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: Colors.black87
+                 )
+              )
+           ) 
+         );
+      })
     );
   }
 
-  List<Widget> _buildOptions() {
-    return _currentQuestion.options.asMap().entries.map((entry) {
-      final index = entry.key;
-      final option = entry.value;
-      final isSelected = _selectedIndex == index;
-      final isCorrect = _currentQuestion.correctIndex == index;
-
-      Color backgroundColor;
-      Color borderColor;
-      IconData? trailingIcon;
-
-      if (_answered) {
-        if (isCorrect) {
-          backgroundColor = Colors.green[50]!;
-          borderColor = Colors.green;
-          trailingIcon = Icons.check_circle;
-        } else if (isSelected) {
-          backgroundColor = Colors.red[50]!;
-          borderColor = Colors.red;
-          trailingIcon = Icons.cancel;
-        } else {
-          backgroundColor = Colors.grey[50]!;
-          borderColor = Colors.grey[300]!;
-        }
-      } else {
-        backgroundColor = isSelected
-            ? widget.themeColor.withValues(alpha: 0.1)
-            : Colors.white;
-        borderColor = isSelected ? widget.themeColor : Colors.grey[300]!;
-      }
-
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Semantics(
-          label: 'Option ${String.fromCharCode(65 + index)}: $option',
-          selected: isSelected,
-          button: true,
-          enabled: !_answered,
-          child: InkWell(
-            onTap: _answered ? null : () => _selectAnswer(index),
-            borderRadius: BorderRadius.circular(16),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: borderColor, width: 2),
-              ),
-              child: Row(
-                children: [
-                  // Option letter badge
-                  Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: _answered
-                      ? (isCorrect
-                          ? Colors.green
-                          : (isSelected ? Colors.red : Colors.grey[300]))
-                      : widget.themeColor.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    String.fromCharCode(65 + index), // A, B, C, D
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: _answered
-                          ? (isCorrect || isSelected
-                              ? Colors.white
-                              : Colors.grey[600])
-                          : widget.themeColor,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  option,
-                  style: TextStyle(
-                    fontSize:
-                        MediaQuery.of(context).size.width < 600 ? 16 : 18,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.normal,
-                    color: _answered
-                        ? (isCorrect
-                            ? Colors.green[800]
-                            : (isSelected
-                                ? Colors.red[800]
-                                : Colors.grey[600]))
-                        : Colors.black87,
-                    height: 1.3,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (trailingIcon != null)
-                ScaleTransition(
-                  scale: _feedbackAnimation,
-                  child: Icon(
-                    trailingIcon,
-                    color: isCorrect ? Colors.green : Colors.red,
-                    size: 28,
-                  ),
-                ),
-            ],
-          ),
-        ),
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+             color: Colors.black.withValues(alpha: 0.05),
+             blurRadius: 4,
+             offset: const Offset(0, 2)
+          )
+        ]
       ),
-    ),
-  );
-    }).toList();
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Left: Pause Button
+          IconButton(
+            icon: Icon(_gameController.state == GameState.paused ? Icons.play_arrow : Icons.pause),
+            color: Colors.grey[700],
+            onPressed: _togglePause,
+            tooltip: 'Pause Game',
+          ),
+          
+          // Center: Skill Title
+          Expanded(
+            child: Text(
+              widget.skillName, 
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: widget.themeColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 18
+              )
+            ),
+          ),
+          
+          // Right: Stats (Hearts + Score)
+          Row(
+            children: [
+               // Lives
+               Row(
+                 children: List.generate(3, (index) {
+                   return Padding(
+                     padding: const EdgeInsets.only(right: 2),
+                     child: AnimatedScale(
+                       duration: const Duration(milliseconds: 300),
+                       scale: index < _gameController.lives ? 1.0 : 0.8,
+                       child: Icon(
+                         index < _gameController.lives ? Icons.favorite : Icons.favorite_border,
+                         color: index < _gameController.lives ? Colors.redAccent : Colors.grey[300], 
+                         size: 24
+                       ),
+                     ),
+                   );
+                 }),
+               ),
+               const SizedBox(width: 12),
+               // Score Pills
+               Container(
+                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                 decoration: BoxDecoration(
+                   color: widget.themeColor, 
+                   borderRadius: BorderRadius.circular(20),
+                   boxShadow: [
+                     BoxShadow(
+                       color: widget.themeColor.withValues(alpha: 0.3),
+                       blurRadius: 4,
+                       offset: const Offset(0, 2)
+                     )
+                   ]
+                 ),
+                 child: Row(
+                   children: [
+                     const Icon(Icons.star, color: Colors.yellow, size: 16),
+                     const SizedBox(width: 4),
+                     Text(
+                       '${_gameController.score}',
+                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                     ),
+                   ],
+                 ),
+               )
+            ],
+          )
+        ],
+      ),
+    );
   }
 
-  Widget _buildFeedback() {
-    final isCorrect = _currentQuestion.isCorrect(_selectedIndex ?? -1);
-
+  Widget _buildFeedback(bool isCorrect) {
     return ScaleTransition(
       scale: _feedbackAnimation,
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isCorrect
-                ? [Colors.green[50]!, Colors.green[100]!]
-                : [Colors.red[50]!, Colors.orange[50]!],
-          ),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isCorrect ? Colors.green : Colors.red,
-            width: 3,
-          ),
+          color: isCorrect ? Colors.green : Colors.red,
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: (isCorrect ? Colors.green : Colors.red)
-                  .withValues(alpha: 0.3),
-              blurRadius: 20,
-              spreadRadius: 4,
+              color: (isCorrect ? Colors.green : Colors.red).withValues(alpha: 0.4),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Column(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (isCorrect)
-                  ScaleTransition(
-                    scale: _starAnimation,
-                    child: const Text('⭐', style: TextStyle(fontSize: 40)),
-                  ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    isCorrect ? 'Excellent! 🎉' : 'Try Again! 💪',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
-                      color: isCorrect ? Colors.green[700] : Colors.red[700],
-                      letterSpacing: 0.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                if (isCorrect)
-                  ScaleTransition(
-                    scale: _starAnimation,
-                    child: const Text('⭐', style: TextStyle(fontSize: 40)),
-                  ),
-              ],
+            Icon(
+              isCorrect ? Icons.check_circle : Icons.error,
+              color: Colors.white,
+              size: 28,
             ),
-            const SizedBox(height: 16),
-            // Progress indicator
-            if (isCorrect)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.green.withValues(alpha: 0.2),
-                      Colors.green.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.green.withValues(alpha: 0.5),
-                    width: 1.5,
-                  ),
-                ),
-                child: Text(
-                  '+1 Star Earned!',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green[700],
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              )
-            else
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.orange.withValues(alpha: 0.2),
-                      Colors.red.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.red.withValues(alpha: 0.5),
-                    width: 1.5,
-                  ),
-                ),
-                child: Text(
-                  'The correct answer: ${_currentQuestion.options[_currentQuestion.correctIndex]}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red[700],
-                    letterSpacing: 0.2,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+            const SizedBox(width: 12),
+            Text(
+              isCorrect 
+                ? (_gameController.streak > 2 ? 'Streak x${_gameController.streak}!!' : 'Correct!')
+                : 'Nice try!',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-            if (_currentQuestion.explanation != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.white.withValues(alpha: 0.8),
-                      Colors.blue[50]!.withValues(alpha: 0.6),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.blue.withValues(alpha: 0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('💡', style: TextStyle(fontSize: 24)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Learn:',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _currentQuestion.explanation!,
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey[800],
-                              height: 1.5,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _showExitConfirmation() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
-          children: [
-            Text('🌌 ', style: TextStyle(fontSize: 24)),
-            Text('Leave Practice?'),
-          ],
-        ),
-        content: const Text(
-          'Your progress in this session won\'t be saved if you leave now.',
-          style: TextStyle(fontSize: 16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Keep Going',
-              style: TextStyle(color: widget.themeColor),
+  Widget _buildIllustration() {
+    // Attempt to render visual based on question logic
+    try {
+      final qStr = _currentQuestion.question;
+      // 1. Check if simple addition: "5 + 3 = ?"
+      if (qStr.contains('+') && qStr.contains('=')) {
+        final parts = qStr.split(' ');
+        final num1 = int.tryParse(parts[0]);
+        final num2 = int.tryParse(parts[2]);
+        if (num1 != null && num2 != null && (num1 + num2 <= 12)) {
+           return Row(
+             mainAxisAlignment: MainAxisAlignment.center,
+             children: [
+               _buildDotGroup(num1, Colors.blue),
+               Padding(
+                 padding: const EdgeInsets.symmetric(horizontal: 12),
+                 child: Icon(Icons.add, size: 32, color: widget.themeColor),
+               ),
+               _buildDotGroup(num2, Colors.purple),
+             ],
+           );
+        }
+      }
+      
+      // 2. Check for Geometry: "Hexagon"
+      if (qStr.toLowerCase().contains('sides')) {
+        if (qStr.contains('Triangle')) return const Icon(Icons.change_history, size: 100, color: Colors.orange);
+        if (qStr.contains('Square')) return const Icon(Icons.crop_square, size: 100, color: Colors.blue);
+        if (qStr.contains('Circle')) return const Icon(Icons.circle_outlined, size: 100, color: Colors.red);
+        if (qStr.contains('Rectangle')) return const Icon(Icons.rectangle_outlined, size: 100, color: Colors.green);
+        return const Icon(Icons.category, size: 100, color: Colors.teal);
+      }
+      
+      // 3. Time
+      if (qStr.contains('time') || qStr.contains('clock')) {
+         return const Icon(Icons.access_time_filled, size: 100, color: Colors.blueGrey);
+      }
+      
+    } catch (_) {}
+
+    // Fallback generic icon
+    return Container(
+      padding: const EdgeInsets.all(20),
+      // ignore: deprecated_member_use
+      decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
+      child: Icon(
+        Icons.functions,
+        size: 60,
+        color: widget.themeColor.withValues(alpha: 0.5),
+      ),
+    );
+  }
+
+  Widget _buildDotGroup(int count, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        children: List.generate(
+          count,
+          (index) => Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
             ),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[400],
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-              widget.onCancel?.call();
-            },
-            child: const Text('Leave'),
-          ),
-        ],
+        ),
       ),
     );
   }
