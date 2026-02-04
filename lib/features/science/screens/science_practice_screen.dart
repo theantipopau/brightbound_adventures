@@ -86,7 +86,7 @@ class _SciencePracticeScreenState extends State<SciencePracticeScreen> {
 
           return ScienceGame(
             questions: snapshot.data!.questions,
-            onComplete: () {
+            onComplete: (accuracy, correct, total) {
                Navigator.pop(context);
             },
           );

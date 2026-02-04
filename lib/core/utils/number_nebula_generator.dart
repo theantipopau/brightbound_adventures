@@ -777,29 +777,6 @@ class NumberNebulaQuestionGenerator {
      // Select a random scenario type
      int type = _random.nextInt(4); // 0: Shopping, 1: Adventure, 2: Time, 3: Sharing
      
-     if (type == 0) { // Shopping
-        final s1 = MathWordProblemBank.shoppingScenarios[_random.nextInt(MathWordProblemBank.shoppingScenarios.length)];
-        final s2 = MathWordProblemBank.shoppingScenarios[_random.nextInt(MathWordProblemBank.shoppingScenarios.length)];
-        
-        final q1 = _random.nextInt(5) + 2;
-        final q2 = _random.nextInt(5) + 2;
-        final ans = q1 + q2;
-        
-        // "Liam bought 3 apples and 2 meat pies. How many items did he buy in total?"
-        return NumeracyQuestion(
-           id: 'wp_shopping_${index}',
-           skillId: 'word_problems',
-           question: 'One day, you ${s1['verb']} $q1 ${s1['item']} and then you ${s2['verb']} $q2 ${s2['item']}.\n\nHow many things did you get altogether?',
-           options: EnhancedQuestionGenerator.smartShuffle([ans.toString(), (ans+1).toString(), (ans-1).toString(), (ans+2).toString()], ans.toString()),
-           correctIndex: -1, // Will be fixed by smartShuffle finding
-           difficulty: difficulty,
-           hint: 'Add the two numbers together: $q1 + $q2',
-           explanation: 'You got $q1 ${s1['item']} + $q2 ${s2['item']} = $ans items total.'
-        )..correctIndex = -1; // Hack: need to find index after shuffle. 
-        // Actually smartShuffle returns list, I need to check index.
-        // Let's fix this in a cleaner way below.
-     }
-     
      // Correct implementation
      String qText = "";
      int ans = 0;
