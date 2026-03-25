@@ -306,15 +306,9 @@ class _HoverButtonState extends State<HoverButton> with SingleTickerProviderStat
     super.dispose();
   }
 
-  void _handleTapDown(_) {
+  void _handleTapDown(TapDownDetails _) {
     if (widget.enabled) {
       _scaleController.forward();
-    }
-  }
-
-  void _handleTapUp(_) {
-    if (widget.enabled) {
-      _scaleController.reverse();
     }
   }
 
@@ -341,7 +335,12 @@ class _HoverButtonState extends State<HoverButton> with SingleTickerProviderStat
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTapDown: widget.enabled ? _handleTapDown : null,
-          onTap: widget.enabled ? () { _handleTapUp(null); widget.onPressed(); } : null,
+          onTap: widget.enabled
+              ? () {
+                  _scaleController.reverse();
+                  widget.onPressed();
+                }
+              : null,
           onTapCancel: widget.enabled ? _handleTapCancel : null,
           splashColor: Colors.white.withValues(alpha: 0.2),
           highlightColor: Colors.white.withValues(alpha: 0.08),

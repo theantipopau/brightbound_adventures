@@ -130,7 +130,9 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
       if (correct >= 3) {
         achievementService.updateProgress('achievement_quick_learner', 1);
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Failed to update story achievements: $e');
+    }
 
     // Update daily challenges
     try {
@@ -146,7 +148,9 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
           }
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Failed to update story daily challenges: $e');
+    }
     _checkStreak();
   }
 

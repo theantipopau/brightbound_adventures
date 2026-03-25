@@ -472,26 +472,28 @@ class _ScienceGameState extends State<ScienceGame>
     return AnimatedBuilder(
       animation: _gameController,
       builder: (context, _) {
-        return RawKeyboardListener(
+        return KeyboardListener(
           focusNode: _focusNode,
-          onKey: (event) {
-            if (event.isKeyPressed(LogicalKeyboardKey.arrowUp)) {
+          onKeyEvent: (event) {
+            if (event is! KeyDownEvent) return;
+            final key = event.logicalKey;
+            if (key == LogicalKeyboardKey.arrowUp) {
               if (_selectedIndex != null && _selectedIndex! > 0) {
                 setState(() => _selectedIndex = _selectedIndex! - 1);
               } else if (_selectedIndex == null) {
                 setState(() => _selectedIndex = 0);
               }
-            } else if (event.isKeyPressed(LogicalKeyboardKey.arrowDown)) {
+            } else if (key == LogicalKeyboardKey.arrowDown) {
               if (_selectedIndex != null &&
                   _selectedIndex! < _currentQuestion.options.length - 1) {
                 setState(() => _selectedIndex = _selectedIndex! + 1);
               } else if (_selectedIndex == null) {
                 setState(() => _selectedIndex = 0);
               }
-            } else if (event.isKeyPressed(LogicalKeyboardKey.enter) &&
+            } else if (key == LogicalKeyboardKey.enter &&
                 !_answered) {
               _selectAnswer(_selectedIndex ?? -1);
-            } else if (event.isKeyPressed(LogicalKeyboardKey.escape)) {
+            } else if (key == LogicalKeyboardKey.escape) {
               _togglePause();
             }
           },

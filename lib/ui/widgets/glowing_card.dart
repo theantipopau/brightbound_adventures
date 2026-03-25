@@ -39,7 +39,13 @@ class _GlowingCardState extends State<GlowingCard> {
         child: AnimatedContainer(
           duration: AppMotion.standard,
           curve: AppMotion.hover,
-          transform: Matrix4.identity()..scale(_isHovered ? 1.02 : 1.0),
+          transform: Matrix4.identity()
+            ..scaleByDouble(
+              _isHovered ? 1.02 : 1.0,
+              _isHovered ? 1.02 : 1.0,
+              1.0,
+              1.0,
+            ),
           padding: widget.padding,
           decoration: BoxDecoration(
             color: Colors.white,

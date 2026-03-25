@@ -11,7 +11,7 @@ mixin GameKeyboardHandler {
   /// 
   /// Returns true if key was handled, false otherwise
   bool handleGameKeyPress(
-    RawKeyEvent event, {
+    KeyEvent event, {
     required bool isAnswered,
     required int? selectedIndex,
     required int optionCount,
@@ -19,8 +19,11 @@ mixin GameKeyboardHandler {
     required Function() onSubmitAnswer,
     required Function() onTogglePause,
   }) {
+    if (event is! KeyDownEvent) return false;
+    final key = event.logicalKey;
+
     // Arrow Up: Select previous answer option
-    if (event.isKeyPressed(LogicalKeyboardKey.arrowUp) && !isAnswered) {
+    if (key == LogicalKeyboardKey.arrowUp && !isAnswered) {
       if (selectedIndex == null) {
         onSelectOption(optionCount - 1);
       } else if (selectedIndex > 0) {
@@ -30,7 +33,7 @@ mixin GameKeyboardHandler {
     }
 
     // Arrow Down: Select next answer option
-    if (event.isKeyPressed(LogicalKeyboardKey.arrowDown) && !isAnswered) {
+    if (key == LogicalKeyboardKey.arrowDown && !isAnswered) {
       if (selectedIndex == null) {
         onSelectOption(0);
       } else if (selectedIndex < optionCount - 1) {
@@ -40,7 +43,7 @@ mixin GameKeyboardHandler {
     }
 
     // Enter: Submit selected answer
-    if (event.isKeyPressed(LogicalKeyboardKey.enter) &&
+    if (key == LogicalKeyboardKey.enter &&
         !isAnswered &&
         selectedIndex != null) {
       onSubmitAnswer();
@@ -48,7 +51,7 @@ mixin GameKeyboardHandler {
     }
 
     // Escape: Pause/Exit
-    if (event.isKeyPressed(LogicalKeyboardKey.escape)) {
+    if (key == LogicalKeyboardKey.escape) {
       onTogglePause();
       return true;
     }

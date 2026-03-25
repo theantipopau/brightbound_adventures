@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/teacher_account.dart';
 
@@ -62,7 +63,7 @@ class TeacherAuthService {
         throw Exception('Registration failed: ${response.body}');
       }
     } catch (e) {
-      print('Registration error: $e');
+      debugPrint('Registration error: $e');
       rethrow;
     }
   }
@@ -101,7 +102,7 @@ class TeacherAuthService {
         throw Exception('Login failed: ${response.body}');
       }
     } catch (e) {
-      print('Login error: $e');
+      debugPrint('Login error: $e');
       rethrow;
     }
   }
@@ -131,7 +132,7 @@ class TeacherAuthService {
       }
       return null;
     } catch (e) {
-      print('Error getting current teacher: $e');
+      debugPrint('Error getting current teacher: $e');
       return null;
     }
   }
@@ -173,7 +174,7 @@ class TeacherAuthService {
       }
       return null;
     } catch (e) {
-      print('Error updating teacher profile: $e');
+      debugPrint('Error updating teacher profile: $e');
       rethrow;
     }
   }
@@ -206,7 +207,7 @@ class TeacherAuthService {
         throw Exception('Failed to change password');
       }
     } catch (e) {
-      print('Error changing password: $e');
+      debugPrint('Error changing password: $e');
       rethrow;
     }
   }
@@ -227,7 +228,7 @@ class TeacherAuthService {
         throw Exception('Failed to send reset email');
       }
     } catch (e) {
-      print('Error requesting password reset: $e');
+      debugPrint('Error requesting password reset: $e');
       rethrow;
     }
   }
@@ -264,7 +265,7 @@ class TeacherAuthService {
       }
       return null;
     } catch (e) {
-      print('Error upgrading license: $e');
+      debugPrint('Error upgrading license: $e');
       rethrow;
     }
   }
@@ -275,7 +276,7 @@ class TeacherAuthService {
       _currentTeacherId = null;
       _authToken = null;
     } catch (e) {
-      print('Logout error: $e');
+      debugPrint('Logout error: $e');
       rethrow;
     }
   }

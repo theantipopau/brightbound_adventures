@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/class.dart';
 
@@ -50,7 +51,7 @@ class ClassManagementService {
       }
       return null;
     } catch (e) {
-      print('Error creating class: $e');
+      debugPrint('Error creating class: $e');
       rethrow;
     }
   }
@@ -79,7 +80,7 @@ class ClassManagementService {
       }
       return [];
     } catch (e) {
-      print('Error getting teacher classes: $e');
+      debugPrint('Error getting teacher classes: $e');
       return [];
     }
   }
@@ -105,7 +106,7 @@ class ClassManagementService {
       }
       return null;
     } catch (e) {
-      print('Error getting class: $e');
+      debugPrint('Error getting class: $e');
       return null;
     }
   }
@@ -143,7 +144,7 @@ class ClassManagementService {
       }
       return null;
     } catch (e) {
-      print('Error updating class: $e');
+      debugPrint('Error updating class: $e');
       rethrow;
     }
   }
@@ -165,7 +166,7 @@ class ClassManagementService {
         throw Exception('Failed to archive class');
       }
     } catch (e) {
-      print('Error archiving class: $e');
+      debugPrint('Error archiving class: $e');
       rethrow;
     }
   }
@@ -202,7 +203,7 @@ class ClassManagementService {
       }
       return null;
     } catch (e) {
-      print('Error adding student to class: $e');
+      debugPrint('Error adding student to class: $e');
       rethrow;
     }
   }
@@ -231,7 +232,7 @@ class ClassManagementService {
       }
       return null;
     } catch (e) {
-      print('Error removing student from class: $e');
+      debugPrint('Error removing student from class: $e');
       rethrow;
     }
   }
@@ -264,7 +265,7 @@ class ClassManagementService {
       }
       return null;
     } catch (e) {
-      print('Error bulk adding students: $e');
+      debugPrint('Error bulk adding students: $e');
       rethrow;
     }
   }
@@ -291,7 +292,7 @@ class ClassManagementService {
       }
       return [];
     } catch (e) {
-      print('Error getting archived classes: $e');
+      debugPrint('Error getting archived classes: $e');
       return [];
     }
   }

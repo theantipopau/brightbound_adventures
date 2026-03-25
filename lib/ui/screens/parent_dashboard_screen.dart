@@ -415,35 +415,33 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                                     });
                                     final updated = step == 0 ? newPin : confirmPin;
                                     if (updated.length == 4) {
-                                      final messenger = ScaffoldMessenger.of(this.context);
-                                      Future.delayed(const Duration(milliseconds: 200), () {
-                                        if (step == 0) {
-                                          setDialogState(() => step = 1);
+                                      final messenger = ScaffoldMessenger.maybeOf(context);
+                                      if (step == 0) {
+                                        setDialogState(() => step = 1);
+                                      } else {
+                                        if (newPin == confirmPin) {
+                                          Navigator.pop(dialogContext);
+                                          _savePin(newPin);
+                                          messenger?.showSnackBar(
+                                            const SnackBar(
+                                              content: Text('PIN changed successfully'),
+                                              backgroundColor: Colors.green,
+                                            ),
+                                          );
                                         } else {
-                                          if (newPin == confirmPin) {
-                                            Navigator.pop(dialogContext);
-                                            _savePin(newPin);
-                                            messenger.showSnackBar(
-                                              const SnackBar(
-                                                content: Text('PIN changed successfully'),
-                                                backgroundColor: Colors.green,
-                                              ),
-                                            );
-                                          } else {
-                                            setDialogState(() {
-                                              newPin = '';
-                                              confirmPin = '';
-                                              step = 0;
-                                            });
-                                            messenger.showSnackBar(
-                                              const SnackBar(
-                                                content: Text('PINs did not match — try again'),
-                                                backgroundColor: Colors.red,
-                                              ),
-                                            );
-                                          }
+                                          setDialogState(() {
+                                            newPin = '';
+                                            confirmPin = '';
+                                            step = 0;
+                                          });
+                                          messenger?.showSnackBar(
+                                            const SnackBar(
+                                              content: Text('PINs did not match — try again'),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
                                         }
-                                      });
+                                      }
                                     }
                                   }
                                 },

@@ -126,7 +126,9 @@ class _LogicPracticeScreenState extends State<LogicPracticeScreen> {
       if (correct >= 3) {
         achievementService.updateProgress('achievement_quick_learner', 1);
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Failed to update logic achievements: $e');
+    }
 
     // Update daily challenges
     try {
@@ -142,7 +144,9 @@ class _LogicPracticeScreenState extends State<LogicPracticeScreen> {
           }
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Failed to update logic daily challenges: $e');
+    }
     _checkStreak();
   }
 

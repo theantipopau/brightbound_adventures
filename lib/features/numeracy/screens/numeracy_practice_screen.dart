@@ -107,7 +107,9 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
       if (correct >= 3) {
         achievementService.updateProgress('achievement_quick_learner', 1);
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Failed to update numeracy achievements: $e');
+    }
 
     // Update daily challenges
     try {
@@ -123,7 +125,9 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
           }
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Failed to update numeracy daily challenges: $e');
+    }
 
     setState(() {
       _showResults = true;

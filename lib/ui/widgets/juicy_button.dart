@@ -152,8 +152,8 @@ class _JuicyButtonState extends State<JuicyButton>
     super.dispose();
   }
 
-  void _onTapDown(_) => _pressController.forward();
-  void _onTapUp(_) => _pressController.reverse();
+  void _onTapDown(TapDownDetails _) => _pressController.forward();
+  void _onTapUp(TapUpDetails _) => _pressController.reverse();
   void _onTapCancel() => _pressController.reverse();
 
   @override

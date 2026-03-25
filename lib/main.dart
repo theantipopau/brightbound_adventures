@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/index.dart';
-import 'package:brightbound_adventures/ui/widgets/transitions.dart';
 import 'package:brightbound_adventures/ui/screens/index.dart';
 
 void main() async {

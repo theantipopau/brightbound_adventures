@@ -281,23 +281,25 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return RawKeyboardListener(
+    return KeyboardListener(
       focusNode: _focusNode,
-      onKey: (event) {
-        if (event.isKeyPressed(LogicalKeyboardKey.arrowUp)) {
+      onKeyEvent: (event) {
+        if (event is! KeyDownEvent) return;
+        final key = event.logicalKey;
+        if (key == LogicalKeyboardKey.arrowUp) {
           if (_selectedAnswer != null && _selectedAnswer! > 0) {
             setState(() => _selectedAnswer = _selectedAnswer! - 1);
           } else if (_selectedAnswer == null) {
             setState(() => _selectedAnswer = 0);
           }
-        } else if (event.isKeyPressed(LogicalKeyboardKey.arrowDown)) {
+        } else if (key == LogicalKeyboardKey.arrowDown) {
           if (_selectedAnswer != null &&
               _selectedAnswer! < _currentQuestion.options.length - 1) {
             setState(() => _selectedAnswer = _selectedAnswer! + 1);
           } else if (_selectedAnswer == null) {
             setState(() => _selectedAnswer = 0);
           }
-        } else if (event.isKeyPressed(LogicalKeyboardKey.enter) &&
+        } else if (key == LogicalKeyboardKey.enter &&
             !_showFeedback) {
           _selectAnswer(_selectedAnswer ?? -1);
         }

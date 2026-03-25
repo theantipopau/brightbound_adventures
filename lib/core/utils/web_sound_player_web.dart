@@ -1,5 +1,6 @@
 // ignore: avoid_web_libraries_in_flutter
 // ignore: unused_import
+// ignore: deprecated_member_use
 import 'dart:js' as js;
 
 /// Calls window.BBSounds.play(type) in the browser via dart:js.
