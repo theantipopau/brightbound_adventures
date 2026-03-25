@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
@@ -16,9 +17,28 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
   bool _isUnlocked = false;
   final _pinController = TextEditingController();
   String _currentPin = '';
+  String _storedPin = '1234';
 
-  // Default PIN - parents can change this
-  static const String _defaultPin = '1234';
+  static const String _pinPrefKey = 'parentPin';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStoredPin();
+  }
+
+  Future<void> _loadStoredPin() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() => _storedPin = prefs.getString(_pinPrefKey) ?? '1234');
+    }
+  }
+
+  Future<void> _savePin(String newPin) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_pinPrefKey, newPin);
+    if (mounted) setState(() => _storedPin = newPin);
+  }
 
   @override
   void dispose() {
@@ -146,7 +166,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
 
                   // Hint
                   Text(
-                    'Default PIN: 1234',
+                    'Enter your parent PIN',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 12,
@@ -284,7 +304,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
   }
 
   void _handleSubmit() {
-    if (_currentPin == _defaultPin) {
+    if (_currentPin == _storedPin) {
       setState(() {
         _isUnlocked = true;
       });
@@ -301,6 +321,222 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
         _currentPin = '';
       });
     }
+  }
+
+  void _showChangePinDialog() {
+    String newPin = '';
+    String confirmPin = '';
+    int step = 0; // 0 = enter new PIN, 1 = confirm new PIN
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final currentEntry = step == 0 ? newPin : confirmPin;
+            final title = step == 0 ? 'Enter New PIN' : 'Confirm New PIN';
+
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: LinearGradient(
+                    colors: [Colors.indigo.shade700, Colors.purple.shade700],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // PIN dots
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(4, (i) {
+                        final filled = i < currentEntry.length;
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: filled
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.5),
+                                width: 2),
+                          ),
+                          child: Center(
+                            child: filled
+                                ? const Text('•',
+                                    style: TextStyle(
+                                        fontSize: 30, color: Colors.indigo))
+                                : null,
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 24),
+                    // Mini number pad
+                    ...[ ['1','2','3'], ['4','5','6'], ['7','8','9'] ].map((row) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: row.map((n) {
+                          return Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Material(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: () {
+                                  if (currentEntry.length < 4) {
+                                    setDialogState(() {
+                                      if (step == 0) {
+                                        newPin += n;
+                                      } else {
+                                        confirmPin += n;
+                                      }
+                                    });
+                                    final updated = step == 0 ? newPin : confirmPin;
+                                    if (updated.length == 4) {
+                                      final messenger = ScaffoldMessenger.of(this.context);
+                                      Future.delayed(const Duration(milliseconds: 200), () {
+                                        if (step == 0) {
+                                          setDialogState(() => step = 1);
+                                        } else {
+                                          if (newPin == confirmPin) {
+                                            Navigator.pop(dialogContext);
+                                            _savePin(newPin);
+                                            messenger.showSnackBar(
+                                              const SnackBar(
+                                                content: Text('PIN changed successfully'),
+                                                backgroundColor: Colors.green,
+                                              ),
+                                            );
+                                          } else {
+                                            setDialogState(() {
+                                              newPin = '';
+                                              confirmPin = '';
+                                              step = 0;
+                                            });
+                                            messenger.showSnackBar(
+                                              const SnackBar(
+                                                content: Text('PINs did not match — try again'),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      });
+                                    }
+                                  }
+                                },
+                                child: SizedBox(
+                                  width: 60,
+                                  height: 60,
+                                  child: Center(
+                                    child: Text(n,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Material(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                setDialogState(() {
+                                  if (step == 0 && newPin.isNotEmpty) {
+                                    newPin = newPin.substring(0, newPin.length - 1);
+                                  } else if (step == 1 && confirmPin.isNotEmpty) {
+                                    confirmPin = confirmPin.substring(0, confirmPin.length - 1);
+                                  }
+                                });
+                              },
+                              child: const SizedBox(width: 60, height: 60,
+                                child: Center(child: Icon(Icons.backspace_outlined, color: Colors.white, size: 24))),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Material(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                final entry = step == 0 ? newPin : confirmPin;
+                                if (entry.length < 4) {
+                                  setDialogState(() {
+                                    if (step == 0) {
+                                      newPin += '0';
+                                    } else {
+                                      confirmPin += '0';
+                                    }
+                                  });
+                                }
+                              },
+                              child: const SizedBox(width: 60, height: 60,
+                                child: Center(child: Text('0', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)))),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Material(
+                            color: Colors.red.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () => Navigator.pop(dialogContext),
+                              child: const SizedBox(width: 60, height: 60,
+                                child: Center(child: Icon(Icons.close, color: Colors.white, size: 24))),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Widget _buildDashboard() {
@@ -329,6 +565,11 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                   onPressed: () => Navigator.pop(context),
                 ),
                 actions: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: _showChangePinDialog,
+                    tooltip: 'Change PIN',
+                  ),
                   IconButton(
                     icon: const Icon(Icons.lock),
                     onPressed: () {

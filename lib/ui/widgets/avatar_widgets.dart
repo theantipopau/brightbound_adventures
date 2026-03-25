@@ -141,6 +141,14 @@ class AvatarDisplayCard extends StatelessWidget {
         return '🐨';
       case 'panda':
         return '🐼';
+      case 'owl':
+        return '🦉';
+      case 'otter':
+        return '🦦';
+      case 'wolf':
+        return '🐺';
+      case 'tiger':
+        return '🐯';
       default:
         return '🐻';
     }
@@ -168,7 +176,20 @@ class AvatarCharacterSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const characters = ['bear', 'fox', 'rabbit', 'deer'];
+    const characters = [
+      'bear',
+      'fox',
+      'rabbit',
+      'deer',
+      'cat',
+      'penguin',
+      'koala',
+      'panda',
+      'owl',
+      'otter',
+      'wolf',
+      'tiger',
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,6 +284,22 @@ class _CharacterOption extends StatelessWidget {
         return '🐰';
       case 'deer':
         return '🦌';
+      case 'cat':
+        return '🐱';
+      case 'penguin':
+        return '🐧';
+      case 'koala':
+        return '🐨';
+      case 'panda':
+        return '🐼';
+      case 'owl':
+        return '🦉';
+      case 'otter':
+        return '🦦';
+      case 'wolf':
+        return '🐺';
+      case 'tiger':
+        return '🐯';
       default:
         return '🐻';
     }

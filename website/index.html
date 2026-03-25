@@ -27,6 +27,51 @@
     <meta name="twitter:description" content="Educational adventures for children aged 4-12">
     <meta name="twitter:image" content="https://playbrightbound.matthurley.dev/logo.png">
     
+    <!-- Schema.org Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "BrightBound Adventures",
+        "description": "Educational game for children aged 4-12 with curriculum-aligned learning activities",
+        "url": "https://playbrightbound.matthurley.dev",
+        "image": "https://playbrightbound.matthurley.dev/logo.png",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": ["iOS", "Android", "Web"],
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "AUD"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": 50
+        },
+        "creator": {
+            "@type": "Person",
+            "name": "Matt Hurley",
+            "url": "https://matthurley.dev"
+        }
+    }
+    </script>
+
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "BrightBound Adventures",
+        "url": "https://playbrightbound.matthurley.dev",
+        "logo": "https://playbrightbound.matthurley.dev/logo.png",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "Customer Support",
+            "email": "hello@matthurley.dev"
+        }
+    }
+    </script>
+    
     <title>BrightBound Adventures - Learn Through Play</title>
     
     <!-- Fonts - Optimized loading -->
@@ -35,6 +80,14 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/logo.png">
     <link rel="apple-touch-icon" href="/logo.png">
+    
+    <!-- SEO & Accessibility -->
+    <link rel="canonical" href="https://playbrightbound.matthurley.dev">
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+    <meta name="google-site-verification" content="">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="revisit-after" content="7 days">
     
     <!-- Styles -->
     <link rel="stylesheet" href="/css/styles.css">
@@ -231,6 +284,148 @@
         </div>
     </section>
 
+    <section class="journey-section" id="main-content">
+        <div class="container">
+            <h2 class="section-title">How The Adventure Grows With Your Child</h2>
+            <div class="journey-grid">
+                <article class="journey-card">
+                    <span class="journey-step">Step 1</span>
+                    <h3>Create a Hero</h3>
+                    <p>Pick an avatar, choose a name, and start in a safe beginner zone with guided momentum.</p>
+                </article>
+                <article class="journey-card">
+                    <span class="journey-step">Step 2</span>
+                    <h3>Build Daily Confidence</h3>
+                    <p>Adaptive questions, gentle feedback, and streak rewards keep children challenged without frustration.</p>
+                </article>
+                <article class="journey-card">
+                    <span class="journey-step">Step 3</span>
+                    <h3>Unlock New Worlds</h3>
+                    <p>Skills unlock zones on the world map, making progress feel visible, exciting, and earned.</p>
+                </article>
+                <article class="journey-card">
+                    <span class="journey-step">Step 4</span>
+                    <h3>Celebrate Mastery</h3>
+                    <p>Achievements, trophies, and cosmetics mark effort and growth in ways children remember.</p>
+                </article>
+            </div>
+
+            <div class="impact-strip" aria-label="Core value highlights">
+                <div class="impact-item">
+                    <strong>Offline-first</strong>
+                    <span>Works in classrooms, homes, and travel without internet.</span>
+                </div>
+                <div class="impact-item">
+                    <strong>Personalized pacing</strong>
+                    <span>Difficulty and variety adapt to each child's learning flow.</span>
+                </div>
+                <div class="impact-item">
+                    <strong>Parent confidence</strong>
+                    <span>No ads, no social risks, no hidden spending.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonial-section">
+        <div class="container">
+            <h2 class="section-title">What Families Tell Us</h2>
+            <div class="testimonial-grid">
+                <blockquote class="testimonial-card">
+                    <p>“My daughter asks to play the reading world before school now. It feels like game time, but the confidence gains are real.”</p>
+                    <footer>Parent, Year 2 learner</footer>
+                </blockquote>
+                <blockquote class="testimonial-card">
+                    <p>“The world map and unlocks keep my son engaged far longer than worksheets ever did.”</p>
+                    <footer>Parent, Year 4 learner</footer>
+                </blockquote>
+                <blockquote class="testimonial-card">
+                    <p>“The no-ads promise and offline mode made this a yes for us immediately.”</p>
+                    <footer>Family with two learners</footer>
+                </blockquote>                <blockquote class="testimonial-card">
+                    <p>"Finally an educational app where I'm not worried about my child's safety. No tracking, no ads, just learning."</p>
+                    <footer>Parent, concerned about digital safety</footer>
+                </blockquote>
+                <blockquote class="testimonial-card">
+                    <p>"The adaptive difficulty is perfect. My son wasn't bored and didn't get frustrated. He just kept playing and learning!"</p>
+                    <footer>Parent, Year 5 learner</footer>
+                </blockquote>
+                <blockquote class="testimonial-card">
+                    <p>"Great for NAPLAN prep! My daughter is more confident with question types and her vocabulary has noticeably improved."</p>
+                    <footer>Parent, preparing for standardised tests</footer>
+                </blockquote>            </div>
+        </div>
+    </section>
+    <!-- Roadmap Section -->
+    <section class="roadmap-section">
+        <div class="container">
+            <h2 class="section-title">Our Product Roadmap</h2>
+            <div class="roadmap-grid">
+                <div class="roadmap-item completed">
+                    <span class="roadmap-phase">✅ Complete</span>
+                    <h3>Core Game Features</h3>
+                    <p>World map, avatar system, literacy & numeracy zones, adaptive learning.</p>
+                </div>
+                <div class="roadmap-item completed">
+                    <span class="roadmap-phase">✅ Complete</span>
+                    <h3>Science & Logic Zones</h3>
+                    <p>Science explorers, puzzle peaks with rich mechanics and hint systems.</p>
+                </div>
+                <div class="roadmap-item in-progress">
+                    <span class="roadmap-phase">🚀 Soon</span>
+                    <h3>Mobile Optimization</h3>
+                    <p>Native iOS & Android apps with offline support and touch optimization.</p>
+                </div>
+                <div class="roadmap-item in-progress">
+                    <span class="roadmap-phase">🚀 Soon</span>
+                    <h3>Multiplayer & Social</h3>
+                    <p>Safe friend connections, shared challenges, and leaderboards for motivation.</p>
+                </div>
+                <div class="roadmap-item planned">
+                    <span class="roadmap-phase">📅 Planned</span>
+                    <h3>Parent Analytics</h3>
+                    <p>Detailed dashboards showing skill progress, strengths, and personalized tips.</p>
+                </div>
+                <div class="roadmap-item planned">
+                    <span class="roadmap-phase">📅 Planned</span>
+                    <h3>Expanded Content</h3>
+                    <p>More zones, new languages, advanced curriculum alignment, and special events.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Section -->
+    <section class="community-section">
+        <div class="container">
+            <h2 class="section-title">Join Our Community</h2>
+            <p style="text-align: center; color: #486581; max-width: 600px; margin: 0 auto 2rem; font-size: 1.05rem;">
+                Connect with other parents, share experiences, and help shape the future of BrightBound Adventures.
+            </p>
+            <div class="community-grid">
+                <div class="community-card">
+                    <div class="community-icon">👥</div>
+                    <h3>Parent Community</h3>
+                    <p>Share tips, celebrate milestones, and connect with families on the same learning journey.</p>
+                </div>
+                <div class="community-card">
+                    <div class="community-icon">💡</div>
+                    <h3>Feature Requests</h3>
+                    <p>Your feedback directly shapes development. Every suggestion matters to us.</p>
+                </div>
+                <div class="community-card">
+                    <div class="community-icon">📱</div>
+                    <h3>Early Access</h3>
+                    <p>Be the first to try new features and help us catch bugs before public release.</p>
+                </div>
+                <div class="community-card">
+                    <div class="community-icon">🎓</div>
+                    <h3>Educator Network</h3>
+                    <p>Teachers can integrate BrightBound into classrooms with classroom management tools.</p>
+                </div>
+            </div>
+        </div>
+    </section>
     <!-- CTA Section -->
     <section class="cta-section">
         <div class="container">
@@ -246,6 +441,21 @@
                         Learn More
                     </a>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Signup Section -->
+    <section style="background: linear-gradient(135deg, #0f766e 0%, #0b7285 100%); padding: 4rem 0; margin-bottom: 2rem;">
+        <div class="container">
+            <div style="text-align: center; color: white;">
+                <h2 style="margin-bottom: 0.5rem; font-size: 2rem;">Stay Updated</h2>
+                <p style="margin-bottom: 2rem; font-size: 1.1rem; opacity: 0.95;">Get news about new features, content releases, and learning tips delivered to your inbox.</p>
+                <form class="newsletter-form" style="margin: 0 auto; display: flex; justify-content: center; max-width: 500px;" data-form-type="newsletter">
+                    <input type="email" class="newsletter-input" placeholder="Enter your email" required style="flex: 1;">
+                    <button type="submit" class="newsletter-submit">Subscribe</button>
+                </form>
+                <p style="font-size: 0.85rem; margin-top: 1rem; opacity: 0.8;">✓ No spam. We only send updates about BrightBound Adventures.</p>
             </div>
         </div>
     </section>

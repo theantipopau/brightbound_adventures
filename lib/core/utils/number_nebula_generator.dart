@@ -36,8 +36,11 @@ class NumberNebulaQuestionGenerator {
         double r = _random.nextDouble();
         if (r < 0.2) {
           questionDifficulties.add(1); // Warmup
-        } else if (r < 0.8) questionDifficulties.add(3); // Core
-        else questionDifficulties.add(5); // Challenge
+        } else if (r < 0.8) {
+          questionDifficulties.add(3); // Core
+        } else {
+          questionDifficulties.add(5); // Challenge
+        }
       } else if (difficulty == 4) {
         questionDifficulties.add(_random.nextDouble() < 0.7 ? 3 : 5);
       } else {

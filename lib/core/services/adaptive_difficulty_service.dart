@@ -6,11 +6,13 @@ import 'dart:convert';
 class AdaptiveDifficultyService extends ChangeNotifier {
   static const String _performanceKey = 'adaptive_difficulty_performance';
   static const int _historyLength = 5; // Track last 5 answers per skill
+  static const int _minDifficulty = 3; // Level 3 = normal
+  static const int _maxDifficulty = 5; // Levels 4-5 = harder
 
   // Map of skillId -> list of recent correct/incorrect (true/false)
   final Map<String, List<bool>> _performanceHistory = {};
 
-  // Map of skillId -> current difficulty level (1-3)
+  // Map of skillId -> current difficulty level (3-5: 3=normal, 4-5=harder)
   final Map<String, int> _skillDifficulty = {};
 
   bool _initialized = false;
@@ -48,9 +50,9 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get the current difficulty level for a skill (1-3)
+  /// Get the current difficulty level for a skill (3-5: 3=normal, 4-5=harder)
   int getDifficultyForSkill(String skillId) {
-    return _skillDifficulty[skillId] ?? 1; // Default to level 1
+    return _skillDifficulty[skillId] ?? _minDifficulty; // Default to level 3
   }
 
   /// Record an answer and potentially adjust difficulty
@@ -85,7 +87,7 @@ class AdaptiveDifficultyService extends ChangeNotifier {
       return; // Need at least 3 answers to adjust
     }
 
-    final currentDifficulty = _skillDifficulty[skillId] ?? 1;
+    final currentDifficulty = _skillDifficulty[skillId] ?? _minDifficulty;
     final recentCorrect = history.where((correct) => correct).length;
     final totalRecent = history.length;
     final accuracy = recentCorrect / totalRecent;
@@ -103,8 +105,8 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     // Increase difficulty if:
     // - 3 correct in a row, OR
     // - Accuracy >= 90% and not at max difficulty
-    if (threeInARow || (accuracy >= 0.9 && currentDifficulty < 3)) {
-      newDifficulty = (currentDifficulty + 1).clamp(1, 3);
+    if (threeInARow || (accuracy >= 0.9 && currentDifficulty < _maxDifficulty)) {
+      newDifficulty = (currentDifficulty + 1).clamp(_minDifficulty, _maxDifficulty);
       if (newDifficulty != currentDifficulty) {
         debugPrint(
             '📈 Increasing difficulty for $skillId: $currentDifficulty → $newDifficulty');
@@ -113,8 +115,8 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     // Decrease difficulty if:
     // - 2 wrong in a row, OR
     // - Accuracy < 40% and not at min difficulty
-    else if (twoWrongInRow || (accuracy < 0.4 && currentDifficulty > 1)) {
-      newDifficulty = (currentDifficulty - 1).clamp(1, 3);
+    else if (twoWrongInRow || (accuracy < 0.4 && currentDifficulty > _minDifficulty)) {
+      newDifficulty = (currentDifficulty - 1).clamp(_minDifficulty, _maxDifficulty);
       if (newDifficulty != currentDifficulty) {
         debugPrint(
             '📉 Decreasing difficulty for $skillId: $currentDifficulty → $newDifficulty');
@@ -191,9 +193,9 @@ class AdaptiveDifficultyService extends ChangeNotifier {
   Map<String, dynamic> getStats() {
     return {
       'totalSkills': _skillDifficulty.length,
-      'difficulty1': _skillDifficulty.values.where((d) => d == 1).length,
-      'difficulty2': _skillDifficulty.values.where((d) => d == 2).length,
-      'difficulty3': _skillDifficulty.values.where((d) => d == 3).length,
+      'normalDifficulty3': _skillDifficulty.values.where((d) => d == 3).length,
+      'harderDifficulty4': _skillDifficulty.values.where((d) => d == 4).length,
+      'hardestDifficulty5': _skillDifficulty.values.where((d) => d == 5).length,
       'averageAccuracy': _performanceHistory.isEmpty
           ? 0.0
           : _performanceHistory.values

@@ -206,15 +206,22 @@ class TargetGenerator {
     double? sizeOverride,
     double difficultyMultiplier = 1.0,
   }) {
-    const padding = 60.0;
-    final size =
-        sizeOverride ?? (80 - (20 * difficultyMultiplier)).clamp(30, 80);
+    // Responsive padding based on screen size
+    final isMobilePortrait = screenSize.width < 600;
+    final padding = isMobilePortrait ? 40.0 : 60.0;
+    final topOffset = isMobilePortrait ? 80.0 : 100.0;
+    final bottomMargin = isMobilePortrait ? 100.0 : 200.0;
+    
+    // Responsive target size
+    final baseSize = isMobilePortrait ? 50.0 : 80.0;
+    final size = sizeOverride ?? 
+        (baseSize - (15 * difficultyMultiplier)).clamp(25, baseSize);
 
     final x = padding +
         _random.nextDouble() * (screenSize.width - 2 * padding - size);
-    final y = padding +
-        100 +
-        _random.nextDouble() * (screenSize.height - 2 * padding - size - 200);
+    final y = topOffset +
+        _random.nextDouble() * 
+        (screenSize.height - topOffset - bottomMargin - size).clamp(0, double.infinity);
 
     Offset? direction;
     double? speed;
@@ -222,7 +229,8 @@ class TargetGenerator {
     if (type == TargetType.moving) {
       final angle = _random.nextDouble() * 2 * math.pi;
       direction = Offset(math.cos(angle), math.sin(angle));
-      speed = 50 + _random.nextDouble() * 100 * difficultyMultiplier;
+      speed = (40 + _random.nextDouble() * 80 * difficultyMultiplier)
+          .clamp(40, 200);
     }
 
     return MotorTarget(

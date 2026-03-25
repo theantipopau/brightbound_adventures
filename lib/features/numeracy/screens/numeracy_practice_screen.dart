@@ -2,20 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
+import 'package:brightbound_adventures/ui/widgets/streak_milestone_modal.dart';
 import 'package:brightbound_adventures/core/utils/number_nebula_generator.dart';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
 import 'package:brightbound_adventures/features/numeracy/widgets/numeracy_game.dart';
 import 'package:brightbound_adventures/features/numeracy/widgets/numeracy_results_screen.dart';
+import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
 
 /// Skill practice screen for numeracy skills
 class NumeracyPracticeScreen extends StatefulWidget {
   final Skill skill;
   final Color themeColor;
+  final String? zoneId;
+  final String? zoneName;
 
   const NumeracyPracticeScreen({
     super.key,
     required this.skill,
     required this.themeColor,
+    this.zoneId,
+    this.zoneName,
   });
 
   @override
@@ -87,12 +93,59 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
   }
 
   void _onGameComplete(double accuracy, int correct, int total) {
+    // Update achievements
+    try {
+      final achievementService = context.read<AchievementService>();
+      final starsEarned = correct * 10;
+      achievementService.updateProgress('achievement_stars_25', starsEarned);
+      achievementService.updateProgress('achievement_stars_50', starsEarned);
+      achievementService.updateProgress('achievement_stars_100', starsEarned);
+      if (accuracy == 1.0) {
+        achievementService.updateProgress('achievement_perfect_1', 1);
+        achievementService.updateProgress('achievement_perfect_5', 1);
+      }
+      if (correct >= 3) {
+        achievementService.updateProgress('achievement_quick_learner', 1);
+      }
+    } catch (e) {}
+
+    // Update daily challenges
+    try {
+      final dailyService = context.read<DailyChallengeService>();
+      for (int i = 0; i < correct; i++) {
+        for (final challenge in dailyService.todaysChallenges) {
+          if (challenge.skillId == widget.skill.id) {
+            dailyService.updateProgress(
+              challengeId: challenge.id,
+              correct: true,
+            );
+            break;
+          }
+        }
+      }
+    } catch (e) {}
+
     setState(() {
       _showResults = true;
       _accuracy = accuracy;
       _correctAnswers = correct;
       _totalQuestions = total;
     });
+    _checkStreak();
+  }
+
+  Future<void> _checkStreak() async {
+    try {
+      final streakService = context.read<StreakService>();
+      final isNewMilestone = await streakService.recordPlay();
+      if (isNewMilestone && mounted) {
+        showStreakMilestoneModal(
+          context,
+          streakDays: streakService.currentStreak,
+          bonusStars: streakService.streakBonus,
+        );
+      }
+    } catch (_) {}
   }
 
   void _playAgain() {
@@ -152,14 +205,13 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              ElevatedButton.icon(
+              BrandedBackButton(
+                label: 'Back to Zone',
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back),
-                label: const Text('Back to Zone'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.themeColor,
-                  foregroundColor: Colors.white,
-                ),
+                backgroundColor: widget.themeColor,
+                foregroundColor: Colors.white,
+                borderColor: widget.themeColor.withValues(alpha: 0.85),
+                tokenBackgroundColor: Colors.white.withValues(alpha: 0.16),
               ),
             ],
           ),

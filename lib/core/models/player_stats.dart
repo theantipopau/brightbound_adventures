@@ -7,6 +7,7 @@ class PlayerStats {
   int totalPlayTimeMinutes;
   Map<String, int> zoneXp; // XP earned per zone
   Map<String, bool> unlockedZones;
+  Map<String, double> zoneCompletion; // 0.0-1.0 completion per zone
   DateTime lastPlayed;
   DateTime createdAt;
 
@@ -19,6 +20,7 @@ class PlayerStats {
     this.totalPlayTimeMinutes = 0,
     Map<String, int>? zoneXp,
     Map<String, bool>? unlockedZones,
+    Map<String, double>? zoneCompletion,
     DateTime? lastPlayed,
     DateTime? createdAt,
   })  : zoneXp = zoneXp ??
@@ -28,6 +30,8 @@ class PlayerStats {
               'story_springs': 0,
               'puzzle_peaks': 0,
               'adventure_arena': 0,
+              'creative_corner': 0,
+              'science_explorers': 0,
             },
         unlockedZones = unlockedZones ??
             {
@@ -36,6 +40,18 @@ class PlayerStats {
               'story_springs': false,
               'puzzle_peaks': false,
               'adventure_arena': false,
+              'creative_corner': false,
+              'science_explorers': false,
+            },
+        zoneCompletion = zoneCompletion ??
+            {
+              'word_woods': 0.0,
+              'number_nebula': 0.0,
+              'story_springs': 0.0,
+              'puzzle_peaks': 0.0,
+              'adventure_arena': 0.0,
+              'creative_corner': 0.0,
+              'science_explorers': 0.0,
             },
         lastPlayed = lastPlayed ?? DateTime.now(),
         createdAt = createdAt ?? DateTime.now();
@@ -158,6 +174,44 @@ class PlayerStats {
     return false;
   }
 
+  /// Update zone completion percentage (0.0-1.0)
+  void updateZoneCompletion(String zoneId, double completion) {
+    zoneCompletion[zoneId] = completion.clamp(0.0, 1.0);
+  }
+
+  /// Get zone completion percentage
+  double getZoneCompletion(String zoneId) {
+    return zoneCompletion[zoneId] ?? 0.0;
+  }
+
+  /// Check if zone should unlock based on 80% completion of previous zone
+  /// Returns the zoneId that should now be unlocked, or null
+  String? checkLinearProgressionUnlock() {
+    const completionThreshold = 0.80; // 80% to unlock next zone
+    const zoneOrder = [
+      'word_woods',
+      'number_nebula',
+      'story_springs',
+      'puzzle_peaks',
+      'creative_corner',
+      'science_explorers',
+      'adventure_arena',
+    ];
+
+    for (int i = 0; i < zoneOrder.length - 1; i++) {
+      final currentZone = zoneOrder[i];
+      final nextZone = zoneOrder[i + 1];
+
+      // If current zone is complete enough and next zone is not unlocked
+      if (getZoneCompletion(currentZone) >= completionThreshold &&
+          !isZoneUnlocked(nextZone)) {
+        unlockZone(nextZone);
+        return nextZone; // Return newly unlocked zone
+      }
+    }
+    return null; // No new unlocks
+  }
+
   /// Convert to JSON
   Map<String, dynamic> toJson() {
     return {
@@ -169,6 +223,7 @@ class PlayerStats {
       'totalPlayTimeMinutes': totalPlayTimeMinutes,
       'zoneXp': zoneXp,
       'unlockedZones': unlockedZones,
+      'zoneCompletion': zoneCompletion,
       'lastPlayed': lastPlayed.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
     };
@@ -186,6 +241,8 @@ class PlayerStats {
       zoneXp: Map<String, int>.from(json['zoneXp'] as Map? ?? {}),
       unlockedZones:
           Map<String, bool>.from(json['unlockedZones'] as Map? ?? {}),
+      zoneCompletion:
+          Map<String, double>.from(json['zoneCompletion'] as Map? ?? {}),
       lastPlayed: DateTime.parse(json['lastPlayed'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
@@ -201,6 +258,7 @@ class PlayerStats {
     int? totalPlayTimeMinutes,
     Map<String, int>? zoneXp,
     Map<String, bool>? unlockedZones,
+    Map<String, double>? zoneCompletion,
     DateTime? lastPlayed,
     DateTime? createdAt,
   }) {
@@ -213,6 +271,7 @@ class PlayerStats {
       totalPlayTimeMinutes: totalPlayTimeMinutes ?? this.totalPlayTimeMinutes,
       zoneXp: zoneXp ?? Map.from(this.zoneXp),
       unlockedZones: unlockedZones ?? Map.from(this.unlockedZones),
+      zoneCompletion: zoneCompletion ?? Map.from(this.zoneCompletion),
       lastPlayed: lastPlayed ?? this.lastPlayed,
       createdAt: createdAt ?? this.createdAt,
     );

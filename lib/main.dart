@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/index.dart';
+import 'package:brightbound_adventures/ui/widgets/transitions.dart';
 import 'package:brightbound_adventures/ui/screens/index.dart';
 
 void main() async {
@@ -65,54 +66,72 @@ class BrightBoundApp extends StatelessWidget {
       },
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
-      routes: {
-        '/avatar-creator': (context) => const AvatarCreatorScreen(),
-        '/world-map': (context) => const WorldMapScreen(),
-        '/world-entry': (context) => const WorldEntryScreen(),
-        '/word-woods': (context) => const ZoneDetailScreen(
-              zoneId: 'word_woods',
-              zoneName: '🌲 Word Woods',
-              zoneDescription:
-                  'Explore literacy, reading, and communication skills',
-              zoneColor: AppColors.wordWoodsColor,
-            ),
-        '/number-nebula': (context) => const ZoneDetailScreen(
-              zoneId: 'number_nebula',
-              zoneName: '🌌 Number Nebula',
-              zoneDescription: 'Master numeracy, math, and problem solving',
-              zoneColor: AppColors.numberNebulaColor,
-            ),
-        '/puzzle-peaks': (context) => const ZoneDetailScreen(
-              zoneId: 'puzzle_peaks',
-              zoneName: '🧠 Puzzle Peaks',
-              zoneDescription: 'Challenge your logic, patterns, and reasoning',
-              zoneColor: AppColors.puzzlePeaksColor,
-            ),
-        '/story-springs': (context) => const ZoneDetailScreen(
-              zoneId: 'story_springs',
-              zoneName: '📖 Story Springs',
-              zoneDescription:
-                  'Create stories, express emotions, develop characters',
-              zoneColor: AppColors.storyspringsColor,
-            ),
-        '/adventure-arena': (context) => const ZoneDetailScreen(
-              zoneId: 'adventure_arena',
-              zoneName: '🏟️ Adventure Arena',
-              zoneDescription: 'Improve hand-eye coordination and motor skills',
-              zoneColor: AppColors.adventureArenaColor,
-            ),
-        '/science-explorers': (context) => const ZoneDetailScreen(
-              zoneId: 'science_explorers',
-              zoneName: '🔬 Science Explorers',
-              zoneDescription: 'Discover the world around you!',
-              zoneColor: Color(0xFF4DB6AC),
-            ),
-        '/creative-corner': (context) => const ZoneDetailScreen(
-              zoneId: 'creative_corner',
-              zoneName: '🎨 Creative Corner',
-              zoneDescription: 'Express yourself with art and music',
-              zoneColor: Color(0xFFFFB74D),
-            ),
+      onGenerateRoute: (settings) {
+        final routes = <String, WidgetBuilder>{
+          '/avatar-creator': (_) => const AvatarCreatorScreen(),
+          '/world-map': (_) => const WorldMapScreen(),
+          '/world-entry': (_) => const WorldEntryScreen(),
+          '/settings': (_) => const SettingsScreen(),
+          '/profile-stats': (_) => const ProfileStatsScreen(),
+          '/parent-dashboard': (_) => const ParentDashboardScreen(),
+          '/word-woods': (_) => const ZoneDetailScreen(
+                zoneId: 'word_woods',
+                zoneName: '🌲 Word Woods',
+                zoneDescription:
+                    'Explore literacy, reading, and communication skills',
+                zoneColor: AppColors.wordWoodsColor,
+              ),
+          '/number-nebula': (_) => const ZoneDetailScreen(
+                zoneId: 'number_nebula',
+                zoneName: '🌌 Number Nebula',
+                zoneDescription: 'Master numeracy, math, and problem solving',
+                zoneColor: AppColors.numberNebulaColor,
+              ),
+          '/math-facts': (_) => const ZoneDetailScreen(
+                zoneId: 'number_nebula',
+                zoneName: '⚡ Math Facts',
+                zoneDescription: 'Speed rounds, combos, and fact mastery',
+                zoneColor: AppColors.numberNebulaColor,
+              ),
+          '/puzzle-peaks': (_) => const ZoneDetailScreen(
+                zoneId: 'puzzle_peaks',
+                zoneName: '🧠 Puzzle Peaks',
+                zoneDescription:
+                    'Challenge your logic, patterns, and reasoning',
+                zoneColor: AppColors.puzzlePeaksColor,
+              ),
+          '/story-springs': (_) => const ZoneDetailScreen(
+                zoneId: 'story_springs',
+                zoneName: '📖 Story Springs',
+                zoneDescription:
+                    'Create stories, express emotions, develop characters',
+                zoneColor: AppColors.storyspringsColor,
+              ),
+          '/adventure-arena': (_) => const ZoneDetailScreen(
+                zoneId: 'adventure_arena',
+                zoneName: '🏟️ Adventure Arena',
+                zoneDescription:
+                    'Improve hand-eye coordination and motor skills',
+                zoneColor: AppColors.adventureArenaColor,
+              ),
+          '/science-explorers': (_) => const ZoneDetailScreen(
+                zoneId: 'science_explorers',
+                zoneName: '🔬 Science Explorers',
+                zoneDescription: 'Discover the world around you!',
+                zoneColor: Color(0xFF4DB6AC),
+              ),
+          '/creative-corner': (_) => const ZoneDetailScreen(
+                zoneId: 'creative_corner',
+                zoneName: '🎨 Creative Corner',
+                zoneDescription: 'Express yourself with art and music',
+                zoneColor: Color(0xFFFFB74D),
+              ),
+        };
+        final builder = routes[settings.name];
+        if (builder != null) {
+          return FadeSlidePageRoute(page: Builder(builder: builder));
+        }
+        return null;
       },
     );
   }

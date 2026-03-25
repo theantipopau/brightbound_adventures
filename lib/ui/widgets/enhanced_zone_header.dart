@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/models/avatar.dart';
+import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 
 /// Enhanced zone header with animated character and themed decorations
 class EnhancedZoneHeader extends StatefulWidget {
@@ -71,55 +72,12 @@ class _EnhancedZoneHeaderState extends State<EnhancedZoneHeader>
   }
 
   List<String> _getZoneParticles() {
-    switch (widget.zoneId) {
-      case 'word_woods':
-      case 'word-woods':
-        return ['🍃', '🌿', '🌲', '📚', '✨', '🦋'];
-      case 'number_nebula':
-      case 'number-nebula':
-        return ['⭐', '✨', '🌟', '💫', '🔢', '➕'];
-      case 'math-facts':
-        return ['➕', '➖', '✖️', '➗', '🔢', '💡'];
-      case 'story_springs':
-      case 'story-springs':
-        return ['📖', '✨', '💭', '🎭', '🌊', '💫'];
-      case 'puzzle_peaks':
-      case 'puzzle-peaks':
-        return ['🧩', '⚡', '💡', '🎯', '🔮', '✨'];
-      case 'adventure_arena':
-      case 'adventure-arena':
-        return ['🏆', '⭐', '🎖️', '🌟', '🎯', '🔥'];
-      case 'science-explorers':
-        return ['🔬', '🧬', '🧪', '🔭', '🪐', '🦠'];
-      case 'creative-corner':
-        return ['🎨', '🖌️', '🎵', '🎹', '🎻', '🎷'];
-      default:
-        return ['✨', '⭐', '💫', '🌟'];
-    }
+    return WorldTokens.fromZoneId(widget.zoneId).ambientParticles;
   }
 
+
   String _getZoneEmoji() {
-    switch (widget.zoneId) {
-      case 'word_woods':
-      case 'word-woods':
-        return '🌲';
-      case 'number_nebula':
-      case 'number-nebula':
-        return '🌌';
-      case 'math-facts':
-        return '🔢';
-      case 'story_springs':
-      case 'story-springs':
-        return '📖';
-      case 'puzzle_peaks':
-      case 'puzzle-peaks':
-        return '🧩';
-      case 'adventure_arena':
-      case 'adventure-arena':
-        return '🏆';
-      default:
-        return '🎮';
-    }
+    return WorldTokens.fromZoneId(widget.zoneId).emoji;
   }
 
   @override
@@ -138,15 +96,7 @@ class _EnhancedZoneHeaderState extends State<EnhancedZoneHeader>
       builder: (context, child) {
         return Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                widget.zoneColor,
-                widget.zoneColor.withValues(alpha: 0.8),
-                widget.zoneColor.withValues(alpha: 0.6),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: WorldTokens.fromZoneId(widget.zoneId).headerGradient,
           ),
           child: Stack(
             children: [

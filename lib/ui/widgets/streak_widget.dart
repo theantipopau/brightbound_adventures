@@ -416,7 +416,7 @@ class _EnhancedStreakWidgetState extends State<EnhancedStreakWidget>
                     '${nextMilestone.daysUntil} to ${nextMilestone.nextMilestone}',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 9,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

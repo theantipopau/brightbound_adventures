@@ -1,0 +1,48 @@
+# ── Navigation & bootstrap – NEVER cache so updates are instant ──────────────
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+
+/flutter_bootstrap.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/flutter_service_worker.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/manifest.json
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# ── Audio – correct MIME types so browsers can play them ─────────────────────
+/assets/assets/sounds/*.mp3
+  Content-Type: audio/mpeg
+  Cache-Control: public, max-age=86400
+
+/assets/assets/sounds/*.wav
+  Content-Type: audio/wav
+  Cache-Control: public, max-age=86400
+
+/assets/assets/sounds/*.ogg
+  Content-Type: audio/ogg
+  Cache-Control: public, max-age=86400
+
+# Fallback audio paths
+/assets/sounds/*
+  Content-Type: audio/mpeg
+
+/*.mp3
+  Content-Type: audio/mpeg
+
+/*.ogg
+  Content-Type: audio/ogg
+
+# ── Hashed/versioned assets – cache aggressively ─────────────────────────────
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/canvaskit/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# ── Everything else – short cache ─────────────────────────────────────────────
+/*
+  Cache-Control: public, max-age=3600
+  X-Content-Type-Options: nosniff

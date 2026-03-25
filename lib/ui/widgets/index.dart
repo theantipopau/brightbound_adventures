@@ -20,3 +20,8 @@ export 'modern_shop_item_card.dart';
 export 'transitions.dart';
 export 'mastery_certificate.dart';
 export 'confetti_burst.dart';
+export 'juicy_button.dart';
+export 'animated_answer_option.dart';
+export 'quiz_widgets.dart';
+export 'zone_guardian_banner.dart';
+export 'streak_milestone_modal.dart';

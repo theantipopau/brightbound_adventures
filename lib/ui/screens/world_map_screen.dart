@@ -10,13 +10,18 @@ import 'package:brightbound_adventures/core/utils/world_map_isometric_helper.dar
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/animated_cloud_background.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/particle_background.dart';
+import 'package:brightbound_adventures/ui/widgets/visual_effects/adventure_pattern_overlay.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
-import 'package:brightbound_adventures/ui/widgets/streak_widget.dart';
+import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
+import 'package:brightbound_adventures/ui/widgets/glowing_card.dart';
+import 'package:brightbound_adventures/ui/widgets/animated_score_counter.dart';
 import 'package:brightbound_adventures/ui/widgets/transitions.dart';
 import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
 import 'package:brightbound_adventures/ui/screens/daily_challenge_screen.dart';
 import 'package:brightbound_adventures/ui/screens/mini_games_screen.dart';
+import 'package:brightbound_adventures/ui/screens/settings_screen.dart';
 import 'package:brightbound_adventures/ui/screens/parent_dashboard_screen.dart';
+import 'package:brightbound_adventures/ui/screens/profile_stats_screen.dart';
 import 'package:brightbound_adventures/ui/painters/shadow_painter.dart';
 import 'package:brightbound_adventures/ui/painters/terrain_painter.dart';
 import 'package:brightbound_adventures/ui/painters/path_painter.dart';
@@ -43,6 +48,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   // Device detection
   bool _isPhoneDevice = false;
+  bool _isCompactLayout = false;
+  double _uiScale = 1.0;
   late AudioManager _audioManager;
   bool _audioSetupDone = false;
 
@@ -105,8 +112,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Science Explorers',
       emoji: '🔬',
       color: Color(0xFF4DB6AC), // Teal
-      // Top left
-      position: Offset(0.30, 0.25),
+      // Upper left
+      position: Offset(0.18, 0.32),
       description: 'Discover the world!',
       order: 4,
       requiredStars: 15,
@@ -116,8 +123,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Creative Corner',
       emoji: '🎨',
       color: Color(0xFFFFB74D), // Orange
-      // Top right
-      position: Offset(0.70, 0.20),
+      // Upper right
+      position: Offset(0.78, 0.28),
       description: 'Draw and make music!',
       order: 5,
       requiredStars: 20,
@@ -127,22 +134,22 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Puzzle Peaks',
       emoji: '🧩',
       color: AppColors.puzzlePeaksColor,
-      // Top left
-      position: Offset(0.25, 0.15),
+      // Top centre-left
+      position: Offset(0.38, 0.12),
       description: 'Solve tricky puzzles!',
-      order: 4,
-      requiredStars: 15,
+      order: 6,
+      requiredStars: 22,
     ),
     const ZoneData(
       id: 'adventure-arena',
       name: 'Adventure Arena',
       emoji: '🏆',
       color: AppColors.adventureArenaColor,
-      // Top right - final zone
-      position: Offset(0.75, 0.12),
+      // Top centre-right - final zone
+      position: Offset(0.62, 0.10),
       description: 'Ultimate challenges!',
-      order: 5,
-      requiredStars: 25,
+      order: 7,
+      requiredStars: 28,
     ),
   ];
 
@@ -152,14 +159,15 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     'number-nebula': 0.5,
     'math-facts': 0.3,
     'story-springs': 0.8,
-    'puzzle-peaks': 1.2,
-    'adventure-arena': 1.5,
+    'science-explorers': 1.0,
+    'creative-corner': 1.1,
+    'puzzle-peaks': 1.3,
+    'adventure-arena': 1.6,
   };
 
   @override
   void initState() {
     super.initState();
-    _detectDevice();
     _initAnimations();
     _initIsometricPositions();
   }
@@ -167,6 +175,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _detectDevice();
     if (!_audioSetupDone) {
       _audioManager = Provider.of<AudioManager>(context, listen: false);
       _audioManager.playMenuMusic();
@@ -188,18 +197,13 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     }
   }
 
-  Future<void> _detectDevice() async {
-    try {
-      if (Theme.of(context).platform == TargetPlatform.iOS ||
-          Theme.of(context).platform == TargetPlatform.android) {
-        // Check screen size to distinguish phone from tablet
-        final screenWidth = MediaQuery.of(context).size.width;
-        setState(() {
-          _isPhoneDevice = screenWidth < 600; // Phones are typically < 600dp
-        });
-      }
-    } catch (e) {
-      debugPrint('Error detecting device: $e');
+  void _detectDevice() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isPhone = screenWidth < 600;
+    if (isPhone != _isPhoneDevice) {
+      setState(() {
+        _isPhoneDevice = isPhone;
+      });
     }
   }
 
@@ -311,6 +315,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   void _moveToZone(int targetIndex) {
     if (_isMoving) return;
 
+    if (_selectedZoneIndex != targetIndex) {
+      setState(() {
+        _selectedZoneIndex = targetIndex;
+      });
+    }
+
     // If already at this zone, navigate directly without animation
     if (targetIndex == _currentZoneIndex) {
       debugPrint('Already at zone $targetIndex - navigating directly');
@@ -376,6 +386,19 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   SafeArea(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
+                        final shortest = constraints.biggest.shortestSide;
+                        final isPortrait = constraints.maxHeight > constraints.maxWidth;
+                        _isCompactLayout = constraints.maxWidth < 980;
+                        
+                        // Improved scaling for portrait phones
+                        if (isPortrait) {
+                          // Portrait: scale based on height, but keep it reasonable
+                          _uiScale = (constraints.maxHeight / 800).clamp(0.70, 1.10);
+                        } else {
+                          // Landscape: scale based on shortest side
+                          _uiScale = (shortest / 760).clamp(0.75, 1.20);
+                        }
+
                         // Calculate avatar position for shadows
                         IsometricPosition? avatarIsoPos;
                         if (_isMoving && _targetZoneIndex != null) {
@@ -444,10 +467,37 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                                 constraints, totalStars, skillProvider, avatar),
 
                             // Top HUD
-                            _buildTopHUD(avatar, totalStars),
+                            _buildTopHUD(
+                              avatar,
+                              totalStars,
+                              compact: _isCompactLayout,
+                              uiScale: _uiScale,
+                            ),
+
+                            _buildStreakRiskBanner(
+                              compact: _isCompactLayout,
+                              uiScale: _uiScale,
+                            ),
 
                             // Bottom quick actions
-                            _buildBottomActions(totalStars),
+                            _buildBottomActions(
+                              totalStars,
+                              compact: _isCompactLayout,
+                              uiScale: _uiScale,
+                            ),
+
+                            _buildQuickZoneRail(
+                              totalStars,
+                              compact: _isCompactLayout,
+                              uiScale: _uiScale,
+                            ),
+
+                            _buildZoneSpotlightPanel(
+                              totalStars,
+                              skillProvider,
+                              compact: _isCompactLayout,
+                              uiScale: _uiScale,
+                            ),
 
                             // Keyboard navigation hint
                             _buildKeyboardHint(),
@@ -507,6 +557,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   Widget _buildAnimatedBackground() {
+    final activeZoneColor = _resolveActiveZoneColor();
+
     return Stack(
       children: [
         // 1. Dynamic Animated Sky (New)
@@ -525,13 +577,130 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         ),
 
         // 3. Floating Atmosphere Particles (New)
-        const ParticleBackground(
-          particles: ['✨', '🍃', '☁️', '⭐'],
-          particleCount: 15,
+        ParticleBackground(
+          particles: [
+            '✨',
+            '🍃',
+            '☁️',
+            '⭐',
+            if (activeZoneColor == AppColors.numberNebulaColor) '🪐',
+            if (activeZoneColor == AppColors.wordWoodsColor) '🌿',
+            if (activeZoneColor == AppColors.adventureArenaColor) '🏆',
+          ],
+          particleCount: _isCompactLayout ? 10 : 15,
           speedMultiplier: 0.3,
+        ),
+
+        // 4. Decorative map pattern overlay
+        Positioned.fill(
+          child: AdventurePatternOverlay(
+            color: activeZoneColor,
+            opacity: 0.08,
+            tileSize: _isCompactLayout ? 56 : 68,
+          ),
+        ),
+
+        // 5. Ambient radial tint for active zone identity
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: const Alignment(0.2, -0.2),
+                  radius: 1.1,
+                  colors: [
+                    activeZoneColor.withValues(alpha: 0.12),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );
+  }
+
+  Color _resolveActiveZoneColor() {
+    final index = _targetZoneIndex ?? _selectedZoneIndex;
+    if (index >= 0 && index < _zones.length) {
+      return _zones[index].color;
+    }
+    return _zones[_currentZoneIndex].color;
+  }
+
+  double _zoneProgressFraction(int masteredSkills, int totalSkills) {
+    if (totalSkills <= 0) return 0;
+    return (masteredSkills / totalSkills).clamp(0, 1).toDouble();
+  }
+
+  String _zoneMoodText(ZoneData zone) {
+    switch (zone.id) {
+      case 'word-woods':
+        return 'Calm forest trails with vocabulary quests';
+      case 'number-nebula':
+        return 'Cosmic routes with number missions';
+      case 'math-facts':
+        return 'Fast-paced drills with combo rewards';
+      case 'story-springs':
+        return 'Creative paths and storytelling prompts';
+      case 'science-explorers':
+        return 'Experiment tracks and discovery boosts';
+      case 'creative-corner':
+        return 'Art and rhythm activities';
+      case 'puzzle-peaks':
+        return 'Logic climbs and pattern challenges';
+      case 'adventure-arena':
+        return 'Boss-level mixed mastery challenges';
+      default:
+        return 'New adventures await here';
+    }
+  }
+
+  List<String> _zoneFeatureTags(ZoneData zone) {
+    switch (zone.id) {
+      case 'word-woods':
+        return const ['Phonics', 'Sight Words', 'Reading Trails'];
+      case 'number-nebula':
+        return const ['Counting', 'Patterns', 'Number Boosts'];
+      case 'math-facts':
+        return const ['Speed Rounds', 'Combos', 'Fact Mastery'];
+      case 'story-springs':
+        return const ['Story Seeds', 'Characters', 'Creative Quests'];
+      case 'science-explorers':
+        return const ['Experiments', 'Nature Lab', 'Discoveries'];
+      case 'creative-corner':
+        return const ['Drawing', 'Music', 'Maker Mode'];
+      case 'puzzle-peaks':
+        return const ['Logic', 'Shapes', 'Pattern Paths'];
+      case 'adventure-arena':
+        return const ['Boss Trials', 'Mixed Skills', 'Mastery Cups'];
+      default:
+        return const ['Adventure', 'Skills', 'Rewards'];
+    }
+  }
+
+  List<String> _zoneFeatureIcons(ZoneData zone) {
+    switch (zone.id) {
+      case 'word-woods':
+        return const ['🔤', '📚', '🍃'];
+      case 'number-nebula':
+        return const ['➕', '🌠', '🔢'];
+      case 'math-facts':
+        return const ['⚡', '🎯', '🧮'];
+      case 'story-springs':
+        return const ['✍️', '📖', '💭'];
+      case 'science-explorers':
+        return const ['🔬', '🧪', '🌍'];
+      case 'creative-corner':
+        return const ['🎨', '🎵', '✨'];
+      case 'puzzle-peaks':
+        return const ['🧩', '🗻', '♟️'];
+      case 'adventure-arena':
+        return const ['🏆', '⚔️', '🔥'];
+      default:
+        return const ['✨', '⭐', '🎯'];
+    }
   }
 
   List<Widget> _build3DMapLayer(
@@ -647,9 +816,35 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         1.0 - (zone.position.dy * 0.3); // 0-30% fade for depth
     final finalOpacity = progress * atmosphericOpacity;
 
+    final visualScale = (_isCompactLayout ? 0.84 : 1.0) * _uiScale;
+    
+    // Adaptive zone sizing for very small screens
+    double baseWidth = 160.0;
+    double baseHeight = 180.0;
+    if (constraints.maxWidth < 320) {
+      baseWidth = 135.0;
+      baseHeight = 150.0;
+    } else if (constraints.maxWidth < 400) {
+      baseWidth = 145.0;
+      baseHeight = 165.0;
+    }
+    
+    final zoneWidth = baseWidth * visualScale;
+    final zoneHeight = baseHeight * visualScale;
+    final sideInset = constraints.maxWidth < 300 ? 2.0 : (constraints.maxWidth < 340 ? 4.0 : 8.0);
+    final minTopInset = constraints.maxHeight < 600 ? 30.0 : (constraints.maxHeight < 620 ? 40.0 : 52.0);
+    final maxBottomInset = constraints.maxHeight < 600 ? 70.0 : (constraints.maxHeight < 620 ? 88.0 : 110.0);
+    final left = (screenPos.dx - (zoneWidth / 2))
+      .clamp(sideInset, constraints.maxWidth - zoneWidth - sideInset)
+      .toDouble();
+    final top =
+      (screenPos.dy - (zoneHeight * 0.55) + (1 - progress) * 50).clamp(
+        minTopInset, constraints.maxHeight - zoneHeight - maxBottomInset)
+        .toDouble();
+
     return Positioned(
-      left: screenPos.dx - 60,
-      top: screenPos.dy - 70 + (1 - progress) * 50,
+      left: left,
+      top: top,
       child: Opacity(
         opacity: finalOpacity,
         child: _ZoneIsland(
@@ -659,14 +854,22 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           isSelected: _selectedZoneIndex == index,
           starsEarned: zoneStats.masteredSkills,
           totalSkills: zoneStats.totalSkills,
+          assetIcons: _zoneFeatureIcons(zone),
           floatAnimation: _floatController,
+            visualScale: visualScale,
           onTap: isUnlocked
               ? () {
+                  setState(() {
+                    _selectedZoneIndex = index;
+                  });
                   debugPrint(
                       'Tapped zone ${zone.name} - moving to index $index');
                   _moveToZone(index);
                 }
               : () {
+                  setState(() {
+                    _selectedZoneIndex = index;
+                  });
                   debugPrint('Tapped locked zone ${zone.name}');
                   _showLockedDialog(zone, totalStars);
                 },
@@ -782,16 +985,19 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         ),
                       ],
                     ),
-                    child: Text(
-                      avatar.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.3,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 72),
+                      child: Text(
+                        avatar.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.3,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -813,7 +1019,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       'Lv.${avatar.level}',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 8,
+                        fontSize: 12,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0.2,
                       ),
@@ -828,284 +1034,749 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
-  Widget _buildTopHUD(Avatar avatar, int totalStars) {
+  Widget _buildTopHUD(Avatar avatar, int totalStars,
+      {required bool compact, required double uiScale}) {
     final streakService = Provider.of<StreakService>(context);
+    final hudButtonSize = compact ? 36.0 : 40.0;
+    final hudIconSize = compact ? 20.0 : 22.0;
+    final hudButtonGap = compact ? 6.0 : 8.0;
+    final hudRightMargin = compact ? 8.0 : 12.0;
 
     return Positioned(
-      top: 10,
+      top: 16,
       left: 16,
       right: 16,
-      child: Row(
-        children: [
-          // Logo and title - clickable for info
-          GestureDetector(
-            onTap: () => _showAppInfoDialog(context),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.white.withValues(alpha: 0.98),
-                    Colors.blue.shade50.withValues(alpha: 0.95),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.2),
-                  width: 2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
+      child: Transform.scale(
+        alignment: Alignment.topCenter,
+        scale: uiScale,
+        child: Row(
+          children: [
+            // Logo & Title
+            GlowingCard(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              color: AppColors.primary,
+              onTap: () => _showAppInfoDialog(context),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      width: 32,
-                      height: 32,
-                      errorBuilder: (_, __, ___) =>
-                          const Text('🌟', style: TextStyle(fontSize: 24)),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'BrightBound',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 15,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 10),
-
-          // Player switcher button - Enhanced
-          GestureDetector(
-            onTap: () => _showPlayerSwitcher(context),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.white.withValues(alpha: 0.98),
-                    AppColors.primary.withValues(alpha: 0.08),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.35), width: 2.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.primary,
-                          AppColors.secondary,
-                        ],
+                  Hero(
+                    tag: 'app_logo',
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryLight,
+                        shape: BoxShape.circle,
                       ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Text('👤', style: TextStyle(fontSize: 16)),
+                      child: const Icon(Icons.star, color: Colors.white, size: 24),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Text(
-                    avatar.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 13,
-                      color: AppColors.primary,
-                      letterSpacing: 0.3,
+                    'BrightBound',
+                    style: AppTypography.displaySmall.copyWith(
+                      fontSize: 18,
+                      letterSpacing: 0.5,
+                      color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.swap_horiz,
-                      size: 18, color: AppColors.primary),
                 ],
               ),
             ),
-          ),
 
-          const SizedBox(width: 10),
+            const Spacer(),
 
-          // Daily streak indicator - Enhanced
-          GestureDetector(
-            onTap: () => _showStreakDialog(context, streakService),
-            child: StreakWidget(
-              streakService: streakService,
-              compact: true,
-            ),
-          ),
-
-          const Spacer(),
-
-          // Star counter - Enhanced
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.amber.withValues(alpha: 0.6),
-                  blurRadius: 16,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Row(
+            // Settings & Parent access
+            Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('⭐', style: TextStyle(fontSize: 20)),
-                const SizedBox(width: 8),
-                Text(
-                  '$totalStars',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 19,
-                    letterSpacing: 0.5,
+                Tooltip(
+                  message: 'My Profile',
+                  child: Semantics(
+                    button: true,
+                    label: 'My Profile',
+                    child: GestureDetector(
+                      onTap: () => _showProfileStats(),
+                      child: Container(
+                        width: hudButtonSize,
+                        height: hudButtonSize,
+                        margin: EdgeInsets.only(right: hudButtonGap),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.92),
+                          shape: BoxShape.circle,
+                          boxShadow: AppShadows.sm(AppColors.primary),
+                        ),
+                        child: Icon(Icons.person_rounded,
+                            size: hudIconSize, color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+                ),
+                Tooltip(
+                  message: 'Settings',
+                  child: Semantics(
+                    button: true,
+                    label: 'Settings',
+                    child: GestureDetector(
+                      onTap: () => _showSettings(),
+                      child: Container(
+                        width: hudButtonSize,
+                        height: hudButtonSize,
+                        margin: EdgeInsets.only(right: hudButtonGap),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.92),
+                          shape: BoxShape.circle,
+                          boxShadow: AppShadows.sm(AppColors.primary),
+                        ),
+                        child: Icon(Icons.settings_rounded,
+                            size: compact ? 18 : 20,
+                            color: AppColors.textSecondary),
+                      ),
+                    ),
+                  ),
+                ),
+                Tooltip(
+                  message: 'Parent Dashboard',
+                  child: Semantics(
+                    button: true,
+                    label: 'Parent Dashboard',
+                    child: GestureDetector(
+                      onTap: () => _showParentDashboard(),
+                      child: Container(
+                        width: hudButtonSize,
+                        height: hudButtonSize,
+                        margin: EdgeInsets.only(right: hudRightMargin),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.92),
+                          shape: BoxShape.circle,
+                          boxShadow: AppShadows.sm(Colors.indigo),
+                        ),
+                        child: Icon(Icons.supervised_user_circle_rounded,
+                            size: hudIconSize, color: Colors.indigo),
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
 
-          const SizedBox(width: 8),
+            // Stats
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 320),
+                  switchInCurve: Curves.easeOutBack,
+                  switchOutCurve: Curves.easeIn,
+                  transitionBuilder: (child, animation) => ScaleTransition(
+                    scale: animation,
+                    child: child,
+                  ),
+                  child: AnimatedScoreCounter(
+                    key: ValueKey<int>(totalStars),
+                    value: totalStars,
+                    label: 'Stars',
+                    emoji: '⭐',
+                    color: AppColors.reward,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                if (streakService.currentStreak > 0) ...[
+                  AnimatedScoreCounter(
+                    value: streakService.currentStreak,
+                    label: 'Days',
+                    emoji: '🔥',
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(width: 12),
+                ],
 
-          // Settings button
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.95),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
+                // Daily Challenge badge
+                Consumer<DailyChallengeService>(
+                  builder: (context, challengeSvc, _) {
+                    final completed = challengeSvc.todaysCompletionCount;
+                    final total = challengeSvc.todaysChallenges.length;
+                    return Tooltip(
+                      message: 'Daily Challenges',
+                      child: GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          FadeSlidePageRoute(page: const DailyChallengeScreen()),
+                        ),
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: completed == total && total > 0
+                                ? Colors.amber.withValues(alpha: 0.25)
+                                : Colors.white.withValues(alpha: 0.92),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: completed == total && total > 0
+                                  ? Colors.amber
+                                  : Colors.blueAccent.withValues(alpha: 0.3),
+                              width: 1.5,
+                            ),
+                            boxShadow: AppShadows.sm(Colors.blueAccent),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                completed == total && total > 0 ? '🏆' : '🎯',
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$completed/$total',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 13,
+                                  color: completed == total && total > 0
+                                      ? Colors.amber[800]
+                                      : Colors.blueAccent,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                // Avatar/Profile Circle
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/avatar-creator'),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: AppShadows.md(AppColors.primary),
+                      border: Border.all(color: AppColors.primary, width: 2),
+                    ),
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Color(int.parse(avatar.skinColor.replaceAll('#', '0xFF'))),
+                      child: Text(
+                        _getCharacterEmoji(avatar.baseCharacter),
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                    ),
+                  ),
                 ),
               ],
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.settings, size: 22),
-              onPressed: () => _showSettingsDialog(context),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomActions(int totalStars) {
-    return Positioned(
-      bottom: 20,
-      left: 16,
-      right: 16,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Daily Challenge button
-          _buildActionButton(
-            icon: '🎯',
-            label: 'Daily\nChallenge',
-            color: Colors.orange,
-            onTap: () => _showDailyChallenges(),
-          ),
-          const SizedBox(width: 12),
-
-          // Mini Games button
-          _buildActionButton(
-            icon: '🎮',
-            label: 'Mini\nGames',
-            color: Colors.purple,
-            onTap: () => _showMiniGamesMenu(),
-          ),
-          const SizedBox(width: 12),
-
-          // Achievements button
-          _buildActionButton(
-            icon: '🏆',
-            label: 'My\nTrophies',
-            color: Colors.amber,
-            onTap: () => _showAchievements(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required String icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 80,
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(icon, style: const TextStyle(fontSize: 28)),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: color,
-                height: 1.1,
+      ),
+    );
+  }
+
+  Widget _buildStreakRiskBanner(
+      {required bool compact, required double uiScale}) {
+    final streakService = context.watch<StreakService>();
+    final now = DateTime.now();
+    final isAtRisk = now.hour >= 17 &&
+        streakService.currentStreak > 0 &&
+        !streakService.playedToday;
+
+    if (!isAtRisk) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      top: compact ? 78 : 88,
+      left: 16,
+      right: 16,
+      child: Transform.scale(
+        alignment: Alignment.topCenter,
+        scale: uiScale,
+        child: Semantics(
+          container: true,
+          label:
+              'Streak at risk warning. Play today to keep your streak alive.',
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.deepOrange.withValues(alpha: 0.95),
+                  Colors.orange.withValues(alpha: 0.92),
+                ],
               ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.35),
+                width: 1.5,
+              ),
+              boxShadow: AppShadows.md(Colors.deepOrange),
             ),
-          ],
+            child: Row(
+              children: [
+                const Text('⚠️', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Last chance today to keep your 🔥 ${streakService.currentStreak}-day streak!',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.1,
+                    ),
+                    maxLines: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomActions(int totalStars,
+      {required bool compact, required double uiScale}) {
+    final isNarrow = MediaQuery.of(context).size.width < 760;
+
+    final actionsRow = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        JuicyButton(
+          label: 'Daily\nChallenge',
+          emoji: '🎯',
+          width: 160,
+          height: 72,
+          color: Colors.orange,
+          onPressed: () => _showDailyChallenges(),
+          shimmer: true,
+        ),
+        const SizedBox(width: 16),
+        JuicyButton(
+          label: 'Mini\nGames',
+          emoji: '🎮',
+          width: 160,
+          height: 72,
+          color: AppColors.secondary,
+          onPressed: () => _showMiniGamesMenu(),
+        ),
+        const SizedBox(width: 16),
+        JuicyButton(
+          label: 'My\nAchievements',
+          emoji: '🏆',
+          width: 180,
+          height: 72,
+          color: AppColors.reward,
+          onPressed: () => _showAchievements(),
+        ),
+      ],
+    );
+
+    return Positioned(
+      bottom: compact ? 24 : 32,
+      left: 16,
+      right: 16,
+      child: Transform.scale(
+        alignment: Alignment.bottomCenter,
+        scale: uiScale,
+        child: isNarrow
+            ? SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: actionsRow,
+                ),
+              )
+            : actionsRow,
+      ),
+    );
+  }
+
+  Widget _buildQuickZoneRail(int totalStars,
+      {required bool compact, required double uiScale}) {
+    return Positioned(
+      bottom: compact ? 178 : 120,
+      left: 16,
+      right: 16,
+      height: 56,
+      child: Transform.scale(
+        alignment: Alignment.bottomCenter,
+        scale: uiScale,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.none,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: List.generate(_zones.length, (index) {
+              final zone = _zones[index];
+              final isUnlocked = _isZoneUnlocked(index, totalStars);
+              final isSelected = _selectedZoneIndex == index;
+              final isCurrent = _currentZoneIndex == index;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Semantics(
+                  button: true,
+                  selected: isSelected,
+                  label:
+                      '${zone.name}, ${isUnlocked ? 'unlocked' : 'locked'}, requires ${zone.requiredStars} stars',
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: () {
+                        setState(() {
+                          _selectedZoneIndex = index;
+                        });
+                        if (isUnlocked) {
+                          _moveToZone(index);
+                        } else {
+                          _showLockedDialog(zone, totalStars);
+                        }
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? zone.color.withValues(alpha: 0.95)
+                              : (isCurrent
+                                  ? zone.color.withValues(alpha: 0.18)
+                                  : Colors.white.withValues(alpha: 0.92)),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.white
+                                : (isCurrent
+                                    ? zone.color.withValues(alpha: 0.65)
+                                    : zone.color.withValues(alpha: 0.35)),
+                            width: isSelected ? 2.5 : (isCurrent ? 2 : 1.5),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: zone.color.withValues(
+                                  alpha: isSelected
+                                      ? 0.35
+                                      : (isCurrent ? 0.22 : 0.12)),
+                              blurRadius: isSelected ? 14 : (isCurrent ? 11 : 8),
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(zone.emoji, style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 6),
+                            Text(
+                              zone.name,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: isSelected ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              isUnlocked ? Icons.lock_open : Icons.lock,
+                              size: 14,
+                              color: isSelected
+                                  ? Colors.white
+                                  : (isUnlocked ? Colors.green : Colors.red),
+                            ),
+                            if (isCurrent) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Colors.white : zone.color,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildZoneSpotlightPanel(
+    int totalStars,
+    SkillProvider skillProvider, {
+    required bool compact,
+    required double uiScale,
+  }) {
+    final selected = _zones[_selectedZoneIndex];
+    final isUnlocked = _isZoneUnlocked(_selectedZoneIndex, totalStars);
+    final stats = skillProvider.getZoneStats(selected.id.replaceAll('-', '_'));
+    final progress =
+        _zoneProgressFraction(stats.masteredSkills, stats.totalSkills);
+
+    return Positioned(
+      top: compact ? 82 : 96,
+      right: 16,
+      child: Transform.scale(
+        alignment: Alignment.topRight,
+        scale: uiScale,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: compact ? 230 : 290),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                  color: selected.color.withValues(alpha: 0.35), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: selected.color.withValues(alpha: 0.2),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Zone header with coloured gradient banner
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        selected.color,
+                        selected.color.withValues(alpha: 0.75),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  child: Row(
+                    children: [
+                      // Emoji in circle
+                      Container(
+                        width: compact ? 36 : 44,
+                        height: compact ? 36 : 44,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            selected.emoji,
+                            style: TextStyle(fontSize: compact ? 20 : 26),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              selected.name,
+                              style: TextStyle(
+                                fontSize: compact ? 13 : 15,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
+                            ),
+                            if (isUnlocked)
+                              Row(
+                                children: List.generate(3, (i) {
+                                  final maxPer = stats.totalSkills > 0
+                                      ? stats.totalSkills / 3
+                                      : 1;
+                                  final filled = i <
+                                      (stats.masteredSkills / maxPer).ceil();
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 2),
+                                    child: Icon(
+                                      filled
+                                          ? Icons.star
+                                          : Icons.star_border,
+                                      size: 12,
+                                      color: Colors.amber.shade200,
+                                    ),
+                                  );
+                                }),
+                              ),
+                          ],
+                        ),
+                      ),
+                      if (!isUnlocked)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade400,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.lock,
+                                  size: 10, color: Colors.white),
+                              const SizedBox(width: 3),
+                              Text(
+                                '${selected.requiredStars}⭐',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _zoneMoodText(selected),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.blueGrey.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: LinearProgressIndicator(
+                    minHeight: 8,
+                    value: progress,
+                    backgroundColor: Colors.blueGrey.shade100,
+                    valueColor: AlwaysStoppedAnimation<Color>(selected.color),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Mastered ${stats.masteredSkills}/${stats.totalSkills} skills',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.blueGrey.shade700,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: List.generate(_zoneFeatureIcons(selected).length,
+                      (index) {
+                    final icon = _zoneFeatureIcons(selected)[index];
+                    return AnimatedBuilder(
+                      animation: _floatController,
+                      builder: (context, _) {
+                        final bob =
+                            math.sin((_floatController.value * math.pi * 2) + index) *
+                                2;
+                        return Transform.translate(
+                          offset: Offset(0, bob),
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: selected.color.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: selected.color.withValues(alpha: 0.30),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: selected.color.withValues(alpha: 0.18),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(icon, style: const TextStyle(fontSize: 16)),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: _zoneFeatureTags(selected)
+                      .map(
+                        (tag) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: selected.color.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: selected.color.withValues(alpha: 0.16),
+                            ),
+                          ),
+                          child: Text(
+                            tag,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: selected.color,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _isMoving
+                        ? null
+                        : () {
+                            if (isUnlocked) {
+                              _moveToZone(_selectedZoneIndex);
+                            } else {
+                              _showLockedDialog(selected, totalStars);
+                            }
+                          },
+                    icon: Icon(isUnlocked ? Icons.rocket_launch : Icons.lock),
+                    label: Text(
+                      isUnlocked
+                          ? (_currentZoneIndex == _selectedZoneIndex
+                              ? 'Enter Zone'
+                              : 'Travel Here')
+                          : 'Need ${selected.requiredStars}⭐',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: selected.color,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -1113,6 +1784,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   void _showLockedDialog(ZoneData zone, int totalStars) {
     final starsNeeded = zone.requiredStars - totalStars;
+    final progress =
+        zone.requiredStars <= 0 ? 1.0 : (totalStars / zone.requiredStars).clamp(0.0, 1.0);
 
     showDialog(
       context: context,
@@ -1159,6 +1832,25 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   ),
                   const TextSpan(text: ' to unlock this world!'),
                 ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                minHeight: 10,
+                value: progress,
+                backgroundColor: Colors.grey.shade200,
+                valueColor: AlwaysStoppedAnimation<Color>(zone.color),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '$totalStars / ${zone.requiredStars} stars collected',
+              style: TextStyle(
+                color: Colors.blueGrey.shade700,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
@@ -1343,8 +2035,28 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
-  void _showMiniGamesMenu() {
+  void _showProfileStats() {
     Navigator.push(
+      context,
+      FadeSlidePageRoute(page: const ProfileStatsScreen()),
+    );
+  }
+
+  void _showSettings() {
+    Navigator.push(
+      context,
+      FadeSlidePageRoute(page: const SettingsScreen()),
+    );
+  }
+
+  void _showParentDashboard() {
+    Navigator.push(
+      context,
+      FadeSlidePageRoute(page: const ParentDashboardScreen()),
+    );
+  }
+
+  void _showMiniGamesMenu() {    Navigator.push(
       context,
       FadeSlidePageRoute(
         page: const MiniGamesScreen(),
@@ -1427,242 +2139,6 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
-  void _showStreakDialog(BuildContext context, StreakService streakService) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Row(
-          children: [
-            Text(streakService.streakEmoji,
-                style: const TextStyle(fontSize: 28)),
-            const SizedBox(width: 8),
-            const Text('Daily Streak'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Full streak widget
-            StreakWidget(
-              streakService: streakService,
-              compact: false,
-            ),
-            const SizedBox(height: 16),
-            // Stats row
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStreakStat(
-                    '🏆',
-                    '${streakService.longestStreak}',
-                    'Best Streak',
-                  ),
-                  _buildStreakStat(
-                    '📅',
-                    '${streakService.totalDaysPlayed}',
-                    'Days Played',
-                  ),
-                ],
-              ),
-            ),
-            if (!streakService.playedToday) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.amber[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border:
-                      Border.all(color: Colors.amber.withValues(alpha: 0.5)),
-                ),
-                child: Row(
-                  children: [
-                    const Text('💡', style: TextStyle(fontSize: 20)),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                      child: Text(
-                        'Complete any activity to record your streak today!',
-                        style: TextStyle(fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStreakStat(String emoji, String value, String label) {
-    return Column(
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 24)),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 11,
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showSettingsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            title: const Row(
-              children: [
-                Text('⚙️ ', style: TextStyle(fontSize: 24)),
-                Text('Settings'),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Text('🔊', style: TextStyle(fontSize: 24)),
-                  title: const Text('Game SFX'),
-                  trailing: Switch(
-                    value: _audioManager.isSfxEnabled,
-                    onChanged: (_) {
-                      _audioManager.toggleSfx();
-                      setState(() {});
-                    },
-                  ),
-                ),
-                ListTile(
-                  leading: const Text('🎵', style: TextStyle(fontSize: 24)),
-                  title: const Text('Music'),
-                  trailing: Switch(
-                    value: _audioManager.isMusicEnabled,
-                    onChanged: (_) {
-                      _audioManager.toggleMusic();
-                      setState(() {});
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Music Volume',
-                          style: TextStyle(fontWeight: FontWeight.w600)),
-                      Slider(
-                        value: _audioManager.musicVolume,
-                        onChanged: (value) {
-                          _audioManager.setMusicVolume(value);
-                          setState(() {});
-                        },
-                      ),
-                      const SizedBox(height: 4),
-                      const Text('SFX Volume',
-                          style: TextStyle(fontWeight: FontWeight.w600)),
-                      Slider(
-                        value: _audioManager.sfxVolume,
-                        onChanged: (value) {
-                          _audioManager.setSfxVolume(value);
-                          setState(() {});
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.supervisor_account,
-                      size: 28, color: Colors.indigo),
-                  title: const Text('Parent Dashboard'),
-                  subtitle: const Text('View progress & stats'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      FadeSlidePageRoute(
-                        page: const ParentDashboardScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.restart_alt,
-                      size: 28, color: Colors.red),
-                  title: const Text('Reset Progress'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showResetConfirmation(context);
-                  },
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Done'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  void _showResetConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('⚠️ Reset Progress?'),
-        content: const Text(
-          'This will delete ALL your progress and stars. This cannot be undone!',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/avatar-creator');
-            },
-            child: const Text('Reset'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showDailyChallenges() {
     Navigator.push(
       context,
@@ -1681,154 +2157,13 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
-  void _showPlayerSwitcher(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              '👥 Switch Player',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Manage profiles for different players',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 24),
-
-            // Current player
-            Consumer<AvatarProvider>(
-              builder: (context, avatarProvider, _) {
-                final avatar = avatarProvider.avatar;
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primary.withValues(alpha: 0.1),
-                        AppColors.secondary.withValues(alpha: 0.1)
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.primary, width: 2),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            _getCharacterEmoji(avatar?.baseCharacter ?? 'fox'),
-                            style: const TextStyle(fontSize: 28),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              avatar?.name ?? 'Player',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Level ${avatar?.level ?? 1} • Current Player',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.check_circle,
-                          color: Colors.green, size: 28),
-                    ],
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // Create new player button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pushReplacementNamed(context, '/avatar-creator');
-                },
-                icon: const Icon(Icons.add_circle_outline),
-                label: const Text('Create New Player'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Edit current player
-            SizedBox(
-              width: double.infinity,
-              child: TextButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // Navigate to edit avatar
-                  Navigator.pushNamed(context, '/avatar-creator');
-                },
-                icon: const Icon(Icons.edit),
-                label: const Text('Edit Current Player'),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
   String _getCharacterEmoji(String character) {
     switch (character.toLowerCase()) {
       case 'fox':
         return '🦊';
       case 'deer':
         return '🦌';
+      case 'rabbit':
       case 'bunny':
         return '🐰';
       case 'bear':
@@ -1837,6 +2172,18 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         return '🦉';
       case 'cat':
         return '🐱';
+      case 'penguin':
+        return '🐧';
+      case 'koala':
+        return '🐨';
+      case 'panda':
+        return '🐼';
+      case 'otter':
+        return '🦦';
+      case 'wolf':
+        return '🐺';
+      case 'tiger':
+        return '🐯';
       default:
         return '🦊';
     }
@@ -1849,7 +2196,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     }
 
     return Positioned(
-      bottom: 100,
+      bottom: 246,
       left: 16,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1884,7 +2231,9 @@ class _ZoneIsland extends StatefulWidget {
   final bool isSelected;
   final int starsEarned;
   final int totalSkills;
+  final List<String> assetIcons;
   final Animation<double> floatAnimation;
+  final double visualScale;
   final VoidCallback onTap;
 
   const _ZoneIsland({
@@ -1894,7 +2243,9 @@ class _ZoneIsland extends StatefulWidget {
     required this.isSelected,
     required this.starsEarned,
     required this.totalSkills,
+    required this.assetIcons,
     required this.floatAnimation,
+    this.visualScale = 1.0,
     required this.onTap,
   });
 
@@ -1913,44 +2264,145 @@ class _ZoneIslandState extends State<_ZoneIsland> {
         final float = math.sin(
                 widget.floatAnimation.value * math.pi + widget.zone.order) *
             8; // Increased float for more dynamics
+        final selectionPulse = widget.isSelected
+            ? 1.0 + (math.sin(widget.floatAnimation.value * math.pi * 2) * 0.03)
+            : 1.0;
 
         return Transform.translate(
           offset: Offset(0, float),
           child: MouseRegion(
             onEnter: (_) => setState(() => _isHovered = true),
             onExit: (_) => setState(() => _isHovered = false),
-            child: GestureDetector(
-              onTap: widget.onTap,
-              child: Container(
-                width: 160, // Increased from 140
-                height: 180, // Increased from 160
-                decoration: (widget.isSelected || _isHovered)
-                    ? BoxDecoration(
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 5,
-                        ),
-                        boxShadow: [
-                          // Primary glow
-                          BoxShadow(
-                            color: widget.zone.color
-                                .withValues(alpha: _isHovered ? 1.0 : 0.8),
-                            blurRadius: _isHovered ? 45 : 30,
-                            spreadRadius: _isHovered ? 12 : 8,
-                          ),
-                          // Secondary glow
-                          BoxShadow(
-                            color: widget.zone.color.withValues(alpha: 0.3),
-                            blurRadius: _isHovered ? 60 : 40,
-                            spreadRadius: _isHovered ? 20 : 12,
-                          ),
-                        ],
-                      )
-                    : null,
+            child: Semantics(
+              button: true,
+              selected: widget.isSelected,
+              label:
+                  '${widget.zone.name}, ${widget.isUnlocked ? 'unlocked' : 'locked'}, ${widget.starsEarned} of ${widget.totalSkills} skills mastered',
+              hint: widget.isUnlocked
+                  ? 'Double tap to travel to this zone'
+                  : 'Earn more stars to unlock this zone',
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(28),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(28),
+                  onTap: widget.onTap,
+                  onLongPress: widget.onTap,
+                  splashColor: widget.zone.color.withValues(alpha: 0.3),
+                  highlightColor: widget.zone.color.withValues(alpha: 0.1),
+                  child: Transform.scale(
+                scale: widget.visualScale * selectionPulse,
+                alignment: Alignment.center,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
+                    // Throbbing focus halo for keyboard navigation
+                    if (widget.isSelected)
+                      Positioned.fill(
+                        child: AnimatedBuilder(
+                          animation: widget.floatAnimation,
+                          builder: (context, _) {
+                            final pulse = 0.6 + (math.sin(widget.floatAnimation.value * math.pi * 4) * 0.4);
+                            return Container(
+                              margin: EdgeInsets.all(-(16 * pulse)),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: pulse * 0.6),
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: widget.zone.color.withValues(alpha: pulse * 0.4),
+                                    blurRadius: 20 * pulse,
+                                    spreadRadius: 8 * pulse,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    // Main island container
+                    Container(
+                    width: 160,
+                    height: 180,
+                    decoration: (widget.isSelected || _isHovered)
+                      ? BoxDecoration(
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 5,
+                          ),
+                          boxShadow: [
+                            // Primary glow
+                            BoxShadow(
+                              color: widget.zone.color
+                                  .withValues(alpha: _isHovered ? 1.0 : 0.8),
+                              blurRadius: widget.isSelected
+                                ? 50
+                                : (_isHovered ? 45 : 30),
+                              spreadRadius: widget.isSelected
+                                ? 14
+                                : (_isHovered ? 12 : 8),
+                            ),
+                            // Secondary glow
+                            BoxShadow(
+                              color: widget.zone.color.withValues(alpha: 0.3),
+                              blurRadius: _isHovered ? 60 : 40,
+                              spreadRadius: _isHovered ? 20 : 12,
+                            ),
+                          ],
+                        )
+                      : null,
+                    child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (widget.isUnlocked)
+                      ...List.generate(widget.assetIcons.length, (index) {
+                        final offsets = [
+                          const Offset(-44, -28),
+                          const Offset(42, -12),
+                          const Offset(0, 32),
+                        ];
+                        final offset = offsets[index % offsets.length];
+                        return Positioned(
+                          left: 80 + offset.dx,
+                          top: 70 + offset.dy,
+                          child: Transform.translate(
+                            offset: Offset(
+                              math.sin(widget.floatAnimation.value * math.pi * 2 + index) * 3,
+                              math.cos(widget.floatAnimation.value * math.pi * 2 + index) * 2,
+                            ),
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.92),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: widget.zone.color.withValues(alpha: 0.4),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: widget.zone.color.withValues(alpha: 0.18),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  widget.assetIcons[index],
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+
                     // Enhanced island shadow with depth
                     Positioned(
                       bottom: 0,
@@ -2003,6 +2455,34 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                       ),
                     ),
 
+                    // Animated progress ring surrounding island body
+                    if (widget.isUnlocked)
+                      Positioned(
+                        bottom: 27,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: SizedBox(
+                            width: 146,
+                            height: 131,
+                            child: AnimatedBuilder(
+                              animation: widget.floatAnimation,
+                              builder: (context, _) => CustomPaint(
+                                painter: _ZoneProgressRingPainter(
+                                  progress: widget.totalSkills > 0
+                                      ? (widget.starsEarned /
+                                              widget.totalSkills)
+                                          .clamp(0.0, 1.0)
+                                      : 0.0,
+                                  color: widget.zone.color,
+                                  animationValue: widget.floatAnimation.value,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
                     // Main island body with glow
                     Positioned(
                       bottom: 35,
@@ -2049,10 +2529,22 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                             ),
                           ],
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(25),
-                          child: Stack(
-                            children: [
+                        child: ColorFiltered(
+                          colorFilter: widget.isUnlocked
+                              ? const ColorFilter.mode(
+                                  Colors.transparent,
+                                  BlendMode.srcOver,
+                                )
+                              : const ColorFilter.matrix(<double>[
+                                  0.2126, 0.7152, 0.0722, 0, 0,
+                                  0.2126, 0.7152, 0.0722, 0, 0,
+                                  0.2126, 0.7152, 0.0722, 0, 0,
+                                  0, 0, 0, 1, 0,
+                                ]),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(25),
+                            child: Stack(
+                              children: [
                               // Shimmer effect for unlocked zones - enhanced
                               if (widget.isUnlocked)
                                 Positioned.fill(
@@ -2084,12 +2576,12 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                   ),
                                 ),
                               // Content - centered both horizontally and vertically
-                              Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
+                                Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
                                     // Emoji or lock with bounce animation
                                     AnimatedBuilder(
                                       animation: widget.floatAnimation,
@@ -2120,34 +2612,40 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                         );
                                       },
                                     ),
-                                    const SizedBox(height: 6),
-                                    // Zone name with better styling
-                                    Text(
-                                      widget.zone.name.split(' ').first,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 0.5,
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.black
-                                                .withValues(alpha: 0.6),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
+                                      const SizedBox(height: 6),
+                                    // Zone name – full name with auto-scale
+                                    SizedBox(
+                                      width: 110,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          widget.zone.name,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.3,
+                                            shadows: [
+                                              Shadow(
+                                                color: Color(0x99000000),
+                                                blurRadius: 8,
+                                                offset: Offset(0, 2),
+                                              ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
                                       ),
                                     ),
                                     // Stars progress - only show if unlocked
-                                    if (widget.isUnlocked)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 6),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: List.generate(3, (i) {
+                                      if (widget.isUnlocked)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 6),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: List.generate(3, (i) {
                                             // Safely calculate stars - avoid division by zero
                                             final maxStarsPerSection =
                                                 widget.totalSkills > 0
@@ -2167,17 +2665,49 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                                 color: Colors.amber.shade300,
                                               ),
                                             );
-                                          }),
+                                            }),
+                                          ),
                                         ),
-                                      ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
+
+                    if (widget.isUnlocked)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white,
+                                Colors.amber.shade100,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.amber.shade400,
+                            ),
+                          ),
+                          child: Text(
+                            '⭐ ${widget.starsEarned}/${widget.totalSkills}',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
 
                     // Current zone indicator - enhanced
                     if (widget.isCurrentZone)
@@ -2217,6 +2747,37 @@ class _ZoneIslandState extends State<_ZoneIsland> {
 
                     // Locked indicator - enhanced
                     if (!widget.isUnlocked)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(28),
+                            color: Colors.black.withValues(alpha: 0.22),
+                          ),
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.45),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.35),
+                                ),
+                              ),
+                              child: Text(
+                                '${widget.zone.requiredStars}⭐ to unlock',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    if (!widget.isUnlocked)
                       Positioned(
                         top: 6,
                         child: Container(
@@ -2242,11 +2803,16 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                         ),
                       ),
                   ],
+                  ),
+                ),
+                  ],
                 ),
               ),
             ),
           ),
-        );
+        ),
+      ),
+      );
       },
     );
   }
@@ -2262,6 +2828,12 @@ class _EnhancedBackgroundPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Layer 0: Sky gradient with sun/moon
     _drawSky(canvas, size);
+
+    // Layer 0b: Rainbow arc
+    _drawRainbow(canvas, size);
+
+    // Layer 0c: Aurora glow bands
+    _drawAurora(canvas, size);
 
     // Layer 1: Distant castles and buildings
     _drawDistantStructures(canvas, size);
@@ -2352,6 +2924,82 @@ class _EnhancedBackgroundPainter extends CustomPainter {
       final end =
           sunPosition + Offset(math.cos(angle) * 50, math.sin(angle) * 50);
       canvas.drawLine(start, end, rayPaint);
+    }
+
+    // Wide atmospheric sun halo for added warmth
+    final haloPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.yellow.withValues(alpha: 0.08),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: sunPosition, radius: 120));
+    canvas.drawCircle(sunPosition, 120, haloPaint);
+  }
+
+  void _drawRainbow(Canvas canvas, Size size) {
+    // Gentle rainbow arc sitting just above the horizon
+    final cx = size.width * 0.38;
+    final cy = size.height * 0.55;
+    final baseRadius = size.width * 0.38;
+
+    final rainbowColors = [
+      Colors.red.withValues(alpha: 0.18),
+      Colors.orange.withValues(alpha: 0.18),
+      Colors.yellow.withValues(alpha: 0.18),
+      Colors.green.withValues(alpha: 0.18),
+      Colors.blue.withValues(alpha: 0.18),
+      Colors.indigo.withValues(alpha: 0.16),
+      Colors.purple.withValues(alpha: 0.14),
+    ];
+
+    for (int i = 0; i < rainbowColors.length; i++) {
+      final r = baseRadius - i * 6.0;
+      if (r <= 0) continue;
+      final paint = Paint()
+        ..color = rainbowColors[i]
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 8.0;
+      canvas.drawArc(
+        Rect.fromCenter(center: Offset(cx, cy), width: r * 2, height: r * 2),
+        math.pi,
+        math.pi,
+        false,
+        paint,
+      );
+    }
+  }
+
+  void _drawAurora(Canvas canvas, Size size) {
+    // Shimmering aurora bands near the top of the sky
+    final auroraAlpha =
+        0.07 + math.sin(animation * math.pi * 1.5) * 0.04; // gentle pulse
+
+    final bands = [
+      (0.05, 0.10, const Color(0xFF00E5FF)),
+      (0.07, 0.16, const Color(0xFF69F0AE)),
+      (0.04, 0.22, const Color(0xFFE040FB)),
+    ];
+
+    for (final band in bands) {
+      final (yFrac, heightFrac, color) = band;
+      final rect = Rect.fromLTWH(
+        0,
+        size.height * yFrac,
+        size.width,
+        size.height * heightFrac,
+      );
+      final paint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            color.withValues(alpha: auroraAlpha),
+            color.withValues(alpha: auroraAlpha * 0.5),
+            Colors.transparent,
+          ],
+        ).createShader(rect);
+      canvas.drawRect(rect, paint);
     }
   }
 
@@ -3119,6 +3767,55 @@ class _EnhancedBackgroundPainter extends CustomPainter {
   bool shouldRepaint(covariant _EnhancedBackgroundPainter oldDelegate) {
     return oldDelegate.animation != animation;
   }
+}
+
+/// Animated progress ring drawn around a zone island
+class _ZoneProgressRingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final double animationValue;
+
+  _ZoneProgressRingPainter({
+    required this.progress,
+    required this.color,
+    required this.animationValue,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final rect = Rect.fromCenter(
+      center: center,
+      width: size.width - 6,
+      height: size.height - 6,
+    );
+
+    // Faint background track
+    final trackPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.20)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawOval(rect, trackPaint);
+
+    if (progress <= 0) return;
+
+    // Shimmering progress arc in amber/gold
+    final shimmer = 0.65 + math.sin(animationValue * math.pi * 2) * 0.35;
+    final progressPaint = Paint()
+      ..color = Colors.amber.withValues(alpha: shimmer)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.0
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path()
+      ..addArc(rect, -math.pi / 2, progress * 2 * math.pi);
+    canvas.drawPath(path, progressPaint);
+  }
+
+  @override
+  bool shouldRepaint(_ZoneProgressRingPainter old) =>
+      old.progress != progress || old.animationValue != animationValue;
 }
 
 class _CloudData {

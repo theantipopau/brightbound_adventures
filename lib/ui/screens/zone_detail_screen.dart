@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/index.dart';
 import 'package:brightbound_adventures/features/literacy/screens/skill_practice_screen.dart';
 import 'package:brightbound_adventures/features/numeracy/screens/numeracy_practice_screen.dart';
@@ -10,6 +11,7 @@ import 'package:brightbound_adventures/features/storytelling/screens/story_pract
 import 'package:brightbound_adventures/features/logic/screens/logic_practice_screen.dart';
 import 'package:brightbound_adventures/features/motor/screens/motor_practice_screen.dart';
 import 'package:brightbound_adventures/features/science/screens/science_practice_screen.dart';
+import 'package:brightbound_adventures/ui/screens/boss_battle_screen.dart';
 
 class ZoneDetailScreen extends StatefulWidget {
   final String zoneId;
@@ -43,11 +45,18 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final worldTokens = WorldTokens.fromZoneId(widget.zoneId);
     return Scaffold(
+      backgroundColor: worldTokens.primaryColor.withValues(alpha: 0.06),
       appBar: AppBar(
         title: Text(widget.zoneName),
         elevation: 0,
-        backgroundColor: widget.zoneColor,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: worldTokens.headerGradient,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
       ),
       body: Consumer<SkillProvider>(
         builder: (context, skillProvider, _) {
@@ -113,6 +122,156 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                     totalSkills: zoneStats.totalSkills,
                     averageAccuracy: zoneStats.averageAccuracy,
                   ),
+                ),
+              ),
+
+              // Breadcrumb strip
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: worldTokens.primaryColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: worldTokens.primaryColor.withValues(alpha: 0.2),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.chevron_right, size: 16, color: Colors.black38),
+                        const SizedBox(width: 4),
+                        Text(
+                          widget.zoneName,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: worldTokens.primaryColor,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          worldTokens.emoji,
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(width: 6),
+                        SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: Image.asset('assets/images/questsandtasks.PNG', fit: BoxFit.contain),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Boss Battle banner (Adventure Arena only) ──
+              if (widget.zoneId == 'adventure_arena')
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        FadeSlidePageRoute(
+                          page: const BossBattleScreen(),
+                        ),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF1A2340),
+                              Color(0xFF3B1F5E),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.purple.withValues(alpha: 0.35),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('⚔️',
+                                style: TextStyle(fontSize: 40)),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'BOSS BATTLE',
+                                    style: TextStyle(
+                                      color: Colors.amber,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    '10-question mixed gauntlet\nDefeat the Shadow Champion!',
+                                    style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 13),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.amber
+                                          .withValues(alpha: 0.2),
+                                      borderRadius:
+                                          BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: Colors.amber
+                                              .withValues(alpha: 0.4)),
+                                    ),
+                                    child: const Text(
+                                      '75 Stars Reward ⭐',
+                                      style: TextStyle(
+                                          color: Colors.amber,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios,
+                                color: Colors.white38, size: 18),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Zone guardian NPC banner
+              SliverToBoxAdapter(
+                child: ZoneGuardianBanner(
+                  zoneId: widget.zoneId,
+                  themeColor: widget.zoneColor,
                 ),
               ),
 
@@ -342,8 +501,8 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   Widget _buildMasteryGuideline(BuildContext context, Skill skill) {
     final nextState = skill.getNextState();
     final nextStateText = switch (nextState) {
-      SkillState.introduced => 'Reach 65% accuracy to introduce',
-      SkillState.practising => 'Reach 85% accuracy without hints to master',
+      SkillState.introduced => 'Reach 60% accuracy to practise',
+      SkillState.practising => 'Reach 80% accuracy to master',
       SkillState.mastered => '✓ Mastered!',
       _ => 'Continue practicing',
     };
@@ -380,31 +539,43 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       practiceScreen = NumeracyPracticeScreen(
         skill: skill,
         themeColor: widget.zoneColor,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
       );
     } else if (widget.zoneId == 'story_springs') {
       practiceScreen = StoryPracticeScreen(
         skillId: skill.id,
         skillName: skill.name,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
       );
     } else if (widget.zoneId == 'puzzle_peaks') {
       practiceScreen = LogicPracticeScreen(
         skillId: skill.id,
         skillName: skill.name,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
       );
     } else if (widget.zoneId == 'adventure_arena') {
       practiceScreen = MotorPracticeScreen(
         skillId: skill.id,
         skillName: skill.name,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
       );
     } else if (widget.zoneId == 'science_explorers') {
       practiceScreen = SciencePracticeScreen(
         skillId: skill.id,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
       );
     } else {
       // Default to literacy practice screen for other zones (Word Woods)
       practiceScreen = SkillPracticeScreen(
         skill: skill,
         themeColor: widget.zoneColor,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
       );
     }
 

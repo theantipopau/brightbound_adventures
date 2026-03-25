@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/widgets/achievement_notification.dart';
+import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Quiz results screen for numeracy games
@@ -337,27 +338,20 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                         Row(
                           children: [
                             Expanded(
-                              child: OutlinedButton.icon(
+                              child: BrandedBackButton(
+                                label: 'Back to Zone',
                                 onPressed: widget.onExit,
-                                icon: const Icon(Icons.arrow_back),
-                                label: const Text('Back to Zone'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: widget.themeColor,
-                                  side: BorderSide(color: widget.themeColor),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
+                                backgroundColor: Colors.white,
+                                foregroundColor: widget.themeColor,
+                                borderColor: widget.themeColor,
+                                tokenBackgroundColor:
+                                    widget.themeColor.withValues(alpha: 0.12),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: ElevatedButton.icon(
+                              child: ElevatedButton(
                                 onPressed: widget.onPlayAgain,
-                                icon: const Icon(Icons.refresh),
-                                label: const Text('Play Again'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: widget.themeColor,
                                   foregroundColor: Colors.white,
@@ -366,6 +360,20 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
+                                  elevation: 6,
+                                  shadowColor: widget.themeColor.withValues(alpha: 0.4),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: Image.asset('assets/images/potion.PNG', fit: BoxFit.contain),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text('Play Again', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ],
                                 ),
                               ),
                             ),

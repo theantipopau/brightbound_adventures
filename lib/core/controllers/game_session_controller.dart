@@ -175,6 +175,28 @@ class GameSessionController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void addBonusScore(int points) {
+    if (points <= 0) return;
+    _currentScore += points;
+    if (onScoreChanged != null) onScoreChanged!(_currentScore);
+    notifyListeners();
+  }
+
+  void addExtraLife({int amount = 1}) {
+    if (amount <= 0) return;
+    _currentLives = (_currentLives + amount).clamp(0, maxLives + 2);
+    notifyListeners();
+  }
+
+  void addTime(int seconds) {
+    if (seconds <= 0 || _state != GameState.playing) return;
+    _secondsRemaining = (_secondsRemaining + seconds).clamp(
+      0,
+      maxTimePerQuestion + 20,
+    );
+    notifyListeners();
+  }
   
   @override
   void dispose() {

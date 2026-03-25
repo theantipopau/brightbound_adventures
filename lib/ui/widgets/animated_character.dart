@@ -415,6 +415,14 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
         return '🐨';
       case 'panda':
         return '🐼';
+      case 'owl':
+        return '🦉';
+      case 'otter':
+        return '🦦';
+      case 'wolf':
+        return '🐺';
+      case 'tiger':
+        return '🐯';
       default:
         return '🐻';
     }
@@ -438,6 +446,14 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
         return const Color(0xFF9E9E9E);
       case 'panda':
         return const Color(0xFF000000);
+      case 'owl':
+        return const Color(0xFF8D6E63);
+      case 'otter':
+        return const Color(0xFFB87333);
+      case 'wolf':
+        return const Color(0xFF607D8B);
+      case 'tiger':
+        return const Color(0xFFFF8F00);
       default:
         return const Color(0xFF8B4513);
     }

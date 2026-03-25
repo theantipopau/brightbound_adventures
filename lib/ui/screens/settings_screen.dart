@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../themes/index.dart';
+import '../../core/services/index.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -13,6 +15,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _soundEnabled = true;
   bool _musicEnabled = true;
   bool _hapticEnabled = true;
+  bool _autoReadQuestions = false;
+  bool _aiHintsEnabled = false;
+  bool _aiExplanationsEnabled = false;
+  bool _aiCloudMode = false;
   double _difficulty = 1.0; // 0 = Easy, 1 = Normal, 2 = Hard
 
   @override
@@ -23,11 +29,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadSettings() async {
     try {
+      final audio = context.read<AudioManager>();
       final prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
       setState(() {
-        _soundEnabled = prefs.getBool('soundEnabled') ?? true;
-        _musicEnabled = prefs.getBool('musicEnabled') ?? true;
+        _soundEnabled = prefs.getBool('soundEnabled') ?? audio.isSfxEnabled;
+        _musicEnabled = prefs.getBool('musicEnabled') ?? audio.isMusicEnabled;
         _hapticEnabled = prefs.getBool('hapticEnabled') ?? true;
+        _autoReadQuestions = prefs.getBool('autoReadQuestions') ?? false;
+        _aiHintsEnabled = prefs.getBool('aiHintsEnabled') ?? false;
+        _aiExplanationsEnabled = prefs.getBool('aiExplanationsEnabled') ?? false;
+        _aiCloudMode = prefs.getBool('aiCloudMode') ?? false;
         _difficulty = prefs.getDouble('difficulty') ?? 1.0;
       });
     } catch (e) {
@@ -122,6 +134,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (value) {
                   setState(() => _soundEnabled = value);
                   _saveSetting('soundEnabled', value);
+                  final audio = context.read<AudioManager>();
+                  if (audio.isSfxEnabled != value) audio.toggleSfx();
                 },
               ),
               _buildSwitchTile(
@@ -130,6 +144,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (value) {
                   setState(() => _musicEnabled = value);
                   _saveSetting('musicEnabled', value);
+                  final audio = context.read<AudioManager>();
+                  if (audio.isMusicEnabled != value) audio.toggleMusic();
                 },
               ),
             ],
@@ -149,7 +165,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _saveSetting('hapticEnabled', value);
                 },
               ),
+              _buildSwitchTile(
+                title: 'Auto-read Questions Aloud',
+                value: _autoReadQuestions,
+                onChanged: (value) {
+                  setState(() => _autoReadQuestions = value);
+                  _saveSetting('autoReadQuestions', value);
+                },
+              ),
               _buildDifficultySlider(),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // AI Learning Settings
+          _buildSection(
+            title: '🤖 AI Learning',
+            children: [
+              _buildSwitchTile(
+                title: 'AI Hints',
+                value: _aiHintsEnabled,
+                onChanged: (value) {
+                  setState(() => _aiHintsEnabled = value);
+                  _saveSetting('aiHintsEnabled', value);
+                },
+              ),
+              _buildSwitchTile(
+                title: 'AI Explanations',
+                value: _aiExplanationsEnabled,
+                onChanged: (value) {
+                  setState(() => _aiExplanationsEnabled = value);
+                  _saveSetting('aiExplanationsEnabled', value);
+                },
+              ),
+              _buildSwitchTile(
+                title: 'Cloud AI Mode (Experimental)',
+                value: _aiCloudMode,
+                onChanged: (value) {
+                  setState(() => _aiCloudMode = value);
+                  _saveSetting('aiCloudMode', value);
+                },
+              ),
             ],
           ),
 

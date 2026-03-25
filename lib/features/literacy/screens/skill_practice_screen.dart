@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/utils/word_woods_generator.dart';
+import 'package:brightbound_adventures/core/services/achievement_service.dart';
+import 'package:brightbound_adventures/core/services/daily_challenge_service.dart';
+import 'package:brightbound_adventures/core/services/streak_service.dart';
+import 'package:brightbound_adventures/ui/widgets/streak_milestone_modal.dart';
 import 'package:brightbound_adventures/features/literacy/models/question.dart';
 import 'package:brightbound_adventures/features/literacy/widgets/multiple_choice_game.dart';
 import 'package:brightbound_adventures/features/literacy/widgets/quiz_results_screen.dart';
@@ -9,11 +14,15 @@ import 'package:brightbound_adventures/features/literacy/widgets/quiz_results_sc
 class SkillPracticeScreen extends StatefulWidget {
   final Skill skill;
   final Color themeColor;
+  final String? zoneId;
+  final String? zoneName;
 
   const SkillPracticeScreen({
     super.key,
     required this.skill,
     required this.themeColor,
+    this.zoneId,
+    this.zoneName,
   });
 
   @override
@@ -69,12 +78,70 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
   }
 
   void _onGameComplete(double accuracy, int correct, int total) {
+    // Update achievements
+    try {
+      final achievementService = context.read<AchievementService>();
+      
+      // Stars earned achievement (10 stars per correct answer)
+      final starsEarned = correct * 10;
+      achievementService.updateProgress('achievement_stars_25', starsEarned);
+      achievementService.updateProgress('achievement_stars_50', starsEarned);
+      achievementService.updateProgress('achievement_stars_100', starsEarned);
+      
+      // Perfect game achievement
+      if (accuracy == 1.0) {
+        achievementService.updateProgress('achievement_perfect_1', 1);
+        achievementService.updateProgress('achievement_perfect_5', 1);
+      }
+      
+      // Quick learner achievement (3+ correct)
+      if (correct >= 3) {
+        achievementService.updateProgress('achievement_quick_learner', 1);
+      }
+    } catch (e) {
+      // Achievement service not available
+    }
+    
+    // Update daily challenges - update progress for each correct answer
+    try {
+      final dailyService = context.read<DailyChallengeService>();
+      for (int i = 0; i < correct; i++) {
+        // Find matching daily challenge for this skill zona
+        for (final challenge in dailyService.todaysChallenges) {
+          if (challenge.skillId == widget.skill.id) {
+            dailyService.updateProgress(
+              challengeId: challenge.id,
+              correct: true,
+            );
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      // Daily challenge service not available
+    }
+    
     setState(() {
       _showResults = true;
       _accuracy = accuracy;
       _correctAnswers = correct;
       _totalQuestions = total;
     });
+    _checkStreak();
+  }
+
+  Future<void> _checkStreak() async {
+    try {
+      final streakService = context.read<StreakService>();
+      final isNewMilestone = await streakService.recordPlay();
+      if (isNewMilestone && mounted) {
+        showStreakMilestoneModal(
+          context,
+          streakDays: streakService.currentStreak,
+          bonusStars: streakService.streakBonus,
+        );
+      }
+    } catch (_) {}
   }
 
   void _playAgain() {

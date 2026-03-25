@@ -18,17 +18,12 @@ class ScreenShaker extends StatefulWidget {
 class _ScreenShakerState extends State<ScreenShaker>
     with SingleTickerProviderStateMixin {
   late AnimationController _shakeController;
-  late Animation<double> _shakeAnimation;
-  final Random _random = Random();
 
   @override
   void initState() {
     super.initState();
     _shakeController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 500));
-    _shakeAnimation = Tween<double>(begin: 0, end: 10).animate(
-      CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut),
-    );
 
     widget.controller._attach(this);
   }

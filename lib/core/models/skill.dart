@@ -37,10 +37,10 @@ class Skill extends Equatable {
   // Progression logic
   SkillState getNextState() {
     if (state == SkillState.locked) return SkillState.introduced;
-    if (state == SkillState.introduced && accuracy >= 0.65) {
+    if (state == SkillState.introduced && accuracy >= 0.60) {
       return SkillState.practising;
     }
-    if (state == SkillState.practising && accuracy >= 0.85 && hintsUsed == 0) {
+    if (state == SkillState.practising && accuracy >= 0.80) {
       return SkillState.mastered;
     }
     return state;

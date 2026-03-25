@@ -372,9 +372,15 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
   }
 
   Widget _buildCard(MemoryCard card, int index) {
-    return GestureDetector(
-      onTap: () => _onCardTap(index),
-      child: AnimatedContainer(
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _onCardTap(index),
+        splashColor: Colors.purple.withValues(alpha: 0.3),
+        child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         decoration: BoxDecoration(
           color: card.isMatched
@@ -410,6 +416,7 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
                   color: Colors.white,
                 ),
         ),
+      ),
       ),
     );
   }

@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
+import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
+import 'package:brightbound_adventures/core/services/tts_service.dart';
+import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
+import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
+import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
+import 'package:brightbound_adventures/ui/widgets/difficulty_indicator.dart';
 import '../models/question.dart';
 
 /// Interactive storytelling game with book/story theme
@@ -24,12 +33,19 @@ class StoryGame extends StatefulWidget {
 
 class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   int _currentIndex = 0;
+  late FocusNode _focusNode;
   int _correctAnswers = 0;
   int _currentStreak = 0;
   int? _selectedAnswer;
   bool _showFeedback = false;
   bool _isCorrect = false;
+  bool _autoReadQuestions = false;
+  bool _aiHintsEnabled = false;
+  bool _aiExplanationsEnabled = false;
+  bool _aiCloudMode = false;
+  String? _aiExplanationText;
   final AudioManager _audioManager = AudioManager();
+  final AiLearningAssistantService _aiAssistant = AiLearningAssistantService();
 
   late AnimationController _pageController;
   late AnimationController _sparkleController;
@@ -72,6 +88,13 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
 
     _pageController.forward();
     _generateFloatingElements();
+    _loadAutoReadPreference();
+    _loadAiPreferences();
+
+    _focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
   }
 
   void _generateFloatingElements() {
@@ -91,6 +114,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _pageController.dispose();
     _sparkleController.dispose();
     _characterController.dispose();
@@ -98,6 +122,71 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   }
 
   StoryQuestion get _currentQuestion => widget.questions[_currentIndex];
+
+  Future<void> _loadAutoReadPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final autoRead = prefs.getBool('autoReadQuestions') ?? false;
+    if (!mounted) return;
+
+    setState(() => _autoReadQuestions = autoRead);
+
+    if (autoRead) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _readCurrentQuestionAloud();
+      });
+    }
+  }
+
+  Future<void> _readCurrentQuestionAloud() async {
+    if (!_autoReadQuestions || _showFeedback) return;
+    final questionText = _currentQuestion.question.trim();
+    if (questionText.isEmpty) return;
+    await TtsService().speak(questionText);
+  }
+
+  Future<void> _loadAiPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hintsEnabled = prefs.getBool('aiHintsEnabled') ?? false;
+    final explanationsEnabled = prefs.getBool('aiExplanationsEnabled') ?? false;
+    final cloudMode = prefs.getBool('aiCloudMode') ?? false;
+    if (!mounted) return;
+    setState(() {
+      _aiHintsEnabled = hintsEnabled;
+      _aiExplanationsEnabled = explanationsEnabled;
+      _aiCloudMode = cloudMode;
+    });
+    _aiAssistant.setEnabled(_aiHintsEnabled || _aiExplanationsEnabled);
+    _aiAssistant.setCloudMode(_aiCloudMode);
+  }
+
+  Future<void> _prepareAiExplanation() async {
+    if (!_aiExplanationsEnabled || _currentIndex >= widget.questions.length) {
+      return;
+    }
+    try {
+      final explanation = await _aiAssistant.explainAnswer(
+        question: _currentQuestion.question,
+        correctAnswer: _currentQuestion.options[_currentQuestion.correctIndex],
+        selectedAnswer: _selectedAnswer != null ? _currentQuestion.options[_selectedAnswer!] : '',
+      );
+      if (mounted) {
+        setState(() => _aiExplanationText = explanation);
+      }
+    } catch (e) {
+      debugPrint('AI explanation error: $e');
+    }
+  }
+
+  static const List<String> _optionLetters = ['A', 'B', 'C', 'D', 'E'];
+
+  AnswerState _getOptionState(int index) {
+    if (!_showFeedback) {
+      return _selectedAnswer == index ? AnswerState.selected : AnswerState.idle;
+    }
+    if (_currentQuestion.correctIndex == index) return AnswerState.correct;
+    if (_selectedAnswer == index) return AnswerState.incorrect;
+    return AnswerState.idle;
+  }
 
   void _selectAnswer(int index) {
     if (_showFeedback) return;
@@ -124,6 +213,9 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       }
     });
 
+    if (_isCorrect) showFloatingReward(context, '+10 ⭐', color: Colors.cyanAccent);
+    _prepareAiExplanation();
+
     Future.delayed(const Duration(milliseconds: 2000), () {
       if (mounted) {
         _nextQuestion();
@@ -140,6 +232,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
           _showFeedback = false;
         });
         _pageController.forward();
+        _readCurrentQuestionAloud();
       });
     } else {
       // Game complete
@@ -155,42 +248,95 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1a1a2e),
-              Color(0xFF16213e),
-              Color(0xFF0f3460),
+  Future<void> _goHome() async {
+    final shouldExit = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit to Home?'),
+            content: const Text(
+                'Your progress in this story challenge will not be saved.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
+                child: const Text('Exit Home',
+                    style: TextStyle(color: Colors.white)),
+              ),
             ],
           ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // Floating background elements
-              ..._buildFloatingElements(),
+        ) ??
+        false;
 
-              // Main content
-              Column(
-                children: [
-                  _buildHeader(),
-                  Expanded(child: _buildQuestionCard()),
-                  _buildProgressIndicator(),
-                ],
-              ),
+    if (shouldExit && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
 
-              // Character guide
-              _buildCharacterGuide(),
+  @override
+  Widget build(BuildContext context) {
+    return RawKeyboardListener(
+      focusNode: _focusNode,
+      onKey: (event) {
+        if (event.isKeyPressed(LogicalKeyboardKey.arrowUp)) {
+          if (_selectedAnswer != null && _selectedAnswer! > 0) {
+            setState(() => _selectedAnswer = _selectedAnswer! - 1);
+          } else if (_selectedAnswer == null) {
+            setState(() => _selectedAnswer = 0);
+          }
+        } else if (event.isKeyPressed(LogicalKeyboardKey.arrowDown)) {
+          if (_selectedAnswer != null &&
+              _selectedAnswer! < _currentQuestion.options.length - 1) {
+            setState(() => _selectedAnswer = _selectedAnswer! + 1);
+          } else if (_selectedAnswer == null) {
+            setState(() => _selectedAnswer = 0);
+          }
+        } else if (event.isKeyPressed(LogicalKeyboardKey.enter) &&
+            !_showFeedback) {
+          _selectAnswer(_selectedAnswer ?? -1);
+        }
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1a1a2e),
+                Color(0xFF16213e),
+                Color(0xFF0f3460),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: Stack(
+              children: [
+                // Floating background elements
+                ..._buildFloatingElements(),
 
-              // Sparkles for correct answer
-              if (_showFeedback && _isCorrect) _buildSparkles(),
-            ],
+                // Main content
+                Column(
+                  children: [
+                    _buildHeader(),
+                    Expanded(child: _buildQuestionCard()),
+                    _buildProgressIndicator(),
+                  ],
+                ),
+
+                // Character guide
+                _buildCharacterGuide(),
+
+                // Sparkles for correct answer
+                if (_showFeedback && _isCorrect) _buildSparkles(),
+              ],
+            ),
           ),
         ),
       ),
@@ -227,9 +373,28 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.close, color: Colors.white70),
-            onPressed: () => Navigator.of(context).pop(),
+          Tooltip(
+            message: 'Go home',
+            child: GestureDetector(
+              onTap: _goHome,
+              child: Container(
+                width: 44,
+                height: 44,
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.5),
+                ),
+                child: Image.asset('assets/images/scroll.PNG', fit: BoxFit.contain),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          TtsSpeakerButton(
+            text: _currentQuestion.question,
+            color: Colors.white,
+            size: 44,
           ),
           Expanded(
             child: Column(
@@ -241,6 +406,23 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                ),
+                // Difficulty indicator
+                Consumer<AdaptiveDifficultyService>(
+                  builder: (context, difficultySvc, _) {
+                    final difficulty = widget.questions.isNotEmpty
+                        ? difficultySvc
+                            .getDifficultyForSkill(widget.questions[0].skillId)
+                        : 1;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: DifficultyIndicator(
+                        difficulty: difficulty,
+                        color: Colors.white,
+                        compact: true,
+                      ),
+                    );
+                  },
                 ),
                 Text(
                   'Question ${_currentIndex + 1} of ${widget.questions.length}',
@@ -328,8 +510,10 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                   AnimatedBuilder(
                     animation: _pageController,
                     builder: (context, _) {
-                      final bounce = math.sin(_pageController.value * 3.14159 * 2) * 12;
-                      final scale = 0.92 + math.sin(_pageController.value * 3.14159) * 0.1;
+                      final bounce =
+                          math.sin(_pageController.value * 3.14159 * 2) * 12;
+                      final scale = 0.92 +
+                          math.sin(_pageController.value * 3.14159) * 0.1;
                       return Transform.translate(
                         offset: Offset(0, bounce),
                         child: Transform.scale(
@@ -394,7 +578,8 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                       const SizedBox(height: 12),
                       // Question counter
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.purple.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(16),
@@ -417,7 +602,18 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
 
                 // Answer options
                 ..._currentQuestion.options.asMap().entries.map((entry) {
-                  return _buildAnswerOption(entry.key, entry.value);
+                  return AnimatedAnswerOption(
+                    key: ValueKey('${_currentIndex}_${entry.key}'),
+                    label: entry.value,
+                    optionLetter:
+                        _optionLetters[entry.key % _optionLetters.length],
+                    state: _getOptionState(entry.key),
+                    isSelected: _selectedAnswer == entry.key,
+                    onTap:
+                        _showFeedback ? null : () => _selectAnswer(entry.key),
+                    accentColor: Colors.purpleAccent,
+                    animationDelay: entry.key * 60,
+                  );
                 }),
 
                 // Feedback section
@@ -425,91 +621,6 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                   const SizedBox(height: 20),
                   _buildFeedback(),
                 ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnswerOption(int index, String text) {
-    final isSelected = _selectedAnswer == index;
-    final isCorrectAnswer = index == _currentQuestion.correctIndex;
-
-    Color bgColor = Colors.white.withValues(alpha: 0.1);
-    Color borderColor = Colors.white.withValues(alpha: 0.3);
-    Color textColor = Colors.white;
-
-    if (_showFeedback) {
-      if (isCorrectAnswer) {
-        bgColor = Colors.green.withValues(alpha: 0.3);
-        borderColor = Colors.green;
-        textColor = Colors.greenAccent;
-      } else if (isSelected && !isCorrectAnswer) {
-        bgColor = Colors.red.withValues(alpha: 0.3);
-        borderColor = Colors.red;
-        textColor = Colors.redAccent;
-      }
-    } else if (isSelected) {
-      bgColor = Colors.purple.withValues(alpha: 0.3);
-      borderColor = Colors.purple.shade300;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _showFeedback ? null : () => _selectAnswer(index),
-          borderRadius: BorderRadius.circular(16),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: borderColor, width: 2),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: borderColor.withValues(alpha: 0.3),
-                  ),
-                  child: Center(
-                    child: Text(
-                      String.fromCharCode(65 + index), // A, B, C, D
-                      style: TextStyle(
-                        color: textColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    text,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize:
-                          MediaQuery.of(context).size.width < 600 ? 14 : 16,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                      height: 1.3,
-                    ),
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (_showFeedback && isCorrectAnswer)
-                  const Icon(Icons.check_circle, color: Colors.greenAccent),
-                if (_showFeedback && isSelected && !isCorrectAnswer)
-                  const Icon(Icons.cancel, color: Colors.redAccent),
               ],
             ),
           ),
@@ -553,7 +664,17 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
               ),
             ],
           ),
-          if (_currentQuestion.explanation != null) ...[
+          if (_aiExplanationText != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              _aiExplanationText!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+          ] else if (_currentQuestion.explanation != null) ...[
             const SizedBox(height: 8),
             Text(
               _currentQuestion.explanation!,
@@ -605,27 +726,11 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
             }),
           ),
           const SizedBox(height: 12),
-          if (_currentQuestion.hint != null && !_showFeedback)
+          if (!_showFeedback && ((_currentQuestion.hint?.isNotEmpty ?? false) || _aiHintsEnabled))
             TextButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        const Text('💡 '),
-                        Expanded(child: Text(_currentQuestion.hint!)),
-                      ],
-                    ),
-                    backgroundColor: Colors.purple.shade700,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                );
-              },
+              onPressed: () => _showHint(),
               icon: const Icon(Icons.lightbulb_outline, color: Colors.amber),
-              label: const Text('Need a hint?',
-                  style: TextStyle(color: Colors.amber)),
+              label: const Text('Need a hint?', style: TextStyle(color: Colors.amber)),
             ),
         ],
       ),
@@ -672,6 +777,50 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
         );
       },
     );
+  }
+
+  Future<void> _showHint() async {
+    String hintText = _currentQuestion.hint ?? '';
+    if (_aiHintsEnabled && hintText.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Text('⏳ '),
+                Expanded(child: Text('Generating hint with AI...')),
+              ],
+            ),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      try {
+        hintText = await _aiAssistant.generateHint(
+          question: _currentQuestion.question,
+          options: _currentQuestion.options,
+        );
+      } catch (e) {
+        hintText = _currentQuestion.hint ?? 'Could not generate hint';
+        debugPrint('AI hint error: $e');
+      }
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('💡 '),
+              Expanded(child: Text(hintText)),
+            ],
+          ),
+          backgroundColor: Colors.purple.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 }
 

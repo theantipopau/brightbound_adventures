@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 /// Results screen for Story Springs with a magical book theme
@@ -465,10 +465,15 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
         ),
         if (widget.onRetry != null && _percentage < 1.0) ...[
           const SizedBox(height: 12),
-          TextButton(
+          TextButton.icon(
             onPressed: widget.onRetry,
-            child: const Text(
-              '🔄 Try Again',
+            icon: SizedBox(
+              width: 22,
+              height: 22,
+              child: Image.asset('assets/images/potion.PNG', fit: BoxFit.contain),
+            ),
+            label: const Text(
+              'Try Again',
               style: TextStyle(color: Colors.white70, fontSize: 16),
             ),
           ),

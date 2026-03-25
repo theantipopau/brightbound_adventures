@@ -16,10 +16,15 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
   late AnimationController _portalController;
   late AnimationController _textController;
   late AnimationController _zoneController;
+  late AnimationController _particleController;
+  late AnimationController _characterBounceController;
+  late AnimationController _transitionController;
   late Animation<double> _portalScale;
   late Animation<double> _portalRotation;
   late Animation<double> _textOpacity;
   late Animation<double> _zoneStagger;
+  late Animation<double> _particleOpacity;
+  late Animation<double> _transitionScale;
 
   int _currentPhase = 0;
   final List<String> _loadingMessages = [
@@ -69,6 +74,32 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
     )..repeat();
 
     _zoneStagger = Tween<double>(begin: 0, end: 1).animate(_zoneController);
+
+    // NEW: Particle effects controller
+    _particleController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+
+    _particleOpacity = Tween<double>(begin: 0.8, end: 0.2).animate(
+      CurvedAnimation(parent: _particleController, curve: Curves.easeInOut),
+    );
+
+    // NEW: Character bounce controller
+    _characterBounceController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    )..repeat();
+
+    // NEW: Transition controller for final animation
+    _transitionController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _transitionScale = Tween<double>(begin: 1.0, end: 0.8).animate(
+      CurvedAnimation(parent: _transitionController, curve: Curves.easeInCubic),
+    );
   }
 
   Future<void> _startEntrySequence() async {
@@ -85,10 +116,14 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
       }
     }
 
-    // Navigate to world map
+    // Navigate to world map with transition animation
     await Future.delayed(const Duration(milliseconds: 600));
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed('/world-map');
+      _transitionController.forward();
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/world-map');
+      }
     }
   }
 
@@ -97,6 +132,9 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
     _portalController.dispose();
     _textController.dispose();
     _zoneController.dispose();
+    _particleController.dispose();
+    _characterBounceController.dispose();
+    _transitionController.dispose();
     super.dispose();
   }
 
@@ -121,136 +159,281 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
 
           // Main content
           Center(
-            child: SingleChildScrollView(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final screenW = constraints.maxWidth;
+                final isPhone = screenW < 480;
+                final isMid = screenW < 800;
+                final portalSize = isPhone ? 130.0 : isMid ? 155.0 : 180.0;
+                final particleOrbit = isPhone ? 80.0 : isMid ? 95.0 : 110.0;
+                final topPad = isPhone ? 24.0 : 40.0;
+                final midPad = isPhone ? 28.0 : 48.0;
+                final bottomPad = isPhone ? 32.0 : 60.0;
+                final welcomeSize = isPhone ? 24.0 : isMid ? 28.0 : 36.0;
+                final msgSize = isPhone ? 13.0 : 16.0;
+            return SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 40),
+                  SizedBox(height: topPad),
                   // Portal with avatar
                   AnimatedBuilder(
-                    animation: _portalController,
+                    animation: Listenable.merge([
+                      _portalController,
+                      _characterBounceController,
+                      _particleController,
+                      _transitionController,
+                    ]),
                     builder: (context, child) {
                       // Clamp scale to reasonable bounds (elasticOut can overshoot)
                       final scale = _portalScale.value.clamp(0.0, 1.5);
-                      return Transform.scale(
-                        scale: scale,
-                        child: Transform.rotate(
-                          angle: _portalRotation.value * 0.1,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // Outer glow rings
-                              ...List.generate(3, (index) {
-                                final delay = index * 0.15;
-                                final progress =
-                                    ((_portalController.value - delay)
-                                        .clamp(0.0, 1.0));
-                                return Container(
-                                  width: 200 + (index * 40),
-                                  height: 200 + (index * 40),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: _getPortalColor(index).withValues(
-                                        alpha: ((0.6 - index * 0.15) * progress)
-                                            .clamp(0.0, 1.0),
-                                      ),
-                                      width: 4 - index.toDouble(),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: _getPortalColor(index)
-                                            .withValues(
-                                                alpha: (0.3 * progress)
-                                                    .clamp(0.0, 1.0)),
-                                        blurRadius: 20,
-                                        spreadRadius: 5,
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }),
+                      
+                      // Character bounce effect
+                      final characterBounce = math.sin(
+                        _characterBounceController.value * math.pi * 2,
+                      ) * 8;
 
-                              // Portal center
-                              Container(
-                                width: 180,
-                                height: 180,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: RadialGradient(
-                                    colors: [
-                                      AppColors.primary.withValues(alpha: 0.9),
-                                      AppColors.secondary
-                                          .withValues(alpha: 0.7),
-                                      Colors.purple.withValues(alpha: 0.5),
-                                    ],
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.primary
-                                          .withValues(alpha: 0.5),
-                                      blurRadius: 40,
-                                      spreadRadius: 10,
+                      return Transform.scale(
+                        scale: scale * _transitionScale.value,
+                        child: Opacity(
+                          opacity: 1.0 - (_transitionController.value * 0.3),
+                          child: Transform.rotate(
+                            angle: _portalRotation.value * 0.1,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                // Particle effects layer
+                                ...List.generate(8, (index) {
+                                  final angle = (index / 8) * 2 * math.pi;
+                                  final pDist = particleOrbit + (index % 2) * 20;
+                                  final particleX = math.cos(angle) * pDist;
+                                  final particleY = math.sin(angle + _particleController.value * math.pi * 2) * pDist;
+
+                                  return Transform.translate(
+                                    offset: Offset(particleX, particleY),
+                                    child: Opacity(
+                                      opacity: _particleOpacity.value,
+                                      child: Container(
+                                        width: isPhone ? 6 : 8,
+                                        height: isPhone ? 6 : 8,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: [
+                                            AppColors.primary,
+                                            AppColors.secondary,
+                                            Colors.purpleAccent,
+                                          ][index % 3],
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: [
+                                                AppColors.primary,
+                                                AppColors.secondary,
+                                                Colors.purpleAccent,
+                                              ][index % 3].withValues(alpha: 0.6),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    characterEmoji,
-                                    style: const TextStyle(fontSize: 90),
+                                  );
+                                }),
+
+                                // Outer glow rings
+                                ...List.generate(3, (index) {
+                                  final delay = index * 0.15;
+                                  final progress =
+                                      ((_portalController.value - delay)
+                                          .clamp(0.0, 1.0));
+                                  final ringSize = (portalSize * 1.4) + (index * (isPhone ? 22 : 36));
+                                  return Container(
+                                    width: ringSize,
+                                    height: ringSize,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: _getPortalColor(index).withValues(
+                                          alpha: ((0.6 - index * 0.15) * progress)
+                                              .clamp(0.0, 1.0),
+                                        ),
+                                        width: 4 - index.toDouble(),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: _getPortalColor(index)
+                                              .withValues(
+                                                  alpha: (0.3 * progress)
+                                                      .clamp(0.0, 1.0)),
+                                          blurRadius: 20,
+                                          spreadRadius: 5,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+
+                                // Portal center (responsive size)
+                                Transform.translate(
+                                  offset: Offset(0, characterBounce),
+                                  child: Container(
+                                    width: portalSize,
+                                    height: portalSize,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: RadialGradient(
+                                        colors: [
+                                          AppColors.primary.withValues(alpha: 0.9),
+                                          AppColors.secondary
+                                              .withValues(alpha: 0.7),
+                                          Colors.purple.withValues(alpha: 0.5),
+                                        ],
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primary
+                                              .withValues(alpha: 0.5),
+                                          blurRadius: 40,
+                                          spreadRadius: 10,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        characterEmoji,
+                                        style: TextStyle(
+                                            fontSize: portalSize * 0.5),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       );
                     },
                   ),
 
-                  const SizedBox(height: 48),
+                  SizedBox(height: midPad),
 
                   // Welcome text
                   FadeTransition(
                     opacity: _textOpacity,
                     child: Column(
                       children: [
-                        ShaderMask(
-                          shaderCallback: (bounds) => const LinearGradient(
-                            colors: [
-                              AppColors.primary,
-                              AppColors.secondary,
-                              Colors.purpleAccent,
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isPhone ? 14 : 18,
+                            vertical: isPhone ? 10 : 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.18),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.18),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
                             ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ).createShader(bounds),
-                          child: Text(
-                            'Welcome, ${avatar?.name ?? 'Adventurer'}!',
-                            style: const TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              shadows: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 10,
-                                  offset: Offset(0, 4),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: isPhone ? 42 : 52,
+                                height: isPhone ? 42 : 52,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Image.asset(
+                                    'assets/images/logo.png',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Center(
+                                      child: Text('✨', style: TextStyle(fontSize: 24)),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'BrightBound Adventures',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: isPhone ? 16 : 20,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Choose a hero. Enter the realms. Learn by playing.',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.8),
+                                      fontSize: isPhone ? 10 : 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Enhanced welcome text with glow
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              colors: [
+                                AppColors.primary,
+                                AppColors.secondary,
+                                Colors.purpleAccent,
                               ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ).createShader(bounds),
+                            child: Text(
+                              'Welcome, ${avatar?.name ?? 'Adventurer'}!',
+                              style: TextStyle(
+                                fontSize: welcomeSize,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
 
-                        // Loading message
+                        // Loading message with enhanced styling
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (child, animation) {
+                            return ScaleTransition(scale: animation, child: child);
+                          },
                           child: Container(
                             key: ValueKey(_currentPhase),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isPhone ? 16 : 24,
+                              vertical: isPhone ? 10 : 12,
                             ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.15),
@@ -258,6 +441,13 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                               border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.3),
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.2),
+                                  blurRadius: 15,
+                                  spreadRadius: 2,
+                                ),
+                              ],
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -275,9 +465,10 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                                 const SizedBox(width: 12),
                                 Text(
                                   _loadingMessages[_currentPhase],
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 16,
+                                    fontSize: msgSize,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
@@ -288,9 +479,9 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                     ),
                   ),
 
-                  const SizedBox(height: 60),
+                  SizedBox(height: bottomPad),
 
-                  // Zone previews
+                  // Zone previews - Enhanced
                   FadeTransition(
                     opacity: _textOpacity,
                     child: Column(
@@ -320,8 +511,10 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                         AnimatedBuilder(
                           animation: _zoneController,
                           builder: (context, child) {
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            return Wrap(
+                              alignment: WrapAlignment.center,
+                              runSpacing: 8,
+                              spacing: 8,
                               children: List.generate(5, (index) {
                                 final zones = ['🌲', '🌌', '🧠', '📖', '🏟️'];
                                 final bounce = math.sin(
@@ -330,26 +523,42 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                                     ) *
                                     8;
 
+                                // Enhanced with stagger
+                                final scale = 0.9 + math.sin(
+                                  (_zoneStagger.value * math.pi * 2) +
+                                  (index * 0.4),
+                                ) * 0.15;
+
                                 return Transform.translate(
                                   offset: Offset(0, bounce),
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 8),
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.2),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
+                                  child: Transform.scale(
+                                    scale: scale,
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
                                         color:
-                                            Colors.white.withValues(alpha: 0.4),
+                                            Colors.white.withValues(alpha: 0.2),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color:
+                                              Colors.white.withValues(alpha: 0.4),
+                                          width: 2,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.white.withValues(alpha: 0.1 * scale),
+                                            blurRadius: 12,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        zones[index],
-                                        style: const TextStyle(fontSize: 24),
+                                      child: Center(
+                                        child: Text(
+                                          zones[index],
+                                          style: const TextStyle(fontSize: 24),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -364,6 +573,8 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                   const SizedBox(height: 40),
                 ],
               ),
+            );
+              },
             ),
           ),
         ],
@@ -394,6 +605,22 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
         return '🐰';
       case 'deer':
         return '🦌';
+      case 'cat':
+        return '🐱';
+      case 'penguin':
+        return '🐧';
+      case 'koala':
+        return '🐨';
+      case 'panda':
+        return '🐼';
+      case 'owl':
+        return '🦉';
+      case 'otter':
+        return '🦦';
+      case 'wolf':
+        return '🐺';
+      case 'tiger':
+        return '🐯';
       default:
         return '🐻';
     }

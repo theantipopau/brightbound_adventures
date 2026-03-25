@@ -21,3 +21,9 @@ watch_paths = ["lib/**/*.dart", "assets/**/*"]
 
 [build.upload]
 format = "service-worker"
+
+[pages]
+build_output_dir = "build/web"
+
+[env.production.pages]
+build_output_dir = "build/web"

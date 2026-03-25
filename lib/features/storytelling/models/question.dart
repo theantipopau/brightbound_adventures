@@ -163,6 +163,56 @@ class StorySequencingQuestions {
       difficulty: 3,
       imageEmoji: '🏰',
     ),
+    // Level 4-5 - Non-linear storytelling and flashbacks (Year 5-7)
+    StoryQuestion(
+      id: 'seq_8',
+      skillId: 'skill_story_sequencing',
+      question:
+          'A story begins: "Looking back, Maya knew the moment she found the old map was when everything changed." What technique is the author using?',
+      options: [
+        'Foreshadowing — hinting at events to come',
+        'Flashback — starting from the future and looking back',
+        'Flashforward — jumping ahead in time',
+        'Chronological order — events in time sequence',
+      ],
+      correctIndex: 1,
+      hint: 'The narrator is reflecting on a past moment from the present.',
+      explanation:
+          'This is a flashback (retrospective narration). The narrator looks back at a pivotal past event from their current perspective.',
+      difficulty: 4,
+      imageEmoji: '🗺️',
+    ),
+    StoryQuestion(
+      id: 'seq_9',
+      skillId: 'skill_story_sequencing',
+      question:
+          'A mystery novel reveals at the END who committed the crime. The events that led to it are shown through the detective\'s investigation. What is this story structure called?',
+      options: [
+        'Linear narrative — events in chronological order',
+        'Non-linear narrative — events revealed out of sequence',
+        'Circular narrative — story ends where it began',
+        'Parallel narrative — two stories happening at once',
+      ],
+      correctIndex: 1,
+      hint: 'The crime happened first, but we learn it last.',
+      explanation:
+          'This is a non-linear structure. Many mysteries and thrillers reveal events out of order to build suspense.',
+      difficulty: 4,
+      imageEmoji: '🔍',
+    ),
+    StoryQuestion(
+      id: 'seq_10',
+      skillId: 'skill_story_sequencing',
+      question:
+          'Identify the cause-and-effect chain: Tom forgot his lunch → He couldn\'t concentrate → He failed the test → His parents were disappointed. How many cause-effect links are there?',
+      options: ['1', '2', '3', '4'],
+      correctIndex: 2,
+      hint: 'Count each → as one cause-and-effect link.',
+      explanation:
+          'There are 3 cause-effect links: forget lunch → can\'t concentrate → fail test → disappointment. Understanding chains helps analyse complex plots!',
+      difficulty: 5,
+      imageEmoji: '⛓️',
+    ),
   ];
 
   static List<StoryQuestion> getByDifficulty(int level) {
@@ -267,6 +317,64 @@ class EmotionRecognitionQuestions {
       difficulty: 3,
       type: StoryQuestionType.emotionMatch,
       imageEmoji: '✈️',
+    ),
+    // Year 5-7 - Complex empathy and moral emotions
+    StoryQuestion(
+      id: 'emo_8',
+      skillId: 'skill_emotion_recognition',
+      question:
+          'Sam accidentally tells a secret that hurts his friend. He feels guilty AND embarrassed. What is the DIFFERENCE between guilt and embarrassment?',
+      options: [
+        'Guilt = worried about others\' opinions; embarrassment = regret for actions',
+        'Guilt = regret for harming someone; embarrassment = self-conscious about being judged',
+        'They mean exactly the same thing',
+        'Guilt is stronger; embarrassment is weaker',
+      ],
+      correctIndex: 1,
+      hint: 'Guilt is about your impact on others; embarrassment is about how others see you.',
+      explanation:
+          'Guilt focuses on the harm done to another person. Embarrassment focuses on how you appear in others\' eyes. Good stories use both to create complex characters.',
+      difficulty: 4,
+      type: StoryQuestionType.emotionMatch,
+      imageEmoji: '😔',
+    ),
+    StoryQuestion(
+      id: 'emo_9',
+      skillId: 'skill_emotion_recognition',
+      question:
+          'A character says cheerfully, "Oh great, another Monday" with a groan and an eye-roll. What emotion are they REALLY expressing?',
+      options: [
+        'Genuine happiness about Mondays',
+        'Sarcasm — they actually dislike Mondays',
+        'Surprise that it is Monday',
+        'Excitement about going to work',
+      ],
+      correctIndex: 1,
+      hint: 'The words say one thing but the actions show another feeling.',
+      explanation:
+          'The character is using sarcasm — saying the opposite of what they mean. Tone, gestures, and context reveal true emotions, not just words.',
+      difficulty: 4,
+      type: StoryQuestionType.emotionMatch,
+      imageEmoji: '🙄',
+    ),
+    StoryQuestion(
+      id: 'emo_10',
+      skillId: 'skill_emotion_recognition',
+      question:
+          'A story character discovers her best friend has been chosen for the lead role she desperately wanted. She claps and smiles, but her stomach sinks. This shows...',
+      options: [
+        'She is purely happy for her friend',
+        'She is purely jealous',
+        'She feels conflicted — genuine happiness for her friend but personal disappointment',
+        'She has no strong feelings',
+      ],
+      correctIndex: 2,
+      hint: 'Real people can feel two opposite emotions at the same time.',
+      explanation:
+          'This demonstrates emotional complexity — the hallmark of well-written characters. She can be both happy for her friend AND disappointed for herself simultaneously.',
+      difficulty: 5,
+      type: StoryQuestionType.emotionMatch,
+      imageEmoji: '🎭',
     ),
   ];
 
@@ -397,6 +505,79 @@ class DescriptiveLanguageQuestions {
       difficulty: 3,
       imageEmoji: '❄️',
     ),
+    // Year 5-7 - Literary devices and advanced descriptive techniques
+    StoryQuestion(
+      id: 'desc_8',
+      skillId: 'skill_descriptive_language',
+      question:
+          'Which sentence is a METAPHOR (not a simile)?',
+      options: [
+        'The old tree was like a wise elder.',
+        'Her voice was as sweet as honey.',
+        'Life is a rollercoaster of surprises.',
+        'He ran as fast as a cheetah.',
+      ],
+      correctIndex: 2,
+      hint: 'A metaphor directly states something IS something else — no "like" or "as".',
+      explanation:
+          '"Life is a rollercoaster" is a metaphor — it states directly that life IS a rollercoaster. The others use "like" or "as", making them similes.',
+      difficulty: 4,
+      imageEmoji: '🎢',
+    ),
+    StoryQuestion(
+      id: 'desc_9',
+      skillId: 'skill_descriptive_language',
+      question:
+          'Identify the PERSONIFICATION: which sentence gives a human quality to a non-human thing?',
+      options: [
+        'The stars were very bright last night.',
+        'The wind whispered secrets through the leaves.',
+        'The sun was hot and yellow.',
+        'The house was old and grey.',
+      ],
+      correctIndex: 1,
+      hint: 'Can the wind actually whisper? Which option gives the wind a human action?',
+      explanation:
+          '"Whispered secrets" gives the wind a human ability (whispering). Personification makes descriptions more vivid and emotional!',
+      difficulty: 4,
+      imageEmoji: '🌬️',
+    ),
+    StoryQuestion(
+      id: 'desc_10',
+      skillId: 'skill_descriptive_language',
+      question:
+          '"The sizzling sausages sent a smoky, sweet scent swirling skyward." This sentence uses...',
+      options: [
+        'Rhyme',
+        'Alliteration — repetition of the same starting sound',
+        'Onomatopoeia — a word that sounds like what it describes',
+        'Hyperbole — extreme exaggeration',
+      ],
+      correctIndex: 1,
+      hint: 'Focus on the repeated letter at the start of many words.',
+      explanation:
+          'This is alliteration — many words start with the "s" sound. It creates rhythm and makes writing catchy. "Sizzling" is also onomatopoeia!',
+      difficulty: 4,
+      imageEmoji: '🌭',
+    ),
+    StoryQuestion(
+      id: 'desc_11',
+      skillId: 'skill_descriptive_language',
+      question:
+          '"I have told you a million times to clean your room!" This is an example of...',
+      options: [
+        'A simile',
+        'Personification',
+        'Hyperbole — extreme exaggeration for effect',
+        'Alliteration',
+      ],
+      correctIndex: 2,
+      hint: 'Has someone LITERALLY been told a million times?',
+      explanation:
+          'Hyperbole is wild exaggeration to emphasise a point. The speaker hasn\'t literally said it a million times — they\'re emphasising their frustration!',
+      difficulty: 5,
+      imageEmoji: '📊',
+    ),
   ];
 
   static List<StoryQuestion> getByDifficulty(int level) {
@@ -511,6 +692,61 @@ class DialogueCreationQuestions {
           'Vary your dialogue! Use different speaking verbs and longer, interesting responses!',
       difficulty: 3,
       imageEmoji: '📝',
+    ),
+    // Year 5-7 - Advanced dialogue techniques
+    StoryQuestion(
+      id: 'dial_7',
+      skillId: 'skill_dialogue_creation',
+      question:
+          'A character says "That\'s a great idea," but they are frowning and turning away. What is the author showing?',
+      options: [
+        'The character genuinely loves the idea',
+        'Subtext — the character\'s words contradict their body language, suggesting they disagree',
+        'The character is confused',
+        'The character forgot what they wanted to say',
+      ],
+      correctIndex: 1,
+      hint: 'When actions and words disagree, which reveals the truth?',
+      explanation:
+          'Subtext is what\'s NOT said. Skilled authors show characters whose body language, actions or tone reveal different thoughts to their actual words.',
+      difficulty: 4,
+      imageEmoji: '🤔',
+    ),
+    StoryQuestion(
+      id: 'dial_8',
+      skillId: 'skill_dialogue_creation',
+      question:
+          'Which sentence correctly punctuates dialogue with an action tag?',
+      options: [
+        '"I\'m scared." She whispered.',
+        '"I\'m scared," she whispered.',
+        '"I\'m scared" she whispered.',
+        '"I\'m scared," She whispered.',
+      ],
+      correctIndex: 1,
+      hint: 'After dialogue, a comma BEFORE the closing quotation mark leads into a dialogue tag in lower case.',
+      explanation:
+          'When a dialogue tag (e.g. "she whispered") follows speech, use a comma before the closing quote and keep the tag in lower case. "I\'m scared," she whispered.',
+      difficulty: 4,
+      imageEmoji: '✏️',
+    ),
+    StoryQuestion(
+      id: 'dial_9',
+      skillId: 'skill_dialogue_creation',
+      question:
+          'Two characters argue but never say "I\'m angry." How can a writer show their anger?',
+      options: [
+        'Add "(angry)" after their name',
+        'Use short, clipped sentences, interruptions, raised voices, and tense body language in the narration',
+        'Write "they were very angry" before the dialogue',
+        'Make them say long speeches',
+      ],
+      correctIndex: 1,
+      hint: 'Show, don\'t tell — how do angry people actually speak and behave?',
+      explanation:
+          'Short sharp sentences, interrupted speech ("But I—" "No!"), and physical description (clenched jaw, turned away) all SHOW anger without stating it directly.',
+      difficulty: 5,
+      imageEmoji: '💥',
     ),
   ];
 
@@ -629,6 +865,61 @@ class PlotStructureQuestions {
       difficulty: 3,
       imageEmoji: '🎢',
     ),
+    // Year 5-7 - Advanced narrative structure
+    StoryQuestion(
+      id: 'plot_7',
+      skillId: 'skill_plot_structure',
+      question:
+          'An author writes: "Little did she know that the letter she ignored would change everything." This technique is called...',
+      options: [
+        'Flashback — looking back at a past event',
+        'Foreshadowing — hinting at future events to build suspense',
+        'Cliffhanger — ending a chapter on tension',
+        'Exposition — introducing background information',
+      ],
+      correctIndex: 1,
+      hint: 'The author hints at something important that\'s coming later.',
+      explanation:
+          'Foreshadowing plants hints about future events, building suspense and making readers eager to find out what happens. It\'s a key technique in thrillers and mysteries.',
+      difficulty: 4,
+      imageEmoji: '🔮',
+    ),
+    StoryQuestion(
+      id: 'plot_8',
+      skillId: 'skill_plot_structure',
+      question:
+          'After the climax of a story, what typically comes next?',
+      options: [
+        'The introduction of new characters',
+        'Another climax of equal intensity',
+        'Falling action — tension decreasing as events resolve',
+        'The story restarts from the beginning',
+      ],
+      correctIndex: 2,
+      hint: 'After the peak of tension, what direction does a story usually go?',
+      explanation:
+          'After the climax, the "falling action" shows the consequences and how things settle. Then comes the resolution (dénouement) which wraps up loose threads.',
+      difficulty: 4,
+      imageEmoji: '📉',
+    ),
+    StoryQuestion(
+      id: 'plot_9',
+      skillId: 'skill_plot_structure',
+      question:
+          'A story has TWO storylines running at the same time — the main character\'s quest AND her parents searching for her. What structure is this?',
+      options: [
+        'Linear narrative',
+        'Non-linear narrative',
+        'Parallel narrative — two or more storylines running simultaneously',
+        'Circular narrative',
+      ],
+      correctIndex: 2,
+      hint: 'Both storylines happen at the same time but are told alternately.',
+      explanation:
+          'A parallel narrative weaves together two or more storylines that often connect at the end. It\'s common in novels and films to create contrast or dramatic irony.',
+      difficulty: 5,
+      imageEmoji: '↔️',
+    ),
   ];
 
   static List<StoryQuestion> getByDifficulty(int level) {
@@ -739,6 +1030,61 @@ class CharacterDevelopmentQuestions {
       explanation: 'Good characters learn from their experiences and grow!',
       difficulty: 3,
       imageEmoji: '🌱',
+    ),
+    // Year 5-7 - Complex character analysis
+    StoryQuestion(
+      id: 'char_7',
+      skillId: 'skill_character_development',
+      question:
+          'A DYNAMIC character is one who...',
+      options: [
+        'Moves around a lot in the story',
+        'Changes significantly through the story\'s events',
+        'Has lots of dialogue',
+        'Stays the same from beginning to end',
+      ],
+      correctIndex: 1,
+      hint: 'Dynamic = changing. Think about how experiences can change people.',
+      explanation:
+          'Dynamic characters grow or change significantly. A STATIC character stays the same throughout. Protagonists are usually dynamic; villains are often static.',
+      difficulty: 4,
+      imageEmoji: '🔄',
+    ),
+    StoryQuestion(
+      id: 'char_8',
+      skillId: 'skill_character_development',
+      question:
+          'A FOIL character is one whose qualities CONTRAST with the main character. Why do authors use foil characters?',
+      options: [
+        'To confuse the reader',
+        'To highlight the main character\'s traits by showing opposite qualities',
+        'Because they ran out of ideas for new characters',
+        'To give the main character a best friend',
+      ],
+      correctIndex: 1,
+      hint: 'If the hero is brave and the foil is cowardly, what does that reveal?',
+      explanation:
+          'Foil characters work like mirrors in reverse — their contrasting traits make the main character\'s qualities stand out more clearly. Sherlock Holmes and Watson are a classic foil pair.',
+      difficulty: 4,
+      imageEmoji: '🙏',
+    ),
+    StoryQuestion(
+      id: 'char_9',
+      skillId: 'skill_character_development',
+      question:
+          'In a well-written villain, what most helps readers understand their actions?',
+      options: [
+        'Making them purely evil with no explanation',
+        'Giving them a believable backstory and clear motivation',
+        'Making them physically ugly',
+        'Having them appear in every scene',
+      ],
+      correctIndex: 1,
+      hint: 'Real people always have reasons for their behaviour — even bad behaviour.',
+      explanation:
+          'Complex villains with understandable motivations (even if we disagree with them) are far more compelling than one-dimensional "pure evil" characters. This creates moral depth.',
+      difficulty: 5,
+      imageEmoji: '🥶',
     ),
   ];
 

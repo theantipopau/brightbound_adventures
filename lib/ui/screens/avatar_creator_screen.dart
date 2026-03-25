@@ -26,6 +26,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   String _selectedColor = '#E8C4A0';
   int _currentStep = 0;
   CharacterAnimation _previewAnimation = CharacterAnimation.idle;
+  String? _hoveredColor;
 
   final List<Map<String, dynamic>> _characters = [
     {
@@ -91,6 +92,38 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       'trait': 'Fun & Caring',
       'description': 'A sweet panda who loves helping friends!',
       'color': const Color(0xFF000000),
+    },
+    {
+      'id': 'owl',
+      'emoji': '🦉',
+      'name': 'Olive Owl',
+      'trait': 'Bright & Curious',
+      'description': 'A wise owl who spots patterns and loves big ideas!',
+      'color': const Color(0xFF8D6E63),
+    },
+    {
+      'id': 'otter',
+      'emoji': '🦦',
+      'name': 'Ollie Otter',
+      'trait': 'Playful & Bold',
+      'description': 'A splashy otter who turns learning into lively adventures!',
+      'color': const Color(0xFFB87333),
+    },
+    {
+      'id': 'wolf',
+      'emoji': '🐺',
+      'name': 'Willow Wolf',
+      'trait': 'Focused & Fearless',
+      'description': 'A confident wolf who stays calm and tackles every challenge!',
+      'color': const Color(0xFF607D8B),
+    },
+    {
+      'id': 'tiger',
+      'emoji': '🐯',
+      'name': 'Tilly Tiger',
+      'trait': 'Energetic & Brave',
+      'description': 'A high-energy tiger who charges into every new lesson!',
+      'color': const Color(0xFFFF8F00),
     },
   ];
 
@@ -217,8 +250,26 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     }
   }
 
+  void _cyclePreviewAnimation() {
+    setState(() {
+      _previewAnimation = switch (_previewAnimation) {
+          CharacterAnimation.idle => CharacterAnimation.walking,
+          CharacterAnimation.walking => CharacterAnimation.jumping,
+          CharacterAnimation.jumping => CharacterAnimation.celebrating,
+          CharacterAnimation.celebrating => CharacterAnimation.idle,
+          CharacterAnimation.thinking => CharacterAnimation.idle,
+          CharacterAnimation.sleeping => CharacterAnimation.idle,
+        };
+    });
+    HapticFeedback.selectionClick();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final screenHeight = mediaQuery.size.height;
+    final isSmallScreen = screenHeight < 700;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -262,8 +313,10 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
           SafeArea(
             child: Column(
               children: [
-                _buildAppBar(),
+                _buildAppBar(isSmallScreen: isSmallScreen),
                 _buildProgressBar(),
+                if (!isSmallScreen) _buildLivePreviewBanner(scale: 1.0),
+                if (isSmallScreen) _buildLivePreviewBanner(scale: 0.75),
                 Expanded(
                   child: PageView(
                     controller: _pageController,
@@ -276,7 +329,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     ],
                   ),
                 ),
-                _buildNavigationButtons(),
+                _buildNavigationButtons(isCompact: isSmallScreen),
               ],
             ),
           ),
@@ -300,7 +353,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     }
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar({bool isSmallScreen = false}) {
     final titles = [
       '👋 Welcome!',
       '🎭 Choose Your Hero',
@@ -309,7 +362,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     ];
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isSmallScreen ? 12 : 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -323,17 +376,17 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(isSmallScreen ? 8 : 12),
             decoration: BoxDecoration(
               color: _getStepColor(_currentStep).withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Text(
               titles[_currentStep].split(' ')[0],
-              style: const TextStyle(fontSize: 28),
+              style: TextStyle(fontSize: isSmallScreen ? 20 : 28),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: isSmallScreen ? 12 : 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -343,17 +396,17 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                   'Step ${_currentStep + 1} of 4',
                   style: TextStyle(
                     color: _getStepColor(_currentStep),
-                    fontSize: 13,
+                    fontSize: isSmallScreen ? 11 : 13,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   titles[_currentStep].split(' ').skip(1).join(' '),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        fontSize: 22,
+                        fontSize: isSmallScreen ? 16 : 22,
                       ),
                 ),
               ],
@@ -428,11 +481,146 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     );
   }
 
+  Widget _buildLivePreviewBanner({double scale = 1.0}) {
+    final selectedCharacter =
+        _characters.firstWhere((c) => c['id'] == _selectedCharacter);
+    final previewName = _nameController.text.trim().isEmpty
+        ? selectedCharacter['name'] as String
+        : _nameController.text.trim();
+
+    final circleDiameter = 68.0 * scale;
+    final charSize = 44.0 * scale;
+    final padding = 14.0 * scale;
+    final spacing = 14.0 * scale;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20 * scale, 10 * scale, 20 * scale, 6 * scale),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(24),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: _cyclePreviewAnimation,
+          borderRadius: BorderRadius.circular(24),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: EdgeInsets.all(padding),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withValues(alpha: 0.96),
+                  (selectedCharacter['color'] as Color).withValues(alpha: 0.10),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: (selectedCharacter['color'] as Color).withValues(alpha: 0.25),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: (selectedCharacter['color'] as Color).withValues(alpha: 0.18),
+                  blurRadius: 18 * scale,
+                  offset: Offset(0, 10 * scale),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: circleDiameter,
+                  height: circleDiameter,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        (selectedCharacter['color'] as Color)
+                            .withValues(alpha: 0.25),
+                        Colors.white,
+                      ],
+                    ),
+                  ),
+                  child: AnimatedCharacter(
+                    character: _selectedCharacter,
+                    skinColor: _selectedColor,
+                    size: charSize,
+                    animation: _previewAnimation,
+                    showParticles:
+                        _previewAnimation == CharacterAnimation.celebrating,
+                  ),
+                ),
+                SizedBox(width: spacing),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        previewName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13 * scale,
+                            ),
+                      ),
+                      SizedBox(height: 3 * scale),
+                      Text(
+                        '${selectedCharacter['emoji']} ${selectedCharacter['trait']}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Tap preview to animate',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: selectedCharacter['color'] as Color,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color:
+                        (selectedCharacter['color'] as Color).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    '${_characters.length} heroes',
+                    style: TextStyle(
+                      color: selectedCharacter['color'] as Color,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildWelcomeStep() {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 600;
         final isTinyScreen = constraints.maxHeight < 500; // Very small phones
+        final showcaseHeight =
+            (constraints.maxHeight * 0.24).clamp(88.0, 180.0).toDouble();
+        final showcaseSize =
+            (showcaseHeight * 0.58).clamp(56.0, 100.0).toDouble();
+        final trimmedName = _nameController.text.trim();
+        final nameLength = trimmedName.length;
+        final hasValidName = nameLength >= 2;
 
         return SingleChildScrollView(
           padding: EdgeInsets.all(isTinyScreen ? 12 : (isCompact ? 16 : 24)),
@@ -441,19 +629,21 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               SizedBox(height: isTinyScreen ? 4 : (isCompact ? 10 : 20)),
               // Animated character showcase - reduced size for tiny screens
               SizedBox(
-                height: isTinyScreen ? 100 : (isCompact ? 120 : 180),
+                height: showcaseHeight,
                 child: AnimatedBuilder(
                   animation: _characterShowcaseController,
                   builder: (context, child) {
                     final index =
-                        (_characterShowcaseController.value * 4).floor() % 4;
+                        (_characterShowcaseController.value * _characters.length)
+                            .floor() %
+                            _characters.length;
                     final char = _characters[index];
                     return AnimatedSwitcher(
                       duration: const Duration(milliseconds: 500),
                       child: AnimatedCharacter(
                         key: ValueKey(char['id']),
                         character: char['id'],
-                        size: isTinyScreen ? 60 : (isCompact ? 80 : 100),
+                        size: showcaseSize,
                         animation: CharacterAnimation.celebrating,
                         showParticles: true,
                       ),
@@ -504,6 +694,15 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 child: TextField(
                   controller: _nameController,
                   textAlign: TextAlign.center,
+                  maxLength: 16,
+                  buildCounter: (
+                    context, {
+                    required int currentLength,
+                    required bool isFocused,
+                    required int? maxLength,
+                  }) {
+                    return const SizedBox.shrink();
+                  },
                   style: TextStyle(
                     fontSize: isTinyScreen ? 18 : (isCompact ? 20 : 24),
                     fontWeight: FontWeight.bold,
@@ -548,7 +747,49 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     contentPadding: EdgeInsets.symmetric(
                         vertical: isCompact ? 16 : 20, horizontal: 24),
                   ),
+                  onChanged: (_) => setState(() {}),
                   onSubmitted: (_) => _nextStep(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: hasValidName
+                      ? AppColors.success.withValues(alpha: 0.12)
+                      : Colors.orange.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: hasValidName
+                        ? AppColors.success.withValues(alpha: 0.35)
+                        : Colors.orange.withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      hasValidName ? '✅ Ready!' : '✍️ Add 2+ letters',
+                      style: TextStyle(
+                        color: hasValidName
+                            ? AppColors.success
+                            : Colors.orange.shade800,
+                        fontWeight: FontWeight.w700,
+                        fontSize: isTinyScreen ? 12 : 13,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$nameLength/16',
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w700,
+                        fontSize: isTinyScreen ? 11 : 12,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: isCompact ? 16 : 24),
@@ -664,17 +905,23 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                         child: child,
                       );
                     },
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedCharacter = character['id'];
-                          _selectedColor =
-                              CosmeticsLibrary.getSkinColorsForCharacter(
-                                  character['id'])[0];
-                        });
-                        HapticFeedback.mediumImpact();
-                      },
-                      child: AnimatedContainer(
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: () {
+                          setState(() {
+                            _selectedCharacter = character['id'];
+                            _selectedColor =
+                                CosmeticsLibrary.getSkinColorsForCharacter(
+                                    character['id'])[0];
+                            _previewAnimation = CharacterAnimation.celebrating;
+                          });
+                          HapticFeedback.mediumImpact();
+                        },
+                        child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         decoration: BoxDecoration(
                           gradient: isSelected
@@ -790,6 +1037,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                         ),
                       ),
                     ),
+                  ),
                   );
                 },
               ),
@@ -839,17 +1087,23 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     final isSelected = _previewAnimation == animation;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isCompact ? 2 : 4),
-      child: GestureDetector(
-        onTap: () {
-          setState(() => _previewAnimation = animation);
-          HapticFeedback.lightImpact();
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(
-            horizontal: isCompact ? 8 : 12,
-            vertical: isCompact ? 6 : 8,
-          ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            setState(() => _previewAnimation = animation);
+            HapticFeedback.lightImpact();
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: EdgeInsets.symmetric(
+              horizontal: isCompact ? 8 : 12,
+              vertical: isCompact ? 8 : 10,
+            ),
+            constraints: const BoxConstraints(minHeight: 48),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.secondary : Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -882,6 +1136,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -936,20 +1191,36 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                   alignment: WrapAlignment.center,
                   children: colors.map((color) {
                     final isSelected = _selectedColor == color;
+                    final isHovered = _hoveredColor == color;
                     final colorValue =
                         Color(int.parse('0xFF${color.replaceFirst('#', '')}'));
 
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() => _selectedColor = color);
-                        HapticFeedback.selectionClick();
-                      },
-                      child: AnimatedContainer(
+                    return Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onHover: (hovering) {
+                          setState(() {
+                            _hoveredColor = hovering ? color : null;
+                          });
+                        },
+                        onTap: () {
+                          setState(() => _selectedColor = color);
+                          HapticFeedback.selectionClick();
+                        },
+                        child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        width: isCompact ? 50 : 70,
-                        height: isCompact ? 50 : 70,
+                        width: isCompact ? (isHovered ? 56 : 50) : (isHovered ? 76 : 70),
+                        height: isCompact ? (isHovered ? 56 : 50) : (isHovered ? 76 : 70),
                         decoration: BoxDecoration(
-                          color: colorValue,
+                          gradient: RadialGradient(
+                            colors: [
+                              colorValue.withValues(alpha: 0.78),
+                              colorValue,
+                            ],
+                          ),
                           shape: BoxShape.circle,
                           border: Border.all(
                             color:
@@ -959,9 +1230,10 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                           boxShadow: [
                             BoxShadow(
                               color: colorValue.withValues(
-                                  alpha: isSelected ? 0.5 : 0.3),
-                              blurRadius: isSelected ? 12 : 8,
-                              spreadRadius: isSelected ? 3 : 0,
+                                  alpha:
+                                      isSelected ? 0.5 : (isHovered ? 0.4 : 0.3)),
+                              blurRadius: isSelected ? 12 : (isHovered ? 11 : 8),
+                              spreadRadius: isSelected ? 3 : (isHovered ? 1 : 0),
                             ),
                           ],
                         ),
@@ -969,6 +1241,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                             ? Icon(Icons.check,
                                 color: Colors.white, size: isCompact ? 24 : 32)
                             : null,
+                      ),
                       ),
                     );
                   }).toList(),
@@ -1160,9 +1433,9 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     );
   }
 
-  Widget _buildNavigationButtons() {
+  Widget _buildNavigationButtons({bool isCompact = false}) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isCompact ? 12 : 20),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -1175,7 +1448,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isCompact = constraints.maxWidth < 400;
+          final compact = isCompact || constraints.maxWidth < 400;
 
           return Row(
             children: [
@@ -1188,7 +1461,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     },
                     style: OutlinedButton.styleFrom(
                       padding:
-                          EdgeInsets.symmetric(vertical: isCompact ? 12 : 16),
+                          EdgeInsets.symmetric(vertical: compact ? 10 : 16),
                       side: BorderSide(
                           color: _getStepColor(_currentStep), width: 2),
                       shape: RoundedRectangleBorder(
@@ -1200,12 +1473,12 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                       children: [
                         Icon(Icons.arrow_back,
                             color: _getStepColor(_currentStep),
-                            size: isCompact ? 20 : 24),
-                        SizedBox(width: isCompact ? 4 : 8),
+                            size: compact ? 18 : 24),
+                        SizedBox(width: compact ? 4 : 8),
                         Text(
                           'Back',
                           style: TextStyle(
-                            fontSize: isCompact ? 14 : 16,
+                            fontSize: compact ? 13 : 16,
                             fontWeight: FontWeight.bold,
                             color: _getStepColor(_currentStep),
                           ),

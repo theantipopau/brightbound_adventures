@@ -1,0 +1,29 @@
+# BrightBound Adventures Website - Robots.txt
+# Allows search engines to crawl all content
+
+User-agent: *
+Allow: /
+Allow: /css/
+Allow: /js/
+Disallow: /admin/
+Disallow: /private/
+Disallow: /.wrangler/
+
+# Crawl delay (optional - be nice to servers)
+Crawl-delay: 1
+
+# Sitemaps
+Sitemap: https://playbrightbound.matthurley.dev/sitemap.xml
+
+# Specific search engine rules
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /

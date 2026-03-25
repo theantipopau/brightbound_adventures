@@ -75,7 +75,7 @@ class DailyChallengeCard extends StatelessWidget {
                         DailyChallengeGenerator.getZoneName(challenge.zoneId),
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 9,
+                          fontSize: 12,
                         ),
                       ),
                     ],
@@ -145,7 +145,7 @@ class DailyChallengeCard extends StatelessWidget {
                   '${challenge.currentProgress}/${challenge.targetScore}',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 9,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

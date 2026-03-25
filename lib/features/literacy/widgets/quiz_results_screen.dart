@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/widgets/achievement_notification.dart';
+import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
+import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Results screen shown after completing a quiz
@@ -153,256 +155,279 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final world = WorldTokens.fromColor(widget.themeColor);
     return Scaffold(
-      backgroundColor: widget.themeColor.withValues(alpha: 0.05),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-
-              // Performance emoji
-              ScaleTransition(
-                scale: _scoreAnimation,
-                child: Text(
-                  _performanceEmoji,
-                  style: const TextStyle(fontSize: 80),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Title
-              Text(
-                'Quiz Complete!',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: widget.themeColor,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                widget.skillName,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.grey.shade600,
-                    ),
-              ),
-              const SizedBox(height: 24),
-
-              // Stars
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(3, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: AnimatedBuilder(
-                      animation: _celebrationController,
-                      builder: (context, child) {
-                        final delay = index * 0.2;
-                        final progress =
-                            ((_celebrationController.value - delay) /
-                                    (1 - delay))
-                                .clamp(0.0, 1.0);
-                        return Transform.scale(
-                          scale:
-                              index < _starCount ? (0.5 + 0.5 * progress) : 0.8,
-                          child: Icon(
-                            index < _starCount ? Icons.star : Icons.star_border,
-                            size: 48,
-                            color: index < _starCount
-                                ? Colors.amber
-                                : Colors.grey.shade300,
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(height: 32),
-
-              // Score card
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.themeColor.withValues(alpha: 0.2),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
+      body: Stack(
+        children: [
+          // World-themed gradient background
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    world.skyGradient.first,
+                    world.skyGradient.last,
+                    Colors.white,
                   ],
-                ),
-                child: Column(
-                  children: [
-                    // Accuracy
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ScaleTransition(
-                          scale: _scoreAnimation,
-                          child: Text(
-                            '${(widget.accuracy * 100).toStringAsFixed(0)}%',
-                            style: TextStyle(
-                              fontSize: 64,
-                              fontWeight: FontWeight.bold,
-                              color: widget.themeColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      _performanceMessage,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    const Divider(),
-                    const SizedBox(height: 16),
-
-                    // Stats row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildStatItem(
-                          icon: Icons.check_circle,
-                          color: AppColors.success,
-                          value:
-                              '${widget.correctAnswers}/${widget.totalQuestions}',
-                          label: 'Correct',
-                        ),
-                        _buildStatItem(
-                          icon: Icons.lightbulb,
-                          color: Colors.amber,
-                          value: '${widget.hintsUsed}',
-                          label: 'Hints Used',
-                        ),
-                        _buildStatItem(
-                          icon: Icons.stars,
-                          color: widget.themeColor,
-                          value: '+$_xpAwarded',
-                          label: 'XP Earned',
-                        ),
-                      ],
-                    ),
-                  ],
+                  stops: const [0.0, 0.4, 1.0],
                 ),
               ),
+            ),
+          ),
 
-              // Level up notification
-              if (_leveledUp) ...[
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.amber.shade300,
-                        Colors.orange.shade400,
-                      ],
+          // Content
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+
+                  // Performance emoji with scale entrance
+                  ScaleTransition(
+                    scale: _scoreAnimation,
+                    child: Text(
+                      _performanceEmoji,
+                      style: const TextStyle(fontSize: 80),
                     ),
-                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Row(
-                    children: [
-                      const Text('🎊', style: TextStyle(fontSize: 36)),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'LEVEL UP!',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                  const SizedBox(height: 12),
+
+                  // Title
+                  Text(
+                    'Quiz Complete!',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: widget.themeColor,
+                          fontFamily: AppTheme.fontPrimary,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.skillName,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.grey.shade600,
+                        ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Stars with staggered entrance
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(3, (index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: AnimatedBuilder(
+                          animation: _celebrationController,
+                          builder: (context, child) {
+                            final delay = index * 0.22;
+                            final progress =
+                                ((_celebrationController.value - delay) /
+                                        (1 - delay))
+                                    .clamp(0.0, 1.0);
+                            final earned = index < _starCount;
+                            return Transform.scale(
+                              scale: earned
+                                  ? (0.3 +
+                                      0.7 *
+                                          Curves.elasticOut.transform(progress))
+                                  : 0.75,
+                              child: Icon(
+                                earned
+                                    ? Icons.star_rounded
+                                    : Icons.star_outline_rounded,
+                                size: 52,
+                                color: earned
+                                    ? Colors.amber.shade400
+                                    : Colors.grey.shade300,
+                                shadows: earned
+                                    ? [
+                                        Shadow(
+                                          color: Colors.amber
+                                              .withValues(alpha: 0.5),
+                                          blurRadius: 12,
+                                        )
+                                      ]
+                                    : null,
                               ),
-                            ),
-                            Consumer<AvatarProvider>(
-                              builder: (context, provider, _) {
-                                return Text(
-                                  'You reached Level ${provider.avatar?.level ?? 0}!',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                );
-                              },
+                            );
+                          },
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Animated score card
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppBorders.xl),
+                      border: Border.all(
+                        color: widget.themeColor.withValues(alpha: 0.2),
+                        width: 1.5,
+                      ),
+                      boxShadow: AppShadows.lg(widget.themeColor),
+                    ),
+                    child: Column(
+                      children: [
+                        // Big animated accuracy
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AnimatedCounterText(
+                              targetValue: (widget.accuracy * 100).round(),
+                              suffix: '%',
+                              style: TextStyle(
+                                fontSize: 64,
+                                fontWeight: FontWeight.bold,
+                                color: widget.themeColor,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                      const Text('🎊', style: TextStyle(fontSize: 36)),
-                    ],
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 32),
-
-              // Action buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: widget.onExit,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: BorderSide(color: widget.themeColor, width: 2),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                        Text(
+                          _performanceMessage,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                      child: Text(
-                        'Back to Zone',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: widget.themeColor,
+                        const SizedBox(height: 20),
+                        Divider(color: Colors.grey.shade100, thickness: 1.5),
+                        const SizedBox(height: 16),
+
+                        // Stats row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildStatItem(
+                              icon: Icons.check_circle_outline_rounded,
+                              color: AppColors.success,
+                              value:
+                                  '${widget.correctAnswers} / ${widget.totalQuestions}',
+                              label: 'Correct',
+                            ),
+                            Container(
+                                width: 1,
+                                height: 48,
+                                color: Colors.grey.shade200),
+                            _buildStatItem(
+                              icon: Icons.lightbulb_outline_rounded,
+                              color: Colors.amber.shade700,
+                              value: '${widget.hintsUsed}',
+                              label: 'Hints',
+                            ),
+                            Container(
+                                width: 1,
+                                height: 48,
+                                color: Colors.grey.shade200),
+                            _buildStatItem(
+                              icon: Icons.bolt_rounded,
+                              color: widget.themeColor,
+                              value: '+$_xpAwarded',
+                              label: 'XP',
+                            ),
+                          ],
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: widget.onPlayAgain,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.themeColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+
+                  // Level up notification
+                  if (_leveledUp) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        gradient: AppGradients.gold,
+                        borderRadius: BorderRadius.circular(AppBorders.lg),
+                        boxShadow:
+                            AppShadows.glow(Colors.amber, intensity: 0.4),
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Row(
                         children: [
-                          Icon(Icons.replay),
-                          SizedBox(width: 8),
-                          Text(
-                            'Play Again',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                          const Text('🎉', style: TextStyle(fontSize: 32)),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'LEVEL UP!',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Consumer<AvatarProvider>(
+                                  builder: (context, provider, _) => Text(
+                                    'You reached Level ${provider.avatar?.level ?? 0}!',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                          const Text('🌟', style: TextStyle(fontSize: 32)),
                         ],
                       ),
                     ),
+                  ],
+
+                  const SizedBox(height: 32),
+
+                  // Action buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: BrandedBackButton(
+                          label: 'Back to Zone',
+                          onPressed: widget.onExit,
+                          backgroundColor: Colors.grey.shade400,
+                          foregroundColor: Colors.white,
+                          borderColor: Colors.grey.shade500,
+                          tokenBackgroundColor:
+                              Colors.white.withValues(alpha: 0.16),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        flex: 2,
+                        child: JuicyButton(
+                          label: 'Play Again',
+                          emoji: '🔄',
+                          onPressed: widget.onPlayAgain,
+                          gradient: LinearGradient(
+                            colors: [
+                              widget.themeColor,
+                              widget.themeColor.withValues(alpha: 0.85)
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          textColor: Colors.white,
+                          shimmer: widget.accuracy >= 0.85,
+                        ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 24),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -413,26 +438,30 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
     required String value,
     required String label,
   }) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 28),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: color,
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 26),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade500,
+              letterSpacing: 0.3,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

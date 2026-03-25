@@ -932,6 +932,51 @@ class VocabularyInContextQuestions extends SkillQuestionBank {
       explanation: '"Ambitious" means having high goals. This plan was too challenging.',
       difficulty: 5,
     ),
+    LiteracyQuestion(
+      id: 'vocab_context_11',
+      skillId: 'vocabulary_in_context',
+      question: 'Read: "The scientist\'s findings were inconclusive — she could not prove her hypothesis either way." What does "inconclusive" mean?',
+      options: [
+        'completely wrong',
+        'very exciting',
+        'not providing a clear answer or result',
+        'highly accurate'
+      ],
+      correctIndex: 2,
+      hint: 'She could not prove her hypothesis either way.',
+      explanation: '"Inconclusive" means the evidence does not lead to a definite conclusion.',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'vocab_context_12',
+      skillId: 'vocabulary_in_context',
+      question: 'The word "notorious" is used in: "The notorious bushranger was feared across the colony." What does "notorious" mean?',
+      options: [
+        'popular and well-liked',
+        'famous for something bad or harmful',
+        'unknown and mysterious',
+        'skilled and talented'
+      ],
+      correctIndex: 1,
+      hint: 'The bushranger was feared — is that a good or bad reputation?',
+      explanation: '"Notorious" means widely known for negative reasons. Being feared = bad reputation.',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'vocab_context_13',
+      skillId: 'vocabulary_in_context',
+      question: 'Two headlines: (A) "Politician makes bold claim" and (B) "Politician makes reckless claim." Both use a synonym for taking risk. What is the key difference in connotation?',
+      options: [
+        'No difference — they mean exactly the same thing',
+        '"Bold" suggests admirable courage; "reckless" suggests irresponsible danger',
+        '"Reckless" is more positive than "bold"',
+        'Only "bold" is about risk'
+      ],
+      correctIndex: 1,
+      hint: 'Connotation is the emotional feeling a word carries.',
+      explanation: 'Both involve risk, but "bold" has a positive connotation (brave), while "reckless" is negative (irresponsible). Word choice shapes how we judge the politician.',
+      difficulty: 5,
+    ),
   ];
 }
 
@@ -1020,6 +1065,36 @@ class CommaUsageQuestions extends SkillQuestionBank {
       correctIndex: 0,
       hint: 'Commas go around extra information in the middle of a sentence.',
       explanation: 'Use commas around extra information: Sarah, who plays tennis, likes to run.',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'comma_hard_2',
+      skillId: 'comma_usage',
+      question: 'Which sentence correctly distinguishes a defining clause from a non-defining clause?',
+      options: [
+        'The student, who studied hardest, passed — meaning only one student studied hard.',
+        'The student who studied hardest passed — this picks out which student.',
+        'Both sentences mean the same thing regardless of commas.',
+        'Commas are not needed with "who" clauses at all.'
+      ],
+      correctIndex: 1,
+      hint: 'No commas = the clause defines WHICH one. Commas = extra information.',
+      explanation: 'Without commas, "who studied hardest" tells us WHICH student. With commas, it adds extra info (implying all students passed).',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'comma_hard_3',
+      skillId: 'comma_usage',
+      question: 'Choose the sentence where the comma changes the meaning: "Let\'s eat Grandma" vs "Let\'s eat, Grandma." What does the comma do?',
+      options: [
+        'Nothing — both mean inviting Grandma to eat',
+        'The comma after "eat" shows Grandma is being addressed, not eaten',
+        'The comma is a grammar error in both sentences',
+        'The comma changes "eat" to mean something different'
+      ],
+      correctIndex: 1,
+      hint: 'A comma before a name shows you are speaking TO that person.',
+      explanation: 'Without the comma, Grandma becomes the meal! The comma signals a direct address — we are talking TO Grandma, not about eating her.',
       difficulty: 5,
     ),
   ];
@@ -1222,6 +1297,36 @@ class MainIdeaQuestions extends SkillQuestionBank {
       explanation: 'The main idea is that plants need multiple conditions to grow.',
       difficulty: 5,
     ),
+    LiteracyQuestion(
+      id: 'main_idea_4',
+      skillId: 'main_idea',
+      question: 'A passage states: "The Great Barrier Reef covers 344,000 km². It hosts 1,500 fish species, 4,000 types of mollusc, and 240 bird species. However, rising sea temperatures now threaten its survival." What is the main idea?',
+      options: [
+        'The reef has 1,500 fish species',
+        'The Great Barrier Reef is a vast, biodiverse ecosystem now under threat',
+        'Sea temperatures are rising worldwide',
+        'Molluscs are important creatures'
+      ],
+      correctIndex: 1,
+      hint: 'The passage describes the reef\'s size and biodiversity, then introduces a threat.',
+      explanation: 'The passage establishes the reef\'s importance (size + diversity) then introduces the key issue — climate threat. The main idea combines both.',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'main_idea_5',
+      skillId: 'main_idea',
+      question: 'Two paragraphs: Paragraph 1 lists the benefits of exercise (health, mood, energy). Paragraph 2 lists barriers (cost, time, tiredness). What is the overall main idea of BOTH paragraphs together?',
+      options: [
+        'Exercise makes people healthy',
+        'It is hard to find time to exercise',
+        'Exercise has clear benefits, but real barriers prevent many people from doing it',
+        'People should exercise every day'
+      ],
+      correctIndex: 2,
+      hint: 'The main idea must include BOTH what each paragraph is about.',
+      explanation: 'A main idea for a multi-paragraph text must reflect the whole text — here, the benefits AND the barriers together.',
+      difficulty: 5,
+    ),
   ];
 }
 
@@ -1282,6 +1387,51 @@ class InferenceQuestions extends SkillQuestionBank {
       explanation: 'These actions suggest the character values privacy and wants to keep something private.',
       difficulty: 5,
     ),
+    LiteracyQuestion(
+      id: 'inference_4',
+      skillId: 'inference',
+      question: 'Read: "Ms Chen marked the papers in red, handed them back without a word, and sat down facing the window." What can we best infer about Ms Chen\'s mood?',
+      options: [
+        'She is happy with the class\'s results',
+        'She is disappointed or frustrated and does not want to discuss it',
+        'She is tired from a long day',
+        'She forgot to write comments'
+      ],
+      correctIndex: 1,
+      hint: 'Consider what red marking, silence, and turning away from the class suggest together.',
+      explanation: 'Heavy red marking + silence + turning away are clues of disappointment. If she were happy, she would likely speak to the class.',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'inference_5',
+      skillId: 'inference',
+      question: 'A news article describes rising housing costs but never mentions the word "unfair". A reader infers the author thinks the situation is unjust. Which clue in an article would BEST support this inference?',
+      options: [
+        'The article uses the word "rising" to describe costs',
+        'The article focuses only on wealthy buyers who benefit',
+        'The article quotes struggling families and uses words like "crisis" and "desperate"',
+        'The article is published in a newspaper'
+      ],
+      correctIndex: 2,
+      hint: 'Word choice reveals an author\'s viewpoint even without stating it directly.',
+      explanation: 'Quoting struggling families and using emotive words like "crisis" and "desperate" strongly implies the author views the situation as unjust, even without saying so.',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'inference_6',
+      skillId: 'inference',
+      question: 'Read: "Jaxon\'s hands were shaking. He read the letter three times. Then he very slowly folded it and placed it on the table." What emotion is Jaxon most likely experiencing?',
+      options: [
+        'Boredom',
+        'Anger',
+        'Shock or disbelief — he is processing unexpected news',
+        'Relief'
+      ],
+      correctIndex: 2,
+      hint: 'Think about why someone reads something multiple times and moves very slowly.',
+      explanation: 'Shaking hands, re-reading, and deliberate slow movement suggest Jaxon is in shock — processing something unexpected. He\'s not angrily crumpling it, just carefully folding it.',
+      difficulty: 5,
+    ),
   ];
 }
 
@@ -1340,6 +1490,51 @@ class SentenceFormationQuestions extends SkillQuestionBank {
       correctIndex: 0,
       hint: 'Check comma placement with conjunctions.',
       explanation: 'Use a comma after "Although it was raining".',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'sentence_4',
+      skillId: 'sentence_formation',
+      question: 'Which sentence correctly uses a relative clause?',
+      options: [
+        'The book, which I borrowed from the library, was fascinating.',
+        'The book which I borrowed from the library was fascinating.',
+        'The book, which I borrowed from the library was fascinating.',
+        'The book which, I borrowed from the library, was fascinating.'
+      ],
+      correctIndex: 0,
+      hint: 'A non-defining relative clause (extra information) needs commas on both sides.',
+      explanation: '"Which I borrowed from the library" is extra info — it needs commas on both sides. "That" clauses (defining) do not use commas.',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'sentence_5',
+      skillId: 'sentence_formation',
+      question: 'Which is a correctly formed compound-complex sentence?',
+      options: [
+        'Because she studied hard, she passed the test and her parents were proud.',
+        'Because she studied hard she passed the test and her parents were proud.',
+        'She studied hard, because she passed the test, her parents were proud.',
+        'She studied hard and, because she passed, were proud.'
+      ],
+      correctIndex: 0,
+      hint: 'A compound-complex sentence has at least one subordinate clause AND two main clauses joined by a conjunction.',
+      explanation: 'Subordinate clause: "Because she studied hard," + main clause 1: "she passed the test" + coordinating conjunction "and" + main clause 2: "her parents were proud".',
+      difficulty: 5,
+    ),
+    LiteracyQuestion(
+      id: 'sentence_6',
+      skillId: 'sentence_formation',
+      question: 'Identify the error: "Running through the park, the flowers looked beautiful."',
+      options: [
+        'The comma is in the wrong place',
+        'This is a dangling modifier — the flowers cannot run through the park',
+        'There is no error in this sentence',
+        '"Running" should be "ran"'
+      ],
+      correctIndex: 1,
+      hint: 'Who or what is doing the running? The subject after the comma must be the runner.',
+      explanation: 'The participial phrase "Running through the park" must describe the subject — but "the flowers" cannot run. This is a dangling modifier. Fix: "Running through the park, she noticed the flowers looked beautiful."',
       difficulty: 5,
     ),
   ];

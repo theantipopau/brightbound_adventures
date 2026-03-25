@@ -32,6 +32,17 @@
       }
     </style>
     <script src="flutter_bootstrap.js" async></script>
+    <!-- BrightBound Web Audio synthesiser (loads before Flutter boots) -->
+    <script src="sounds.js"></script>
+    <!-- Force page reload when a new service worker takes over, so users
+         always get the latest version after a deployment. -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          window.location.reload(true);
+        });
+      }
+    </script>
   </head>
   <body>
   </body>

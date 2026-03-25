@@ -1,22 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:brightbound_adventures/core/services/achievement_service.dart';
+import 'package:brightbound_adventures/core/services/daily_challenge_service.dart';
+import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
+import 'package:brightbound_adventures/core/services/streak_service.dart';
+import 'package:brightbound_adventures/ui/widgets/streak_milestone_modal.dart';
 import '../models/question.dart';
 import '../widgets/story_game.dart';
 import '../widgets/story_results_screen.dart';
 import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/utils/story_springs_generator.dart';
+import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
 
 /// Main screen for Story Springs skill practice
 /// Routes to appropriate story game based on skill selected
 class StoryPracticeScreen extends StatefulWidget {
   final String skillId;
   final String skillName;
+  final String? zoneId;
+  final String? zoneName;
 
   const StoryPracticeScreen({
     super.key,
     required this.skillId,
     required this.skillName,
+    this.zoneId,
+    this.zoneName,
   });
 
   @override
@@ -30,30 +40,34 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
   int _xpEarned = 0;
 
   List<StoryQuestion> _getQuestionsForSkill() {
+    // Get adaptive difficulty level
+    final adaptiveDifficulty = context.read<AdaptiveDifficultyService>();
+    final difficulty = adaptiveDifficulty.getDifficultyForSkill(widget.skillId);
+
     try {
       // Use generator for varied questions based on skill
       return StorySpringsQuestionGenerator.generate(
         skill: widget.skillId,
-        difficulty: 3,
+        difficulty: difficulty,
         count: 10,
       );
     } catch (e) {
       // Fallback to hardcoded questions if generator fails
       switch (widget.skillId) {
         case 'skill_story_sequencing':
-          return StorySequencingQuestions.getByDifficulty(3);
+          return StorySequencingQuestions.getByDifficulty(difficulty);
         case 'skill_emotion_recognition':
-          return EmotionRecognitionQuestions.getByDifficulty(3);
+          return EmotionRecognitionQuestions.getByDifficulty(difficulty);
         case 'skill_descriptive_language':
-          return DescriptiveLanguageQuestions.getByDifficulty(3);
+          return DescriptiveLanguageQuestions.getByDifficulty(difficulty);
         case 'skill_dialogue_creation':
-          return DialogueCreationQuestions.getByDifficulty(3);
+          return DialogueCreationQuestions.getByDifficulty(difficulty);
         case 'skill_plot_structure':
-          return PlotStructureQuestions.getByDifficulty(3);
+          return PlotStructureQuestions.getByDifficulty(difficulty);
         case 'skill_character_development':
-          return CharacterDevelopmentQuestions.getByDifficulty(3);
+          return CharacterDevelopmentQuestions.getByDifficulty(difficulty);
         default:
-          return StorySequencingQuestions.getByDifficulty(3);
+          return StorySequencingQuestions.getByDifficulty(difficulty);
       }
     }
   }
@@ -92,17 +106,62 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
     // Update skill progress
     final skillProvider = Provider.of<SkillProvider>(context, listen: false);
     final percentage = correct / total;
-
-    // Record practice session with proper API
     skillProvider.updateSkillProgress(
       skillId: widget.skillId,
       sessionAccuracy: percentage,
-      sessionHints: 0, // Story games don't track hints the same way
+      sessionHints: 0,
     );
 
     // Award XP
     final avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
     avatarProvider.addExperience(xp);
+
+    // Update achievements
+    try {
+      final achievementService = context.read<AchievementService>();
+      final starsEarned = correct * 10;
+      achievementService.updateProgress('achievement_stars_25', starsEarned);
+      achievementService.updateProgress('achievement_stars_50', starsEarned);
+      achievementService.updateProgress('achievement_stars_100', starsEarned);
+      if (percentage == 1.0) {
+        achievementService.updateProgress('achievement_perfect_1', 1);
+        achievementService.updateProgress('achievement_perfect_5', 1);
+      }
+      if (correct >= 3) {
+        achievementService.updateProgress('achievement_quick_learner', 1);
+      }
+    } catch (e) {}
+
+    // Update daily challenges
+    try {
+      final dailyService = context.read<DailyChallengeService>();
+      for (int i = 0; i < correct; i++) {
+        for (final challenge in dailyService.todaysChallenges) {
+          if (challenge.skillId == widget.skillId) {
+            dailyService.updateProgress(
+              challengeId: challenge.id,
+              correct: true,
+            );
+            break;
+          }
+        }
+      }
+    } catch (e) {}
+    _checkStreak();
+  }
+
+  Future<void> _checkStreak() async {
+    try {
+      final streakService = context.read<StreakService>();
+      final isNewMilestone = await streakService.recordPlay();
+      if (isNewMilestone && mounted) {
+        showStreakMilestoneModal(
+          context,
+          streakDays: streakService.currentStreak,
+          bonusStars: streakService.streakBonus,
+        );
+      }
+    } catch (_) {}
   }
 
   void _onContinue() {
@@ -202,12 +261,15 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
                   ),
                 ),
                 const SizedBox(height: 48),
-                TextButton.icon(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.arrow_back, color: Colors.white70),
-                  label: const Text(
-                    'Go Back',
-                    style: TextStyle(color: Colors.white70),
+                SizedBox(
+                  width: 220,
+                  child: BrandedBackButton(
+                    label: 'Back to Zone',
+                    onPressed: () => Navigator.of(context).pop(),
+                    backgroundColor: Colors.white.withValues(alpha: 0.08),
+                    foregroundColor: Colors.white,
+                    borderColor: Colors.purple.shade300.withValues(alpha: 0.7),
+                    tokenBackgroundColor: Colors.purple.withValues(alpha: 0.24),
                   ),
                 ),
               ],

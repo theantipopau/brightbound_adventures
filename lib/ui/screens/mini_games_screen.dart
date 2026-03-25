@@ -6,7 +6,6 @@ import 'package:brightbound_adventures/features/mini_games/pattern_puzzle_game.d
 import 'package:brightbound_adventures/features/mini_games/word_search_game.dart';
 
 import 'package:brightbound_adventures/ui/widgets/visual_effects/particle_background.dart';
-import 'package:brightbound_adventures/ui/widgets/responsive_quiz_layout.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/screen_shaker.dart';
 
 /// Improved Mini Games Screen with enhanced GUI and better gameplay

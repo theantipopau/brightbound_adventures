@@ -5,6 +5,7 @@ import '../widgets/motor_game.dart';
 import '../widgets/motor_results_screen.dart';
 import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
+import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
 import 'package:brightbound_adventures/core/utils/adventure_arena_generator.dart';
 
 /// Main screen for Adventure Arena motor skills practice
@@ -12,11 +13,15 @@ import 'package:brightbound_adventures/core/utils/adventure_arena_generator.dart
 class MotorPracticeScreen extends StatefulWidget {
   final String skillId;
   final String skillName;
+  final String? zoneId;
+  final String? zoneName;
 
   const MotorPracticeScreen({
     super.key,
     required this.skillId,
     required this.skillName,
+    this.zoneId,
+    this.zoneName,
   });
 
   @override
@@ -74,9 +79,13 @@ class _MotorPracticeScreenState extends State<MotorPracticeScreen> {
       );
     }
 
+    // Get adaptive difficulty level
+    final adaptiveDifficulty = context.read<AdaptiveDifficultyService>();
+    final difficulty = adaptiveDifficulty.getDifficultyForSkill(widget.skillId);
+
     final config = AdventureArenaGenerator.generate(
       skill: widget.skillId,
-      difficulty: 3,
+      difficulty: difficulty,
     );
 
     return MotorGame(

@@ -260,9 +260,14 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
     required bool isCompleted,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: isCompleted ? null : onTap,
-      child: Container(
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: isCompleted ? null : onTap,
+        child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isCompleted ? Colors.grey[200] : Colors.white,
@@ -375,7 +380,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                         Text(
                           'Done',
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.green,
                           ),
@@ -401,7 +406,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                         Text(
                           'Start',
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.blue,
                           ),
@@ -414,6 +419,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 

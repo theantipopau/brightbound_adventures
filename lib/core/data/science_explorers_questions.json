@@ -3,7 +3,7 @@
     "subject": "Science",
     "year_level": 3,
     "source": "ACARA v9",
-    "version": "1.0",
+    "version": "2.0",
     "topics": [
       "Biological Sciences",
       "Chemical Sciences",
@@ -22,6 +22,60 @@
       "hint": "It grows and needs water."
     },
     {
+      "id": "SCI-Y3-BIO-002",
+      "question": "What covering does a bird have?",
+      "options": ["Scales", "Fur", "Feathers", "Shell"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "Biological Sciences",
+      "hint": "They help birds fly."
+    },
+    {
+      "id": "SCI-Y3-BIO-003",
+      "question": "Which part of a plant makes food using sunlight?",
+      "options": ["Root", "Stem", "Leaf", "Flower"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "Biological Sciences",
+      "hint": "It is green and flat."
+    },
+    {
+      "id": "SCI-Y3-BIO-004",
+      "question": "A tadpole grows into which animal?",
+      "options": ["A fish", "A frog", "A lizard", "A turtle"],
+      "correct_index": 1,
+      "difficulty": 1,
+      "topic": "Biological Sciences",
+      "hint": "It lives on land and in water."
+    },
+    {
+      "id": "SCI-Y3-BIO-005",
+      "question": "Which animal is a mammal?",
+      "options": ["Crocodile", "Eagle", "Dolphin", "Shark"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "Biological Sciences",
+      "hint": "It breathes air and feeds its babies milk."
+    },
+    {
+      "id": "SCI-Y3-BIO-006",
+      "question": "What do roots do for a plant?",
+      "options": ["Make seeds", "Absorb water and nutrients from soil", "Produce flowers", "Catch sunlight"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "Biological Sciences",
+      "hint": "They grow underground."
+    },
+    {
+      "id": "SCI-Y3-BIO-007",
+      "question": "Which group do insects belong to?",
+      "options": ["Mammals", "Reptiles", "Arthropods", "Amphibians"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "Biological Sciences",
+      "hint": "They have 6 legs and an exoskeleton."
+    },
+    {
       "id": "SCI-Y3-EARTH-001",
       "question": "What causes day and night?",
       "options": [
@@ -36,6 +90,60 @@
       "hint": "The Earth is like a spinning top."
     },
     {
+      "id": "SCI-Y3-EARTH-002",
+      "question": "What is the closest star to Earth?",
+      "options": ["The Moon", "Mars", "The Sun", "Pluto"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "Earth and Space Sciences",
+      "hint": "We see it every day."
+    },
+    {
+      "id": "SCI-Y3-EARTH-003",
+      "question": "What type of rock is formed from cooled lava?",
+      "options": ["Sedimentary", "Igneous", "Metamorphic", "Sandstone"],
+      "correct_index": 1,
+      "difficulty": 3,
+      "topic": "Earth and Space Sciences",
+      "hint": "It starts as very hot melted rock."
+    },
+    {
+      "id": "SCI-Y3-EARTH-004",
+      "question": "Which planet is known as the Red Planet?",
+      "options": ["Venus", "Mars", "Jupiter", "Saturn"],
+      "correct_index": 1,
+      "difficulty": 1,
+      "topic": "Earth and Space Sciences",
+      "hint": "Its soil is red because of iron oxide."
+    },
+    {
+      "id": "SCI-Y3-EARTH-005",
+      "question": "What is the water cycle step when water turns into vapour?",
+      "options": ["Condensation", "Precipitation", "Evaporation", "Collection"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "Earth and Space Sciences",
+      "hint": "Heat from the Sun causes this."
+    },
+    {
+      "id": "SCI-Y3-EARTH-006",
+      "question": "How long does it take Earth to orbit the Sun once?",
+      "options": ["One day", "One week", "One month", "One year"],
+      "correct_index": 3,
+      "difficulty": 1,
+      "topic": "Earth and Space Sciences",
+      "hint": "It gives us all our seasons."
+    },
+    {
+      "id": "SCI-Y3-EARTH-007",
+      "question": "What are clouds made of?",
+      "options": ["Cotton", "Smoke", "Tiny water droplets", "Dust"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "Earth and Space Sciences",
+      "hint": "They fall as rain when they get heavy."
+    },
+    {
       "id": "SCI-Y3-PHYS-001",
       "question": "Which object produces heat?",
       "options": ["An ice cube", "A toaster", "A spoon", "A book"],
@@ -43,6 +151,60 @@
       "difficulty": 1,
       "topic": "Physical Sciences",
       "hint": "We use it to make toast hot."
+    },
+    {
+      "id": "SCI-Y3-PHYS-002",
+      "question": "Sound travels best through which material?",
+      "options": ["Vacuum", "Air", "Water", "Steel"],
+      "correct_index": 3,
+      "difficulty": 3,
+      "topic": "Physical Sciences",
+      "hint": "The denser the material, the faster sound moves."
+    },
+    {
+      "id": "SCI-Y3-PHYS-003",
+      "question": "What force pulls objects towards the ground?",
+      "options": ["Magnetism", "Friction", "Gravity", "Electricity"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "Physical Sciences",
+      "hint": "Drop a ball and this brings it down."
+    },
+    {
+      "id": "SCI-Y3-PHYS-004",
+      "question": "Which of these is a source of light?",
+      "options": ["A mirror", "A window", "A torch", "A shadow"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "Physical Sciences",
+      "hint": "It has batteries or a bulb to create light."
+    },
+    {
+      "id": "SCI-Y3-PHYS-005",
+      "question": "If you push a toy car harder, how does it move?",
+      "options": ["Slower", "The same", "Faster", "It stops"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "Physical Sciences",
+      "hint": "More force means more speed."
+    },
+    {
+      "id": "SCI-Y3-PHYS-006",
+      "question": "What does friction do between two surfaces?",
+      "options": ["Speeds things up", "Slows movement down", "Makes things float", "Creates light"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "Physical Sciences",
+      "hint": "Rub your hands together and feel the warmth."
+    },
+    {
+      "id": "SCI-Y3-PHYS-007",
+      "question": "Which colour bends the most in a rainbow?",
+      "options": ["Red", "Yellow", "Green", "Violet"],
+      "correct_index": 3,
+      "difficulty": 3,
+      "topic": "Physical Sciences",
+      "hint": "It is on the inside curve of the rainbow."
     },
     {
       "id": "SCI-Y3-CHEM-001",
@@ -54,13 +216,279 @@
       "hint": "Think about a snowman in summer."
     },
     {
-      "id": "SCI-Y3-BIO-002",
-      "question": "What covering does a bird have?",
-      "options": ["Scales", "Fur", "Feathers", "Shell"],
+      "id": "SCI-Y3-CHEM-002",
+      "question": "What is produced when wood burns?",
+      "options": ["Ice", "Water and ash", "Smoke and ash", "Salt"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "Chemical Sciences",
+      "hint": "You can see it rising from a campfire."
+    },
+    {
+      "id": "SCI-Y3-CHEM-003",
+      "question": "Water boils and turns into which state?",
+      "options": ["Solid", "Liquid", "Gas", "Plasma"],
       "correct_index": 2,
       "difficulty": 1,
+      "topic": "Chemical Sciences",
+      "hint": "You can see steam rising from a pot."
+    },
+    {
+      "id": "SCI-Y3-CHEM-004",
+      "question": "Mixing vinegar and baking soda produces what?",
+      "options": ["A solid", "Bubbles of gas", "A yellow liquid", "Nothing"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "Chemical Sciences",
+      "hint": "You can see it fizzing and growing."
+    },
+    {
+      "id": "SCI-Y3-CHEM-005",
+      "question": "Which of these dissolves in water?",
+      "options": ["Sand", "Oil", "Pebbles", "Sugar"],
+      "correct_index": 3,
+      "difficulty": 1,
+      "topic": "Chemical Sciences",
+      "hint": "You stir it into your tea."
+    },
+    {
+      "id": "SCI-Y3-CHEM-006",
+      "question": "What are the three states of matter?",
+      "options": [
+        "Hot, cold, warm",
+        "Solid, liquid, gas",
+        "Rock, water, air",
+        "Hard, soft, squishy"
+      ],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "Chemical Sciences",
+      "hint": "Ice is one example of each state."
+    },
+    {
+      "id": "SCI-Y3-CHEM-007",
+      "question": "Which change is reversible?",
+      "options": ["Burning paper", "Melting ice", "Baking a cake", "Rusting iron"],
+      "correct_index": 1,
+      "difficulty": 3,
+      "topic": "Chemical Sciences",
+      "hint": "You can just freeze it again."
+    },
+    {
+      "id": "SCI-Y4-BIO-001",
+      "question": "In a food chain, which organism is ALWAYS the starting point?",
+      "options": ["A carnivore", "A decomposer", "A producer (plant)", "A predator"],
+      "correct_index": 2,
+      "difficulty": 2,
       "topic": "Biological Sciences",
-      "hint": "They help birds fly."
+      "hint": "It uses sunlight to make its own food."
+    },
+    {
+      "id": "SCI-Y4-BIO-002",
+      "question": "What is the correct energy flow in a food chain?",
+      "options": ["Fox → Rabbit → Grass", "Grass → Rabbit → Fox", "Rabbit → Grass → Fox", "Fox → Grass → Rabbit"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "Biological Sciences",
+      "hint": "Energy flows from plants to plant-eaters to meat-eaters."
+    },
+    {
+      "id": "SCI-Y4-EARTH-001",
+      "question": "What causes the Moon to appear to change shape each night?",
+      "options": ["Earth casts a shadow on the Moon", "The Moon turns its light on and off", "We see different amounts of the sunlit Moon as it orbits Earth", "The Sun moves closer to the Moon"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "Earth and Space Sciences",
+      "hint": "The Moon shines by reflecting sunlight — our viewing angle changes."
+    },
+    {
+      "id": "SCI-Y4-PHYS-001",
+      "question": "A ramp makes it easier to push a heavy box upward. What type of simple machine is a ramp?",
+      "options": ["Pulley", "Lever", "Inclined plane", "Wheel and axle"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "Physical Sciences",
+      "hint": "It is a flat surface set at an angle."
+    },
+    {
+      "id": "SCI-Y4-CHEM-001",
+      "question": "Melting chocolate is a physical change because...",
+      "options": ["It creates a completely new substance", "It can be reversed by cooling back down", "It cannot be changed back to solid", "It produces a gas"],
+      "correct_index": 1,
+      "difficulty": 3,
+      "topic": "Chemical Sciences",
+      "hint": "Can you turn the liquid chocolate back into solid again?"
+    },
+    {
+      "id": "SCI-Y5-BIO-001",
+      "question": "What is the basic building block of all living things?",
+      "options": ["Atoms", "Molecules", "Cells", "Organs"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "Biological Sciences",
+      "hint": "You need a microscope to see most of them."
+    },
+    {
+      "id": "SCI-Y5-BIO-002",
+      "question": "On the Great Barrier Reef, if coral bleaches and dies, which organisms are MOST directly harmed?",
+      "options": ["Sharks", "Fish that shelter and feed in coral", "Sea birds", "Dolphins"],
+      "correct_index": 1,
+      "difficulty": 3,
+      "topic": "Biological Sciences",
+      "hint": "Many reef fish depend on coral for food and habitat."
+    },
+    {
+      "id": "SCI-Y5-EARTH-001",
+      "question": "What causes coastal cliffs to gradually wear away over time?",
+      "options": ["Earthquakes", "Weathering and erosion by waves", "Volcanoes", "Sunlight"],
+      "correct_index": 1,
+      "difficulty": 3,
+      "topic": "Earth and Space Sciences",
+      "hint": "Water breaks rock apart and carries the pieces away."
+    },
+    {
+      "id": "SCI-Y5-PHYS-001",
+      "question": "When you rub a balloon on your hair and it sticks to a wall, which force is at work?",
+      "options": ["Gravity", "Friction", "Static electricity", "Magnetism"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "Physical Sciences",
+      "hint": "Rubbing transfers tiny charged particles between surfaces."
+    },
+    {
+      "id": "SCI-Y5-CHEM-001",
+      "question": "Burning toast is irreversible. Which of these is ALSO an irreversible change?",
+      "options": ["Freezing water", "Dissolving sugar in water", "Digesting food", "Melting wax"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "Chemical Sciences",
+      "hint": "Once your body breaks food down, can you get the original food back?"
+    },
+    {
+      "id": "SCI-Y6-BIO-001",
+      "question": "Which human body system transports oxygen and nutrients around the body?",
+      "options": ["Nervous system", "Digestive system", "Circulatory system", "Skeletal system"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "Biological Sciences",
+      "hint": "Your heart is the main organ of this system."
+    },
+    {
+      "id": "SCI-Y6-BIO-002",
+      "question": "In a food web, if all rabbits suddenly disappeared, the fox population would most likely...",
+      "options": ["Increase", "Stay the same", "Decrease", "Become extinct immediately"],
+      "correct_index": 2,
+      "difficulty": 4,
+      "topic": "Biological Sciences",
+      "hint": "Foxes rely on rabbits as a key food source."
+    },
+    {
+      "id": "SCI-Y6-EARTH-001",
+      "question": "Earth's outer shell is broken into large slowly-moving pieces. What are these pieces called?",
+      "options": ["Earth layers", "Tectonic plates", "Magma chambers", "Continental shelves"],
+      "correct_index": 1,
+      "difficulty": 4,
+      "topic": "Earth and Space Sciences",
+      "hint": "Their movement causes earthquakes and volcanoes at their boundaries."
+    },
+    {
+      "id": "SCI-Y6-PHYS-001",
+      "question": "For a torch to light up, the electrical circuit must be...",
+      "options": ["Open", "Broken", "Closed (complete)", "Disconnected"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "Physical Sciences",
+      "hint": "Electricity must have a complete, unbroken path to flow."
+    },
+    {
+      "id": "SCI-Y6-CHEM-001",
+      "question": "Lemon juice tastes sour and has a pH below 7. Substances like this are called...",
+      "options": ["Neutral", "An acid", "A base (alkali)", "A salt"],
+      "correct_index": 1,
+      "difficulty": 4,
+      "topic": "Chemical Sciences",
+      "hint": "Vinegar and lemon juice are both in this category."
+    },
+    {
+      "id": "SCI-Y7-BIO-001",
+      "question": "Which part of a cell contains DNA and controls the cell's activities?",
+      "options": ["Cell wall", "Chloroplast", "Nucleus", "Mitochondria"],
+      "correct_index": 2,
+      "difficulty": 4,
+      "topic": "Biological Sciences",
+      "hint": "It is often called the 'control centre' of the cell."
+    },
+    {
+      "id": "SCI-Y7-BIO-002",
+      "question": "During photosynthesis, plants use sunlight, water and carbon dioxide to produce glucose and...",
+      "options": ["Carbon dioxide", "Nitrogen", "Oxygen", "Hydrogen"],
+      "correct_index": 2,
+      "difficulty": 4,
+      "topic": "Biological Sciences",
+      "hint": "This gas is released and we breathe it in to survive."
+    },
+    {
+      "id": "SCI-Y7-EARTH-001",
+      "question": "Sedimentary rocks such as sandstone are formed by...",
+      "options": ["Cooling lava", "Extreme heat and pressure underground", "Layers of sediment being compressed over time", "Melting of existing rocks underground"],
+      "correct_index": 2,
+      "difficulty": 4,
+      "topic": "Earth and Space Sciences",
+      "hint": "They often form in layers and may contain fossils."
+    },
+    {
+      "id": "SCI-Y7-PHYS-001",
+      "question": "Newton's first law says an object at rest stays at rest UNLESS...",
+      "options": ["It decides to move", "A net (unbalanced) force acts on it", "It becomes heavy enough", "There is no gravity present"],
+      "correct_index": 1,
+      "difficulty": 4,
+      "topic": "Physical Sciences",
+      "hint": "Something must push or pull to change an object's motion."
+    },
+    {
+      "id": "SCI-Y7-CHEM-001",
+      "question": "Water (H₂O) is a compound. This means it...",
+      "options": ["Is a mixture of different materials that can be separated easily", "Contains only one type of atom", "Is made of two or more elements chemically bonded together", "Cannot be broken down by any means"],
+      "correct_index": 2,
+      "difficulty": 5,
+      "topic": "Chemical Sciences",
+      "hint": "H stands for hydrogen and O for oxygen — joined by chemical bonds."
+    },
+    {
+      "id": "SCI-Y7-CHEM-002",
+      "question": "Which one of these is a CHEMICAL change (a new substance is formed)?",
+      "options": ["Cutting paper", "Dissolving salt in water", "Iron rusting outdoors", "Ice melting in a drink"],
+      "correct_index": 2,
+      "difficulty": 5,
+      "topic": "Chemical Sciences",
+      "hint": "The iron reacts with oxygen and water to form a completely new substance — iron oxide."
+    },
+    {
+      "id": "SCI-Y7-PHYS-002",
+      "question": "A ray of light bends as it passes from air into glass. This phenomenon is called...",
+      "options": ["Reflection", "Refraction", "Diffraction", "Absorption"],
+      "correct_index": 1,
+      "difficulty": 5,
+      "topic": "Physical Sciences",
+      "hint": "This is why a straw appears bent when sitting in a glass of water."
+    },
+    {
+      "id": "SCI-Y7-BIO-003",
+      "question": "The platypus and echidna lay eggs yet feed their young milk. What group do these unique Australian animals belong to?",
+      "options": ["Reptiles", "Amphibians", "Birds", "Monotremes (egg-laying mammals)"],
+      "correct_index": 3,
+      "difficulty": 5,
+      "topic": "Biological Sciences",
+      "hint": "They are mammals, but share one very unusual trait with reptiles."
+    },
+    {
+      "id": "SCI-Y7-EARTH-002",
+      "question": "Australia sits on the Indo-Australian tectonic plate. When two plates collide, what is a likely result?",
+      "options": ["Australia receiving more rainfall", "Mountain ranges and volcanic activity forming", "Days becoming shorter", "Ocean tides increasing in strength"],
+      "correct_index": 1,
+      "difficulty": 5,
+      "topic": "Earth and Space Sciences",
+      "hint": "Plates crashing together push rock upward over millions of years."
     }
   ]
 }

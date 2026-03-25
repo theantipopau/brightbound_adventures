@@ -1145,7 +1145,7 @@ class _ZoneMarkerState extends State<ZoneMarker> with TickerProviderStateMixin {
                       Icon(Icons.lock, size: 12, color: Colors.white),
                       SizedBox(width: 4),
                       Text('Locked',
-                          style: TextStyle(fontSize: 9, color: Colors.white)),
+                          style: TextStyle(fontSize: 12, color: Colors.white)),
                     ],
                   ),
                 ),

@@ -8,3 +8,7 @@ export 'mini_games_screen.dart';
 export 'trophy_room_screen.dart';
 export 'parent_dashboard_screen.dart';
 export 'shop_screen.dart';
+export 'settings_screen.dart';
+export 'profile_stats_screen.dart';
+export 'onboarding_screen.dart';
+export 'boss_battle_screen.dart';

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:brightbound_adventures/ui/themes/index.dart'; 
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 
 /// Fun loading screen with educational tips and animated background
@@ -102,9 +101,6 @@ class _LoadingScreenState extends State<LoadingScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Generate some random shapes for the background
-    final random = Random(42); 
-    
     return Scaffold(
       body: Stack(
         children: [
@@ -141,8 +137,8 @@ class _LoadingScreenState extends State<LoadingScreen>
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            Colors.white.withOpacity(0.8),
-                            Colors.white.withOpacity(0.0),
+                            Colors.white.withValues(alpha: 0.8),
+                            Colors.white.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -156,7 +152,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                                width: 60,
                                height: 10,
                                decoration: BoxDecoration(
-                                 color: Colors.black.withOpacity(0.2),
+                                 color: Colors.black.withValues(alpha: 0.2),
                                  borderRadius: BorderRadius.circular(50),
                                ),
                              ),
@@ -203,11 +199,11 @@ class _LoadingScreenState extends State<LoadingScreen>
                       margin: const EdgeInsets.symmetric(horizontal: 40),
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.95),
+                        color: Colors.white.withValues(alpha: 0.95),
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
+                            color: Colors.black.withValues(alpha: 0.15),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -274,7 +270,7 @@ class _BackgroundPainter extends CustomPainter {
        final double radius = 20 + _random.nextDouble() * 40;
        
        final paint = Paint()
-         ..color = Colors.white.withOpacity(0.3)
+         ..color = Colors.white.withValues(alpha: 0.3)
          ..style = PaintingStyle.fill;
          
        canvas.drawCircle(Offset(x, y), radius, paint);

@@ -77,10 +77,17 @@ class SkillProvider extends ChangeNotifier {
                 skill.id.contains('subtraction'));
       } else if (zoneId == 'story_springs') {
         return skill.strand == Constants.strandCommunication;
+      } else if (zoneId == 'science_explorers') {
+        return skill.strand == Constants.strandLogic ||
+            skill.strand == Constants.strandLiteracy;
+      } else if (zoneId == 'creative_corner') {
+        return skill.strand == Constants.strandCommunication ||
+            skill.strand == Constants.strandLiteracy;
       } else if (zoneId == 'puzzle_peaks') {
         return skill.strand == Constants.strandLogic;
       } else if (zoneId == 'adventure_arena') {
-        return skill.strand == Constants.strandMotor;
+        return skill.strand == Constants.strandMotor ||
+            skill.strand == Constants.strandNumeracy;
       }
       return false;
     }).toList();

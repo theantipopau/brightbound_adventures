@@ -72,6 +72,7 @@ class ResponsiveQuizLayout extends StatelessWidget {
   final Widget? feedbackWidget;
   final Widget? scoreCard;
   final double maxWidth;
+  final bool scrollOnNarrowScreens;
 
   const ResponsiveQuizLayout({
     super.key,
@@ -80,6 +81,7 @@ class ResponsiveQuizLayout extends StatelessWidget {
     this.feedbackWidget,
     this.scoreCard,
     this.maxWidth = 1400,
+    this.scrollOnNarrowScreens = true,
   });
 
   @override
@@ -132,7 +134,7 @@ class ResponsiveQuizLayout extends StatelessWidget {
   }
 
   Widget _buildStackedLayout(double spacing) {
-    return Column(
+    final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (scoreCard != null) ...[
@@ -147,6 +149,15 @@ class ResponsiveQuizLayout extends StatelessWidget {
           feedbackWidget!,
         ],
       ],
+    );
+
+    if (!scrollOnNarrowScreens) {
+      return content;
+    }
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: content,
     );
   }
 }
@@ -193,9 +204,16 @@ class _HoverCardState extends State<HoverCard> {
       onExit: (_) {
         setState(() => _hovered = false);
       },
-      child: GestureDetector(
-        onTap: widget.enabled ? widget.onTap : null,
-        child: AnimatedContainer(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          onTap: widget.enabled ? widget.onTap : null,
+          splashColor: widget.borderColor.withValues(alpha: 0.15),
+          highlightColor: widget.borderColor.withValues(alpha: 0.05),
+          child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           decoration: BoxDecoration(
@@ -226,6 +244,7 @@ class _HoverCardState extends State<HoverCard> {
             duration: const Duration(milliseconds: 200),
             child: widget.child,
           ),
+        ),
         ),
       ),
     );
@@ -269,7 +288,6 @@ class HoverButton extends StatefulWidget {
 
 class _HoverButtonState extends State<HoverButton> with SingleTickerProviderStateMixin {
   bool _hovered = false;
-  bool _pressed = false;
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
 
@@ -290,21 +308,18 @@ class _HoverButtonState extends State<HoverButton> with SingleTickerProviderStat
 
   void _handleTapDown(_) {
     if (widget.enabled) {
-      setState(() => _pressed = true);
       _scaleController.forward();
     }
   }
 
   void _handleTapUp(_) {
     if (widget.enabled) {
-      setState(() => _pressed = false);
       _scaleController.reverse();
     }
   }
 
   void _handleTapCancel() {
     if (widget.enabled) {
-      setState(() => _pressed = false);
       _scaleController.reverse();
     }
   }
@@ -319,12 +334,18 @@ class _HoverButtonState extends State<HoverButton> with SingleTickerProviderStat
         if (widget.enabled) setState(() => _hovered = true);
       },
       onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTapDown: _handleTapDown,
-        onTapUp: _handleTapUp,
-        onTapCancel: _handleTapCancel,
-        onTap: widget.enabled ? widget.onPressed : null,
-        child: AnimatedBuilder(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTapDown: widget.enabled ? _handleTapDown : null,
+          onTap: widget.enabled ? () { _handleTapUp(null); widget.onPressed(); } : null,
+          onTapCancel: widget.enabled ? _handleTapCancel : null,
+          splashColor: Colors.white.withValues(alpha: 0.2),
+          highlightColor: Colors.white.withValues(alpha: 0.08),
+          child: AnimatedBuilder(
           animation: _scaleAnimation,
           builder: (context, child) => Transform.scale(
             scale: _scaleAnimation.value,
@@ -377,6 +398,7 @@ class _HoverButtonState extends State<HoverButton> with SingleTickerProviderStat
                 child: widget.child,
               ),
             ),
+          ),
           ),
         ),
       ),

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
+import 'package:brightbound_adventures/core/services/tts_service.dart';
+import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 import '../models/question.dart';
@@ -32,7 +35,14 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
   int? _selectedAnswer;
   bool _showFeedback = false;
   bool _isCorrect = false;
+  bool _autoReadQuestions = false;
+  bool _aiHintsEnabled = false;
+  bool _aiExplanationsEnabled = false;
+  bool _aiCloudMode = false;
+  String? _aiExplanationText;
+  late FocusNode _focusNode;
   final AudioManager _audioManager = AudioManager();
+  final AiLearningAssistantService _aiAssistant = AiLearningAssistantService();
 
   late AnimationController _slideController;
   late AnimationController _pulseController;
@@ -70,17 +80,77 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
     );
 
     _slideController.forward();
+    _loadAutoReadPreference();
+    _loadAiPreferences();
+
+    _focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
     _slideController.dispose();
+    _focusNode.dispose();
     _pulseController.dispose();
     _celebrationController.dispose();
     super.dispose();
   }
 
   LogicQuestion get _currentQuestion => widget.questions[_currentIndex];
+
+  Future<void> _loadAutoReadPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final autoRead = prefs.getBool('autoReadQuestions') ?? false;
+    if (!mounted) return;
+    setState(() => _autoReadQuestions = autoRead);
+    if (autoRead) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _readCurrentQuestionAloud();
+      });
+    }
+  }
+
+  Future<void> _readCurrentQuestionAloud() async {
+    if (!_autoReadQuestions || _showFeedback) return;
+    final questionText = _currentQuestion.question.trim();
+    if (questionText.isEmpty) return;
+    await TtsService().speak(questionText);
+  }
+
+  Future<void> _loadAiPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hintsEnabled = prefs.getBool('aiHintsEnabled') ?? false;
+    final explanationsEnabled = prefs.getBool('aiExplanationsEnabled') ?? false;
+    final cloudMode = prefs.getBool('aiCloudMode') ?? false;
+    if (!mounted) return;
+    setState(() {
+      _aiHintsEnabled = hintsEnabled;
+      _aiExplanationsEnabled = explanationsEnabled;
+      _aiCloudMode = cloudMode;
+    });
+    _aiAssistant.setEnabled(_aiHintsEnabled || _aiExplanationsEnabled);
+    _aiAssistant.setCloudMode(_aiCloudMode);
+  }
+
+  Future<void> _prepareAiExplanation() async {
+    if (!_aiExplanationsEnabled || _currentIndex >= widget.questions.length) {
+      return;
+    }
+    try {
+      final explanation = await _aiAssistant.explainAnswer(
+        question: _currentQuestion.question,
+        correctAnswer: _currentQuestion.options[_currentQuestion.correctIndex],
+        selectedAnswer: _selectedAnswer != null ? _currentQuestion.options[_selectedAnswer!] : '',
+      );
+      if (mounted) {
+        setState(() => _aiExplanationText = explanation);
+      }
+    } catch (e) {
+      debugPrint('AI explanation error: $e');
+    }
+  }
 
   void _selectAnswer(int index) {
     if (_showFeedback) return;
@@ -117,6 +187,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
       }
     });
 
+    setState(() => _aiExplanationText = null);
+    _prepareAiExplanation();
     Future.delayed(const Duration(milliseconds: 2000), () {
       if (mounted) {
         _nextQuestion();
@@ -544,7 +616,14 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
               ),
             ],
           ),
-          if (_currentQuestion.explanation != null) ...[
+          if (_aiExplanationText != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              _aiExplanationText!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ] else if (_currentQuestion.explanation != null) ...[
             const SizedBox(height: 8),
             Text(
               _currentQuestion.explanation!,
@@ -654,21 +733,48 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
     );
   }
 
-  void _showHint() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Text('💡 '),
-            Expanded(child: Text(_currentQuestion.hint!)),
-          ],
+  Future<void> _showHint() async {
+    String hintText = _currentQuestion.hint ?? '';
+    if (_aiHintsEnabled && hintText.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Text('⏳ '),
+                Expanded(child: Text('Generating hint with AI...')),
+              ],
+            ),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      try {
+        hintText = await _aiAssistant.generateHint(
+          question: _currentQuestion.question,
+          options: _currentQuestion.options,
+        );
+      } catch (e) {
+        hintText = _currentQuestion.hint ?? 'Could not generate hint';
+        debugPrint('AI hint error: $e');
+      }
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('💡 '),
+              Expanded(child: Text(hintText)),
+            ],
+          ),
+          backgroundColor: Colors.teal.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 4),
         ),
-        backgroundColor: Colors.teal.shade700,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 4),
-      ),
-    );
+      );
+    }
   }
 }
 

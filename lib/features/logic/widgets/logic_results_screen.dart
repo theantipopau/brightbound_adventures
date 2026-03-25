@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 /// Results screen for Puzzle Peaks with mountain climbing theme
@@ -453,10 +453,15 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
         ),
         if (widget.onRetry != null && _percentage < 1.0) ...[
           const SizedBox(height: 12),
-          TextButton(
+          TextButton.icon(
             onPressed: widget.onRetry,
-            child: const Text(
-              '🔄 Climb Again',
+            icon: SizedBox(
+              width: 22,
+              height: 22,
+              child: Image.asset('assets/images/potion.PNG', fit: BoxFit.contain),
+            ),
+            label: const Text(
+              'Climb Again',
               style: TextStyle(color: Colors.white70, fontSize: 16),
             ),
           ),

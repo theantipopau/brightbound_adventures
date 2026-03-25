@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:brightbound_adventures/core/utils/web_sound_player.dart';
 
 class AudioManager extends ChangeNotifier {
   static final AudioManager _instance = AudioManager._internal();
@@ -129,15 +130,36 @@ class AudioManager extends ChangeNotifier {
     }
   }
 
-  /// Trigger haptic/system sound feedback when asset is missing
+  /// Trigger haptic/system sound feedback when asset is missing.
+  /// Also fires the Web Audio synthesiser when running in a browser.
   void _triggerHapticFallback(String assetPath) {
     if (assetPath.contains('click') || assetPath.contains('button')) {
+      playWebSound('click');
       SystemSound.play(SystemSoundType.click);
-    } else if (assetPath.contains('correct') || assetPath.contains('perfect')) {
+    } else if (assetPath.contains('perfect')) {
+      playWebSound('perfect');
+      HapticFeedback.mediumImpact();
+    } else if (assetPath.contains('correct')) {
+      playWebSound('correct');
       HapticFeedback.mediumImpact();
     } else if (assetPath.contains('wrong') || assetPath.contains('incorrect')) {
+      playWebSound('wrong');
       HapticFeedback.heavyImpact();
+    } else if (assetPath.contains('streak')) {
+      playWebSound('streak');
+      HapticFeedback.selectionClick();
+    } else if (assetPath.contains('levelup') || assetPath.contains('level')) {
+      playWebSound('levelup');
+      HapticFeedback.mediumImpact();
+    } else if (assetPath.contains('unlock')) {
+      playWebSound('unlock');
+      HapticFeedback.selectionClick();
+    } else if (assetPath.contains('whoosh')) {
+      playWebSound('whoosh');
+    } else if (assetPath.contains('popup')) {
+      playWebSound('popup');
     } else {
+      playWebSound('click');
       HapticFeedback.selectionClick();
     }
   }

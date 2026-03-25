@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import 'dart:async';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
+import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
+import 'package:brightbound_adventures/ui/widgets/difficulty_indicator.dart';
 import '../models/motor_game.dart';
 
 /// Interactive motor skills game with tap/drag gameplay
@@ -93,6 +96,13 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
       _timeRemaining = widget.config.roundDuration;
     });
 
+    _startGameplayTimers();
+
+    // Spawn initial targets
+    _spawnTarget();
+  }
+
+  void _startGameplayTimers() {
     // Start game timer
     _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
@@ -108,9 +118,6 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
         }
       });
     });
-
-    // Spawn initial targets
-    _spawnTarget();
 
     // Schedule target spawning
     _targetSpawnTimer =
@@ -174,6 +181,12 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
     final screenSize = MediaQuery.of(context).size;
     const dt = 0.016; // ~60fps
 
+    // Responsive boundaries
+    final isMobilePortrait = screenSize.width < 600;
+    final leftPadding = isMobilePortrait ? 15.0 : 20.0;
+    final topBoundary = isMobilePortrait ? 100.0 : 120.0;
+    final bottomBoundary = isMobilePortrait ? 100.0 : 120.0;
+
     setState(() {
       _targets = _targets.map((target) {
         if (target.type != TargetType.moving ||
@@ -188,12 +201,15 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
             target.position.dy + target.direction!.dy * target.speed! * dt;
         var newDirection = target.direction!;
 
-        // Bounce off walls
-        if (newX < 20 || newX > screenSize.width - 20 - target.size) {
+        // Bounce off walls with responsive boundaries
+        if (newX < leftPadding ||
+            newX > screenSize.width - leftPadding - target.size) {
           newDirection = Offset(-newDirection.dx, newDirection.dy);
-          newX = newX.clamp(20, screenSize.width - 20 - target.size);
+          newX = newX.clamp(
+              leftPadding, screenSize.width - leftPadding - target.size);
         }
-        if (newY < 120 || newY > screenSize.height - 120 - target.size) {
+        if (newY < topBoundary ||
+            newY > screenSize.height - bottomBoundary - target.size) {
           newDirection = Offset(newDirection.dx, -newDirection.dy);
           newY = newY.clamp(120, screenSize.height - 120 - target.size);
         }
@@ -293,6 +309,51 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
     ));
   }
 
+  Future<void> _goHome() async {
+    final wasPlaying = _isPlaying;
+    _gameTimer?.cancel();
+    _targetSpawnTimer?.cancel();
+    _movementTimer?.cancel();
+
+    final shouldExit = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit to Home?'),
+            content:
+                const Text('Your progress in this round will not be saved.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
+                child: const Text('Exit Home',
+                    style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!mounted) {
+      return;
+    }
+
+    if (shouldExit) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    if (wasPlaying) {
+      _startGameplayTimers();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -366,9 +427,22 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Back button
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
+            Tooltip(
+              message: 'Go home',
+              child: GestureDetector(
+                onTap: _goHome,
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.5),
+                  ),
+                  child: Image.asset('assets/images/scroll.PNG', fit: BoxFit.contain),
+                ),
+              ),
             ),
 
             // Round info
@@ -381,6 +455,21 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                ),
+                // Difficulty indicator
+                Consumer<AdaptiveDifficultyService>(
+                  builder: (context, difficultySvc, _) {
+                    final difficulty =
+                        difficultySvc.getDifficultyForSkill('motor');
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: DifficultyIndicator(
+                        difficulty: difficulty,
+                        color: Colors.white,
+                        compact: true,
+                      ),
+                    );
+                  },
                 ),
                 Text(
                   'Round $_currentRound of ${widget.config.rounds}',

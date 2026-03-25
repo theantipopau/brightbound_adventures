@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 /// Results screen for Adventure Arena with arena/sports theme
@@ -474,10 +474,15 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
         ),
         if (widget.onRetry != null) ...[
           const SizedBox(height: 12),
-          TextButton(
+          TextButton.icon(
             onPressed: widget.onRetry,
-            child: const Text(
-              '🔄 Play Again',
+            icon: SizedBox(
+              width: 22,
+              height: 22,
+              child: Image.asset('assets/images/potion.PNG', fit: BoxFit.contain),
+            ),
+            label: const Text(
+              'Play Again',
               style: TextStyle(color: Colors.white70, fontSize: 16),
             ),
           ),

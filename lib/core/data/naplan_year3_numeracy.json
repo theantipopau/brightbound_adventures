@@ -1,47 +1,488 @@
 {
-    "meta": {
-      "subject": "Numeracy",
-      "year_level": 3,
-      "source": "NAPLAN 2023 Adapted",
-      "version": "1.0"
+  "meta": {
+    "subject": "Numeracy",
+    "year_level": 3,
+    "source": "NAPLAN 2023 Adapted",
+    "version": "2.0",
+    "topics": ["number", "money", "geometry", "time", "measurement", "patterns", "fractions"]
+  },
+  "questions": [
+    {
+      "id": "NUM-Y3-001",
+      "question": "Which number is ten more than 48?",
+      "options": ["38", "58", "49", "148"],
+      "correct_index": 1,
+      "difficulty": 1,
+      "topic": "number",
+      "hint": "Count up by 10 from 48."
     },
-    "questions": [
-      {
-        "id": "NUM-Y3-001",
-        "question": "Which number is ten more than 48?",
-        "options": ["38", "58", "49", "148"],
-        "correct_index": 1,
-        "difficulty": 1,
-        "topic": "number",
-        "hint": "Count up by 10 from 48."
-      },
-      {
-        "id": "NUM-Y3-002",
-        "question": "Sam bought a pie for $4.50 and a juice for $2.50. How much did he spend?",
-        "options": ["$6.00", "$6.50", "$7.00", "$7.50"],
-        "correct_index": 2,
-        "difficulty": 2,
-        "topic": "money",
-        "hint": "Add 4 dollars + 2 dollars, then 50 cents + 50 cents."
-      },
-      {
-        "id": "NUM-Y3-003",
-        "question": "What shape has 4 equal sides and 4 corners?",
-        "options": ["Rectangle", "Triangle", "Square", "Circle"],
-        "correct_index": 2,
-        "difficulty": 1,
-        "topic": "geometry",
-        "hint": "It looks like a box."
-      },
-      {
-        "id": "NUM-Y3-004",
-        "question": "A bus leaves at 8:30 am and arrives 30 minutes later. What time does it arrive?",
-        "options": ["8:00 am", "9:00 am", "9:30 am", "8:60 am"],
-        "correct_index": 1,
-        "difficulty": 2,
-        "topic": "time",
-        "hint": "Add 30 minutes to 8:30."
-      }
-    ]
-  }
-  
+    {
+      "id": "NUM-Y3-002",
+      "question": "Sam bought a pie for $4.50 and a juice for $2.50. How much did he spend?",
+      "options": ["$6.00", "$6.50", "$7.00", "$7.50"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "money",
+      "hint": "Add 4 dollars + 2 dollars, then 50 cents + 50 cents."
+    },
+    {
+      "id": "NUM-Y3-003",
+      "question": "What shape has 4 equal sides and 4 corners?",
+      "options": ["Rectangle", "Triangle", "Square", "Circle"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "geometry",
+      "hint": "It looks like a box."
+    },
+    {
+      "id": "NUM-Y3-004",
+      "question": "A bus leaves at 8:30 am and arrives 30 minutes later. What time does it arrive?",
+      "options": ["8:00 am", "9:00 am", "9:30 am", "8:60 am"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "time",
+      "hint": "Add 30 minutes to 8:30."
+    },
+    {
+      "id": "NUM-Y3-005",
+      "question": "What is 7 × 8?",
+      "options": ["54", "56", "64", "48"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "number",
+      "hint": "Count up seven 8s."
+    },
+    {
+      "id": "NUM-Y3-006",
+      "question": "Which fraction shows half?",
+      "options": ["1/4", "1/3", "1/2", "2/3"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "fractions",
+      "hint": "Split something into 2 equal parts."
+    },
+    {
+      "id": "NUM-Y3-007",
+      "question": "A rectangle has a length of 6 cm and a width of 3 cm. What is its perimeter?",
+      "options": ["9 cm", "18 cm", "12 cm", "21 cm"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "measurement",
+      "hint": "Add all four sides."
+    },
+    {
+      "id": "NUM-Y3-008",
+      "question": "What is 345 rounded to the nearest hundred?",
+      "options": ["300", "350", "400", "340"],
+      "correct_index": 0,
+      "difficulty": 2,
+      "topic": "number",
+      "hint": "Look at the tens digit (4). Is it less than 5?"
+    },
+    {
+      "id": "NUM-Y3-009",
+      "question": "What is the next number in the pattern? 5, 10, 15, 20, ___",
+      "options": ["22", "24", "25", "30"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "patterns",
+      "hint": "Count up by 5 each time."
+    },
+    {
+      "id": "NUM-Y3-010",
+      "question": "Emma has 24 stickers and gives away 9. How many does she have left?",
+      "options": ["13", "14", "15", "16"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "number",
+      "hint": "24 minus 9."
+    },
+    {
+      "id": "NUM-Y3-011",
+      "question": "Which coin is worth 20 cents in Australian currency?",
+      "options": ["Silver coin with a platypus", "Gold coin with a kangaroo", "Silver coin with a echidna", "Copper coin"],
+      "correct_index": 0,
+      "difficulty": 2,
+      "topic": "money",
+      "hint": "Look for the silver coin with an animal on it."
+    },
+    {
+      "id": "NUM-Y3-012",
+      "question": "A triangle has how many sides?",
+      "options": ["2", "3", "4", "5"],
+      "correct_index": 1,
+      "difficulty": 1,
+      "topic": "geometry",
+      "hint": "Tri means three."
+    },
+    {
+      "id": "NUM-Y3-013",
+      "question": "What is 63 ÷ 9?",
+      "options": ["6", "7", "8", "9"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "number",
+      "hint": "Think: 9 × ? = 63."
+    },
+    {
+      "id": "NUM-Y3-014",
+      "question": "How many minutes are in one hour?",
+      "options": ["30", "50", "60", "100"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "time",
+      "hint": "Look at the numbers on a clock face."
+    },
+    {
+      "id": "NUM-Y3-015",
+      "question": "Which number has 4 hundreds, 2 tens and 7 ones?",
+      "options": ["274", "427", "472", "247"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "number",
+      "hint": "Hundreds first, then tens, then ones."
+    },
+    {
+      "id": "NUM-Y3-016",
+      "question": "A ruler measures 1 metre. How many centimetres is that?",
+      "options": ["10", "100", "1000", "1"],
+      "correct_index": 1,
+      "difficulty": 1,
+      "topic": "measurement",
+      "hint": "Centi means one hundredth."
+    },
+    {
+      "id": "NUM-Y3-017",
+      "question": "What is one quarter of 20?",
+      "options": ["4", "5", "8", "10"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "fractions",
+      "hint": "Divide 20 by 4."
+    },
+    {
+      "id": "NUM-Y3-018",
+      "question": "The temperature at 8 am was 12°C. By noon it rose 9 degrees. What was the temperature at noon?",
+      "options": ["19°C", "20°C", "21°C", "22°C"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "measurement",
+      "hint": "12 + 9 = ?"
+    },
+    {
+      "id": "NUM-Y3-019",
+      "question": "If today is Wednesday, what day was it 3 days ago?",
+      "options": ["Saturday", "Sunday", "Monday", "Tuesday"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "time",
+      "hint": "Count backwards: Tue, Mon, Sun."
+    },
+    {
+      "id": "NUM-Y3-020",
+      "question": "What is the area of a square with sides of 4 cm?",
+      "options": ["8 cm²", "12 cm²", "16 cm²", "20 cm²"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "measurement",
+      "hint": "Area = side × side."
+    },
+    {
+      "id": "NUM-Y3-021",
+      "question": "Which number is the largest?",
+      "options": ["567", "576", "657", "675"],
+      "correct_index": 3,
+      "difficulty": 1,
+      "topic": "number",
+      "hint": "Check the hundreds digit first."
+    },
+    {
+      "id": "NUM-Y3-022",
+      "question": "Liam spent $3.75 and gave the cashier $5.00. How much change did he get?",
+      "options": ["$1.00", "$1.25", "$1.50", "$2.25"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "money",
+      "hint": "$5.00 - $3.75 = ?"
+    },
+    {
+      "id": "NUM-Y3-023",
+      "question": "A number pattern goes: 100, 90, 80, 70, ___. What is next?",
+      "options": ["60", "65", "50", "55"],
+      "correct_index": 0,
+      "difficulty": 1,
+      "topic": "patterns",
+      "hint": "The numbers go down by 10 each time."
+    },
+    {
+      "id": "NUM-Y3-024",
+      "question": "What 3D shape looks like a can?",
+      "options": ["Sphere", "Cube", "Cylinder", "Cone"],
+      "correct_index": 2,
+      "difficulty": 1,
+      "topic": "geometry",
+      "hint": "It has two circular ends and a curved side."
+    },
+    {
+      "id": "NUM-Y3-025",
+      "question": "There are 5 bags with 6 apples each. How many apples are there altogether?",
+      "options": ["11", "25", "30", "35"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "number",
+      "hint": "5 groups of 6."
+    },
+    {
+      "id": "NUM-Y3-026",
+      "question": "Which fraction is greater than one half?",
+      "options": ["1/4", "1/3", "3/8", "3/4"],
+      "correct_index": 3,
+      "difficulty": 3,
+      "topic": "fractions",
+      "hint": "Which one is more than 50% of the whole?"
+    },
+    {
+      "id": "NUM-Y3-027",
+      "question": "If a film starts at 2:15 pm and lasts 1 hour 45 minutes, when does it end?",
+      "options": ["3:45 pm", "4:00 pm", "4:15 pm", "3:30 pm"],
+      "correct_index": 1,
+      "difficulty": 3,
+      "topic": "time",
+      "hint": "2:15 + 1 hour = 3:15, then 3:15 + 45 min = ?"
+    },
+    {
+      "id": "NUM-Y3-028",
+      "question": "How many sides does a hexagon have?",
+      "options": ["5", "6", "7", "8"],
+      "correct_index": 1,
+      "difficulty": 2,
+      "topic": "geometry",
+      "hint": "Hex means six."
+    },
+    {
+      "id": "NUM-Y4-001",
+      "question": "What is 125 × 4?",
+      "options": ["400", "450", "500", "520"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "number",
+      "hint": "Break it up: 125 × 2 = 250, then × 2 again."
+    },
+    {
+      "id": "NUM-Y4-002",
+      "question": "Which fraction is equivalent to 2/4?",
+      "options": ["1/4", "1/3", "1/2", "3/4"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "fractions",
+      "hint": "Divide both the numerator and denominator by 2."
+    },
+    {
+      "id": "NUM-Y4-003",
+      "question": "A rectangular garden has length 8 m and width 5 m. What is its area?",
+      "options": ["26 m²", "30 m²", "40 m²", "45 m²"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "measurement",
+      "hint": "Area = length × width."
+    },
+    {
+      "id": "NUM-Y4-004",
+      "question": "What is 3/4 of 32?",
+      "options": ["8", "16", "24", "28"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "fractions",
+      "hint": "Find 1/4 of 32 first, then multiply by 3."
+    },
+    {
+      "id": "NUM-Y4-005",
+      "question": "A shop has 8 boxes with 12 pencils each. How many pencils are there altogether?",
+      "options": ["84", "86", "96", "102"],
+      "correct_index": 2,
+      "difficulty": 2,
+      "topic": "number",
+      "hint": "8 × 12 = ?"
+    },
+    {
+      "id": "NUM-Y4-006",
+      "question": "Jake ran 2.5 km on Monday and 3.8 km on Tuesday. How far did he run in total?",
+      "options": ["5.3 km", "6.0 km", "6.3 km", "6.8 km"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "measurement",
+      "hint": "Line up the decimal points: 2.5 + 3.8."
+    },
+    {
+      "id": "NUM-Y5-001",
+      "question": "What is 0.7 + 0.45?",
+      "options": ["0.75", "0.52", "1.15", "0.115"],
+      "correct_index": 2,
+      "difficulty": 3,
+      "topic": "number",
+      "hint": "Write as 0.70 + 0.45 and line up the decimal points."
+    },
+    {
+      "id": "NUM-Y5-002",
+      "question": "What is 25% of 80?",
+      "options": ["20", "25", "40", "10"],
+      "correct_index": 0,
+      "difficulty": 3,
+      "topic": "number",
+      "hint": "25% = one quarter. Divide 80 by 4."
+    },
+    {
+      "id": "NUM-Y5-003",
+      "question": "The temperature in Canberra was −3°C and rose by 8°C. What was the new temperature?",
+      "options": ["5°C", "11°C", "−5°C", "3°C"],
+      "correct_index": 0,
+      "difficulty": 3,
+      "topic": "measurement",
+      "hint": "−3 + 8 = ?"
+    },
+    {
+      "id": "NUM-Y5-004",
+      "question": "30 students prefer cricket, 20 prefer football and 10 prefer swimming. What fraction prefer cricket?",
+      "options": ["1/2", "1/3", "1/2", "3/5"],
+      "correct_index": 3,
+      "difficulty": 3,
+      "topic": "number",
+      "hint": "Total = 30 + 20 + 10 = 60. Cricket fraction = 30/60, simplified."
+    },
+    {
+      "id": "NUM-Y5-005",
+      "question": "A triangle has a base of 10 cm and a height of 6 cm. What is its area?",
+      "options": ["60 cm²", "30 cm²", "16 cm²", "32 cm²"],
+      "correct_index": 1,
+      "difficulty": 3,
+      "topic": "measurement",
+      "hint": "Area of triangle = ½ × base × height."
+    },
+    {
+      "id": "NUM-Y5-006",
+      "question": "Order these decimals from smallest to largest: 0.6, 0.06, 0.65, 0.609",
+      "options": ["0.06, 0.6, 0.609, 0.65", "0.6, 0.06, 0.65, 0.609", "0.65, 0.609, 0.6, 0.06", "0.06, 0.609, 0.6, 0.65"],
+      "correct_index": 0,
+      "difficulty": 3,
+      "topic": "number",
+      "hint": "Compare digit by digit: tenths first, then hundredths, then thousandths."
+    },
+    {
+      "id": "NUM-Y6-001",
+      "question": "If 3n + 5 = 20, what is the value of n?",
+      "options": ["3", "5", "7", "8"],
+      "correct_index": 1,
+      "difficulty": 4,
+      "topic": "number",
+      "hint": "Subtract 5 from both sides: 3n = 15, then divide by 3."
+    },
+    {
+      "id": "NUM-Y6-002",
+      "question": "A jacket costs $80 and is reduced by 15%. What is the sale price?",
+      "options": ["$12", "$65", "$68", "$72"],
+      "correct_index": 2,
+      "difficulty": 4,
+      "topic": "money",
+      "hint": "15% of $80 = $12. Subtract that from $80."
+    },
+    {
+      "id": "NUM-Y6-003",
+      "question": "1/3 + 1/4 = ?",
+      "options": ["2/7", "7/12", "5/12", "4/12"],
+      "correct_index": 1,
+      "difficulty": 4,
+      "topic": "fractions",
+      "hint": "Common denominator is 12: 4/12 + 3/12 = ?"
+    },
+    {
+      "id": "NUM-Y6-004",
+      "question": "The mean of 4, 7, 9, 12 and 8 is:",
+      "options": ["7", "8", "9", "10"],
+      "correct_index": 1,
+      "difficulty": 4,
+      "topic": "number",
+      "hint": "Add all five values, then divide by 5."
+    },
+    {
+      "id": "NUM-Y6-005",
+      "question": "A scale drawing uses 1 cm to represent 5 m. The building is 8 cm in the drawing. How tall is the real building?",
+      "options": ["13 m", "40 m", "80 m", "400 m"],
+      "correct_index": 1,
+      "difficulty": 4,
+      "topic": "measurement",
+      "hint": "Multiply the map measurement by the scale factor (5)."
+    },
+    {
+      "id": "NUM-Y6-006",
+      "question": "A bag has 4 red, 3 blue and 3 green marbles. What is the probability of picking a blue marble?",
+      "options": ["1/4", "3/10", "1/3", "3/7"],
+      "correct_index": 1,
+      "difficulty": 4,
+      "topic": "number",
+      "hint": "Probability = favourable outcomes ÷ total outcomes. Total = 10."
+    },
+    {
+      "id": "NUM-Y7-001",
+      "question": "Solve: 5x − 3 = 2x + 9",
+      "options": ["x = 2", "x = 4", "x = 6", "x = 3"],
+      "correct_index": 1,
+      "difficulty": 5,
+      "topic": "number",
+      "hint": "Collect x terms: 3x = 12, then divide both sides by 3."
+    },
+    {
+      "id": "NUM-Y7-002",
+      "question": "A cylinder has radius 3 cm and height 10 cm. Using π ≈ 3.14, its approximate volume is:",
+      "options": ["94.2 cm³", "188.4 cm³", "282.6 cm³", "376.8 cm³"],
+      "correct_index": 2,
+      "difficulty": 5,
+      "topic": "measurement",
+      "hint": "V = π × r² × h = 3.14 × 9 × 10."
+    },
+    {
+      "id": "NUM-Y7-003",
+      "question": "The ratio of boys to girls in a class is 3:5 and there are 40 students total. How many are girls?",
+      "options": ["15", "20", "25", "30"],
+      "correct_index": 2,
+      "difficulty": 4,
+      "topic": "number",
+      "hint": "Total ratio parts = 8. Girls = 5/8 of 40."
+    },
+    {
+      "id": "NUM-Y7-004",
+      "question": "Which of these is a prime number?",
+      "options": ["51", "57", "61", "91"],
+      "correct_index": 2,
+      "difficulty": 4,
+      "topic": "number",
+      "hint": "A prime has exactly two factors: 1 and itself. Check each option carefully."
+    },
+    {
+      "id": "NUM-Y7-005",
+      "question": "A shop buys an item for $40 and sells it for $52. What is the percentage profit?",
+      "options": ["12%", "20%", "25%", "30%"],
+      "correct_index": 3,
+      "difficulty": 5,
+      "topic": "money",
+      "hint": "Profit = $12. Percentage profit = (12 ÷ 40) × 100."
+    },
+    {
+      "id": "NUM-Y7-006",
+      "question": "The median of the data set 3, 7, 9, 2, 8, 1, 5 is:",
+      "options": ["5", "7", "9", "3"],
+      "correct_index": 0,
+      "difficulty": 5,
+      "topic": "number",
+      "hint": "Order the values: 1, 2, 3, 5, 7, 8, 9. The middle value is...?"
+    },
+    {
+      "id": "NUM-Y7-007",
+      "question": "A line passes through (0, 2) and (4, 10). What is its gradient (slope)?",
+      "options": ["1", "2", "3", "4"],
+      "correct_index": 1,
+      "difficulty": 5,
+      "topic": "number",
+      "hint": "Gradient = rise ÷ run = (10 − 2) ÷ (4 − 0)."
+    }
+  ]
+}

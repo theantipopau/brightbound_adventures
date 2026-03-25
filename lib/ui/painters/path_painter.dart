@@ -28,14 +28,6 @@ class PathPainter extends CustomPainter {
 
       final isUnlocked = totalStars >= zones[i + 1].requiredStars;
 
-      // Draw path
-      final pathPaint = Paint()
-        ..color = (isUnlocked ? Colors.amber : Colors.grey)
-            .withValues(alpha: isUnlocked ? 0.6 : 0.3)
-        ..strokeWidth = 8
-        ..strokeCap = StrokeCap.round
-        ..style = PaintingStyle.stroke;
-
       // Create curved path (adjusted for iso perspective)
       final path = Path();
       path.moveTo(start.dx, start.dy);
@@ -50,7 +42,36 @@ class PathPainter extends CustomPainter {
 
       path.quadraticBezierTo(controlX, controlY, end.dx, end.dy);
 
-      // Draw solid path
+      // Draw path with stronger contrast and readability.
+      final bounds = path.getBounds();
+      final pathPaint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: isUnlocked
+              ? [
+                  const Color(0xFFFFE082).withValues(alpha: 0.95),
+                  const Color(0xFFFFB300).withValues(alpha: 0.9),
+                ]
+              : [
+                  Colors.grey.shade500.withValues(alpha: 0.7),
+                  Colors.grey.shade400.withValues(alpha: 0.6),
+                ],
+        ).createShader(bounds)
+        ..strokeWidth = isUnlocked ? 12 : 10
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke;
+
+      if (isUnlocked) {
+        final glowPaint = Paint()
+          ..color = Colors.amber.withValues(alpha: 0.28)
+          ..strokeWidth = 18
+          ..strokeCap = StrokeCap.round
+          ..style = PaintingStyle.stroke
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+        canvas.drawPath(path, glowPaint);
+      }
+
       canvas.drawPath(path, pathPaint);
 
       // Draw animated dots on unlocked paths (particle effect)
@@ -68,7 +89,8 @@ class PathPainter extends CustomPainter {
             ?.position;
 
         if (pos != null) {
-          canvas.drawCircle(pos, 6, dotPaint);
+          canvas.drawCircle(pos, 10, dotPaint..color = Colors.amber.withValues(alpha: 0.35));
+          canvas.drawCircle(pos, 6, dotPaint..color = Colors.amber);
         }
       }
     }
