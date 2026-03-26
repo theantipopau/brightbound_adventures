@@ -4,10 +4,14 @@
 import 'dart:io';
 import 'dart:convert';
 
+void _writeLine(String message) {
+  stdout.writeln(message);
+}
+
 void main() async {
-  print('════════════════════════════════════════════════════════════════');
-  print('  PHASE 7.2 PART B: COMPREHENSIVE QUESTION AUDIT REPORT');
-  print('════════════════════════════════════════════════════════════════\n');
+  _writeLine('════════════════════════════════════════════════════════════════');
+  _writeLine('  PHASE 7.2 PART B: COMPREHENSIVE QUESTION AUDIT REPORT');
+  _writeLine('════════════════════════════════════════════════════════════════\n');
 
   // Build comprehensive audit report
   final auditReport = {
@@ -92,42 +96,42 @@ void main() async {
   };
 
   // Print summary
-  print('QUESTION INVENTORY SUMMARY');
-  print('─────────────────────────────────────────────────────────────────\n');
+  _writeLine('QUESTION INVENTORY SUMMARY');
+  _writeLine('─────────────────────────────────────────────────────────────────\n');
 
-  print('Literacy Module: 78 estimated questions');
-  print('  - Homophones, Apostrophes, Punctuation (37 already audited)');
-  print('  - Spelling, Comprehension, Vocabulary\n');
+  _writeLine('Literacy Module: 78 estimated questions');
+  _writeLine('  - Homophones, Apostrophes, Punctuation (37 already audited)');
+  _writeLine('  - Spelling, Comprehension, Vocabulary\n');
 
-  print('Numeracy Module: 135 estimated questions');
-  print('  - Number operations, place value, fractions, decimals');
-  print('  - Measurement, geometry, data interpretation\n');
+  _writeLine('Numeracy Module: 135 estimated questions');
+  _writeLine('  - Number operations, place value, fractions, decimals');
+  _writeLine('  - Measurement, geometry, data interpretation\n');
 
-  print('Storytelling Module: 66 estimated questions');
-  print('  - Sequencing, emotion, character analysis, dialogue, plot\n');
+  _writeLine('Storytelling Module: 66 estimated questions');
+  _writeLine('  - Sequencing, emotion, character analysis, dialogue, plot\n');
 
-  print('Logic Module: 79 estimated questions');
-  print('  - Pattern recognition, reasoning, problem-solving, deduction\n');
+  _writeLine('Logic Module: 79 estimated questions');
+  _writeLine('  - Pattern recognition, reasoning, problem-solving, deduction\n');
 
-  print('─────────────────────────────────────────────────────────────────');
-  print('TOTAL SYSTEM QUESTIONS: ~358');
-  print('AUDITED TO DATE: 37 (10.3%)');
-  print('REMAINING TO AUDIT: 321 (89.7%)');
-  print('─────────────────────────────────────────────────────────────────\n');
+  _writeLine('─────────────────────────────────────────────────────────────────');
+  _writeLine('TOTAL SYSTEM QUESTIONS: ~358');
+  _writeLine('AUDITED TO DATE: 37 (10.3%)');
+  _writeLine('REMAINING TO AUDIT: 321 (89.7%)');
+  _writeLine('─────────────────────────────────────────────────────────────────\n');
 
   // Quality baseline from initial audit
-  print('BASELINE QUALITY METRICS (from 37 initial questions)');
-  print('─────────────────────────────────────────────────────────────────');
-  print('Average Quality Score: 80.3/100');
-  print('Validity Rate: 88.8%');
-  print('Primary Issues: Missing real-world context (24%)');
-  print('Cognitive Gap: Limited higher-order thinking (Analyze/Evaluate/Create)');
-  print('Recommendation: Embed context, diversify cognitive levels\n');
+  _writeLine('BASELINE QUALITY METRICS (from 37 initial questions)');
+  _writeLine('─────────────────────────────────────────────────────────────────');
+  _writeLine('Average Quality Score: 80.3/100');
+  _writeLine('Validity Rate: 88.8%');
+  _writeLine('Primary Issues: Missing real-world context (24%)');
+  _writeLine('Cognitive Gap: Limited higher-order thinking (Analyze/Evaluate/Create)');
+  _writeLine('Recommendation: Embed context, diversify cognitive levels\n');
 
   // Save report
   final reportFile = File('PHASE_7_2_FULL_AUDIT_PLAN.json');
   await reportFile.writeAsString(JsonEncoder.withIndent('  ').convert(auditReport));
-  print('✓ Audit plan saved: PHASE_7_2_FULL_AUDIT_PLAN.json\n');
+  _writeLine('✓ Audit plan saved: PHASE_7_2_FULL_AUDIT_PLAN.json\n');
 
   // Create execution checklist
   final checklist = '''
@@ -190,9 +194,9 @@ Target: Complete Phase 7.2 Part B and move to implementation
 
   final checklistFile = File('PHASE_7_2_AUDIT_CHECKLIST.md');
   await checklistFile.writeAsString(checklist);
-  print('✓ Execution checklist saved: PHASE_7_2_AUDIT_CHECKLIST.md\n');
+  _writeLine('✓ Execution checklist saved: PHASE_7_2_AUDIT_CHECKLIST.md\n');
 
-  print('════════════════════════════════════════════════════════════════');
-  print('  AUDIT PLAN COMPLETE - READY TO BEGIN FULL AUDIT');
-  print('════════════════════════════════════════════════════════════════');
+  _writeLine('════════════════════════════════════════════════════════════════');
+  _writeLine('  AUDIT PLAN COMPLETE - READY TO BEGIN FULL AUDIT');
+  _writeLine('════════════════════════════════════════════════════════════════');
 }

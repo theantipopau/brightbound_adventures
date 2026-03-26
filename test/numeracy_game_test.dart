@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/features/numeracy/widgets/numeracy_game.dart';
@@ -10,6 +11,13 @@ Future<void> _pumpNumeracyGame(
   WidgetTester tester, {
   required NumeracyQuestion question,
 }) async {
+  SharedPreferences.setMockInitialValues({
+    'autoReadQuestions': false,
+    'aiHintsEnabled': false,
+    'aiExplanationsEnabled': false,
+    'aiCloudMode': false,
+  });
+
   await tester.pumpWidget(
     MultiProvider(
       providers: [
@@ -26,13 +34,14 @@ Future<void> _pumpNumeracyGame(
       ),
     ),
   );
+  await tester.pumpAndSettle(const Duration(milliseconds: 500));
 }
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('NumeracyGame Tests', () {
-    testWidgets('Renders multiple choice question correctly', (WidgetTester tester) async {
+    testWidgets('renders current question and all answer options', (WidgetTester tester) async {
       final question = NumeracyQuestion(
         id: 'test_1',
         skillId: 'test_skill',
@@ -45,48 +54,83 @@ void main() {
       await _pumpNumeracyGame(tester, question: question);
 
       expect(find.text('What is 1 + 1?'), findsOneWidget);
-      expect(find.text('1'), findsOneWidget);
-      expect(find.text('2'), findsOneWidget);
-      expect(find.text('3'), findsOneWidget);
-      expect(find.text('4'), findsOneWidget);
+      expect(find.text('Test Skill'), findsOneWidget);
+      expect(find.text('1'), findsAtLeastNWidgets(1));
+      expect(find.text('2'), findsAtLeastNWidgets(1));
+      expect(find.text('3'), findsAtLeastNWidgets(1));
+      expect(find.text('4'), findsAtLeastNWidgets(1));
+      expect(find.byTooltip('Go home'), findsOneWidget);
+      expect(find.byTooltip('Pause Game'), findsOneWidget);
+      await tester.pumpAndSettle(const Duration(seconds: 1));
     });
 
-    testWidgets('Renders drag and drop question correctly', (WidgetTester tester) async {
+    testWidgets('shows feedback and completion callback after a correct answer', (WidgetTester tester) async {
       final question = NumeracyQuestion(
-        id: 'test_drag_1',
+        id: 'test_2',
         skillId: 'test_skill',
-        question: 'Drag 5 here',
-        options: ['3', '5', '7', '9'],
+        question: 'What is 3 + 2?',
+        options: ['4', '5', '6', '7'],
         correctIndex: 1,
-        type: NumeracyQuestionType.dragAndDrop,
+        type: NumeracyQuestionType.multipleChoice,
       );
+      double? accuracy;
+      int? correct;
+      int? total;
 
-      await _pumpNumeracyGame(tester, question: question);
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            Provider<HapticService>(create: (_) => HapticService()),
+            ChangeNotifierProvider<AdaptiveDifficultyService>(
+              create: (_) => AdaptiveDifficultyService(),
+            ),
+          ],
+          child: MaterialApp(
+            home: NumeracyGame(
+              questions: [question],
+              skillName: 'Test Skill',
+              onComplete: (value, correctAnswers, totalQuestions) {
+                accuracy = value;
+                correct = correctAnswers;
+                total = totalQuestions;
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle(const Duration(milliseconds: 500));
 
-      expect(find.text('Drag 5 here'), findsOneWidget);
-      expect(find.text('Drag the answer here!'), findsOneWidget);
-      expect(find.byType(Draggable<int>), findsWidgets);
-      expect(find.byType(DragTarget<int>), findsOneWidget);
+      await tester.tap(find.text('5').first);
+      await tester.pump();
+
+      expect(find.textContaining('+10'), findsAtLeastNWidgets(1));
+      expect(find.byIcon(Icons.check_circle), findsOneWidget);
+
+      await tester.pump(const Duration(milliseconds: 1600));
+      await tester.pumpAndSettle(const Duration(milliseconds: 500));
+
+      expect(accuracy, 1.0);
+      expect(correct, 1);
+      expect(total, 1);
     });
 
-    testWidgets(
-      'Renders tracing question correctly',
-      (WidgetTester tester) async {
+    testWidgets('pause button toggles back to play icon', (WidgetTester tester) async {
       final question = NumeracyQuestion(
-        id: 'test_trace_1',
+        id: 'test_3',
         skillId: 'test_skill',
-        question: 'Trace 3',
-        options: ['3'],
-        correctIndex: 0,
-        type: NumeracyQuestionType.tracing,
+        question: 'What is 6 - 1?',
+        options: ['3', '4', '5', '6'],
+        correctIndex: 2,
+        type: NumeracyQuestionType.multipleChoice,
       );
 
       await _pumpNumeracyGame(tester, question: question);
 
-        expect(find.text('Trace 3'), findsOneWidget);
-        expect(find.text('3'), findsOneWidget);
-      },
-      skip: true,
-    );
-  }, skip: true);
+      await tester.tap(find.byTooltip('Pause Game'));
+      await tester.pump();
+
+      expect(find.byIcon(Icons.play_arrow), findsAtLeastNWidgets(1));
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+    });
+  });
 }
