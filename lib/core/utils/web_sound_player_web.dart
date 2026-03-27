@@ -1,18 +1,12 @@
-// ignore: avoid_web_libraries_in_flutter
-// ignore: unused_import
-// ignore: deprecated_member_use
-import 'dart:js' as js;
+import 'dart:js_interop';
 
-/// Calls window.BBSounds.play(type) in the browser via dart:js.
+@JS('BBSounds.play')
+external void _playWebSound(JSString type);
+
+/// Calls window.BBSounds.play(type) in the browser via dart:js_interop.
 void playWebSound(String type) {
   try {
-    // Access window.BBSounds and call play(type)
-    if (js.context.hasProperty('BBSounds')) {
-      final bbSounds = js.context['BBSounds'];
-      if (bbSounds != null && bbSounds.hasProperty('play')) {
-        bbSounds.callMethod('play', [type]);
-      }
-    }
+    _playWebSound(type.toJS);
   } catch (_) {
     // Silently ignore – audio is non-critical
   }

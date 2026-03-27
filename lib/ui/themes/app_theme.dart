@@ -326,7 +326,7 @@ class WorldTokens {
   );
 
   // ── Static instances per zone ──────────────────────────────────
-  static const WordWoods = WorldTokens(
+  static const wordWoods = WorldTokens(
     zoneId: 'word-woods',
     displayName: 'Word Woods',
     emoji: '🌲',
@@ -338,7 +338,7 @@ class WorldTokens {
     subject: 'literacy',
   );
 
-  static const NumberNebula = WorldTokens(
+  static const numberNebula = WorldTokens(
     zoneId: 'number-nebula',
     displayName: 'Number Nebula',
     emoji: '🌌',
@@ -350,7 +350,7 @@ class WorldTokens {
     subject: 'numeracy',
   );
 
-  static const MathFacts = WorldTokens(
+  static const mathFacts = WorldTokens(
     zoneId: 'math-facts',
     displayName: 'Math Facts',
     emoji: '🔢',
@@ -362,7 +362,7 @@ class WorldTokens {
     subject: 'numeracy',
   );
 
-  static const StorySprings = WorldTokens(
+  static const storySprings = WorldTokens(
     zoneId: 'story-springs',
     displayName: 'Story Springs',
     emoji: '📖',
@@ -374,7 +374,7 @@ class WorldTokens {
     subject: 'storytelling',
   );
 
-  static const ScienceExplorers = WorldTokens(
+  static const scienceExplorers = WorldTokens(
     zoneId: 'science-explorers',
     displayName: 'Science Explorers',
     emoji: '🔬',
@@ -386,7 +386,7 @@ class WorldTokens {
     subject: 'science',
   );
 
-  static const CreativeCorner = WorldTokens(
+  static const creativeCorner = WorldTokens(
     zoneId: 'creative-corner',
     displayName: 'Creative Corner',
     emoji: '🎨',
@@ -398,7 +398,7 @@ class WorldTokens {
     subject: 'creative',
   );
 
-  static const PuzzlePeaks = WorldTokens(
+  static const puzzlePeaks = WorldTokens(
     zoneId: 'puzzle-peaks',
     displayName: 'Puzzle Peaks',
     emoji: '🧩',
@@ -410,7 +410,7 @@ class WorldTokens {
     subject: 'logic',
   );
 
-  static const AdventureArena = WorldTokens(
+  static const adventureArena = WorldTokens(
     zoneId: 'adventure-arena',
     displayName: 'Adventure Arena',
     emoji: '🏆',
@@ -423,8 +423,8 @@ class WorldTokens {
   );
 
   static const List<WorldTokens> all = [
-    WordWoods, NumberNebula, MathFacts, StorySprings,
-    ScienceExplorers, CreativeCorner, PuzzlePeaks, AdventureArena,
+    wordWoods, numberNebula, mathFacts, storySprings,
+    scienceExplorers, creativeCorner, puzzlePeaks, adventureArena,
   ];
 
   /// Resolve from a zone ID or subject string (fallback gracefully)
@@ -433,13 +433,13 @@ class WorldTokens {
       if (w.zoneId == zoneId) return w;
     }
     // Subject fallback
-    return WordWoods;
+    return wordWoods;
   }
 
   static WorldTokens fromColor(Color color) {
     // Find nearest world token by primary color
     double best = double.infinity;
-    WorldTokens result = WordWoods;
+    WorldTokens result = wordWoods;
     for (final w in all) {
       final dr = (w.primaryColor.r - color.r).abs();
       final dg = (w.primaryColor.g - color.g).abs();
