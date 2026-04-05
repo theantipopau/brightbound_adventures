@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
+import 'package:brightbound_adventures/core/data/zone_guardian_data.dart';
 import 'package:brightbound_adventures/core/utils/word_woods_generator.dart';
 import 'package:brightbound_adventures/core/services/achievement_service.dart';
 import 'package:brightbound_adventures/core/services/daily_challenge_service.dart';
@@ -35,6 +36,8 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
   int _totalQuestions = 0;
   double _accuracy = 0;
   int _hintsUsed = 0;
+  String? _guardianMessage;
+  String? _guardianEmoji;
 
   List<LiteracyQuestion> _getQuestionsForSkill() {
     switch (widget.skill.id) {
@@ -126,6 +129,12 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
       _accuracy = accuracy;
       _correctAnswers = correct;
       _totalQuestions = total;
+      // Pick the guardian skill-complete message for this zone
+      final guardian = guardianForZone(widget.zoneId ?? '');
+      if (guardian != null) {
+        _guardianMessage = guardian.skillCompleteMessage(correct);
+        _guardianEmoji = guardian.emoji;
+      }
     });
     _checkStreak();
   }
@@ -171,6 +180,8 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
         themeColor: widget.themeColor,
         onPlayAgain: _playAgain,
         onExit: _exitToZone,
+        guardianMessage: _guardianMessage,
+        guardianEmoji: _guardianEmoji,
       );
     }
 

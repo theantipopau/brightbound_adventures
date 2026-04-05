@@ -25,3 +25,7 @@ export 'animated_answer_option.dart';
 export 'quiz_widgets.dart';
 export 'zone_guardian_banner.dart';
 export 'streak_milestone_modal.dart';
+export 'typewriter_text.dart';
+export 'wave_progress_bar.dart';
+export 'gradient_text.dart';
+export 'star_burst_overlay.dart';

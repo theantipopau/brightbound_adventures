@@ -10,12 +10,14 @@ import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
+import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/controllers/game_session_controller.dart';
 import 'package:brightbound_adventures/core/utils/question_variation_helper.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/responsive_quiz_layout.dart';
 import 'package:brightbound_adventures/ui/widgets/difficulty_indicator.dart';
 import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
+import 'package:brightbound_adventures/ui/widgets/star_burst_overlay.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
 import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
 import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
@@ -71,6 +73,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   late ScreenShakeController _shakeController;
 
   bool _showConfetti = false;
+  bool _showStarBurst = false;
 
   @override
   void initState() {
@@ -185,13 +188,24 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
     _gameController.submitAnswer(isCorrect);
     _prepareAiExplanation();
 
+    final avatarProvider = context.read<AvatarProvider>();
+
     if (isCorrect) {
       hapticService.onCorrectAnswer();
       _audioManager.playCorrectAnswer();
       _starController.forward(from: 0);
       showFloatingReward(context, '+10 ⭐');
+      // Avatar reacts with pride on 3-streak, joy otherwise
+      avatarProvider.setEmotion(
+        _gameController.streak >= 3 ? AvatarEmotion.proud : AvatarEmotion.happy,
+        resetAfter: const Duration(milliseconds: 1800),
+      );
       setState(() {
         _showConfetti = true;
+        // Star burst fires on every 3rd consecutive correct answer
+        if (_gameController.streak >= 3 && _gameController.streak % 3 == 0) {
+          _showStarBurst = true;
+        }
       });
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) setState(() => _showConfetti = false);
@@ -200,6 +214,15 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
       Future.delayed(const Duration(milliseconds: 1500), _nextQuestion);
     } else {
       hapticService.onWrongAnswer();
+      // Avatar looks sad then thoughtful
+      avatarProvider.setEmotion(AvatarEmotion.sad,
+          resetAfter: const Duration(milliseconds: 800));
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted) {
+          avatarProvider.setEmotion(AvatarEmotion.thinking,
+              resetAfter: const Duration(milliseconds: 1200));
+        }
+      });
       Future.delayed(const Duration(milliseconds: 2000), _nextQuestion);
     }
 
@@ -447,6 +470,19 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                         particleCount: 120,
                         duration: const Duration(milliseconds: 3000),
                       ),
+                    ),
+                  ),
+
+                // 3b. Star burst — fires on every 3rd consecutive correct answer
+                if (_showStarBurst)
+                  Positioned.fill(
+                    child: StarBurstOverlay(
+                      color: widget.themeColor,
+                      armCount: 10,
+                      duration: const Duration(milliseconds: 850),
+                      onComplete: () {
+                        if (mounted) setState(() => _showStarBurst = false);
+                      },
                     ),
                   ),
 

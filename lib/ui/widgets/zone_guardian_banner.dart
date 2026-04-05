@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/data/zone_guardian_data.dart';
+import 'package:brightbound_adventures/ui/widgets/typewriter_text.dart';
 
 /// A banner that appears at the top of a zone detail screen showing the
 /// guardian NPC with their quest hook and name. Tapping it expands/collapses
@@ -120,8 +121,8 @@ class _ZoneGuardianBannerState extends State<ZoneGuardianBanner>
                     ),
                     const SizedBox(height: 4),
                     AnimatedCrossFade(
-                      firstChild: Text(
-                        guardian.questHook,
+                      firstChild: TypewriterText(
+                        text: guardian.questHook,
                         style: const TextStyle(
                           fontSize: 13,
                           color: Color(0xFF444444),
@@ -129,14 +130,16 @@ class _ZoneGuardianBannerState extends State<ZoneGuardianBanner>
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
+                        characterDelay: const Duration(milliseconds: 22),
                       ),
-                      secondChild: Text(
-                        guardian.questHook,
+                      secondChild: TypewriterText(
+                        text: guardian.questHook,
                         style: const TextStyle(
                           fontSize: 13,
                           color: Color(0xFF444444),
                           height: 1.4,
                         ),
+                        characterDelay: const Duration(milliseconds: 22),
                       ),
                       crossFadeState: _expanded
                           ? CrossFadeState.showSecond

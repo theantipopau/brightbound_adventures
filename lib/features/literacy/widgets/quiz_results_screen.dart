@@ -17,6 +17,10 @@ class QuizResultsScreen extends StatefulWidget {
   final Color themeColor;
   final VoidCallback? onPlayAgain;
   final VoidCallback? onExit;
+  /// Optional message from the zone guardian celebrating the skill completion.
+  final String? guardianMessage;
+  /// Optional guardian emoji for the banner.
+  final String? guardianEmoji;
 
   const QuizResultsScreen({
     super.key,
@@ -29,6 +33,8 @@ class QuizResultsScreen extends StatefulWidget {
     this.themeColor = AppColors.wordWoodsColor,
     this.onPlayAgain,
     this.onExit,
+    this.guardianMessage,
+    this.guardianEmoji,
   });
 
   @override
@@ -385,6 +391,15 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                     ),
                   ],
 
+                  // Guardian message banner
+                  if (widget.guardianMessage != null) ...[                    const SizedBox(height: 20),
+                    _GuardianMessageBanner(
+                      emoji: widget.guardianEmoji ?? '✨',
+                      message: widget.guardianMessage!,
+                      themeColor: widget.themeColor,
+                    ),
+                  ],
+
                   const SizedBox(height: 32),
 
                   // Action buttons
@@ -458,6 +473,53 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
               fontWeight: FontWeight.w500,
               color: Colors.grey.shade500,
               letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A small themed banner displaying a message from the zone guardian.
+class _GuardianMessageBanner extends StatelessWidget {
+  final String emoji;
+  final String message;
+  final Color themeColor;
+
+  const _GuardianMessageBanner({
+    required this.emoji,
+    required this.message,
+    required this.themeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: themeColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: themeColor.withValues(alpha: 0.25),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 28)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontStyle: FontStyle.italic,
+                height: 1.45,
+              ),
             ),
           ),
         ],

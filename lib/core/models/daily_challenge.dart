@@ -1,6 +1,52 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+/// Types of daily challenge modifier — adds variety and replayability.
+enum ChallengeType {
+  /// Standard: answer N questions correctly (existing behaviour).
+  normal,
+  /// Speed: complete N questions within a tight time limit bonus.
+  timed,
+  /// Combo: get N correct in a row without a wrong answer.
+  combo,
+  /// No-hints: complete N questions without using any hints.
+  noHints,
+  /// Mixed: questions drawn from two different zones.
+  mixed,
+}
+
+extension ChallengeTypeDetails on ChallengeType {
+  String get label {
+    switch (this) {
+      case ChallengeType.normal:
+        return 'Standard';
+      case ChallengeType.timed:
+        return '⏱️ Speed Run';
+      case ChallengeType.combo:
+        return '🔥 Combo';
+      case ChallengeType.noHints:
+        return '💡 No Hints';
+      case ChallengeType.mixed:
+        return '🌀 Mixed';
+    }
+  }
+
+  String get descriptionSuffix {
+    switch (this) {
+      case ChallengeType.normal:
+        return '';
+      case ChallengeType.timed:
+        return ' (speed bonus!)';
+      case ChallengeType.combo:
+        return ' in a row without mistakes!';
+      case ChallengeType.noHints:
+        return ' — no hints allowed!';
+      case ChallengeType.mixed:
+        return ' across two zones!';
+    }
+  }
+}
+
 /// Daily challenge system that provides a rotating set of activities
 class DailyChallenge {
   final String id;
@@ -14,6 +60,9 @@ class DailyChallenge {
   final DateTime date;
   final bool isCompleted;
   final int currentProgress;
+  final ChallengeType challengeType;
+  /// Optional secondary zone for mixed challenges
+  final String? secondaryZoneId;
 
   const DailyChallenge({
     required this.id,
@@ -27,6 +76,8 @@ class DailyChallenge {
     required this.date,
     this.isCompleted = false,
     this.currentProgress = 0,
+    this.challengeType = ChallengeType.normal,
+    this.secondaryZoneId,
   });
 
   double get progressPercent => (currentProgress / targetScore).clamp(0.0, 1.0);
@@ -43,6 +94,8 @@ class DailyChallenge {
     DateTime? date,
     bool? isCompleted,
     int? currentProgress,
+    ChallengeType? challengeType,
+    String? secondaryZoneId,
   }) {
     return DailyChallenge(
       id: id ?? this.id,
@@ -56,6 +109,8 @@ class DailyChallenge {
       date: date ?? this.date,
       isCompleted: isCompleted ?? this.isCompleted,
       currentProgress: currentProgress ?? this.currentProgress,
+      challengeType: challengeType ?? this.challengeType,
+      secondaryZoneId: secondaryZoneId ?? this.secondaryZoneId,
     );
   }
 
@@ -72,10 +127,17 @@ class DailyChallenge {
     'date': date.toIso8601String(),
     'isCompleted': isCompleted,
     'currentProgress': currentProgress,
+    'challengeType': challengeType.name,
+    'secondaryZoneId': secondaryZoneId,
   };
 
   /// Deserialize from JSON
   static DailyChallenge fromJson(Map<String, dynamic> json) {
+    final typeStr = json['challengeType'] as String? ?? 'normal';
+    final challengeType = ChallengeType.values.firstWhere(
+      (e) => e.name == typeStr,
+      orElse: () => ChallengeType.normal,
+    );
     return DailyChallenge(
       id: json['id'] as String,
       title: json['title'] as String,
@@ -88,6 +150,8 @@ class DailyChallenge {
       date: DateTime.parse(json['date'] as String),
       isCompleted: json['isCompleted'] as bool? ?? false,
       currentProgress: json['currentProgress'] as int? ?? 0,
+      challengeType: challengeType,
+      secondaryZoneId: json['secondaryZoneId'] as String?,
     );
   }
 }
@@ -206,6 +270,18 @@ class DailyChallengeGenerator {
     },
   ];
 
+  /// Challenge type rotation — cycles through variants day by day so players
+  /// experience a different mechanic every session.
+  static const List<ChallengeType> _typeRotation = [
+    ChallengeType.normal,
+    ChallengeType.combo,
+    ChallengeType.timed,
+    ChallengeType.noHints,
+    ChallengeType.mixed,
+    ChallengeType.normal,
+    ChallengeType.combo,
+  ];
+
   /// Generate today's challenges (3 challenges, one easy, one medium, one hard)
   static List<DailyChallenge> generateDailyChallenges(DateTime date) {
     final seed = date.year * 10000 + date.month * 100 + date.day;
@@ -216,9 +292,18 @@ class DailyChallengeGenerator {
     // Generate 3 challenges from different zones
     final shuffledTemplates = List.from(_challengeTemplates)..shuffle(random);
 
+    // Derive challenge types: easy is always normal, medium/hard rotate
+    final dayIndex = date.difference(DateTime(2026, 1, 1)).inDays;
+    final mediumType = _typeRotation[dayIndex % _typeRotation.length];
+    final hardType =
+        _typeRotation[(dayIndex + 2) % _typeRotation.length];
+
+    final types = [ChallengeType.normal, mediumType, hardType];
+
     for (var i = 0; i < 3 && i < shuffledTemplates.length; i++) {
       final template = shuffledTemplates[i];
       final difficulty = i; // 0=easy, 1=medium, 2=hard
+      final challengeType = types[i];
 
       final titles = template['titles'] as List;
       final descriptions = template['descriptions'] as List;
@@ -230,19 +315,34 @@ class DailyChallengeGenerator {
         _ => 7,
       };
 
-      final xpReward = switch (difficulty) {
+      // XP bonus for harder challenge types
+      final baseXp = switch (difficulty) {
         0 => 25,
         1 => 50,
         _ => 100,
       };
+      final xpReward = challengeType == ChallengeType.normal
+          ? baseXp
+          : (baseXp * 1.4).round();
 
-      final description =
+      // Build description incorporating challenge type suffix
+      final baseDesc =
           (descriptions[random.nextInt(descriptions.length)] as String)
               .replaceAll('{count}', targetScore.toString());
+      final description = '$baseDesc${challengeType.descriptionSuffix}';
+
+      // For mixed challenges pick a second zone
+      String? secondaryZoneId;
+      if (challengeType == ChallengeType.mixed &&
+          shuffledTemplates.length > 3) {
+        secondaryZoneId =
+            shuffledTemplates[3 + i % (shuffledTemplates.length - 3)]
+                ['zone'] as String;
+      }
 
       challenges.add(DailyChallenge(
         id: 'daily_${date.toIso8601String()}_$i',
-        title: titles[random.nextInt(titles.length)] as String,
+        title: '${challengeType == ChallengeType.normal ? '' : '${challengeType.label} '}${titles[random.nextInt(titles.length)]}'.trim(),
         description: description,
         zoneId: template['zone'] as String,
         skillId: skillIds[random.nextInt(skillIds.length)] as String,
@@ -250,6 +350,8 @@ class DailyChallengeGenerator {
         xpReward: xpReward,
         emoji: template['emoji'] as String,
         date: date,
+        challengeType: challengeType,
+        secondaryZoneId: secondaryZoneId,
       ));
     }
 

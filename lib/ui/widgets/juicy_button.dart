@@ -184,24 +184,42 @@ class _JuicyButtonState extends State<JuicyButton>
           builder: (context, child) {
             return Transform.scale(
               scale: _scaleAnim.value,
-              child: AnimatedContainer(
-                duration: AppMotion.fast,
-                width: widget.width,
-                height: widget.height,
-                padding: widget.padding ??
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 0),
-                decoration: BoxDecoration(
-                  gradient: effectiveGradient,
-                  borderRadius: BorderRadius.circular(AppBorders.lg),
-                  boxShadow: disabled
-                      ? null
-                      : (_isHovered
-                          ? AppShadows.md(
-                              (widget.color ?? AppColors.primary))
-                          : AppShadows.sm(
-                              (widget.color ?? AppColors.primary))),
-                ),
-                child: _buildContent(),
+              child: Stack(
+                children: [
+                  AnimatedContainer(
+                    duration: AppMotion.fast,
+                    width: widget.width,
+                    height: widget.height,
+                    padding: widget.padding ??
+                        const EdgeInsets.symmetric(horizontal: 28, vertical: 0),
+                    decoration: BoxDecoration(
+                      gradient: effectiveGradient,
+                      borderRadius: BorderRadius.circular(AppBorders.lg),
+                      boxShadow: disabled
+                          ? null
+                          : (_isHovered
+                              ? AppShadows.md(
+                                  (widget.color ?? AppColors.primary))
+                              : AppShadows.sm(
+                                  (widget.color ?? AppColors.primary))),
+                    ),
+                    child: _buildContent(),
+                  ),
+                  // Shimmer sweep overlay — bright diagonal band that sweeps left→right
+                  if (widget.shimmer && !disabled)
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(AppBorders.lg),
+                        child: IgnorePointer(
+                          child: CustomPaint(
+                            painter: _ShimmerSweepPainter(
+                              progress: _shimmerController.value,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             );
           },
@@ -252,6 +270,57 @@ class _JuicyButtonState extends State<JuicyButton>
       ],
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SHIMMER SWEEP PAINTER — diagonal highlight band that animates across the button
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ShimmerSweepPainter extends CustomPainter {
+  final double progress;
+
+  const _ShimmerSweepPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // The band sweeps from left to right. We draw a parallelogram-shaped
+    // highlight using a clipped path so the edges look angled (premium look).
+    final bandHalfW = size.width * 0.22;
+    // Center of the band travels from -bandHalfW*2 to size.width + bandHalfW*2
+    final travel = size.width + bandHalfW * 4;
+    final cx = -bandHalfW * 2 + progress * travel;
+    // Diagonal slant — top edge shifted right by 0.4× height
+    final slant = size.height * 0.4;
+
+    final path = Path()
+      ..moveTo(cx - bandHalfW + slant, 0)
+      ..lineTo(cx + bandHalfW + slant, 0)
+      ..lineTo(cx + bandHalfW, size.height)
+      ..lineTo(cx - bandHalfW, size.height)
+      ..close();
+
+    final gradient = LinearGradient(
+      colors: [
+        Colors.white.withValues(alpha: 0.0),
+        Colors.white.withValues(alpha: 0.28),
+        Colors.white.withValues(alpha: 0.0),
+      ],
+      stops: const [0.0, 0.5, 1.0],
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+    );
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = gradient
+            .createShader(Rect.fromLTWH(cx - bandHalfW, 0, bandHalfW * 2, size.height))
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ShimmerSweepPainter old) => old.progress != progress;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -22,6 +22,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
   late AnimationController _entranceController;
   late AnimationController _floatController;
 
+  String _selectedDifficulty = 'easy';
+
   @override
   void initState() {
     super.initState();
@@ -107,6 +109,9 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
               ),
             ),
 
+            // Difficulty selector
+            _buildDifficultySelector(),
+
             // Games Grid - Responsive
             Expanded(
               child: LayoutBuilder(
@@ -163,7 +168,7 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      const MemoryMatchGame(difficulty: 'easy'),
+                                      MemoryMatchGame(difficulty: _selectedDifficulty),
                                 ),
                               ),
                             ),
@@ -193,8 +198,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                               game: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const PatternPuzzleGame(
-                                      difficulty: 'easy'),
+                                  builder: (context) => PatternPuzzleGame(
+                                      difficulty: _selectedDifficulty),
                                 ),
                               ),
                             ),
@@ -208,7 +213,7 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      const WordSearchGame(difficulty: 'easy'),
+                                      WordSearchGame(difficulty: _selectedDifficulty),
                                 ),
                               ),
                             ),
@@ -223,6 +228,84 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
           ),
         ),
       ]),
+    );
+  }
+
+  Widget _buildDifficultySelector() {
+    const difficulties = ['easy', 'medium', 'hard'];
+    const labels = {'easy': '🌱 Easy', 'medium': '🔥 Medium', 'hard': '⚡ Hard'};
+    const colors = {
+      'easy': Colors.green,
+      'medium': Colors.orange,
+      'hard': Colors.red,
+    };
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Difficulty:',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 12),
+          ...difficulties.map((d) {
+            final isSelected = _selectedDifficulty == d;
+            final c = colors[d]!;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: GestureDetector(
+                onTap: () => setState(() {
+                  _selectedDifficulty = d;
+                  // Replay entrance animation so cards feel refreshed
+                  _entranceController
+                    ..reset()
+                    ..forward();
+                }),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? c.withValues(alpha: 0.9)
+                        : Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? c : Colors.white30,
+                      width: 1.5,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: c.withValues(alpha: 0.45),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            )
+                          ]
+                        : [],
+                  ),
+                  child: Text(
+                    labels[d]!,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.white60,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 

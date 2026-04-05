@@ -9,6 +9,9 @@ class ZoneGuardian {
   final List<String> encouragements;
   final String completeMessage;
   final String color; // hex string, used for theming the banner
+  /// Short celebration messages shown when the player finishes a skill session
+  /// (distinct from the full zone-complete message).
+  final List<String> skillCompleteMessages;
 
   const ZoneGuardian({
     required this.zoneId,
@@ -19,7 +22,14 @@ class ZoneGuardian {
     required this.encouragements,
     required this.completeMessage,
     required this.color,
+    this.skillCompleteMessages = const [],
   });
+
+  /// Returns a pseudo-random skill-complete message keyed by [sessionIndex].
+  String skillCompleteMessage(int sessionIndex) {
+    if (skillCompleteMessages.isEmpty) return completeMessage;
+    return skillCompleteMessages[sessionIndex % skillCompleteMessages.length];
+  }
 }
 
 const Map<String, ZoneGuardian> zoneGuardians = {
@@ -42,6 +52,13 @@ const Map<String, ZoneGuardian> zoneGuardians = {
         'You\'ve restored the Word Woods! 🌲 The stories are alive again! '
         'Quill is very proud of you!',
     color: '#4CAF50',
+    skillCompleteMessages: [
+      'A new word mastered! The forest grows! 🌿',
+      'Quill hoots with delight — brilliant work!',
+      'That skill is now part of your story! 📖',
+      'Every word you learn makes Word Woods brighter!',
+      'Well done, word wizard! Keep going! 🦉',
+    ],
   ),
   'number_nebula': ZoneGuardian(
     zoneId: 'number_nebula',
@@ -62,6 +79,13 @@ const Map<String, ZoneGuardian> zoneGuardians = {
         'The Number Nebula shines bright again! 🌌 Luna does a happy moon-dance. '
         'Your maths powers are out of this world!',
     color: '#3F51B5',
+    skillCompleteMessages: [
+      'Another number conquered! The stars align! ⭐',
+      'Luna records your score in the star chart!',
+      'Your mental maths is galactic! 🚀',
+      'That skill is in orbit — brilliant!',
+      'Luna beams: maths champion incoming! 🌙',
+    ],
   ),
   'puzzle_peaks': ZoneGuardian(
     zoneId: 'puzzle_peaks',
@@ -82,6 +106,13 @@ const Map<String, ZoneGuardian> zoneGuardians = {
         'Puzzle Peaks stands proud once more! 🏔️ Rocky roars with joy! '
         'Your problem-solving skills are legendary!',
     color: '#FF9800',
+    skillCompleteMessages: [
+      'That puzzle piece clicks into place! 🧩',
+      'Rocky stamps the summit with your name!',
+      'Logic like that could move mountains! ⛰️',
+      'Brilliant solving — the peak grows taller!',
+      'Rocky cheers: one more piece of genius! 🏔️',
+    ],
   ),
   'story_springs': ZoneGuardian(
     zoneId: 'story_springs',
@@ -102,6 +133,13 @@ const Map<String, ZoneGuardian> zoneGuardians = {
         'Story Springs flow beautifully once more! 🌊 Pip leaps for joy! '
         'Your imagination is amazing — never stop telling stories!',
     color: '#00BCD4',
+    skillCompleteMessages: [
+      'Ribbit! Another chapter written! 🐸',
+      'Your story sense is flowing like a river!',
+      'Pip splashes with joy — great comprehension!',
+      'The springs sing your name! 🎵',
+      'Wonderful! Every tale you read makes you stronger!',
+    ],
   ),
   'adventure_arena': ZoneGuardian(
     zoneId: 'adventure_arena',
@@ -122,6 +160,13 @@ const Map<String, ZoneGuardian> zoneGuardians = {
         'Adventure Arena applauds its new champion! ⚡ Bolt gives you a high-five! '
         'Your coordination and speed are incredible!',
     color: '#F44336',
+    skillCompleteMessages: [
+      'Speed AND accuracy — you\'re electric! ⚡',
+      'Bolt marks your personal best on the scoreboard!',
+      'Champion move! The arena roars! 🏟️',
+      'That performance was lightning fast!',
+      'Bolt nods: the making of a legend! 🥇',
+    ],
   ),
   'science_explorers': ZoneGuardian(
     zoneId: 'science_explorers',
@@ -142,6 +187,13 @@ const Map<String, ZoneGuardian> zoneGuardians = {
         'Science Station rings with success! 🧪 Spark says: "You have the makings '
         'of a great scientist!" The discovery log is complete!',
     color: '#9C27B0',
+    skillCompleteMessages: [
+      'Discovery logged! Spark stamps your lab book! 🔬',
+      'Hypothesis confirmed — brilliant work!',
+      'Science skills levelling up! 📈',
+      'Spark\'s experiments agree: you\'re a natural!',
+      'Another fact unlocked for the science archives! 🧪',
+    ],
   ),
   'creative_corner': ZoneGuardian(
     zoneId: 'creative_corner',
@@ -162,6 +214,13 @@ const Map<String, ZoneGuardian> zoneGuardians = {
         'Creative Corner glows with colour! 🎨 Doodle does a little paint-splatter '
         'happy dance. Your creativity knows no bounds!',
     color: '#E91E63',
+    skillCompleteMessages: [
+      'Stroke of genius — Doodle\'s brush flies! 🎨',
+      'Creative powers growing with every session!',
+      'Your ideas light up the canvas! ✨',
+      'Doodle applauds your artistic mind!',
+      'Another masterpiece skill added! 🖌️',
+    ],
   ),
 };
 

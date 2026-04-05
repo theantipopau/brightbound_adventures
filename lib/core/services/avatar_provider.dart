@@ -3,9 +3,54 @@ import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/core/utils/constants.dart';
 
+/// Emotional state for avatar reactions during gameplay.
+enum AvatarEmotion {
+  neutral,
+  happy,
+  proud,
+  surprised,
+  thinking,
+  sad,
+}
+
 class AvatarProvider extends ChangeNotifier {
   Avatar? _avatar;
   late LocalStorageService _storageService;
+
+  AvatarEmotion _emotion = AvatarEmotion.neutral;
+
+  AvatarEmotion get emotion => _emotion;
+
+  /// Set a transient emotion — automatically resets to neutral after [resetAfter].
+  void setEmotion(AvatarEmotion emotion,
+      {Duration resetAfter = const Duration(seconds: 2)}) {
+    _emotion = emotion;
+    notifyListeners();
+    Future.delayed(resetAfter, () {
+      if (_emotion == emotion) {
+        _emotion = AvatarEmotion.neutral;
+        notifyListeners();
+      }
+    });
+  }
+
+  /// Emoji overlay for the current emotion state.
+  String get emotionEmoji {
+    switch (_emotion) {
+      case AvatarEmotion.happy:
+        return '😄';
+      case AvatarEmotion.proud:
+        return '🤩';
+      case AvatarEmotion.surprised:
+        return '😲';
+      case AvatarEmotion.thinking:
+        return '🤔';
+      case AvatarEmotion.sad:
+        return '😟';
+      case AvatarEmotion.neutral:
+        return '';
+    }
+  }
 
   Avatar? get avatar => _avatar;
   bool get hasAvatar => _avatar != null;

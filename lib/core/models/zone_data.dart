@@ -11,6 +11,9 @@ class ZoneData extends Equatable {
   final String description;
   final int order;
   final int requiredStars;
+  /// Optional skill group that must have at least one mastered skill before
+  /// this zone becomes accessible. e.g. 'literacy', 'numeracy'.
+  final String? requiredSkillGroup;
 
   const ZoneData({
     required this.id,
@@ -21,6 +24,7 @@ class ZoneData extends Equatable {
     required this.description,
     required this.order,
     required this.requiredStars,
+    this.requiredSkillGroup,
   });
 
   @override
@@ -33,5 +37,6 @@ class ZoneData extends Equatable {
         description,
         order,
         requiredStars,
+        requiredSkillGroup,
       ];
 }

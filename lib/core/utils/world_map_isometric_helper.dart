@@ -50,21 +50,23 @@ class WorldMapIsometricHelper {
     IsometricPosition pos,
     Size screenSize,
   ) {
-    // Direct mapping: use normalized position to fill screen
-    // The position is already 0-1 normalized, so map directly to screen space
-    final padding = 100.0; // Padding from edges
+    // Proportional padding — keeps a consistent fraction of the screen used
+    // by zones regardless of device/window size.
+    final hPad = (screenSize.width * 0.06).clamp(20.0, 80.0);
+    final vPad = (screenSize.height * 0.07).clamp(20.0, 60.0);
+    // Reserve bottom area for HUD buttons (quick-zone rail + action bar).
+    final bottomUIReserve = (screenSize.height * 0.20).clamp(80.0, 180.0);
 
-    final usableWidth = screenSize.width - (padding * 2);
-    final usableHeight =
-        screenSize.height - (padding * 2) - 100; // Extra bottom padding for UI
+    final usableWidth = screenSize.width - (hPad * 2);
+    final usableHeight = screenSize.height - vPad - (vPad + bottomUIReserve);
 
     // Map grid position (0-9) to screen position
     final normalizedX = pos.x / (gridWidth - 1);
     final normalizedY = pos.y / (gridHeight - 1);
 
     return Offset(
-      padding + (normalizedX * usableWidth),
-      padding + (normalizedY * usableHeight),
+      hPad + (normalizedX * usableWidth),
+      vPad + (normalizedY * usableHeight),
     );
   }
 

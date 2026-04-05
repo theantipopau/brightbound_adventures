@@ -32,25 +32,53 @@ function jsonResponse(data, status = 200) {
 function errorResponse(message, status = 400) {
     return jsonResponse({ error: message }, status);
 }
-function hashPassword(password) {
-    // TODO: Use bcrypt in production
-    // For now, use a simple encoding (NOT SECURE - upgrade before production)
-    return btoa(password);
+async function hashPassword(password) {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode(password),
+        'PBKDF2',
+        false,
+        ['deriveBits'],
+    );
+    const hashBuffer = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
+        keyMaterial,
+        256,
+    );
+    const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('');
+    const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return `${saltHex}:${hashHex}`;
+}
+async function verifyPassword(password, stored) {
+    const colonIdx = stored.indexOf(':');
+    if (colonIdx === -1) return false;
+    const saltHex = stored.slice(0, colonIdx);
+    const hashHex = stored.slice(colonIdx + 1);
+    const saltBytes = saltHex.match(/.{2}/g);
+    if (!saltBytes) return false;
+    const salt = new Uint8Array(saltBytes.map(b => parseInt(b, 16)));
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode(password),
+        'PBKDF2',
+        false,
+        ['deriveBits'],
+    );
+    const hashBuffer = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
+        keyMaterial,
+        256,
+    );
+    const computedHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return computedHex === hashHex;
 }
 function generateToken() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 64; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
+    const bytes = crypto.getRandomValues(new Uint8Array(48));
+    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = (Math.random() * 16) | 0;
-        const v = c === 'x' ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-    });
+    return crypto.randomUUID();
 }
 // ============================================================================
 // Database Schema Initialization
@@ -152,7 +180,7 @@ router.post('/api/teachers/register', async (req, env) => {
             return errorResponse('Teacher already exists with this email', 409);
         }
         const teacherId = generateUUID();
-        const hashedPassword = hashPassword(password);
+        const hashedPassword = await hashPassword(password);
         const now = new Date().toISOString();
         const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year
         // Insert teacher
@@ -202,8 +230,7 @@ router.post('/api/teachers/login', async (req, env) => {
         if (!teacher) {
             return errorResponse('Invalid email or password', 401);
         }
-        const hashedPassword = hashPassword(password);
-        if (teacher.password !== hashedPassword) {
+        if (!(await verifyPassword(password, teacher.password))) {
             return errorResponse('Invalid email or password', 401);
         }
         // Generate token

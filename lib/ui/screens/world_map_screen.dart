@@ -308,8 +308,14 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     return stats.mastered * 3 + stats.practising;
   }
 
-  bool _isZoneUnlocked(int zoneIndex, int totalStars) {
-    return totalStars >= _zones[zoneIndex].requiredStars;
+  bool _isZoneUnlocked(int zoneIndex, int totalStars,
+      [SkillProvider? skillProvider]) {
+    if (totalStars < _zones[zoneIndex].requiredStars) return false;
+    final group = _zones[zoneIndex].requiredSkillGroup;
+    if (group == null || skillProvider == null) return true;
+    return skillProvider
+        .getSkillsByStrand(group)
+        .any((s) => s.state == SkillState.mastered);
   }
 
   void _moveToZone(int targetIndex) {
@@ -795,7 +801,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   Widget _buildZoneItem(ZoneData zone, BoxConstraints constraints,
       int totalStars, SkillProvider skillProvider) {
     final index = _zones.indexOf(zone);
-    final isUnlocked = _isZoneUnlocked(index, totalStars);
+    final isUnlocked = _isZoneUnlocked(index, totalStars, skillProvider);
     final isCurrentZone = _currentZoneIndex == index;
     final zoneStats = skillProvider.getZoneStats(zone.id.replaceAll('-', '_'));
 
@@ -829,17 +835,17 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       baseHeight = 165.0;
     }
     
-    final zoneWidth = baseWidth * visualScale;
-    final zoneHeight = baseHeight * visualScale;
-    final sideInset = constraints.maxWidth < 300 ? 2.0 : (constraints.maxWidth < 340 ? 4.0 : 8.0);
+    final sideInset = constraints.maxWidth < 300 ? 2.0 : (constraints.maxWidth < 340 ? 4.0 : 10.0);
     final minTopInset = constraints.maxHeight < 600 ? 30.0 : (constraints.maxHeight < 620 ? 40.0 : 52.0);
     final maxBottomInset = constraints.maxHeight < 600 ? 70.0 : (constraints.maxHeight < 620 ? 88.0 : 110.0);
-    final left = (screenPos.dx - (zoneWidth / 2))
-      .clamp(sideInset, constraints.maxWidth - zoneWidth - sideInset)
+    // Use layout dimensions (baseWidth/baseHeight) for clamping — the island widget
+    // always claims that much layout space regardless of the visual Transform.scale.
+    final left = (screenPos.dx - (baseWidth / 2))
+      .clamp(sideInset, constraints.maxWidth - baseWidth - sideInset)
       .toDouble();
     final top =
-      (screenPos.dy - (zoneHeight * 0.55) + (1 - progress) * 50).clamp(
-        minTopInset, constraints.maxHeight - zoneHeight - maxBottomInset)
+      (screenPos.dy - (baseHeight * 0.55) + (1 - progress) * 50).clamp(
+        minTopInset, constraints.maxHeight - baseHeight - maxBottomInset)
         .toDouble();
 
     return Positioned(
@@ -903,6 +909,16 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   Widget _build3DAvatar(Avatar avatar, bool isMoving) {
+    // Scale avatar down slightly on higher-elevation zones for depth perception.
+    // Elevation range 0.0 (Word Woods) → 1.6 (Adventure Arena).
+    final double destElevation = _isMoving && _targetZoneIndex != null
+        ? (_zoneElevations[_zones[_targetZoneIndex!].id] ?? 0.0)
+        : (_zoneElevations[_zones[_currentZoneIndex].id] ?? 0.0);
+    // 6% shrink per elevation unit, max 30%
+    final double elevScale = 1.0 - (destElevation * 0.065).clamp(0.0, 0.30);
+    // Slight opacity drop for depth fog
+    final double elevOpacity = 1.0 - (destElevation * 0.04).clamp(0.0, 0.20);
+
     return AnimatedBuilder(
       animation: _floatController,
       builder: (context, child) {
@@ -911,7 +927,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
         return GestureDetector(
           onTap: () => _showAvatarInfo(context, avatar),
-          child: Transform.translate(
+          child: Opacity(
+            opacity: elevOpacity,
+            child: Transform.scale(
+              scale: elevScale,
+              alignment: Alignment.bottomCenter,
+              child: Transform.translate(
             offset: Offset(0, bounce),
             child: SizedBox(
               width: 85,
@@ -1027,6 +1048,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   ),
                 ],
               ),
+            ),
+          ),
             ),
           ),
         );
@@ -1525,14 +1548,18 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     final progress =
         _zoneProgressFraction(stats.masteredSkills, stats.totalSkills);
 
+    // Position the card on the OPPOSITE side from the selected zone so it never
+    // covers the zone whose info it is showing, nor the nearby zones on that side.
+    final isRightSideZone = selected.position.dx >= 0.5;
     return Positioned(
       top: compact ? 82 : 96,
-      right: 16,
+      left: isRightSideZone ? 16 : null,
+      right: isRightSideZone ? null : 16,
       child: Transform.scale(
-        alignment: Alignment.topRight,
+        alignment: isRightSideZone ? Alignment.topLeft : Alignment.topRight,
         scale: uiScale,
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: compact ? 230 : 290),
+          constraints: BoxConstraints(maxWidth: compact ? 220 : 270),
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -2324,6 +2351,24 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                           },
                         ),
                       ),
+                    // Expanding pulse ring for the zone where the avatar currently stands
+                    if (widget.isCurrentZone)
+                      Positioned.fill(
+                        child: AnimatedBuilder(
+                          animation: widget.floatAnimation,
+                          builder: (_, __) {
+                            // Two rings offset by half a cycle create a continuous wave
+                            final t1 = widget.floatAnimation.value;
+                            final t2 = (widget.floatAnimation.value + 0.5) % 1.0;
+                            return Stack(children: [
+                              _PulseRing(
+                                  progress: t1, color: widget.zone.color),
+                              _PulseRing(
+                                  progress: t2, color: widget.zone.color),
+                            ]);
+                          },
+                        ),
+                      ),
                     // Main island container
                     Container(
                     width: 160,
@@ -2816,6 +2861,59 @@ class _ZoneIslandState extends State<_ZoneIsland> {
       },
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PULSE RING — expanding translucent ring that emanates from a zone island when
+// the avatar is currently standing there.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Stateless helper that draws a single ring expanding from 100% → 160% and
+/// fading 0.4 → 0.0 as `progress` goes from 0 → 1.
+class _PulseRing extends StatelessWidget {
+  final double progress;
+  final Color color;
+
+  const _PulseRing({required this.progress, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final alpha = (0.55 * (1.0 - progress)).clamp(0.0, 1.0);
+    if (alpha <= 0) return const SizedBox.shrink();
+    return CustomPaint(
+      painter: _PulseRingPainter(progress: progress, color: color),
+    );
+  }
+}
+
+class _PulseRingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+
+  const _PulseRingPainter({required this.progress, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    // Ring expands from diagonal/2 (= outer edge of island) outward by 60%
+    final baseR = math.sqrt(size.width * size.width + size.height * size.height) / 2;
+    final radius = baseR * (1.0 + progress * 0.65);
+    final alpha = (0.55 * (1.0 - progress)).clamp(0.0, 1.0);
+    final strokeW = math.max(1.0, 3.5 * (1.0 - progress));
+
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = color.withValues(alpha: alpha)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeW,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_PulseRingPainter old) =>
+      old.progress != progress || old.color != color;
 }
 
 /// Enhanced 3D background painter with parallax layers
