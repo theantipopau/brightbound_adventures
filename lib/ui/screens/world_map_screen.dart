@@ -134,8 +134,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Puzzle Peaks',
       emoji: '🧩',
       color: AppColors.puzzlePeaksColor,
-      // Top centre-left
-      position: Offset(0.38, 0.12),
+      // Top centre-left — dy raised from 0.12 to 0.22 so the island stays
+      // below the HUD after gridToScreen topReserve + island upward protrusion.
+      position: Offset(0.38, 0.22),
       description: 'Solve tricky puzzles!',
       order: 6,
       requiredStars: 22,
@@ -145,8 +146,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Adventure Arena',
       emoji: '🏆',
       color: AppColors.adventureArenaColor,
-      // Top centre-right - final zone
-      position: Offset(0.62, 0.10),
+      // Top centre-right — dy raised from 0.10 to 0.18.
+      position: Offset(0.62, 0.18),
       description: 'Ultimate challenges!',
       order: 7,
       requiredStars: 28,
@@ -396,13 +397,17 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         final isPortrait = constraints.maxHeight > constraints.maxWidth;
                         _isCompactLayout = constraints.maxWidth < 980;
                         
-                        // Improved scaling for portrait phones
+                        // Scale based on the smaller dimension so islands
+                        // never exceed 1× their design size, which prevents
+                        // visual bleed outside layout boxes.
                         if (isPortrait) {
-                          // Portrait: scale based on height, but keep it reasonable
-                          _uiScale = (constraints.maxHeight / 800).clamp(0.70, 1.10);
+                          // Portrait: avoid growing above 1.0 so Transform.scale
+                          // does not bleed islands outside their Positioned boxes.
+                          _uiScale = (constraints.maxHeight / 800).clamp(0.70, 1.0);
                         } else {
-                          // Landscape: scale based on shortest side
-                          _uiScale = (shortest / 760).clamp(0.75, 1.20);
+                          // Landscape: reference 760px so common laptop heights
+                          // (768, 800, 900) stay ≤ 1.05.
+                          _uiScale = (shortest / 760).clamp(0.75, 1.0);
                         }
 
                         // Calculate avatar position for shadows
@@ -835,17 +840,21 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       baseHeight = 165.0;
     }
     
-    final sideInset = constraints.maxWidth < 300 ? 2.0 : (constraints.maxWidth < 340 ? 4.0 : 10.0);
-    final minTopInset = constraints.maxHeight < 600 ? 30.0 : (constraints.maxHeight < 620 ? 40.0 : 52.0);
-    final maxBottomInset = constraints.maxHeight < 600 ? 70.0 : (constraints.maxHeight < 620 ? 88.0 : 110.0);
-    // Use layout dimensions (baseWidth/baseHeight) for clamping — the island widget
-    // always claims that much layout space regardless of the visual Transform.scale.
-    final left = (screenPos.dx - (baseWidth / 2))
-      .clamp(sideInset, constraints.maxWidth - baseWidth - sideInset)
-      .toDouble();
-    final top =
-      (screenPos.dy - (baseHeight * 0.55) + (1 - progress) * 50).clamp(
-        minTopInset, constraints.maxHeight - baseHeight - maxBottomInset)
+    // Horizontal: keep islands inside the screen with a small edge inset.
+    final sideInset = constraints.maxWidth < 340 ? 4.0 : 10.0;
+    final hMin = sideInset;
+    final hMax = math.max(hMin, constraints.maxWidth - baseWidth - sideInset);
+    // Vertical: gridToScreen already handles HUD + bottom-UI clearance via its
+    // topReserve and bottomUIReserve. The clamp here is a last-resort safety
+    // guard to prevent islands from exceeding the physical screen boundaries.
+    final vMin = 4.0;
+    final vMax = math.max(
+      vMin,
+      constraints.maxHeight - baseHeight - (_isCompactLayout ? 250.0 : 190.0),
+    );
+    final left = (screenPos.dx - (baseWidth / 2)).clamp(hMin, hMax).toDouble();
+    final top = (screenPos.dy - (baseHeight * 0.55) + (1 - progress) * 50)
+        .clamp(vMin, vMax)
         .toDouble();
 
     return Positioned(

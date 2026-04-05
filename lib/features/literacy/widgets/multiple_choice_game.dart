@@ -426,34 +426,107 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                             ),
                           ),
 
-                        // Timer Bar
+                        // Timer Bar — gradient fill + seconds countdown
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0, vertical: 8.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value: _gameController.remainingTime /
-                                  _gameController.maxTimePerQuestion,
-                              backgroundColor: Colors.grey[200],
-                              valueColor: AlwaysStoppedAnimation(
-                                  _gameController.remainingTime < 10
-                                      ? Colors.red
-                                      : widget.themeColor),
-                              minHeight: 12,
-                            ),
+                              horizontal: 16.0, vertical: 6.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              // Countdown text
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                child: Text(
+                                  key: ValueKey(_gameController.remainingTime),
+                                  '${_gameController.remainingTime}s',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: _gameController.remainingTime < 10
+                                        ? Colors.red
+                                        : Colors.grey.shade500,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              // Gradient progress bar
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: TweenAnimationBuilder<double>(
+                                  key: ValueKey(_currentIndex),
+                                  tween: Tween(begin: 1.0, end: 0.0),
+                                  duration: Duration(
+                                      seconds: _gameController.maxTimePerQuestion),
+                                  builder: (context, _, child) {
+                                    final ratio = _gameController.remainingTime /
+                                        _gameController.maxTimePerQuestion;
+                                    final isUrgent =
+                                        _gameController.remainingTime < 10;
+                                    return Stack(
+                                      children: [
+                                        // Track
+                                        Container(
+                                          height: 10,
+                                          color: Colors.grey.shade200,
+                                        ),
+                                        // Fill
+                                        FractionallySizedBox(
+                                          widthFactor: ratio.clamp(0.0, 1.0),
+                                          child: Container(
+                                            height: 10,
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: isUrgent
+                                                    ? [
+                                                        Colors.red.shade300,
+                                                        Colors.red.shade600
+                                                      ]
+                                                    : [
+                                                        widget.themeColor
+                                                            .withValues(alpha: 0.8),
+                                                        widget.themeColor,
+                                                      ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
-                        // Quiz Layout
+                        // Quiz Layout — AnimatedSwitcher slides between questions
                         Expanded(
-                          child: ResponsiveQuizLayout(
-                            questionCard: _buildQuestionCard(),
-                            optionsArea: _buildOptionsArea(),
-                            feedbackWidget: _answered
-                                ? _buildFeedback(_currentQuestion
-                                    .isCorrect(_selectedIndex ?? -1))
-                                : null,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 280),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeIn,
+                            transitionBuilder: (child, animation) {
+                              return SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0.06, 0),
+                                  end: Offset.zero,
+                                ).animate(animation),
+                                child: FadeTransition(
+                                    opacity: animation, child: child),
+                              );
+                            },
+                            child: KeyedSubtree(
+                              key: ValueKey(_currentIndex),
+                              child: ResponsiveQuizLayout(
+                                questionCard: _buildQuestionCard(),
+                                optionsArea: _buildOptionsArea(),
+                                feedbackWidget: _answered
+                                    ? _buildFeedback(_currentQuestion
+                                        .isCorrect(_selectedIndex ?? -1))
+                                    : null,
+                              ),
+                            ),
                           ),
                         ),
                       ],
