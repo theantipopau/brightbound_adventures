@@ -31,6 +31,14 @@ class _SciencePracticeScreenState extends State<SciencePracticeScreen> {
   void initState() {
     super.initState();
     _questionsFuture = _loadAndGenerateQuestions();
+    // Pre-populate AI cache for next session — fire and forget.
+    AiQuestionService.instance.prefetch(
+      zone: 'science_explorers',
+      skill: widget.skillId,
+      difficulty: 3,
+      fetchCount: 10,
+      ageGroup: '6-12',
+    );
   }
 
   Future<NaplanQuestionSet> _loadAndGenerateQuestions() async {

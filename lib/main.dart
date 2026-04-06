@@ -43,6 +43,8 @@ void main() async {
         Provider<HapticService>(create: (_) => registry.haptic),
         ChangeNotifierProvider<SpacedRepetitionService>.value(
             value: registry.srs),
+        ChangeNotifierProvider<AiQuestionService>.value(
+            value: registry.aiQuestions),
       ],
       child: const BrightBoundApp(),
     ),

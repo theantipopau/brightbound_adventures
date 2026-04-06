@@ -1,23 +1,56 @@
 import 'dart:math';
 import 'package:brightbound_adventures/features/logic/models/question.dart';
+import 'package:brightbound_adventures/core/utils/puzzle_peaks_question_bank.dart';
+import 'package:brightbound_adventures/core/services/ai_question_service.dart';
 
 /// Comprehensive question generator for Puzzle Peaks (Logic & Reasoning)
 class PuzzlePeaksQuestionGenerator {
   static final Random _random = Random();
 
-  /// Generate questions for different logic skills and difficulty levels
+  /// Generate questions for different logic skills and difficulty levels.
+  ///
+  /// Blends: AI-cached questions (up to 40%) + static bank + procedural.
   static List<LogicQuestion> generate({
     required String skill,
     required int difficulty,
     int count = 10,
   }) {
-    final questions = <LogicQuestion>[];
+    // 1. AI-cached questions (up to 40% of total)
+    final aiRaw = AiQuestionService.instance.getCached(
+      zone: 'puzzle_peaks',
+      skill: skill.isEmpty ? 'logic_mixed' : skill,
+      difficulty: difficulty,
+      count: count * 2 ~/ 5,
+    );
+    final aiConverted = aiRaw.map((aq) => LogicQuestion(
+          id: 'ai_logic_${aq.question.hashCode.abs()}',
+          skillId: skill,
+          question: aq.question,
+          options: aq.options,
+          correctIndex: aq.correctIndex,
+          hint: aq.hint,
+          explanation: aq.explanation,
+          difficulty: difficulty,
+          type: LogicQuestionType.logicPuzzle,
+        )).toList();
 
-    for (int i = 0; i < count; i++) {
-      questions.add(_generateSingleQuestion(skill, difficulty, i));
+    // 2. Static bank questions
+    final needed = count - aiConverted.length;
+    final bankQuestions = PuzzlePeaksQuestionBank.get(
+      skillId: skill,
+      difficulty: difficulty,
+      count: needed,
+    );
+
+    // 3. Procedural fallback to top up if needed
+    final staticPool = List<LogicQuestion>.from(bankQuestions);
+    int proceduralIndex = 0;
+    while (staticPool.length < needed) {
+      staticPool.add(_generateSingleQuestion(skill, difficulty, proceduralIndex++));
     }
 
-    return questions;
+    final combined = [...aiConverted, ...staticPool.take(needed)]..shuffle(_random);
+    return combined.take(count).toList();
   }
 
   static LogicQuestion _generateSingleQuestion(

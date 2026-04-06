@@ -1,22 +1,73 @@
 import 'dart:math';
 import 'package:brightbound_adventures/features/science/models/question.dart';
 import 'package:brightbound_adventures/core/utils/enhanced_question_generator.dart';
+import 'package:brightbound_adventures/core/utils/science_question_bank.dart';
+import 'package:brightbound_adventures/core/services/ai_question_service.dart';
 
 class ScienceQuestGenerator {
   static final Random _random = Random();
+
+  /// Map theme string to a skill ID understood by the question bank.
+  static String _themeToSkillId(String theme) {
+    final t = theme.toLowerCase();
+    if (t.contains('animal') || t.contains('living') || t.contains('plant') ||
+        t.contains('lifecycle') || t.contains('food') || t.contains('body')) {
+      return 'skill_biological_sciences';
+    }
+    if (t.contains('weather') || t.contains('season') || t.contains('solar') ||
+        t.contains('space') || t.contains('rock') || t.contains('water cycle') ||
+        t.contains('earth')) {
+      return 'skill_earth_sciences';
+    }
+    if (t.contains('force') || t.contains('material') || t.contains('light') ||
+        t.contains('sound') || t.contains('energy') || t.contains('electric')) {
+      return 'skill_physical_sciences';
+    }
+    return ''; // all topics
+  }
 
   static List<ScienceQuestion> generate({
     required String theme,
     required int difficulty,
     int count = 10,
   }) {
-    final questions = <ScienceQuestion>[];
+    final skillId = _themeToSkillId(theme);
 
-    for (int i = 0; i < count; i++) {
-      questions.add(_generateSingleQuestion(theme, difficulty, i));
+    // 1. Try to get AI-cached questions (up to half the requested count).
+    final aiRaw = AiQuestionService.instance.getCached(
+      zone: 'science_explorers',
+      skill: skillId.isEmpty ? 'science_mixed' : skillId,
+      difficulty: difficulty,
+      count: count ~/ 2,
+    );
+    final aiConverted = aiRaw.map((aq) => ScienceQuestion(
+          id: 'ai_sci_${aq.question.hashCode.abs()}',
+          skillId: skillId.isEmpty ? 'skill_biological_sciences' : skillId,
+          question: aq.question,
+          options: aq.options,
+          correctIndex: aq.correctIndex,
+          difficulty: difficulty,
+          topic: 'AI Generated',
+          hint: aq.hint,
+          explanation: aq.explanation,
+        )).toList();
+
+    // 2. Fill remainder from the static bank.
+    final needed = count - aiConverted.length;
+    final bankQuestions = ScienceQuestionBank.get(
+      skillId: skillId,
+      difficulty: difficulty,
+      count: needed,
+    );
+
+    // 3. Fall back to procedural generator if still short.
+    final staticPool = [...bankQuestions];
+    while (staticPool.length < needed) {
+      staticPool.add(_generateSingleQuestion(theme, difficulty, staticPool.length));
     }
 
-    return questions;
+    final combined = [...aiConverted, ...staticPool.take(needed)]..shuffle(_random);
+    return combined.take(count).toList();
   }
 
   static ScienceQuestion _generateSingleQuestion(

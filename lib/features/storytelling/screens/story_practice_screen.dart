@@ -12,6 +12,7 @@ import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/spaced_repetition_service.dart';
 import 'package:brightbound_adventures/core/utils/story_springs_generator.dart';
+import 'package:brightbound_adventures/core/services/ai_question_service.dart';
 import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
 import 'package:brightbound_adventures/ui/widgets/zone_mastered_celebration.dart';
@@ -41,6 +42,18 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
   int _correctAnswers = 0;
   int _totalQuestions = 0;
   int _xpEarned = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    AiQuestionService.instance.prefetch(
+      zone: 'story_springs',
+      skill: widget.skillId,
+      difficulty: 3,
+      fetchCount: 10,
+      ageGroup: '6-12',
+    );
+  }
 
   List<StoryQuestion> _getQuestionsForSkill() {
     // Get adaptive difficulty level

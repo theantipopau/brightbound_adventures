@@ -35,6 +35,7 @@ class ServiceRegistry {
   late DailyChallengeService _dailyChallenge;
   late HapticService _haptic;
   late SpacedRepetitionService _srs;
+  late AiQuestionService _aiQuestions;
 
   // Getters
   LocalStorageService get storage => _storage;
@@ -48,6 +49,7 @@ class ServiceRegistry {
   DailyChallengeService get dailyChallenge => _dailyChallenge;
   HapticService get haptic => _haptic;
   SpacedRepetitionService get srs => _srs;
+  AiQuestionService get aiQuestions => _aiQuestions;
 
   /// Initialize all services in dependency order
   ///
@@ -93,5 +95,9 @@ class ServiceRegistry {
     // 8. Initialize spaced repetition
     _srs = SpacedRepetitionService();
     await _srs.initialize();
+
+    // 9. Initialize AI question service (loads cache from SharedPreferences)
+    _aiQuestions = AiQuestionService();
+    await _aiQuestions.initialize();
   }
 }

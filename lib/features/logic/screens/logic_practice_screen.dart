@@ -12,6 +12,7 @@ import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/spaced_repetition_service.dart';
 import 'package:brightbound_adventures/core/utils/puzzle_peaks_generator.dart';
+import 'package:brightbound_adventures/core/services/ai_question_service.dart';
 import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
 import 'package:brightbound_adventures/ui/widgets/zone_mastered_celebration.dart';
@@ -41,6 +42,19 @@ class _LogicPracticeScreenState extends State<LogicPracticeScreen> {
   int _correctAnswers = 0;
   int _totalQuestions = 0;
   int _xpEarned = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-populate AI cache for next session — fire and forget.
+    AiQuestionService.instance.prefetch(
+      zone: 'puzzle_peaks',
+      skill: widget.skillId,
+      difficulty: 3,
+      fetchCount: 10,
+      ageGroup: '6-12',
+    );
+  }
 
   List<LogicQuestion> _getQuestionsForSkill() {
     // Get adaptive difficulty level

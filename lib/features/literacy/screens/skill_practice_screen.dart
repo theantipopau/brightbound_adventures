@@ -11,6 +11,7 @@ import 'package:brightbound_adventures/ui/widgets/streak_milestone_modal.dart';
 import 'package:brightbound_adventures/features/literacy/models/question.dart';
 import 'package:brightbound_adventures/features/literacy/widgets/multiple_choice_game.dart';
 import 'package:brightbound_adventures/features/literacy/widgets/quiz_results_screen.dart';
+import 'package:brightbound_adventures/core/services/ai_question_service.dart';
 
 /// Skill practice screen that connects skills to their games
 class SkillPracticeScreen extends StatefulWidget {
@@ -39,6 +40,18 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
   int _hintsUsed = 0;
   String? _guardianMessage;
   String? _guardianEmoji;
+
+  @override
+  void initState() {
+    super.initState();
+    AiQuestionService.instance.prefetch(
+      zone: 'word_woods',
+      skill: widget.skill.id,
+      difficulty: widget.skill.difficulty,
+      fetchCount: 10,
+      ageGroup: '6-12',
+    );
+  }
 
   List<LiteracyQuestion> _getQuestionsForSkill() {
     switch (widget.skill.id) {
