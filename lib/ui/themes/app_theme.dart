@@ -572,7 +572,8 @@ class AppTheme {
           textStyle: AppTypography.labelLarge,
         ),
       ),
-      // Text theme
+      // Text theme — NotoEmoji fallback ensures bundled emoji font is used
+      // instead of Flutter Web trying to download Noto fonts from CDN.
       textTheme: TextTheme(
         displayLarge: AppTypography.displayLarge,
         displayMedium: AppTypography.displayMedium,
@@ -589,7 +590,7 @@ class AppTheme {
         labelLarge: AppTypography.labelLarge,
         labelMedium: AppTypography.labelMedium,
         labelSmall: AppTypography.labelSmall,
-      ),
+      ).apply(fontFamilyFallback: [fontEmoji]),
       // Card theme
       cardTheme: CardThemeData(
         color: AppColors.surface,

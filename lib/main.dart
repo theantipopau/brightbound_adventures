@@ -56,11 +56,17 @@ class BrightBoundApp extends StatelessWidget {
       title: 'BrightBound Adventures',
       theme: AppTheme.lightTheme(),
       builder: (context, child) {
-        return ResponsiveWrapper(
-          designSize: const Size(1280, 800), // Target desktop/tablet landscape
-          minWidth: true,
-          minHeight: true,
-          child: child!,
+        // DefaultTextStyle.merge ensures the bundled NotoEmoji font is listed
+        // as a fallback for every Text widget, preventing Flutter Web CanvasKit
+        // from spinning in requestAnimationFrame trying to download Noto fonts.
+        return DefaultTextStyle.merge(
+          style: const TextStyle(fontFamilyFallback: ['NotoEmoji']),
+          child: ResponsiveWrapper(
+            designSize: const Size(1280, 800),
+            minWidth: true,
+            minHeight: true,
+            child: child!,
+          ),
         );
       },
       home: const SplashScreen(),
