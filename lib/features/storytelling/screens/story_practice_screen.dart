@@ -10,6 +10,7 @@ import '../widgets/story_game.dart';
 import '../widgets/story_results_screen.dart';
 import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
+import 'package:brightbound_adventures/core/services/spaced_repetition_service.dart';
 import 'package:brightbound_adventures/core/utils/story_springs_generator.dart';
 import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
@@ -112,6 +113,12 @@ class _StoryPracticeScreenState extends State<StoryPracticeScreen> {
       skillId: widget.skillId,
       sessionAccuracy: percentage,
       sessionHints: 0,
+    );
+
+    // Schedule spaced repetition review
+    Provider.of<SpacedRepetitionService>(context, listen: false).recordSession(
+      skillId: widget.skillId,
+      accuracy: percentage,
     );
 
     // Check if this session completed the whole zone

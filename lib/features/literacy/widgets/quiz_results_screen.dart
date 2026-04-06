@@ -108,6 +108,12 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
       sessionHints: widget.hintsUsed,
     );
 
+    // Schedule spaced repetition review
+    context.read<SpacedRepetitionService>().recordSession(
+      skillId: widget.skillId,
+      accuracy: widget.accuracy,
+    );
+
     // Check if this session completed the whole zone
     checkAndShowZoneMastered(
       context,

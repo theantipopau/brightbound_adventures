@@ -34,6 +34,7 @@ class ServiceRegistry {
   late SoundEffectsService _soundEffects;
   late DailyChallengeService _dailyChallenge;
   late HapticService _haptic;
+  late SpacedRepetitionService _srs;
 
   // Getters
   LocalStorageService get storage => _storage;
@@ -46,6 +47,7 @@ class ServiceRegistry {
   SoundEffectsService get soundEffects => _soundEffects;
   DailyChallengeService get dailyChallenge => _dailyChallenge;
   HapticService get haptic => _haptic;
+  SpacedRepetitionService get srs => _srs;
 
   /// Initialize all services in dependency order
   ///
@@ -87,5 +89,9 @@ class ServiceRegistry {
     // 7. Initialize haptic service
     _haptic = HapticService();
     // No async init needed for haptic
+
+    // 8. Initialize spaced repetition
+    _srs = SpacedRepetitionService();
+    await _srs.initialize();
   }
 }

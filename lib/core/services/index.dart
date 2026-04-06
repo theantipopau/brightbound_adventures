@@ -18,3 +18,4 @@ export 'daily_challenge_service.dart';
 export 'haptic_service.dart';
 export 'animation_service.dart';
 export 'ai_learning_assistant_service.dart';
+export 'spaced_repetition_service.dart';

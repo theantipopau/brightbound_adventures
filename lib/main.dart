@@ -41,6 +41,8 @@ void main() async {
         ChangeNotifierProvider<DailyChallengeService>.value(
             value: registry.dailyChallenge),
         Provider<HapticService>(create: (_) => registry.haptic),
+        ChangeNotifierProvider<SpacedRepetitionService>.value(
+            value: registry.srs),
       ],
       child: const BrightBoundApp(),
     ),

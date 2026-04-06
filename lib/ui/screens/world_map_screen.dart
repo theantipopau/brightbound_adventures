@@ -1276,6 +1276,45 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   },
                 ),
 
+                // Spaced repetition review badge
+                Consumer<SpacedRepetitionService>(
+                  builder: (context, srs, _) {
+                    final due = srs.dueCount;
+                    if (due == 0) return const SizedBox.shrink();
+                    return Tooltip(
+                      message: '$due skill${due == 1 ? '' : 's'} due for review',
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.deepPurple.shade50,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.deepPurple.shade300,
+                            width: 1.5,
+                          ),
+                          boxShadow: AppShadows.sm(Colors.deepPurple),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🔁', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$due',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                                color: Colors.deepPurple.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
                 // Avatar/Profile Circle
                 GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/avatar-creator'),
