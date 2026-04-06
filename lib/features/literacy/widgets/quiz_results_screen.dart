@@ -4,6 +4,7 @@ import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/widgets/achievement_notification.dart';
 import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
 import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
+import 'package:brightbound_adventures/ui/widgets/zone_mastered_celebration.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Results screen shown after completing a quiz
@@ -21,6 +22,10 @@ class QuizResultsScreen extends StatefulWidget {
   final String? guardianMessage;
   /// Optional guardian emoji for the banner.
   final String? guardianEmoji;
+  /// Zone id used to check for zone mastery after the session.
+  final String? zoneId;
+  /// Display name of the zone (e.g. 'Word Woods').
+  final String? zoneName;
 
   const QuizResultsScreen({
     super.key,
@@ -35,6 +40,8 @@ class QuizResultsScreen extends StatefulWidget {
     this.onExit,
     this.guardianMessage,
     this.guardianEmoji,
+    this.zoneId,
+    this.zoneName,
   });
 
   @override
@@ -99,6 +106,15 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
       skillId: widget.skillId,
       sessionAccuracy: widget.accuracy,
       sessionHints: widget.hintsUsed,
+    );
+
+    // Check if this session completed the whole zone
+    checkAndShowZoneMastered(
+      context,
+      skillProvider,
+      zoneId: widget.zoneId,
+      zoneName: widget.zoneName,
+      themeColor: widget.themeColor,
     );
 
     // Award XP

@@ -9,6 +9,7 @@ import 'package:brightbound_adventures/core/services/ai_learning_assistant_servi
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
+import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/controllers/game_session_controller.dart';
 import 'package:brightbound_adventures/core/utils/question_variation_helper.dart';
@@ -205,11 +206,17 @@ class _NumeracyGameState extends State<NumeracyGame>
     _gameController.submitAnswer(isCorrect);
     _prepareAiExplanation();
 
+    final avatarProvider = context.read<AvatarProvider>();
+
     if (isCorrect) {
       hapticService.onCorrectAnswer();
       _audioManager.playCorrectAnswer();
       _starController.forward(from: 0);
       showFloatingReward(context, '+10 ⭐', color: Colors.amber);
+      avatarProvider.setEmotion(
+        _gameController.streak >= 3 ? AvatarEmotion.proud : AvatarEmotion.happy,
+        resetAfter: const Duration(milliseconds: 1800),
+      );
       setState(() {
         _showConfetti = true;
       });
@@ -220,6 +227,14 @@ class _NumeracyGameState extends State<NumeracyGame>
       Future.delayed(const Duration(milliseconds: 1500), _nextQuestion);
     } else {
       hapticService.onWrongAnswer();
+      avatarProvider.setEmotion(AvatarEmotion.sad,
+          resetAfter: const Duration(milliseconds: 800));
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted) {
+          avatarProvider.setEmotion(AvatarEmotion.thinking,
+              resetAfter: const Duration(milliseconds: 1200));
+        }
+      });
       Future.delayed(const Duration(milliseconds: 2000), _nextQuestion);
     }
 

@@ -11,7 +11,9 @@ import '../widgets/logic_results_screen.dart';
 import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/utils/puzzle_peaks_generator.dart';
+import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
+import 'package:brightbound_adventures/ui/widgets/zone_mastered_celebration.dart';
 
 /// Main screen for Puzzle Peaks skill practice
 /// Routes to appropriate logic game based on skill selected
@@ -107,6 +109,19 @@ class _LogicPracticeScreenState extends State<LogicPracticeScreen> {
       sessionAccuracy: percentage,
       sessionHints: 0,
     );
+
+    // Check if this session completed the whole zone
+    if (widget.zoneId != null) {
+      final themeColor =
+          WorldTokens.fromZoneId(widget.zoneId!).primaryColor;
+      checkAndShowZoneMastered(
+        context,
+        skillProvider,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
+        themeColor: themeColor,
+      );
+    }
 
     // Award XP
     final avatarProvider = Provider.of<AvatarProvider>(context, listen: false);

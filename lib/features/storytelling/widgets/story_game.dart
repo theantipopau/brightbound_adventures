@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
+import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
@@ -191,6 +192,8 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   void _selectAnswer(int index) {
     if (_showFeedback) return;
 
+    final avatarProvider = context.read<AvatarProvider>();
+
     setState(() {
       _selectedAnswer = index;
       _showFeedback = true;
@@ -201,7 +204,6 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
         _currentStreak++;
         _sparkleController.forward(from: 0);
 
-        // Play appropriate celebration sound based on streak
         if (_currentStreak >= 3) {
           _audioManager.playStreak(_currentStreak);
         } else {
@@ -213,7 +215,22 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       }
     });
 
-    if (_isCorrect) showFloatingReward(context, '+10 ⭐', color: Colors.cyanAccent);
+    if (_isCorrect) {
+      showFloatingReward(context, '+10 ⭐', color: Colors.cyanAccent);
+      avatarProvider.setEmotion(
+        _currentStreak >= 3 ? AvatarEmotion.proud : AvatarEmotion.happy,
+        resetAfter: const Duration(milliseconds: 1800),
+      );
+    } else {
+      avatarProvider.setEmotion(AvatarEmotion.sad,
+          resetAfter: const Duration(milliseconds: 800));
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted) {
+          avatarProvider.setEmotion(AvatarEmotion.thinking,
+              resetAfter: const Duration(milliseconds: 1200));
+        }
+      });
+    }
     _prepareAiExplanation();
 
     Future.delayed(const Duration(milliseconds: 2000), () {

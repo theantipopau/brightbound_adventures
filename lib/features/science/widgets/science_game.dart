@@ -207,11 +207,17 @@ class _ScienceGameState extends State<ScienceGame>
     _gameController.submitAnswer(isCorrect);
     _prepareAiExplanation();
 
+    final avatarProvider = context.read<AvatarProvider>();
+
     if (isCorrect) {
       hapticService.onCorrectAnswer();
       _audioManager.playCorrectAnswer();
       _starController.forward(from: 0);
       showFloatingReward(context, '+10 ⭐', color: Colors.purpleAccent);
+      avatarProvider.setEmotion(
+        _gameController.streak >= 3 ? AvatarEmotion.proud : AvatarEmotion.happy,
+        resetAfter: const Duration(milliseconds: 1800),
+      );
 
       setState(() {
         _discoveryMeter = (_discoveryMeter + 22).clamp(0, 100);
@@ -245,6 +251,14 @@ class _ScienceGameState extends State<ScienceGame>
       Future.delayed(const Duration(milliseconds: 1500), _nextQuestion);
     } else {
       hapticService.onWrongAnswer();
+      avatarProvider.setEmotion(AvatarEmotion.sad,
+          resetAfter: const Duration(milliseconds: 800));
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted) {
+          avatarProvider.setEmotion(AvatarEmotion.thinking,
+              resetAfter: const Duration(milliseconds: 1200));
+        }
+      });
 
       var shieldSavedLife = false;
       if (_streakShieldAvailable) {

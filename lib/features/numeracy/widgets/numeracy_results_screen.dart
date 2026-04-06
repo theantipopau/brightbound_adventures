@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/widgets/achievement_notification.dart';
 import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
+import 'package:brightbound_adventures/ui/widgets/zone_mastered_celebration.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Quiz results screen for numeracy games
@@ -16,6 +17,10 @@ class NumeracyResultsScreen extends StatefulWidget {
   final Color themeColor;
   final VoidCallback onPlayAgain;
   final VoidCallback onExit;
+  /// Zone id used to check for zone mastery after the session.
+  final String? zoneId;
+  /// Display name of the zone (e.g. 'Number Nebula').
+  final String? zoneName;
 
   const NumeracyResultsScreen({
     super.key,
@@ -28,6 +33,8 @@ class NumeracyResultsScreen extends StatefulWidget {
     this.themeColor = AppColors.numberNebulaColor,
     required this.onPlayAgain,
     required this.onExit,
+    this.zoneId,
+    this.zoneName,
   });
 
   @override
@@ -75,6 +82,15 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
       skillId: widget.skillId,
       sessionAccuracy: widget.accuracy,
       sessionHints: widget.hintsUsed,
+    );
+
+    // Check if this session completed the whole zone
+    checkAndShowZoneMastered(
+      context,
+      skillProvider,
+      zoneId: widget.zoneId,
+      zoneName: widget.zoneName,
+      themeColor: widget.themeColor,
     );
 
     // Award stars

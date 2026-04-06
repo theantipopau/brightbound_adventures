@@ -182,6 +182,8 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
         onExit: _exitToZone,
         guardianMessage: _guardianMessage,
         guardianEmoji: _guardianEmoji,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
       );
     }
 

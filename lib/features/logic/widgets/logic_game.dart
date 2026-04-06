@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
+import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
@@ -157,6 +158,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
 
     // Get haptic service
     final hapticService = context.read<HapticService>();
+    final avatarProvider = context.read<AvatarProvider>();
 
     setState(() {
       _selectedAnswer = index;
@@ -168,10 +170,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
         _currentStreak++;
         _celebrationController.forward(from: 0);
         
-        // Haptic feedback
         hapticService.onCorrectAnswer();
 
-        // Play appropriate celebration sound based on streak
         if (_currentStreak >= 3) {
           _audioManager.playStreak(_currentStreak);
         } else {
@@ -179,13 +179,26 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
         }
       } else {
         _currentStreak = 0;
-        
-        // Haptic feedback
         hapticService.onWrongAnswer();
-
         _audioManager.playIncorrectAnswer();
       }
     });
+
+    if (_isCorrect) {
+      avatarProvider.setEmotion(
+        _currentStreak >= 3 ? AvatarEmotion.proud : AvatarEmotion.happy,
+        resetAfter: const Duration(milliseconds: 1800),
+      );
+    } else {
+      avatarProvider.setEmotion(AvatarEmotion.sad,
+          resetAfter: const Duration(milliseconds: 800));
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted) {
+          avatarProvider.setEmotion(AvatarEmotion.thinking,
+              resetAfter: const Duration(milliseconds: 1200));
+        }
+      });
+    }
 
     setState(() => _aiExplanationText = null);
     _prepareAiExplanation();

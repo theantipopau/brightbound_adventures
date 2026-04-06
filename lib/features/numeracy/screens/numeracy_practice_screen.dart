@@ -179,6 +179,8 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
         themeColor: widget.themeColor,
         onPlayAgain: _playAgain,
         onExit: _exitToZone,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
       );
     }
 
