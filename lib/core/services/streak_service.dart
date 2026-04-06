@@ -8,6 +8,10 @@ class StreakService extends ChangeNotifier {
   DateTime? _lastPlayDate;
   bool _playedToday = false;
   int _totalDaysPlayed = 0;
+  Set<String> _playedDates = {};
+
+  static String _dateKey(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   int get currentStreak => _currentStreak;
   int get longestStreak => _longestStreak;
@@ -60,6 +64,14 @@ class StreakService extends ChangeNotifier {
       final lastPlayString = prefs.getString('lastPlayDate');
       if (lastPlayString != null) {
         _lastPlayDate = DateTime.tryParse(lastPlayString);
+      }
+
+      // Load played dates history
+      final datesList = prefs.getStringList('playedDatesList') ?? [];
+      _playedDates = datesList.toSet();
+      // Migration: ensure lastPlayDate is in set if played today
+      if (_lastPlayDate != null) {
+        _playedDates.add(_dateKey(_lastPlayDate!));
       }
 
       // Check if streak is still valid
@@ -134,6 +146,14 @@ class StreakService extends ChangeNotifier {
     _lastPlayDate = now;
     _totalDaysPlayed++;
 
+    // Record this date and prune old data
+    _playedDates.add(_dateKey(today));
+    final cutoff = today.subtract(const Duration(days: 90));
+    _playedDates.removeWhere((ds) {
+      final parsed = DateTime.tryParse(ds);
+      return parsed != null && parsed.isBefore(cutoff);
+    });
+
     // Check for longest streak
     if (_currentStreak > _longestStreak) {
       _longestStreak = _currentStreak;
@@ -159,6 +179,7 @@ class StreakService extends ChangeNotifier {
       if (_lastPlayDate != null) {
         await prefs.setString('lastPlayDate', _lastPlayDate!.toIso8601String());
       }
+      await prefs.setStringList('playedDatesList', _playedDates.toList());
     } catch (e) {
       debugPrint('Error saving streak data: $e');
     }
@@ -172,6 +193,16 @@ class StreakService extends ChangeNotifier {
       }
     }
     return 0; // Already at max milestone
+  }
+
+  /// Returns a list of 7 booleans for the last 7 days.
+  /// Index 0 = six days ago, index 6 = today.
+  List<bool> getWeeklyActivity() {
+    final today = DateTime.now();
+    return List.generate(7, (i) {
+      final day = today.subtract(Duration(days: 6 - i));
+      return _playedDates.contains(_dateKey(day));
+    });
   }
 
   /// Get next milestone

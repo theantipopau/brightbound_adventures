@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:brightbound_adventures/core/models/skill.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
@@ -537,441 +540,945 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  //  Dashboard (post-unlock)
+  // ─────────────────────────────────────────────────────────────────────────
+
   Widget _buildDashboard() {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.indigo.shade50,
-              Colors.white,
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              // Header
-              SliverAppBar(
-                expandedHeight: 120,
-                pinned: true,
-                backgroundColor: Colors.indigo,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: _showChangePinDialog,
-                    tooltip: 'Change PIN',
+      backgroundColor: const Color(0xFFF0F4FF),
+      body: SafeArea(
+        child: Consumer2<SkillProvider, StreakService>(
+          builder: (context, skillProvider, streakService, _) {
+            final stats = skillProvider.isInitialized
+                ? skillProvider.getProgressionStats()
+                : null;
+            return CustomScrollView(
+              slivers: [
+                // ── Header AppBar ──────────────────────────────────────────
+                SliverAppBar(
+                  pinned: true,
+                  expandedHeight: 110,
+                  backgroundColor: Colors.indigo.shade700,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.lock),
-                    onPressed: () {
-                      setState(() {
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.white),
+                      onPressed: _showChangePinDialog,
+                      tooltip: 'Change PIN',
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.lock, color: Colors.white),
+                      onPressed: () => setState(() {
                         _isUnlocked = false;
                         _currentPin = '';
-                      });
-                    },
-                    tooltip: 'Lock Dashboard',
-                  ),
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                  title: const Text('Parent Dashboard'),
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.indigo.shade700,
-                          Colors.purple.shade600,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                      }),
+                      tooltip: 'Lock Dashboard',
+                    ),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    title: const Text('Parent Dashboard',
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.indigo.shade800, Colors.purple.shade600],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-              // Summary Cards
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Consumer2<SkillProvider, StreakService>(
-                    builder: (context, skillProvider, streakService, _) {
-                      final stats = skillProvider.isInitialized
-                          ? skillProvider.getProgressionStats()
-                          : null;
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ── Player & Level card ──────────────────────────
+                        Consumer<AvatarProvider>(
+                          builder: (_, avatarProvider, __) {
+                            final avatar = avatarProvider.avatar;
+                            if (avatar == null) return const SizedBox.shrink();
+                            return _buildPlayerCard(avatar, streakService);
+                          },
+                        ),
+                        const SizedBox(height: 16),
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Player info
-                          Consumer<AvatarProvider>(
-                            builder: (context, avatarProvider, _) {
-                              final avatar = avatarProvider.avatar;
-                              return Card(
-                                child: ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Colors.blue.shade100,
-                                    child: const Text('👤',
-                                        style: TextStyle(fontSize: 20)),
-                                  ),
-                                  title: Text(
-                                    avatar?.name ?? 'No Player',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: const Text('Current Player'),
-                                ),
-                              );
-                            },
-                          ),
+                        // ── Quick stats ──────────────────────────────────
+                        _buildQuickStats(skillProvider, streakService, stats),
+                        const SizedBox(height: 20),
 
-                          const SizedBox(height: 16),
+                        // ── 7-day activity ───────────────────────────────
+                        _buildSectionHeader('📅 This Week\'s Activity'),
+                        const SizedBox(height: 10),
+                        _buildWeeklyActivity(streakService),
+                        const SizedBox(height: 20),
 
-                          // Quick stats row
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildStatCard(
-                                  '${streakService.currentStreak}',
-                                  'Day Streak',
-                                  Icons.local_fire_department,
-                                  Colors.orange,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildStatCard(
-                                  '${streakService.totalDaysPlayed}',
-                                  'Days Played',
-                                  Icons.calendar_today,
-                                  Colors.blue,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildStatCard(
-                                  '${stats?.mastered ?? 0}',
-                                  'Mastered',
-                                  Icons.star,
-                                  Colors.amber,
-                                ),
-                              ),
-                            ],
-                          ),
+                        // ── Skills overview donut ────────────────────────
+                        _buildSectionHeader('🎯 Skills Overview'),
+                        const SizedBox(height: 10),
+                        if (stats != null) _buildSkillsBreakdownCard(stats),
+                        const SizedBox(height: 20),
 
-                          const SizedBox(height: 24),
+                        // ── Zone progress ────────────────────────────────
+                        _buildSectionHeader('🗺️ Zone Progress'),
+                        const SizedBox(height: 10),
+                        if (skillProvider.isInitialized)
+                          _buildAllZoneCards(skillProvider),
+                        const SizedBox(height: 20),
 
-                          // Progress section
-                          const Text(
-                            'Learning Progress',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          if (stats != null) ...[
-                            _buildProgressOverview(stats, skillProvider),
-                          ],
-
-                          const SizedBox(height: 24),
-
-                          // Zone breakdown
-                          const Text(
-                            'Zone Progress',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          if (skillProvider.isInitialized) ...[
-                            _buildZoneProgress(skillProvider, 'word_woods',
-                                '🌲 Word Woods', AppColors.wordWoodsColor),
-                            _buildZoneProgress(
-                                skillProvider,
-                                'number_nebula',
-                                '🌌 Number Nebula',
-                                AppColors.numberNebulaColor),
-                            _buildZoneProgress(skillProvider, 'puzzle_peaks',
-                                '🧩 Puzzle Peaks', AppColors.puzzlePeaksColor),
-                            _buildZoneProgress(
-                                skillProvider,
-                                'story_springs',
-                                '📖 Story Springs',
-                                AppColors.storyspringsColor),
-                            _buildZoneProgress(
-                                skillProvider,
-                                'adventure_arena',
-                                '🏆 Adventure Arena',
-                                AppColors.adventureArenaColor),
-                          ],
-
-                          const SizedBox(height: 24),
-
-                          // Achievements summary
-                          const Text(
-                            'Achievements',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          Consumer<AchievementService>(
-                            builder: (context, achievements, _) {
-                              final unlocked =
-                                  achievements.getUnlocked().length;
-                              final total = achievements.achievements.length;
-
-                              return Card(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: Colors.amber
-                                              .withValues(alpha: 0.2),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Text('🏆',
-                                            style: TextStyle(fontSize: 28)),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '$unlocked of $total Unlocked',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 18,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            LinearProgressIndicator(
-                                              value: total > 0
-                                                  ? unlocked / total
-                                                  : 0,
-                                              backgroundColor: Colors.grey[300],
-                                              valueColor:
-                                                  const AlwaysStoppedAnimation(
-                                                      Colors.amber),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-
-                          const SizedBox(height: 32),
+                        // ── Weakest skills ───────────────────────────────
+                        if (skillProvider.isInitialized) ...[
+                          _buildSectionHeader('⚠️ Needs More Practice'),
+                          const SizedBox(height: 10),
+                          _buildWeakestSkills(skillProvider),
+                          const SizedBox(height: 20),
                         ],
-                      );
-                    },
+
+                        // ── Achievements ─────────────────────────────────
+                        _buildSectionHeader('🏆 Achievements'),
+                        const SizedBox(height: 10),
+                        Consumer<AchievementService>(
+                          builder: (_, achievements, __) =>
+                              _buildAchievementsCard(achievements),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // ── Section header ──────────────────────────────────────────────────────
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF1A1F36),
+      ),
+    );
+  }
+
+  // ── Player Card ─────────────────────────────────────────────────────────
+
+  Widget _buildPlayerCard(dynamic avatar, StreakService streakService) {
+    final xpProgress =
+        avatar.nextLevelXP > 0 ? avatar.experiencePoints / avatar.nextLevelXP : 0.0;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.indigo.shade700, Colors.purple.shade600],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.indigo.withValues(alpha: 0.35),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
-        ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildStatCard(
-      String value, String label, IconData icon, Color color) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressOverview(dynamic stats, SkillProvider skillProvider) {
-    final totalSkills = skillProvider.skills.length;
-    final mastered = stats.mastered as int;
-    final practising = stats.practising as int;
-    final locked = stats.locked as int;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 32,
+            backgroundColor: Colors.white.withValues(alpha: 0.2),
+            child: const Text('👤', style: TextStyle(fontSize: 28)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildProgressStat('$mastered', 'Mastered', Colors.green),
-                _buildProgressStat('$practising', 'In Progress', Colors.blue),
-                _buildProgressStat('$locked', 'Locked', Colors.grey),
-                _buildProgressStat('$totalSkills', 'Total', Colors.purple),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        avatar.name ?? 'Player',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: Colors.amber.withValues(alpha: 0.55)),
+                      ),
+                      child: Text(
+                        'Lv. ${avatar.level}',
+                        style: const TextStyle(
+                            color: Colors.amber,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: xpProgress.clamp(0.0, 1.0),
+                    minHeight: 8,
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    valueColor: const AlwaysStoppedAnimation(Colors.amber),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  '${avatar.experiencePoints} / ${avatar.nextLevelXP} XP  •  '
+                  '${streakService.streakEmoji} ${streakService.currentStreak}-day streak',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: totalSkills > 0 ? mastered / totalSkills : 0,
-                minHeight: 12,
-                backgroundColor: Colors.grey[300],
-                valueColor: const AlwaysStoppedAnimation(Colors.green),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${((mastered / totalSkills) * 100).toStringAsFixed(1)}% Complete',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildProgressStat(String value, String label, Color color) {
-    return Column(
+  // ── Quick stats row ──────────────────────────────────────────────────────
+
+  Widget _buildQuickStats(
+      SkillProvider skillProvider, StreakService streakService, dynamic stats) {
+    final totalAttempts = skillProvider.isInitialized
+        ? skillProvider.skills.values.fold<int>(0, (s, sk) => s + sk.attempts)
+        : 0;
+    return Row(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: color,
+        Expanded(
+          child: _buildStatCard(
+            '${streakService.currentStreak}',
+            'Day Streak',
+            Icons.local_fire_department,
+            Colors.orange,
           ),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey[600],
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildStatCard(
+            '${streakService.totalDaysPlayed}',
+            'Days Played',
+            Icons.calendar_today,
+            Colors.blue,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildStatCard(
+            '$totalAttempts',
+            'Sessions',
+            Icons.play_circle_filled,
+            Colors.purple,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildZoneProgress(SkillProvider skillProvider, String zoneId,
-      String zoneName, Color color) {
-    final stats = skillProvider.getZoneStats(zoneId);
-    final progress =
-        stats.totalSkills > 0 ? stats.masteredSkills / stats.totalSkills : 0.0;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(
-                  zoneName.split(' ')[0], // Get emoji
-                  style: const TextStyle(fontSize: 24),
-                ),
-              ),
+  Widget _buildStatCard(
+      String value, String label, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 3)),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 26),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    zoneName.substring(zoneName.indexOf(' ') + 1),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            backgroundColor: Colors.grey[300],
-                            valueColor: AlwaysStoppedAnimation(color),
-                            minHeight: 8,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '${stats.masteredSkills}/${stats.totalSkills}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (stats.averageAccuracy > 0) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'Avg. Accuracy: ${stats.averageAccuracy.toStringAsFixed(0)}%',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
+
+  // ── Weekly activity ──────────────────────────────────────────────────────
+
+  Widget _buildWeeklyActivity(StreakService streakService) {
+    final activity = streakService.getWeeklyActivity();
+    final now = DateTime.now();
+    const dayAbbr = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(7, (i) {
+              final day = now.subtract(Duration(days: 6 - i));
+              final played = activity[i];
+              final isToday = i == 6;
+              return Column(
+                children: [
+                  AnimatedContainer(
+                    duration: Duration(milliseconds: 300 + i * 60),
+                    curve: Curves.elasticOut,
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: played
+                          ? const Color(0xFF4CAF50)
+                          : Colors.grey.shade100,
+                      shape: BoxShape.circle,
+                      border: isToday
+                          ? Border.all(color: Colors.indigo.shade400, width: 2)
+                          : null,
+                      boxShadow: played
+                          ? [
+                              BoxShadow(
+                                  color: Colors.green.withValues(alpha: 0.35),
+                                  blurRadius: 8)
+                            ]
+                          : null,
+                    ),
+                    child: Icon(
+                      played ? Icons.check_rounded : Icons.remove,
+                      size: 18,
+                      color: played ? Colors.white : Colors.grey.shade300,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    dayAbbr[day.weekday - 1],
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isToday
+                          ? Colors.indigo.shade600
+                          : Colors.grey.shade500,
+                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              _dot(const Color(0xFF4CAF50)),
+              const SizedBox(width: 4),
+              Text('Played', style: _legendStyle),
+              const SizedBox(width: 14),
+              _dot(Colors.grey.shade300),
+              const SizedBox(width: 4),
+              Text('Not played', style: _legendStyle),
+              const Spacer(),
+              Text(
+                '${activity.where((b) => b).length}/7 days',
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dot(Color color) => Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle));
+
+  TextStyle get _legendStyle =>
+      TextStyle(fontSize: 11, color: Colors.grey.shade500);
+
+  // ── Skills overview donut ────────────────────────────────────────────────
+
+  Widget _buildSkillsBreakdownCard(dynamic stats) {
+    final total =
+        stats.mastered + stats.practising + stats.introduced + stats.locked as int;
+    final pct = total > 0 ? (stats.mastered * 100 ~/ total) : 0;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Donut chart
+          SizedBox(
+            width: 110,
+            height: 110,
+            child: _SkillDonutChart(
+              mastered: stats.mastered as int,
+              practising: stats.practising as int,
+              introduced: stats.introduced as int,
+              locked: stats.locked as int,
+            ),
+          ),
+          const SizedBox(width: 20),
+          // Legend
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$pct% Complete',
+                  style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green),
+                ),
+                const SizedBox(height: 10),
+                _legendRow(Colors.green, 'Mastered', stats.mastered as int),
+                const SizedBox(height: 6),
+                _legendRow(const Color(0xFF2196F3), 'Practising',
+                    stats.practising as int),
+                const SizedBox(height: 6),
+                _legendRow(Colors.orange, 'Introduced', stats.introduced as int),
+                const SizedBox(height: 6),
+                _legendRow(Colors.grey.shade400, 'Locked', stats.locked as int),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _legendRow(Color color, String label, int count) => Row(
+        children: [
+          Container(
+              width: 11,
+              height: 11,
+              decoration: BoxDecoration(
+                  color: color, shape: BoxShape.circle)),
+          const SizedBox(width: 7),
+          Expanded(
+              child: Text(label,
+                  style: const TextStyle(fontSize: 12))),
+          Text('$count',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                  fontSize: 12)),
+        ],
+      );
+
+  // ── Zone progress cards ──────────────────────────────────────────────────
+
+  static const _zones = [
+    ('word_woods', '🌲', 'Word Woods', Color(0xFF4CAF50)),
+    ('number_nebula', '🌌', 'Number Nebula', Color(0xFF3F51B5)),
+    ('story_springs', '📖', 'Story Springs', Color(0xFF00BCD4)),
+    ('puzzle_peaks', '🧩', 'Puzzle Peaks', Color(0xFF6A1B9A)),
+    ('science_explorers', '🔬', 'Science Explorers', Color(0xFF4DB6AC)),
+    ('creative_corner', '🎨', 'Creative Corner', Color(0xFFFFB74D)),
+    ('adventure_arena', '🏆', 'Adventure Arena', Color(0xFFF44336)),
+  ];
+
+  Widget _buildAllZoneCards(SkillProvider skillProvider) {
+    return Column(
+      children: _zones.map((z) {
+        final (zoneId, emoji, name, color) = z;
+        return _buildZoneCard(skillProvider, zoneId, emoji, name, color);
+      }).toList(),
+    );
+  }
+
+  Widget _buildZoneCard(SkillProvider skillProvider, String zoneId,
+      String emoji, String name, Color color) {
+    final stats = skillProvider.getZoneStats(zoneId);
+    final masteryProgress =
+        stats.totalSkills > 0 ? stats.masteredSkills / stats.totalSkills : 0.0;
+    final accuracy = stats.averageAccuracy;
+    final accColor = accuracy >= 0.8
+        ? Colors.green
+        : accuracy >= 0.5
+            ? Colors.orange
+            : accuracy > 0
+                ? Colors.red
+                : Colors.grey;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 3)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+                child: Text(emoji, style: const TextStyle(fontSize: 24))),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 13)),
+                    Text(
+                      '${stats.masteredSkills}/${stats.totalSkills}',
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: color,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: masteryProgress,
+                    minHeight: 7,
+                    backgroundColor: Colors.grey.shade100,
+                    valueColor: AlwaysStoppedAnimation(color),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      masteryProgress >= 1.0
+                          ? '✅ Zone Mastered!'
+                          : '${(masteryProgress * 100).toStringAsFixed(0)}% mastered',
+                      style: TextStyle(
+                          fontSize: 11, color: Colors.grey.shade500),
+                    ),
+                    if (accuracy > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: accColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${(accuracy * 100).toStringAsFixed(0)}% acc',
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: accColor,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Weakest skills ───────────────────────────────────────────────────────
+
+  Widget _buildWeakestSkills(SkillProvider skillProvider) {
+    final attempted = skillProvider.skills.values
+        .where((s) => s.attempts > 0 && s.state != SkillState.mastered)
+        .toList()
+      ..sort((a, b) => a.accuracy.compareTo(b.accuracy));
+    final bottom5 = attempted.take(5).toList();
+
+    if (bottom5.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Center(
+          child: Text(
+            'No sessions recorded yet — start practising!',
+            style: TextStyle(color: Colors.grey.shade500),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 3)),
+        ],
+      ),
+      child: Column(
+        children: [
+          ...bottom5.asMap().entries.map((entry) {
+            final i = entry.key;
+            final skill = entry.value;
+            final accuracy = skill.accuracy;
+            final accColor = accuracy >= 0.7 ? Colors.orange : Colors.red;
+            return Container(
+              decoration: BoxDecoration(
+                border: i < bottom5.length - 1
+                    ? Border(
+                        bottom: BorderSide(
+                            color: Colors.grey.shade100, width: 1))
+                    : null,
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: Row(
+                children: [
+                  Text(_strandEmoji(skill.strand),
+                      style: const TextStyle(fontSize: 20)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(skill.name,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w600, fontSize: 13)),
+                        Text('${skill.attempts} session(s)',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade500)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: accColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${(accuracy * 100).toStringAsFixed(0)}%',
+                      style: TextStyle(
+                          color: accColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  String _strandEmoji(String strand) {
+    switch (strand) {
+      case 'literacy':
+        return '📝';
+      case 'numeracy':
+        return '🔢';
+      case 'communication':
+        return '💬';
+      case 'logic':
+        return '🧩';
+      case 'motor':
+        return '🏃';
+      case 'arts':
+        return '🎨';
+      case 'science':
+        return '🔬';
+      default:
+        return '📚';
+    }
+  }
+
+  // ── Achievements ─────────────────────────────────────────────────────────
+
+  Widget _buildAchievementsCard(AchievementService achievements) {
+    final unlocked = achievements.getUnlocked().length;
+    final total = achievements.achievements.length;
+    final progress = total > 0 ? unlocked / total : 0.0;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 3)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.amber.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Text('🏆', style: TextStyle(fontSize: 28)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$unlocked of $total Badges Unlocked',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 8,
+                    backgroundColor: Colors.grey.shade200,
+                    valueColor:
+                        const AlwaysStoppedAnimation(Colors.amber),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${(progress * 100).toStringAsFixed(0)}% complete',
+                  style: TextStyle(
+                      fontSize: 11, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Animated skill donut chart
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SkillDonutChart extends StatefulWidget {
+  final int mastered;
+  final int practising;
+  final int introduced;
+  final int locked;
+
+  const _SkillDonutChart({
+    required this.mastered,
+    required this.practising,
+    required this.introduced,
+    required this.locked,
+  });
+
+  @override
+  State<_SkillDonutChart> createState() => _SkillDonutChartState();
+}
+
+class _SkillDonutChartState extends State<_SkillDonutChart>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        duration: const Duration(milliseconds: 1400), vsync: this);
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total =
+        widget.mastered + widget.practising + widget.introduced + widget.locked;
+    final pct = total > 0 ? (widget.mastered * 100 ~/ total) : 0;
+
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, __) => Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox.expand(
+            child: CustomPaint(
+              painter: _DonutPainter(
+                mastered: widget.mastered,
+                practising: widget.practising,
+                introduced: widget.introduced,
+                locked: widget.locked,
+                animValue: _anim.value,
+              ),
+            ),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$pct%',
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green),
+              ),
+              Text(
+                'done',
+                style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DonutPainter extends CustomPainter {
+  final int mastered;
+  final int practising;
+  final int introduced;
+  final int locked;
+  final double animValue;
+
+  _DonutPainter({
+    required this.mastered,
+    required this.practising,
+    required this.introduced,
+    required this.locked,
+    required this.animValue,
+  });
+
+  static const _colors = [
+    Color(0xFF4CAF50), // mastered – green
+    Color(0xFF2196F3), // practising – blue
+    Color(0xFFFF9800), // introduced – orange
+    Color(0xFFE0E0E0), // locked – grey
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final total = mastered + practising + introduced + locked;
+    if (total == 0) return;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) / 2 - 4;
+    const strokeWidth = 18.0;
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.butt;
+
+    // Grey background ring
+    paint.color = const Color(0xFFEEEEEE);
+    canvas.drawCircle(center, radius, paint);
+
+    // Colored segments
+    double startAngle = -math.pi / 2;
+    final counts = [mastered, practising, introduced, locked];
+
+    for (int i = 0; i < 4; i++) {
+      if (counts[i] == 0) continue;
+      final sweep = (counts[i] / total) * 2 * math.pi * animValue;
+      paint.color = _colors[i];
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweep,
+        false,
+        paint,
+      );
+      startAngle += sweep;
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DonutPainter old) => old.animValue != animValue;
 }
