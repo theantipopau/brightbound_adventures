@@ -81,8 +81,7 @@ class SkillProvider extends ChangeNotifier {
         return skill.strand == Constants.strandLogic ||
             skill.strand == Constants.strandLiteracy;
       } else if (zoneId == 'creative_corner') {
-        return skill.strand == Constants.strandCommunication ||
-            skill.strand == Constants.strandLiteracy;
+        return skill.strand == 'arts';
       } else if (zoneId == 'puzzle_peaks') {
         return skill.strand == Constants.strandLogic;
       } else if (zoneId == 'adventure_arena') {

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/data/zone_guardian_data.dart';
 import 'package:brightbound_adventures/core/utils/word_woods_generator.dart';
+import 'package:brightbound_adventures/core/utils/creative_corner_generator.dart';
 import 'package:brightbound_adventures/core/services/achievement_service.dart';
 import 'package:brightbound_adventures/core/services/daily_challenge_service.dart';
 import 'package:brightbound_adventures/core/services/streak_service.dart';
@@ -47,6 +48,16 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
         return ApostropheQuestions.getByDifficulty(widget.skill.difficulty);
       case 'skill_comma_usage':
         return PunctuationQuestions.getByDifficulty(widget.skill.difficulty);
+      // Creative Corner skills
+      case 'skill_visual_arts':
+      case 'skill_music':
+      case 'skill_art_elements':
+      case 'skill_creative_expression':
+      case 'skill_famous_artists':
+        return CreativeCornerQuestions.getBySkillId(
+          widget.skill.id,
+          difficulty: widget.skill.difficulty,
+        );
       default:
         // Return generic questions for skills without specific question banks
         return _getGenericQuestions();

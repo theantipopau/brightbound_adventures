@@ -504,8 +504,8 @@ class SkillDatabase {
   static final List<Skill> creativeCornerSkills = [
     Skill(
       id: 'skill_visual_arts',
-      name: 'Colors & Shapes',
-      description: 'Mixing colors and identifying shapes',
+      name: 'Colours & Shapes',
+      description: 'Explore primary colours, colour mixing, and basic shapes',
       strand: 'arts',
       state: SkillState.introduced,
       lastPracticed: DateTime.now(),
@@ -513,12 +513,38 @@ class SkillDatabase {
     ),
     Skill(
       id: 'skill_music',
-      name: 'Rhythm & Beats',
-      description: 'Clap along to the beat',
+      name: 'Rhythm & Music',
+      description: 'Discover beats, rhythm patterns, and musical instruments',
       strand: 'arts',
       state: SkillState.introduced,
       lastPracticed: DateTime.now(),
       difficulty: 1,
+    ),
+    Skill(
+      id: 'skill_art_elements',
+      name: 'Elements of Art',
+      description: 'Learn about line, texture, form, and the language of art',
+      strand: 'arts',
+      state: SkillState.introduced,
+      lastPracticed: DateTime.now(),
+      difficulty: 2,
+    ),
+    Skill(
+      id: 'skill_creative_expression',
+      name: 'Creative Expression',
+      description: 'Similes, metaphors, and imaginative writing techniques',
+      strand: 'arts',
+      state: SkillState.introduced,
+      lastPracticed: DateTime.now(),
+      difficulty: 2,
+    ),
+    Skill(
+      id: 'skill_famous_artists',
+      name: 'Famous Artists',
+      description: 'Explore iconic artworks and the artists who made them',
+      strand: 'arts',
+      lastPracticed: DateTime.now(),
+      difficulty: 3,
     ),
   ];
 
