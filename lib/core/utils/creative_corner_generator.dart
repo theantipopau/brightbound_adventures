@@ -2,8 +2,8 @@ import 'package:brightbound_adventures/features/literacy/models/question.dart';
 
 /// Question bank for Creative Corner zone.
 ///
-/// All questions reuse [LiteracyQuestion] since Creative Corner practice
-/// uses the same [MultipleChoiceGame] widget as Word Woods.
+/// All questions reuse `LiteracyQuestion` since Creative Corner practice
+/// uses the same `MultipleChoiceGame` widget as Word Woods.
 class CreativeCornerQuestions {
   // ── Colours & Shapes ─────────────────────────────────────────────────────
 

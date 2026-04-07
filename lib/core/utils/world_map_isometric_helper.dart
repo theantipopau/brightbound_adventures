@@ -51,14 +51,14 @@ class WorldMapIsometricHelper {
   ///
   /// Key design decisions
   /// ─────────────────────────────────────────────────────────────────────────
-  /// • [topReserve] must clear both the top HUD bar AND the upward protrusion
+  /// • `topReserve` must clear both the top HUD bar AND the upward protrusion
   ///   of the zone island widget.  Each island is ~180 px tall and its
   ///   `Positioned.top` is set to (screenPos.dy – 0.55 × baseHeight), meaning
   ///   the island extends ~99 px ABOVE the returned Y value.  A topReserve of
   ///   24 % of the screen height (clamped to 170–230 px) comfortably covers
   ///   the HUD (~88 px) plus the upward protrusion (~99 px).
   ///
-  /// • [bottomUIReserve] matches the actual footprint of the quick-zone rail
+  /// • `bottomUIReserve` matches the actual footprint of the quick-zone rail
   ///   + action buttons in world_map_screen.dart:
   ///     – Non-compact (≥ 980 px wide): rail at bottom=120, height=56 → 176 px.
   ///       Use 190 px for a comfortable buffer.

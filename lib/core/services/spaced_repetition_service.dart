@@ -19,7 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///   accuracy < 0.6  → reset repetitions to 0, ef -= 0.2
 ///
 /// Usage:
-///   final srs = context.read<SpacedRepetitionService>();
+///   final srs = context.read\<SpacedRepetitionService\>();
 ///   await srs.recordSession(skillId: 'skill_abc', accuracy: 0.92);
 ///   final due = srs.dueCount;
 ///   final isDue = srs.isDue('skill_abc');

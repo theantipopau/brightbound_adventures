@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/core/models/skill.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
-import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Parent Dashboard with PIN protection
 /// Shows progress statistics, zone breakdowns, and learning insights
