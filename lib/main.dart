@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
@@ -162,6 +163,8 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _logoRotation;
   late Animation<double> _textOpacity;
   late Animation<Offset> _textSlide;
+  late AnimationController _shimmerController;
+  late AnimationController _orbitController;
 
   @override
   void initState() {
@@ -198,9 +201,21 @@ class _SplashScreenState extends State<SplashScreen>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeOut));
 
+    // Shimmer sweep across logo once it lands
+    _shimmerController = AnimationController(
+      duration: const Duration(milliseconds: 900),
+      vsync: this,
+    );
+    // Floating orbit for bottom zone icons
+    _orbitController = AnimationController(
+      duration: const Duration(seconds: 4),
+      vsync: this,
+    )..repeat();
+
     // Start animations in sequence
     _logoController.forward().then((_) {
       _textController.forward();
+      _shimmerController.forward();
     });
 
     _checkAppState();
@@ -211,6 +226,8 @@ class _SplashScreenState extends State<SplashScreen>
     _logoController.dispose();
     _starsController.dispose();
     _textController.dispose();
+    _shimmerController.dispose();
+    _orbitController.dispose();
     super.dispose();
   }
 
@@ -318,32 +335,45 @@ class _SplashScreenState extends State<SplashScreen>
                                       ),
                                     ),
                                   ),
-                                  // Inner content
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Text(
-                                        '✨',
-                                        style: TextStyle(fontSize: 40),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'BB',
-                                        style: TextStyle(
-                                          fontSize: 36,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          shadows: [
-                                            Shadow(
-                                              color: Colors.black
-                                                  .withValues(alpha: 0.3),
-                                              blurRadius: 4,
-                                              offset: const Offset(2, 2),
+                                  // Actual logo image
+                                  ClipOval(
+                                    child: Image.asset(
+                                      'assets/images/logo.png',
+                                      width: 128,
+                                      height: 128,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  // Shimmer sweep overlay
+                                  AnimatedBuilder(
+                                    animation: _shimmerController,
+                                    builder: (context, child) {
+                                      final t = _shimmerController.value;
+                                      return ClipOval(
+                                        child: SizedBox(
+                                          width: 128,
+                                          height: 128,
+                                          child: IgnorePointer(
+                                            child: Transform.translate(
+                                              offset: Offset(192 * t - 48, 0),
+                                              child: Container(
+                                                width: 48,
+                                                height: 128,
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      Colors.white.withValues(alpha: 0),
+                                                      Colors.white.withValues(alpha: 0.5),
+                                                      Colors.white.withValues(alpha: 0),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
                                             ),
-                                          ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
@@ -445,15 +475,24 @@ class _SplashScreenState extends State<SplashScreen>
               right: 0,
               child: FadeTransition(
                 opacity: _textOpacity,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildZoneIcon('🌲', 'Words'),
-                    _buildZoneIcon('🌌', 'Numbers'),
-                    _buildZoneIcon('📖', 'Stories'),
-                    _buildZoneIcon('🧩', 'Puzzles'),
-                    _buildZoneIcon('🏟️', 'Games'),
-                  ],
+                child: AnimatedBuilder(
+                  animation: _orbitController,
+                  builder: (context, child) {
+                    const zoneIcons = ['🌲', '🌌', '📖', '🧩', '🏟️'];
+                    const zoneLabels = ['Words', 'Numbers', 'Stories', 'Puzzles', 'Games'];
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(zoneIcons.length, (i) {
+                        final yFloat = math.sin(
+                          _orbitController.value * math.pi * 2 + i * 1.2,
+                        ) * 5.0;
+                        return Transform.translate(
+                          offset: Offset(0, yFloat),
+                          child: _buildZoneIcon(zoneIcons[i], zoneLabels[i]),
+                        );
+                      }),
+                    );
+                  },
                 ),
               ),
             ),

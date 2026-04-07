@@ -856,13 +856,17 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     final top = (screenPos.dy - (baseHeight * 0.55) + (1 - progress) * 50)
         .clamp(vMin, vMax)
         .toDouble();
+    final entranceScale = Curves.elasticOut.transform(progress);
 
     return Positioned(
       left: left,
       top: top,
       child: Opacity(
         opacity: finalOpacity,
-        child: _ZoneIsland(
+        child: Transform.scale(
+          scale: entranceScale,
+          alignment: Alignment.bottomCenter,
+          child: _ZoneIsland(
           zone: zone,
           isUnlocked: isUnlocked,
           isCurrentZone: isCurrentZone,
@@ -888,6 +892,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   debugPrint('Tapped locked zone ${zone.name}');
                   _showLockedDialog(zone, totalStars);
                 },
+        ),
         ),
       ),
     );
@@ -2337,8 +2342,10 @@ class _ZoneIslandState extends State<_ZoneIsland> {
       animation: widget.floatAnimation,
       builder: (context, child) {
         final float = math.sin(
-                widget.floatAnimation.value * math.pi + widget.zone.order) *
-            8; // Increased float for more dynamics
+                widget.floatAnimation.value * math.pi *
+                    (1.0 + widget.zone.order * 0.05) +
+                widget.zone.order) *
+            8; // Unique per-zone float frequency
         final selectionPulse = widget.isSelected
             ? 1.0 + (math.sin(widget.floatAnimation.value * math.pi * 2) * 0.03)
             : 1.0;
