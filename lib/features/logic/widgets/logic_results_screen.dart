@@ -26,6 +26,7 @@ class LogicResultsScreen extends StatefulWidget {
 
 class _LogicResultsScreenState extends State<LogicResultsScreen>
     with TickerProviderStateMixin {
+  late AnimationController _celebrationController;
   late AnimationController _mountainController;
   late AnimationController _flagController;
   late AnimationController _scoreController;
@@ -36,6 +37,11 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
   @override
   void initState() {
     super.initState();
+
+    _celebrationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..forward();
 
     _mountainController = AnimationController(
       duration: const Duration(milliseconds: 1500),
@@ -71,6 +77,7 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
 
   @override
   void dispose() {
+    _celebrationController.dispose();
     _mountainController.dispose();
     _flagController.dispose();
     _scoreController.dispose();
@@ -109,6 +116,7 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final showCelebration = _percentage >= 0.85;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -138,6 +146,34 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
                   );
                 },
               ),
+
+              // Confetti burst for excellent / perfect scores
+              if (showCelebration)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: AnimatedBuilder(
+                      animation: _celebrationController,
+                      builder: (context, _) {
+                        if (_celebrationController.value < 0.05) {
+                          return const SizedBox.shrink();
+                        }
+                        return CustomPaint(
+                          painter: _LogicConfettiPainter(
+                            progress: _celebrationController.value,
+                            colors: [
+                              Colors.tealAccent,
+                              Colors.amber,
+                              Colors.pink.shade300,
+                              Colors.lightGreenAccent.shade400,
+                              Colors.deepPurpleAccent.shade100,
+                            ],
+                            seed: widget.totalQuestions,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
 
               // Main content
               Center(
@@ -469,6 +505,59 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
       ],
     );
   }
+}
+
+class _LogicConfettiPainter extends CustomPainter {
+  final double progress;
+  final List<Color> colors;
+  final int seed;
+
+  _LogicConfettiPainter({
+    required this.progress,
+    required this.colors,
+    required this.seed,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rnd = math.Random(seed);
+    const count = 60;
+
+    for (int i = 0; i < count; i++) {
+      final baseX = rnd.nextDouble() * size.width;
+      final fallDistance = size.height * (0.15 + rnd.nextDouble() * 0.9);
+      final y = (progress * 1.15) * fallDistance - 24;
+      final drift = math.sin((progress * 7.0) + (i * 0.5)) * 14.0;
+      final x = baseX + drift;
+
+      if (y < -16 || y > size.height + 16) {
+        continue;
+      }
+
+      final color = colors[i % colors.length];
+      final fade = (1.0 - (progress * 1.6)).clamp(0.0, 1.0);
+      final paint = Paint()..color = color.withValues(alpha: fade);
+
+      if (i.isEven) {
+        canvas.drawCircle(Offset(x, y), 3 + (i % 3).toDouble(), paint);
+      } else {
+        final rect = Rect.fromCenter(
+          center: Offset(x, y),
+          width: 6,
+          height: 3,
+        );
+        canvas.save();
+        canvas.translate(x, y);
+        canvas.rotate((progress * 8.0) + i);
+        canvas.translate(-x, -y);
+        canvas.drawRect(rect, paint);
+        canvas.restore();
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_LogicConfettiPainter old) => old.progress != progress;
 }
 
 class _MountainResultsPainter extends CustomPainter {

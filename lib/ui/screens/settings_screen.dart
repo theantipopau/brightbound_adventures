@@ -15,6 +15,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _soundEnabled = true;
   bool _musicEnabled = true;
   bool _hapticEnabled = true;
+  bool _darkModeEnabled = false;
   bool _autoReadQuestions = false;
   bool _aiHintsEnabled = false;
   bool _aiExplanationsEnabled = false;
@@ -30,12 +31,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSettings() async {
     try {
       final audio = context.read<AudioManager>();
+      final themeMode = context.read<ThemeModeService>();
       final prefs = await SharedPreferences.getInstance();
       if (!mounted) return;
       setState(() {
         _soundEnabled = prefs.getBool('soundEnabled') ?? audio.isSfxEnabled;
         _musicEnabled = prefs.getBool('musicEnabled') ?? audio.isMusicEnabled;
         _hapticEnabled = prefs.getBool('hapticEnabled') ?? true;
+        _darkModeEnabled = themeMode.isDarkMode;
         _autoReadQuestions = prefs.getBool('autoReadQuestions') ?? false;
         _aiHintsEnabled = prefs.getBool('aiHintsEnabled') ?? false;
         _aiExplanationsEnabled = prefs.getBool('aiExplanationsEnabled') ?? false;
@@ -67,16 +70,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppColors.primary,
-              AppColors.secondary,
-            ],
+            colors: isDark
+                ? const [Color(0xFF1A1E2D), Color(0xFF2A2343)]
+                : const [AppColors.primary, AppColors.secondary],
           ),
         ),
         child: SafeArea(
@@ -146,6 +149,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _saveSetting('musicEnabled', value);
                   final audio = context.read<AudioManager>();
                   if (audio.isMusicEnabled != value) audio.toggleMusic();
+                },
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Appearance Settings
+          _buildSection(
+            title: '🎨 Appearance',
+            children: [
+              _buildSwitchTile(
+                title: 'Dark Theme',
+                value: _darkModeEnabled,
+                onChanged: (value) {
+                  setState(() => _darkModeEnabled = value);
+                  context.read<ThemeModeService>().setDarkMode(value);
                 },
               ),
             ],
@@ -235,13 +255,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required List<Widget> children,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -254,9 +276,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(20),
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
               ),
             ),
           ),
@@ -347,12 +370,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required String value,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
       title: Text(title),
       trailing: Text(
         value,
         style: TextStyle(
-          color: Colors.grey.shade600,
+          color: colorScheme.onSurface.withValues(alpha: 0.72),
           fontWeight: FontWeight.w500,
         ),
       ),

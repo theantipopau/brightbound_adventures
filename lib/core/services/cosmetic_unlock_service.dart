@@ -9,7 +9,7 @@ class CosmeticUnlockService extends ChangeNotifier {
   factory CosmeticUnlockService() => _instance;
   CosmeticUnlockService._internal();
 
-  late final List<String> _completedZones;
+  final List<String> _completedZones = [];
   int _playerLevel = 1;
   List<String> _unlockedCosmeticIds = [];
 

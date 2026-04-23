@@ -222,12 +222,76 @@ class _StreakWidgetState extends State<StreakWidget>
                   ),
                 ),
               ],
+              const SizedBox(height: 16),
+              _buildWeeklyCalendar(color),
               const SizedBox(height: 12),
               _buildProgressToMilestone(color),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildWeeklyCalendar(Color activeColor) {
+    final weekActivity = widget.streakService.getWeeklyActivity();
+    final dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    // getWeeklyActivity returns 7 days; index 6 = today.
+    // Day-of-week labels: compute which label aligns with each slot.
+    final todayWeekday = DateTime.now().weekday; // 1=Mon … 7=Sun
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(7, (i) {
+            final played = weekActivity[i];
+            final dayIdx = (todayWeekday - 1 - (6 - i)) % 7;
+            final label = dayLabels[(dayIdx + 7) % 7];
+            return _buildDayDot(label: label, played: played, isToday: i == 6, color: activeColor);
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDayDot({
+    required String label,
+    required bool played,
+    required bool isToday,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: played ? color : Colors.grey.shade200,
+            border: isToday
+                ? Border.all(color: color, width: 2.5)
+                : null,
+            boxShadow: played
+                ? [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 6, spreadRadius: 1)]
+                : null,
+          ),
+          child: Center(
+            child: played
+                ? const Text('✓', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold))
+                : null,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: isToday ? color : Colors.grey.shade500,
+            fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ],
     );
   }
 

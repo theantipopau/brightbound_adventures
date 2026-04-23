@@ -55,6 +55,17 @@ Free resources for game audio:
 - Normalize audio levels (-3dB peak recommended)
 - Loop points should be seamless for music tracks
 - Consider creating variations to prevent repetition
+- The runtime now validates audio files against Flutter's AssetManifest before playback
+- Missing files are logged once and then cached to avoid repeated console noise
+- SFX still falls back to haptics/web synth cues so gameplay never blocks
+
+## Quick Verification
+
+After adding files, run this checklist:
+1. Confirm paths exactly match the list above (case-sensitive on web builds)
+2. Run `flutter pub get` (if needed) and rebuild so AssetManifest includes new assets
+3. Start app and verify first playback does not print "not bundled" audio warnings
+4. Trigger a correct answer, wrong answer, and perfect score to validate variation paths
 
 ## Fallback Strategy
 

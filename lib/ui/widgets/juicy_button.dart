@@ -113,6 +113,7 @@ class _JuicyButtonState extends State<JuicyButton>
   late AnimationController _pressController;
   late AnimationController _shimmerController;
   late Animation<double> _scaleAnim;
+  late Animation<double> _tiltAnim;
   bool _isHovered = false;
 
   @override
@@ -121,11 +122,15 @@ class _JuicyButtonState extends State<JuicyButton>
 
     _pressController = AnimationController(
       vsync: this,
-      duration: AppMotion.fast,
+      duration: const Duration(milliseconds: 220),
     );
 
-    _scaleAnim = Tween<double>(begin: 1.0, end: 0.94).animate(
-      CurvedAnimation(parent: _pressController, curve: AppMotion.hover),
+    _scaleAnim = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeOutBack),
+    );
+
+    _tiltAnim = Tween<double>(begin: 0.0, end: -0.03).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeOut),
     );
 
     _shimmerController = AnimationController(
@@ -182,44 +187,48 @@ class _JuicyButtonState extends State<JuicyButton>
         child: AnimatedBuilder(
           animation: Listenable.merge([_pressController, _shimmerController]),
           builder: (context, child) {
+            final hoverScale = (_isHovered && !disabled) ? 1.02 : 1.0;
             return Transform.scale(
-              scale: _scaleAnim.value,
-              child: Stack(
-                children: [
-                  AnimatedContainer(
-                    duration: AppMotion.fast,
-                    width: widget.width,
-                    height: widget.height,
-                    padding: widget.padding ??
-                        const EdgeInsets.symmetric(horizontal: 28, vertical: 0),
-                    decoration: BoxDecoration(
-                      gradient: effectiveGradient,
-                      borderRadius: BorderRadius.circular(AppBorders.lg),
-                      boxShadow: disabled
-                          ? null
-                          : (_isHovered
-                              ? AppShadows.md(
-                                  (widget.color ?? AppColors.primary))
-                              : AppShadows.sm(
-                                  (widget.color ?? AppColors.primary))),
-                    ),
-                    child: _buildContent(),
-                  ),
-                  // Shimmer sweep overlay — bright diagonal band that sweeps left→right
-                  if (widget.shimmer && !disabled)
-                    Positioned.fill(
-                      child: ClipRRect(
+              scale: _scaleAnim.value * hoverScale,
+              child: Transform.rotate(
+                angle: _tiltAnim.value,
+                child: Stack(
+                  children: [
+                    AnimatedContainer(
+                      duration: AppMotion.fast,
+                      width: widget.width,
+                      height: widget.height,
+                      padding: widget.padding ??
+                          const EdgeInsets.symmetric(horizontal: 28, vertical: 0),
+                      decoration: BoxDecoration(
+                        gradient: effectiveGradient,
                         borderRadius: BorderRadius.circular(AppBorders.lg),
-                        child: IgnorePointer(
-                          child: CustomPaint(
-                            painter: _ShimmerSweepPainter(
-                              progress: _shimmerController.value,
+                        boxShadow: disabled
+                            ? null
+                            : (_isHovered
+                                ? AppShadows.md(
+                                    (widget.color ?? AppColors.primary))
+                                : AppShadows.sm(
+                                    (widget.color ?? AppColors.primary))),
+                      ),
+                      child: _buildContent(),
+                    ),
+                    // Shimmer sweep overlay — bright diagonal band that sweeps left→right
+                    if (widget.shimmer && !disabled)
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(AppBorders.lg),
+                          child: IgnorePointer(
+                            child: CustomPaint(
+                              painter: _ShimmerSweepPainter(
+                                progress: _shimmerController.value,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             );
           },

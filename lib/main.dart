@@ -46,6 +46,8 @@ void main() async {
             value: registry.srs),
         ChangeNotifierProvider<AiQuestionService>.value(
             value: registry.aiQuestions),
+        ChangeNotifierProvider<ThemeModeService>.value(
+            value: registry.themeMode),
       ],
       child: const BrightBoundApp(),
     ),
@@ -57,27 +59,31 @@ class BrightBoundApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'BrightBound Adventures',
-      theme: AppTheme.lightTheme(),
-      builder: (context, child) {
-        // DefaultTextStyle.merge ensures the bundled NotoEmoji font is listed
-        // as a fallback for every Text widget, preventing Flutter Web CanvasKit
-        // from spinning in requestAnimationFrame trying to download Noto fonts.
-        return DefaultTextStyle.merge(
-          style: const TextStyle(fontFamilyFallback: ['NotoEmoji']),
-          child: ResponsiveWrapper(
-            designSize: const Size(1280, 800),
-            minWidth: true,
-            minHeight: true,
-            child: child!,
-          ),
-        );
-      },
-      home: const SplashScreen(),
-      debugShowCheckedModeBanner: false,
-      onGenerateRoute: (settings) {
-        final routes = <String, WidgetBuilder>{
+    return Consumer<ThemeModeService>(
+      builder: (context, themeModeService, _) {
+        return MaterialApp(
+          title: 'BrightBound Adventures',
+          theme: AppTheme.lightTheme(),
+          darkTheme: AppTheme.darkTheme(),
+          themeMode: themeModeService.themeMode,
+          builder: (context, child) {
+            // DefaultTextStyle.merge ensures the bundled NotoEmoji font is listed
+            // as a fallback for every Text widget, preventing Flutter Web CanvasKit
+            // from spinning in requestAnimationFrame trying to download Noto fonts.
+            return DefaultTextStyle.merge(
+              style: const TextStyle(fontFamilyFallback: ['NotoEmoji']),
+              child: ResponsiveWrapper(
+                designSize: const Size(1280, 800),
+                minWidth: true,
+                minHeight: true,
+                child: child!,
+              ),
+            );
+          },
+          home: const SplashScreen(),
+          debugShowCheckedModeBanner: false,
+          onGenerateRoute: (settings) {
+            final routes = <String, WidgetBuilder>{
           '/avatar-creator': (_) => const AvatarCreatorScreen(),
           '/world-map': (_) => const WorldMapScreen(),
           '/world-entry': (_) => const WorldEntryScreen(),
@@ -137,11 +143,13 @@ class BrightBoundApp extends StatelessWidget {
                 zoneColor: Color(0xFFFFB74D),
               ),
         };
-        final builder = routes[settings.name];
-        if (builder != null) {
-          return FadeSlidePageRoute(page: Builder(builder: builder));
-        }
-        return null;
+            final builder = routes[settings.name];
+            if (builder != null) {
+              return FadeSlidePageRoute(page: Builder(builder: builder));
+            }
+            return null;
+          },
+        );
       },
     );
   }
@@ -165,14 +173,29 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<Offset> _textSlide;
   late AnimationController _shimmerController;
   late AnimationController _orbitController;
+  late bool _prefersReducedMotion;
+  bool _startedSplashMusic = false;
 
   @override
   void initState() {
     super.initState();
 
+    _prefersReducedMotion =
+        WidgetsBinding.instance.platformDispatcher.accessibilityFeatures.disableAnimations;
+
+    final logoDuration = _prefersReducedMotion
+        ? const Duration(milliseconds: 300)
+        : const Duration(milliseconds: 1500);
+    final textDuration = _prefersReducedMotion
+        ? const Duration(milliseconds: 120)
+        : const Duration(milliseconds: 800);
+    final shimmerDuration = _prefersReducedMotion
+        ? const Duration(milliseconds: 120)
+        : const Duration(milliseconds: 900);
+
     // Logo animation
     _logoController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: logoDuration,
       vsync: this,
     );
     _logoScale = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -186,11 +209,14 @@ class _SplashScreenState extends State<SplashScreen>
     _starsController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
-    )..repeat();
+    );
+    if (!_prefersReducedMotion) {
+      _starsController.repeat();
+    }
 
     // Text animation
     _textController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: textDuration,
       vsync: this,
     );
     _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -203,20 +229,26 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Shimmer sweep across logo once it lands
     _shimmerController = AnimationController(
-      duration: const Duration(milliseconds: 900),
+      duration: shimmerDuration,
       vsync: this,
     );
     // Floating orbit for bottom zone icons
     _orbitController = AnimationController(
       duration: const Duration(seconds: 4),
       vsync: this,
-    )..repeat();
+    );
+    if (!_prefersReducedMotion) {
+      _orbitController.repeat();
+    }
 
     // Start animations in sequence
     _logoController.forward().then((_) {
       _textController.forward();
       _shimmerController.forward();
     });
+
+    // Best-effort splash audio: silently falls back when no bundled asset exists.
+    _startSplashAudio();
 
     _checkAppState();
   }
@@ -244,14 +276,28 @@ class _SplashScreenState extends State<SplashScreen>
     if (!avatarProvider.hasAvatar) {
       // First time user - go to avatar creation
       if (mounted) {
+        await _stopSplashAudio();
         Navigator.of(context).pushReplacementNamed('/avatar-creator');
       }
     } else {
       // Existing user - go to world map
       if (mounted) {
+        await _stopSplashAudio();
         Navigator.of(context).pushReplacementNamed('/world-map');
       }
     }
+  }
+
+  Future<void> _startSplashAudio() async {
+    if (_startedSplashMusic) return;
+    _startedSplashMusic = true;
+    await context.read<AudioManager>().playSplashMusic();
+  }
+
+  Future<void> _stopSplashAudio() async {
+    if (!_startedSplashMusic) return;
+    await context.read<AudioManager>().stopMusic();
+    _startedSplashMusic = false;
   }
 
   @override

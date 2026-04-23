@@ -9,23 +9,27 @@ import 'package:flutter/foundation.dart';
 /// - Milestone reached: Pattern vibration
 /// - UI interactions: Light taps
 class HapticService {
-  /// Heavy vibration for correct answers
-  /// Provides strong, satisfying feedback
+  /// Double tap pattern for correct answers.
+  /// Feels celebratory but still quick.
   Future<void> onCorrectAnswer() async {
     try {
-      await HapticFeedback.heavyImpact();
+      await HapticFeedback.lightImpact();
+      await Future.delayed(const Duration(milliseconds: 50));
+      await HapticFeedback.lightImpact();
     } catch (e) {
       // Gracefully handle devices without haptic support
       debugPrint('Haptic feedback unavailable: $e');
     }
   }
 
-  /// Light double vibration for wrong answers
-  /// Creates a pattern that feels like a "no" signal
+  /// Triple pattern for wrong answers.
+  /// Starts stronger, then softens to avoid feeling harsh.
   Future<void> onWrongAnswer() async {
     try {
+      await HapticFeedback.mediumImpact();
+      await Future.delayed(const Duration(milliseconds: 50));
       await HapticFeedback.lightImpact();
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 50));
       await HapticFeedback.lightImpact();
     } catch (e) {
       debugPrint('Haptic feedback unavailable: $e');

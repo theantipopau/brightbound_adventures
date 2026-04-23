@@ -751,15 +751,28 @@ function initCarousel() {
  * Parallax Scroll Effect
  */
 function initParallaxScroll() {
-    const parallaxElements = document.querySelectorAll('.parallax-element');
-    
-    if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Speed-attribute-based parallax (data-parallax-speed="0.3")
+    const speedEls = document.querySelectorAll('[data-parallax-speed]');
+    if (speedEls.length > 0) {
+        window.addEventListener('scroll', function() {
+            const scrollY = window.pageYOffset;
+            speedEls.forEach(el => {
+                const speed = parseFloat(el.dataset.parallaxSpeed) || 0.3;
+                el.style.transform = `translateY(${scrollY * speed}px)`;
+            });
+        }, { passive: true });
+    }
+
+    // Class-based parallax (legacy .parallax-element)
+    const parallaxElements = document.querySelectorAll('.parallax-element:not([data-parallax-speed])');
+    if (parallaxElements.length > 0) {
         window.addEventListener('scroll', debounce(() => {
+            const scrollPosition = window.pageYOffset;
             parallaxElements.forEach(el => {
-                const scrollPosition = window.pageYOffset;
                 const elementPosition = el.getBoundingClientRect().top;
                 const offset = scrollPosition - (elementPosition + window.innerHeight / 2);
-                
                 if (Math.abs(offset) < window.innerHeight) {
                     el.style.transform = `translateY(${offset * 0.5}px)`;
                 }

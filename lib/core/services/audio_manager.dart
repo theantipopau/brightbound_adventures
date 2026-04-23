@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -16,9 +17,35 @@ class AudioManager extends ChangeNotifier {
   double _musicVolume = 0.3;
   double _sfxVolume = 0.8;
   String? _currentMusicTrack;
+  bool _assetManifestLoaded = false;
+  final Set<String> _bundledAssetKeys = {};
 
   // Cache for failed assets to prevent console spam
   final Set<String> _failedAssets = {};
+
+  static const List<String> _expectedAudioAssets = [
+    'sounds/sfx/correct/correct1.mp3',
+    'sounds/sfx/correct/correct2.mp3',
+    'sounds/sfx/correct/correct3.mp3',
+    'sounds/sfx/incorrect/wrong1.mp3',
+    'sounds/sfx/incorrect/wrong2.mp3',
+    'sounds/sfx/celebration/perfect.mp3',
+    'sounds/sfx/celebration/streak3.mp3',
+    'sounds/sfx/celebration/streak5.mp3',
+    'sounds/sfx/celebration/streak10.mp3',
+    'sounds/sfx/celebration/levelup.mp3',
+    'sounds/sfx/celebration/unlock.mp3',
+    'sounds/sfx/ui/click.mp3',
+    'sounds/sfx/ui/whoosh.mp3',
+    'sounds/sfx/ui/popup.mp3',
+    'sounds/music/menu.mp3',
+    'sounds/music/splash.mp3',
+    'sounds/music/zones/word_woods.mp3',
+    'sounds/music/zones/number_nebula.mp3',
+    'sounds/music/zones/story_springs.mp3',
+    'sounds/music/zones/puzzle_peaks.mp3',
+    'sounds/music/zones/adventure_arena.mp3',
+  ];
 
   bool get isMusicEnabled => _isMusicEnabled;
   bool get isSfxEnabled => _isSfxEnabled;
@@ -28,7 +55,66 @@ class AudioManager extends ChangeNotifier {
   Future<void> initialize() async {
     // Set up audio players
     await _musicPlayer.setReleaseMode(ReleaseMode.loop);
+    await _loadBundledAudioManifest();
     _updateVolumes();
+  }
+
+  Future<void> _loadBundledAudioManifest() async {
+    try {
+      final manifestString = await rootBundle.loadString('AssetManifest.json');
+      final decoded = jsonDecode(manifestString);
+      if (decoded is Map<String, dynamic>) {
+        for (final key in decoded.keys) {
+          if (key.startsWith('assets/sounds/')) {
+            _bundledAssetKeys.add(key);
+          }
+        }
+      }
+      _assetManifestLoaded = true;
+      _logExpectedAssetCoverage();
+      debugPrint(
+        'AudioManager: discovered ${_bundledAssetKeys.length} bundled audio assets.',
+      );
+    } catch (e) {
+      // If manifest parsing fails (rare), fall back to runtime try/catch checks.
+      _assetManifestLoaded = false;
+      debugPrint('AudioManager: failed to read AssetManifest, using runtime checks only.');
+    }
+  }
+
+  String _manifestKeyFor(String assetPath) {
+    final normalized = assetPath.startsWith('assets/')
+        ? assetPath
+        : 'assets/$assetPath';
+    return normalized.replaceAll('\\\\', '/');
+  }
+
+  bool _isBundledAssetAvailable(String assetPath) {
+    if (!_assetManifestLoaded) return true;
+    return _bundledAssetKeys.contains(_manifestKeyFor(assetPath));
+  }
+
+  void _logExpectedAssetCoverage() {
+    final missing = _expectedAudioAssets
+        .where((path) => !_isBundledAssetAvailable(path))
+        .toList(growable: false);
+    if (missing.isEmpty) {
+      debugPrint('AudioManager: all expected audio assets are bundled.');
+      return;
+    }
+
+    debugPrint(
+      'AudioManager: ${missing.length}/${_expectedAudioAssets.length} expected audio assets are missing.',
+    );
+    for (final path in missing) {
+      debugPrint(' - missing: $path');
+    }
+  }
+
+  void _markMissingAsset(String assetPath, String category) {
+    if (_failedAssets.contains(assetPath)) return;
+    _failedAssets.add(assetPath);
+    debugPrint('Note: $category asset $assetPath is not bundled. Using fallback behavior.');
   }
 
   void toggleMusic() {
@@ -61,15 +147,16 @@ class AudioManager extends ChangeNotifier {
     if (!_isMusicEnabled) return;
     if (_currentMusicTrack == assetPath) return; // Already playing
     if (_failedAssets.contains(assetPath)) return;
+    if (!_isBundledAssetAvailable(assetPath)) {
+      _markMissingAsset(assetPath, 'Music');
+      return;
+    }
 
     try {
       await _musicPlayer.play(AssetSource(assetPath));
       _currentMusicTrack = assetPath;
     } catch (e) {
-      if (!_failedAssets.contains(assetPath)) {
-        _failedAssets.add(assetPath);
-        debugPrint('Note: Music asset $assetPath not found or failed to load. Silencing music.');
-      }
+      _markMissingAsset(assetPath, 'Music');
     }
   }
 
@@ -100,9 +187,14 @@ class AudioManager extends ChangeNotifier {
 
   Future<void> playSfx(String assetPath) async {
     if (!_isSfxEnabled) return;
-    
+
     // Check cache first to avoid console noise
     if (_failedAssets.contains(assetPath)) {
+      _triggerHapticFallback(assetPath);
+      return;
+    }
+    if (!_isBundledAssetAvailable(assetPath)) {
+      _markMissingAsset(assetPath, 'SFX');
       _triggerHapticFallback(assetPath);
       return;
     }
@@ -111,7 +203,7 @@ class AudioManager extends ChangeNotifier {
       // Create a temporary player for SFX to allow overlapping sounds
       final player = AudioPlayer();
       await player.setVolume(_sfxVolume);
-      
+
       // On web, assets missing often cause CORS/404 errors that can't be caught by try/catch 
       // around 'play' easily because they happen in the browser's fetch.
       // We log it once and then skip.
@@ -122,10 +214,7 @@ class AudioManager extends ChangeNotifier {
         player.dispose();
       });
     } catch (e) {
-      if (!_failedAssets.contains(assetPath)) {
-        _failedAssets.add(assetPath);
-        debugPrint('Note: SFX asset $assetPath not found. Using haptic fallback.');
-      }
+      _markMissingAsset(assetPath, 'SFX');
       _triggerHapticFallback(assetPath);
     }
   }

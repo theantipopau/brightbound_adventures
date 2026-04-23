@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
@@ -184,6 +185,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
   @override
   Widget build(BuildContext context) {
     final world = WorldTokens.fromColor(widget.themeColor);
+    final showCelebration = widget.accuracy >= 0.85;
     return Scaffold(
       body: Stack(
         children: [
@@ -204,6 +206,34 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
               ),
             ),
           ),
+
+          // Confetti burst for excellent / perfect scores
+          if (showCelebration)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedBuilder(
+                  animation: _celebrationController,
+                  builder: (context, _) {
+                    if (_celebrationController.value < 0.05) {
+                      return const SizedBox.shrink();
+                    }
+                    return CustomPaint(
+                      painter: _ConfettiPainter(
+                        progress: _celebrationController.value,
+                        colors: [
+                          widget.themeColor,
+                          Colors.amber,
+                          Colors.pink.shade300,
+                          Colors.lightGreenAccent.shade400,
+                          Colors.deepPurpleAccent.shade100,
+                        ],
+                        seed: widget.totalQuestions,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
 
           // Content
           SafeArea(
@@ -501,6 +531,69 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
       ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Lightweight confetti painter for the results celebration
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ConfettiParticleData {
+  final double x;
+  final double y;
+  final double speed;
+  final double size;
+  final double angle;
+  final double spin;
+  final Color color;
+
+  const _ConfettiParticleData({
+    required this.x, required this.y, required this.speed,
+    required this.size, required this.angle, required this.spin,
+    required this.color,
+  });
+}
+
+class _ConfettiPainter extends CustomPainter {
+  final double progress;
+  final List<Color> colors;
+  final int seed;
+
+  _ConfettiPainter({required this.progress, required this.colors, required this.seed});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rng = math.Random(seed);
+    for (int i = 0; i < 60; i++) {
+      final c = colors[i % colors.length];
+      final px = rng.nextDouble();
+      final py = -rng.nextDouble() * 0.3;
+      final speed = 0.4 + rng.nextDouble() * 0.6;
+      final sz = 6.0 + rng.nextDouble() * 8.0;
+      final angle = rng.nextDouble() * math.pi * 2;
+      final spin = (rng.nextDouble() - 0.5) * 8;
+
+      final t = (progress * speed).clamp(0.0, 1.0);
+      final fade = (1.0 - (t * 1.6).clamp(0.0, 1.0));
+      if (fade <= 0) continue;
+
+      final cx = px * size.width;
+      final cy = (py + t * 1.5) * size.height;
+
+      canvas.save();
+      canvas.translate(cx, cy);
+      canvas.rotate(angle + spin * t);
+      final paint = Paint()..color = c.withValues(alpha: fade)..style = PaintingStyle.fill;
+      if (i % 3 == 0) {
+        canvas.drawCircle(Offset.zero, sz * 0.4, paint);
+      } else {
+        canvas.drawRect(Rect.fromCenter(center: Offset.zero, width: sz, height: sz * 0.5), paint);
+      }
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ConfettiPainter old) => old.progress != progress;
 }
 
 /// A small themed banner displaying a message from the zone guardian.

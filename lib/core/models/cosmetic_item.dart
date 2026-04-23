@@ -134,6 +134,7 @@ class CosmeticManager {
     CosmeticItem item, {
     required List<String> completedZones,
     required int playerLevel,
+    List<String> unlockedAchievements = const [],
   }) {
     switch (item.unlockType) {
       case UnlockType.zoneCompletion:
@@ -148,7 +149,15 @@ class CosmeticManager {
         return playerLevel >= requiredLevel;
 
       case UnlockType.achievement:
-        // TODO: Implement achievement-based unlocks
+        // Supports exact ids like `achievement_100` or raw achievement ids.
+        final requirement = item.unlockRequirement;
+        if (unlockedAchievements.contains(requirement)) {
+          return true;
+        }
+        if (requirement.startsWith('achievement_')) {
+          final normalized = requirement.replaceFirst('achievement_', '');
+          return unlockedAchievements.contains(normalized);
+        }
         return false;
     }
   }
@@ -157,12 +166,14 @@ class CosmeticManager {
   static List<CosmeticItem> getUnlockedCosmetics({
     required List<String> completedZones,
     required int playerLevel,
+    List<String> unlockedAchievements = const [],
   }) {
     return availableItems.where((item) {
       return shouldUnlock(
         item,
         completedZones: completedZones,
         playerLevel: playerLevel,
+        unlockedAchievements: unlockedAchievements,
       );
     }).toList();
   }

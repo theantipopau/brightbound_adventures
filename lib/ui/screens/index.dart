@@ -12,3 +12,4 @@ export 'settings_screen.dart';
 export 'profile_stats_screen.dart';
 export 'onboarding_screen.dart';
 export 'boss_battle_screen.dart';
+export 'mastery_certificate_screen.dart';

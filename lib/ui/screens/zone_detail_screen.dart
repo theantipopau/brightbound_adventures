@@ -32,6 +32,8 @@ class ZoneDetailScreen extends StatefulWidget {
 }
 
 class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
+  String _selectedFilter = 'all';
+
   @override
   void initState() {
     super.initState();
@@ -68,6 +70,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
           final zoneSkills = skillProvider.getZoneSkills(widget.zoneId);
           final zoneStats = skillProvider.getZoneStats(widget.zoneId);
+          final filteredSkills = _applySkillFilter(zoneSkills);
 
           if (zoneSkills.isEmpty) {
             return Center(
@@ -283,7 +286,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          '${zoneSkills.length} Skills',
+                          '${filteredSkills.length} Skills',
                           style: Theme.of(context)
                               .textTheme
                               .titleMedium
@@ -291,9 +294,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                         ),
                       ),
                       PopupMenuButton<String>(
+                        initialValue: _selectedFilter,
                         onSelected: (value) {
                           setState(() {
-                            // TODO: Implement filtering
+                            _selectedFilter = value;
                           });
                         },
                         itemBuilder: (context) => [
@@ -326,7 +330,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      final skill = zoneSkills[index];
+                      final skill = filteredSkills[index];
                       final isLocked = skill.state == SkillState.locked;
 
                       return Padding(
@@ -342,7 +346,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                         ),
                       );
                     },
-                    childCount: zoneSkills.length,
+                    childCount: filteredSkills.length,
                   ),
                 ),
               ),
@@ -354,6 +358,26 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
         },
       ),
     );
+  }
+
+  List<Skill> _applySkillFilter(List<Skill> skills) {
+    switch (_selectedFilter) {
+      case 'locked':
+        return skills
+            .where((skill) => skill.state == SkillState.locked)
+            .toList(growable: false);
+      case 'available':
+        return skills
+            .where((skill) => skill.state != SkillState.locked)
+            .toList(growable: false);
+      case 'mastered':
+        return skills
+            .where((skill) => skill.state == SkillState.mastered)
+            .toList(growable: false);
+      case 'all':
+      default:
+        return skills;
+    }
   }
 
   void _showSkillDetail(BuildContext context, Skill skill) {

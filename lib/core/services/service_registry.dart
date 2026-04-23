@@ -1,21 +1,6 @@
 import 'package:brightbound_adventures/core/services/index.dart';
 
-/// Centralized service initialization and access
-///
-/// Consolidates all service initialization logic in one place,
-/// making the app dependency graph clear and testable.
-///
-/// Usage:
-/// ```dart
-/// // In main():
-/// final registry = ServiceRegistry();
-/// await registry.initializeAll();
-///
-/// // Access services:
-/// registry.storage
-/// registry.achievements
-/// registry.shop
-/// ```
+/// Centralized service initialization and access.
 class ServiceRegistry {
   static final _instance = ServiceRegistry._internal();
 
@@ -23,7 +8,6 @@ class ServiceRegistry {
 
   ServiceRegistry._internal();
 
-  // Services (initialized on demand)
   late LocalStorageService _storage;
   late AchievementService _achievements;
   late ShopService _shop;
@@ -36,8 +20,9 @@ class ServiceRegistry {
   late HapticService _haptic;
   late SpacedRepetitionService _srs;
   late AiQuestionService _aiQuestions;
+  late QuestionFreshnessService _questionFreshness;
+  late ThemeModeService _themeMode;
 
-  // Getters
   LocalStorageService get storage => _storage;
   AchievementService get achievements => _achievements;
   ShopService get shop => _shop;
@@ -50,16 +35,13 @@ class ServiceRegistry {
   HapticService get haptic => _haptic;
   SpacedRepetitionService get srs => _srs;
   AiQuestionService get aiQuestions => _aiQuestions;
+  QuestionFreshnessService get questionFreshness => _questionFreshness;
+  ThemeModeService get themeMode => _themeMode;
 
-  /// Initialize all services in dependency order
-  ///
-  /// Storage must be initialized first, as other services depend on it.
   Future<void> initializeAll() async {
-    // 1. Initialize storage first (required by other services)
     _storage = LocalStorageService();
     await _storage.initializeHive();
 
-    // 2. Initialize services that depend on storage
     _achievements = AchievementService();
     await _achievements.initialize();
 
@@ -69,35 +51,32 @@ class ServiceRegistry {
     _adaptiveDifficulty = AdaptiveDifficultyService();
     await _adaptiveDifficulty.initialize();
 
-    // 3. Initialize independent services
     _audioManager = AudioManager();
     await _audioManager.initialize();
 
     _cosmeticUnlock = CosmeticUnlockService();
-    // No async init needed for cosmetics
 
-    // 4. Initialize streak tracking
     _streak = StreakService();
     await _streak.initialize();
 
-    // 5. Initialize sound effects
     _soundEffects = SoundEffectsService();
     await _soundEffects.initialize();
 
-    // 6. Initialize daily challenges
     _dailyChallenge = DailyChallengeService(_storage);
     await _dailyChallenge.initialize();
 
-    // 7. Initialize haptic service
     _haptic = HapticService();
-    // No async init needed for haptic
 
-    // 8. Initialize spaced repetition
     _srs = SpacedRepetitionService();
     await _srs.initialize();
 
-    // 9. Initialize AI question service (loads cache from SharedPreferences)
     _aiQuestions = AiQuestionService();
     await _aiQuestions.initialize();
+
+    _questionFreshness = QuestionFreshnessService();
+    await _questionFreshness.initialize();
+
+    _themeMode = ThemeModeService();
+    await _themeMode.initialize();
   }
 }

@@ -1,9 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:brightbound_adventures/core/data/zone_guardian_data.dart';
+import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/skill_provider.dart';
+import 'package:brightbound_adventures/ui/screens/mastery_certificate_screen.dart';
 import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 
 // ─────────────────────────────────────────────
@@ -301,8 +304,44 @@ class _ZoneMasteredDialogState extends State<_ZoneMasteredDialog>
                   // Continue button
                   SizedBox(
                     width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        final nav = Navigator.of(context);
+                        nav.push(
+                          MaterialPageRoute(
+                            builder: (_) => MasteryCertificateScreen(
+                              zoneId: guardian?.zoneId ?? '',
+                              zoneName: widget.zoneName,
+                              themeColor: widget.themeColor,
+                            ),
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: widget.themeColor,
+                        side: BorderSide(color: widget.themeColor, width: 1.8),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      icon: const Icon(Icons.workspace_premium),
+                      label: const Text(
+                        'View Mastery Certificate',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  SizedBox(
+                    width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () {
+                        context.read<AvatarProvider>().setEmotion(AvatarEmotion.proud);
+                        Navigator.of(context).pop();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: widget.themeColor,
                         foregroundColor: Colors.white,
