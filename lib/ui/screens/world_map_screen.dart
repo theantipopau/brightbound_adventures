@@ -50,6 +50,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   // Device detection
   bool _isPhoneDevice = false;
   bool _isCompactLayout = false;
+  bool _isShortViewport = false;
   double _uiScale = 1.0;
   double _mapZoom = 1.0;
   late AudioManager _audioManager;
@@ -460,7 +461,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         final shortest = constraints.biggest.shortestSide;
                         final isPortrait =
                             constraints.maxHeight > constraints.maxWidth;
-                        _isCompactLayout = constraints.maxWidth < 980;
+                        _isShortViewport = constraints.maxHeight < 720;
+                        _isCompactLayout =
+                          constraints.maxWidth < 980 || _isShortViewport;
 
                         // Scale based on the smaller dimension so islands
                         // never exceed 1× their design size, which prevents
@@ -607,10 +610,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                               uiScale: _uiScale,
                             ),
 
-                            _buildStreakRiskBanner(
-                              compact: _isCompactLayout,
-                              uiScale: _uiScale,
-                            ),
+                            if (!_isShortViewport)
+                              _buildStreakRiskBanner(
+                                compact: _isCompactLayout,
+                                uiScale: _uiScale,
+                              ),
 
                             // Bottom quick actions
                             _buildBottomActions(
@@ -620,11 +624,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                               uiScale: _uiScale,
                             ),
 
-                            _buildQuickZoneRail(
-                              totalStars,
-                              compact: _isCompactLayout,
-                              uiScale: _uiScale,
-                            ),
+                            if (!_isShortViewport)
+                              _buildQuickZoneRail(
+                                totalStars,
+                                compact: _isCompactLayout,
+                                uiScale: _uiScale,
+                              ),
 
                             _buildZoneSpotlightPanel(
                               totalStars,
@@ -641,7 +646,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                             ),
 
                             // Keyboard navigation hint
-                            _buildKeyboardHint(),
+                            if (!_isShortViewport) _buildKeyboardHint(),
                           ],
                         );
                       },
