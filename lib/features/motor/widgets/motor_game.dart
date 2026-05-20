@@ -412,7 +412,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
       left: 0,
       right: 0,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -438,9 +438,12 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.5),
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.35),
+                        width: 1.5),
                   ),
-                  child: Image.asset('assets/images/scroll.PNG', fit: BoxFit.contain),
+                  child: Image.asset('assets/images/scroll.PNG',
+                      fit: BoxFit.contain),
                 ),
               ),
             ),
@@ -474,6 +477,28 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
                 Text(
                   'Round $_currentRound of ${widget.config.rounds}',
                   style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Tap quickly and stay accurate',
+                  style: TextStyle(color: Colors.white54, fontSize: 11),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    _buildHudChip(
+                      icon: Icons.auto_awesome_rounded,
+                      label: 'Focus mode',
+                      color: Colors.orangeAccent,
+                    ),
+                    _buildHudChip(
+                      icon: Icons.touch_app_rounded,
+                      label: '${widget.config.targetCount} targets',
+                      color: Colors.amberAccent,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -520,6 +545,36 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHudChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
       ),
     );
   }

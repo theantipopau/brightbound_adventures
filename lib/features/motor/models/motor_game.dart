@@ -211,17 +211,18 @@ class TargetGenerator {
     final padding = isMobilePortrait ? 40.0 : 60.0;
     final topOffset = isMobilePortrait ? 80.0 : 100.0;
     final bottomMargin = isMobilePortrait ? 100.0 : 200.0;
-    
+
     // Responsive target size
     final baseSize = isMobilePortrait ? 50.0 : 80.0;
-    final size = sizeOverride ?? 
+    final size = sizeOverride ??
         (baseSize - (15 * difficultyMultiplier)).clamp(25, baseSize);
 
     final x = padding +
         _random.nextDouble() * (screenSize.width - 2 * padding - size);
     final y = topOffset +
-        _random.nextDouble() * 
-        (screenSize.height - topOffset - bottomMargin - size).clamp(0, double.infinity);
+        _random.nextDouble() *
+            (screenSize.height - topOffset - bottomMargin - size)
+                .clamp(0, double.infinity);
 
     Offset? direction;
     double? speed;

@@ -1,5 +1,5 @@
 /// Question model for numeracy activities
-/// 
+///
 /// Enhanced with support for curriculum metadata (ACARA, NAPLAN, Bloom's taxonomy)
 /// via optional metadata field for Phase 7+ integration.
 class NumeracyQuestion {
@@ -13,7 +13,8 @@ class NumeracyQuestion {
   final int difficulty; // 1-5
   final NumeracyQuestionType type;
   final String? imageAsset; // Optional visual for the question
-  final dynamic metadata; // QuestionMetadata (optional for backwards compatibility)
+  final dynamic
+      metadata; // QuestionMetadata (optional for backwards compatibility)
 
   const NumeracyQuestion({
     required this.id,
@@ -32,7 +33,7 @@ class NumeracyQuestion {
   String get correctAnswer => options[correctIndex];
 
   bool isCorrect(int selectedIndex) => selectedIndex == correctIndex;
-  
+
   /// Returns the difficulty as a double (0.0-5.0)
   double get difficultyValue => difficulty.toDouble();
 }
@@ -1254,7 +1255,8 @@ class DecimalQuestions {
       options: ['5 ones', '5 tenths', '5 tens', '5 hundredths'],
       correctIndex: 1,
       hint: 'The digit after the decimal point is...',
-      explanation: 'In 2.5, the 5 is in the tenths place. 2.5 = 2 ones + 5 tenths',
+      explanation:
+          'In 2.5, the 5 is in the tenths place. 2.5 = 2 ones + 5 tenths',
       difficulty: 2,
     ),
     NumeracyQuestion(
@@ -1284,7 +1286,8 @@ class DecimalQuestions {
       options: ['1.4', '1.5', '1.6', '1.7'],
       correctIndex: 1,
       hint: 'Think: 3 - 1.5 = ?',
-      explanation: '3.0 - 1.5 = 1.5. Breaking down: 3 - 1 = 2, then 2 - 0.5 = 1.5',
+      explanation:
+          '3.0 - 1.5 = 1.5. Breaking down: 3 - 1 = 2, then 2 - 0.5 = 1.5',
       difficulty: 2,
     ),
 
@@ -1293,7 +1296,12 @@ class DecimalQuestions {
       id: 'dec_5',
       skillId: 'skill_decimals',
       question: 'What does 0.25 represent?',
-      options: ['2 hundredths, 5 tenths', '2 tenths, 5 hundredths', '25 hundredths', '25 tenths'],
+      options: [
+        '2 hundredths, 5 tenths',
+        '2 tenths, 5 hundredths',
+        '25 hundredths',
+        '25 tenths'
+      ],
       correctIndex: 2,
       hint: 'Count the decimal places',
       explanation: '0.25 = 25 hundredths = 2 tenths and 5 hundredths',
@@ -1303,10 +1311,16 @@ class DecimalQuestions {
       id: 'dec_6',
       skillId: 'skill_decimals',
       question: 'Order from smallest to largest: 0.4, 0.04, 0.14',
-      options: ['0.04, 0.14, 0.4', '0.4, 0.14, 0.04', '0.14, 0.04, 0.4', '0.04, 0.4, 0.14'],
+      options: [
+        '0.04, 0.14, 0.4',
+        '0.4, 0.14, 0.04',
+        '0.14, 0.04, 0.4',
+        '0.04, 0.4, 0.14'
+      ],
       correctIndex: 0,
       hint: 'Convert to hundredths: 0.40, 0.04, 0.14',
-      explanation: '0.04 < 0.14 < 0.4 (remember: compare digit by digit from left)',
+      explanation:
+          '0.04 < 0.14 < 0.4 (remember: compare digit by digit from left)',
       difficulty: 3,
     ),
     NumeracyQuestion(
@@ -1378,7 +1392,8 @@ class DecimalQuestions {
       options: ['8', '9', '10', '11'],
       correctIndex: 1,
       hint: 'Round to nearest whole number',
-      explanation: '7.8 ≈ 8, 2.1 ≈ 2, so 8 + 2 = 10... but 7.8 + 2.1 is closer to 10',
+      explanation:
+          '7.8 ≈ 8, 2.1 ≈ 2, so 8 + 2 = 10... but 7.8 + 2.1 is closer to 10',
       difficulty: 4,
     ),
   ];
@@ -1396,7 +1411,8 @@ class DataInterpretationQuestions {
     NumeracyQuestion(
       id: 'data_1',
       skillId: 'skill_data_interpretation',
-      question: 'How many students like pizza? (From: Pizza 5, Burgers 3, Salad 2)',
+      question:
+          'How many students like pizza? (From: Pizza 5, Burgers 3, Salad 2)',
       options: ['2', '3', '5', '10'],
       correctIndex: 2,
       hint: 'Find "Pizza" in the list',
@@ -1416,7 +1432,8 @@ class DataInterpretationQuestions {
     NumeracyQuestion(
       id: 'data_3',
       skillId: 'skill_data_interpretation',
-      question: 'What is the difference between the most and least popular? (Mon 8, Tue 5, Wed 3)',
+      question:
+          'What is the difference between the most and least popular? (Mon 8, Tue 5, Wed 3)',
       options: ['3', '4', '5', '8'],
       correctIndex: 2,
       hint: '8 - 3 = ?',
@@ -1428,11 +1445,18 @@ class DataInterpretationQuestions {
     NumeracyQuestion(
       id: 'data_4',
       skillId: 'skill_data_interpretation',
-      question: 'In a bar graph, the x-axis shows months and y-axis shows temperature. Which is the hottest month?',
-      options: ['The month with tallest bar', 'The month with shortest bar', 'The first month', 'The last month'],
+      question:
+          'In a bar graph, the x-axis shows months and y-axis shows temperature. Which is the hottest month?',
+      options: [
+        'The month with tallest bar',
+        'The month with shortest bar',
+        'The first month',
+        'The last month'
+      ],
       correctIndex: 0,
       hint: 'Higher bars = higher values',
-      explanation: 'In a bar graph, the tallest bar represents the highest value',
+      explanation:
+          'In a bar graph, the tallest bar represents the highest value',
       difficulty: 3,
     ),
     NumeracyQuestion(
@@ -1442,7 +1466,8 @@ class DataInterpretationQuestions {
       options: ['80', '85', '90', '87'],
       correctIndex: 1,
       hint: 'Mode is the number that appears most often',
-      explanation: '85 appears twice, while 80 and 90 appear once each. Mode = 85',
+      explanation:
+          '85 appears twice, while 80 and 90 appear once each. Mode = 85',
       difficulty: 3,
     ),
     NumeracyQuestion(
@@ -1470,7 +1495,8 @@ class DataInterpretationQuestions {
     NumeracyQuestion(
       id: 'data_8',
       skillId: 'skill_data_interpretation',
-      question: 'If a survey shows 60% prefer dogs and 40% prefer cats, how many prefer dogs out of 100 people?',
+      question:
+          'If a survey shows 60% prefer dogs and 40% prefer cats, how many prefer dogs out of 100 people?',
       options: ['40', '50', '60', '70'],
       correctIndex: 2,
       hint: '60% of 100 = ?',
@@ -1480,7 +1506,8 @@ class DataInterpretationQuestions {
     NumeracyQuestion(
       id: 'data_9',
       skillId: 'skill_data_interpretation',
-      question: 'A shop sells apples (25%), oranges (35%), bananas (40%). Which is most popular?',
+      question:
+          'A shop sells apples (25%), oranges (35%), bananas (40%). Which is most popular?',
       options: ['Apples', 'Oranges', 'Bananas', 'Apples and Oranges'],
       correctIndex: 2,
       hint: '40% is larger than 35% and 25%',
@@ -1490,7 +1517,8 @@ class DataInterpretationQuestions {
     NumeracyQuestion(
       id: 'data_10',
       skillId: 'skill_data_interpretation',
-      question: 'Student heights: 140cm, 145cm, 142cm, 148cm, 141cm. Which measures the spread of data?',
+      question:
+          'Student heights: 140cm, 145cm, 142cm, 148cm, 141cm. Which measures the spread of data?',
       options: ['Mode', 'Median', 'Range', 'Mean'],
       correctIndex: 2,
       hint: 'Range = highest - lowest',
@@ -1564,7 +1592,8 @@ class AdvancedGeometryQuestions {
     NumeracyQuestion(
       id: 'geo3d_6',
       skillId: 'skill_geometry_3d',
-      question: 'What is the volume of a rectangular prism: length 5cm, width 3cm, height 2cm?',
+      question:
+          'What is the volume of a rectangular prism: length 5cm, width 3cm, height 2cm?',
       options: ['10', '15', '30', '60'],
       correctIndex: 2,
       hint: 'Volume = length × width × height',
@@ -1584,11 +1613,13 @@ class AdvancedGeometryQuestions {
     NumeracyQuestion(
       id: 'geo3d_8',
       skillId: 'skill_geometry_3d',
-      question: 'If you rotate a shape 90° clockwise, by how many degrees should you rotate to return to original?',
+      question:
+          'If you rotate a shape 90° clockwise, by how many degrees should you rotate to return to original?',
       options: ['90°', '180°', '270°', '360°'],
       correctIndex: 2,
       hint: '3 × 90° = ?',
-      explanation: '3 more 90° rotations (270° total) returns to original position',
+      explanation:
+          '3 more 90° rotations (270° total) returns to original position',
       difficulty: 4,
     ),
   ];
@@ -1606,21 +1637,35 @@ class HigherOrderThinkingNumeracyQuestions {
     NumeracyQuestion(
       id: 'hot_eval_1',
       skillId: 'skill_problem_solving',
-      question: 'Two solutions: A) 5 + 3 = 8, B) 5 + 3 = 9. Which is correct and why?',
-      options: ['A is correct: 5 + 3 = 8', 'B is correct: 5 + 3 = 9', 'Both could be correct', 'Neither is correct'],
+      question:
+          'Two solutions: A) 5 + 3 = 8, B) 5 + 3 = 9. Which is correct and why?',
+      options: [
+        'A is correct: 5 + 3 = 8',
+        'B is correct: 5 + 3 = 9',
+        'Both could be correct',
+        'Neither is correct'
+      ],
       correctIndex: 0,
       hint: 'Count on your fingers',
-      explanation: 'A is correct. 5 + 3 = 8. We can verify by counting: 5, 6, 7, 8',
+      explanation:
+          'A is correct. 5 + 3 = 8. We can verify by counting: 5, 6, 7, 8',
       difficulty: 4,
     ),
     NumeracyQuestion(
       id: 'hot_eval_2',
       skillId: 'skill_problem_solving',
-      question: 'A shop has 2 methods to calculate discount. Method 1: Take \$5 off. Method 2: Take 20% off a \$25 item. Which saves more?',
-      options: ['Method 1 saves \$5', 'Method 2 saves \$5', 'Methods save equally', 'Cannot determine'],
+      question:
+          'A shop has 2 methods to calculate discount. Method 1: Take \$5 off. Method 2: Take 20% off a \$25 item. Which saves more?',
+      options: [
+        'Method 1 saves \$5',
+        'Method 2 saves \$5',
+        'Methods save equally',
+        'Cannot determine'
+      ],
       correctIndex: 1,
       hint: '20% of \$25 = ?',
-      explanation: 'Method 1: \$5 off. Method 2: 20% of \$25 = \$5 off. Both save equally!',
+      explanation:
+          'Method 1: \$5 off. Method 2: 20% of \$25 = \$5 off. Both save equally!',
       difficulty: 5,
     ),
     NumeracyQuestion(
@@ -1630,17 +1675,25 @@ class HigherOrderThinkingNumeracyQuestions {
       options: ['24 - 3 = 21', '24 ÷ 8 = 3', '3 + 3 + 3 = 9', '8 + 8 + 8 = 24'],
       correctIndex: 1,
       hint: 'Division and multiplication are inverse operations',
-      explanation: '24 ÷ 8 = 3 checks it, OR 8 × 3 = 24 checks it. Both confirm the answer.',
+      explanation:
+          '24 ÷ 8 = 3 checks it, OR 8 × 3 = 24 checks it. Both confirm the answer.',
       difficulty: 5,
     ),
     NumeracyQuestion(
       id: 'hot_eval_4',
       skillId: 'skill_problem_solving',
-      question: 'Average of 5 scores is 80. One score was 100. Without calculating, is the average of remaining 4 scores above or below 80?',
-      options: ['Definitely above 80', 'Definitely below 80', 'Could be either', 'Exactly 80'],
+      question:
+          'Average of 5 scores is 80. One score was 100. Without calculating, is the average of remaining 4 scores above or below 80?',
+      options: [
+        'Definitely above 80',
+        'Definitely below 80',
+        'Could be either',
+        'Exactly 80'
+      ],
       correctIndex: 1,
       hint: 'Removing a score above the average lowers the average',
-      explanation: 'Since 100 > 80, removing it lowers the average. Remaining average < 80',
+      explanation:
+          'Since 100 > 80, removing it lowers the average. Remaining average < 80',
       difficulty: 5,
     ),
 
@@ -1649,40 +1702,63 @@ class HigherOrderThinkingNumeracyQuestions {
       id: 'hot_create_1',
       skillId: 'skill_problem_solving',
       question: 'Create a number story for 12 ÷ 3 = 4',
-      options: ['12 apples shared among 3 friends, 4 each', 'I have 3 apples and 12 oranges', 'The total is 12 and 3', '3 + 4 = 12'],
+      options: [
+        '12 apples shared among 3 friends, 4 each',
+        'I have 3 apples and 12 oranges',
+        'The total is 12 and 3',
+        '3 + 4 = 12'
+      ],
       correctIndex: 0,
       hint: 'Division is splitting/sharing',
-      explanation: '12 ÷ 3 = 4 means 12 items split 3 ways gives 4 items per way',
+      explanation:
+          '12 ÷ 3 = 4 means 12 items split 3 ways gives 4 items per way',
       difficulty: 5,
     ),
     NumeracyQuestion(
       id: 'hot_create_2',
       skillId: 'skill_problem_solving',
-      question: 'If a store profits \$50 per item. How many items must sell to reach \$500 profit? Create and solve.',
+      question:
+          'If a store profits \$50 per item. How many items must sell to reach \$500 profit? Create and solve.',
       options: ['10 items', '15 items', 'Cannot determine', '50 items'],
       correctIndex: 0,
       hint: '\$500 ÷ \$50 = ?',
-      explanation: '\$500 ÷ \$50 per item = 10 items. Problem: Profit × Quantity = Total Profit',
+      explanation:
+          '\$500 ÷ \$50 per item = 10 items. Problem: Profit × Quantity = Total Profit',
       difficulty: 5,
     ),
     NumeracyQuestion(
       id: 'hot_create_3',
       skillId: 'skill_problem_solving',
-      question: 'Design a fair game where you roll a die and want to make it more likely to win. How would you change the rules?',
-      options: ['Award points for rolling 1-4', 'Award points for rolling 6 only', 'Award points for rolling 1, 2, or 6', 'Award same points for all outcomes'],
+      question:
+          'Design a fair game where you roll a die and want to make it more likely to win. How would you change the rules?',
+      options: [
+        'Award points for rolling 1-4',
+        'Award points for rolling 6 only',
+        'Award points for rolling 1, 2, or 6',
+        'Award same points for all outcomes'
+      ],
       correctIndex: 0,
       hint: 'Higher probability = more favorable outcomes',
-      explanation: 'Rolling 1-4 gives 4/6 chance of winning vs 1 or 2 outcomes with 1/6 or 2/6 chance',
+      explanation:
+          'Rolling 1-4 gives 4/6 chance of winning vs 1 or 2 outcomes with 1/6 or 2/6 chance',
       difficulty: 6,
     ),
     NumeracyQuestion(
       id: 'hot_create_4',
       skillId: 'skill_problem_solving',
-      question: 'Invent a discount system where 3 items give better value than 1 item, but worse value than buying 4 items.',
-      options: ['Price per item: 1=\$10, 3=\$28, 4=\$36', 'Price per item: 1=\$10, 3=\$32, 4=\$36', 'Price per item: 1=\$10, 3=\$24, 4=\$36', 'Not possible to design'],
+      question:
+          'Invent a discount system where 3 items give better value than 1 item, but worse value than buying 4 items.',
+      options: [
+        'Price per item: 1=\$10, 3=\$28, 4=\$36',
+        'Price per item: 1=\$10, 3=\$32, 4=\$36',
+        'Price per item: 1=\$10, 3=\$24, 4=\$36',
+        'Not possible to design'
+      ],
       correctIndex: 0,
-      hint: 'Compare price per item: 1=\$10/item, 3=\$9.33/item, 4=\$9/item means 3 is middle value',
-      explanation: 'Option A: 1=\$10/item, 3=\$9.33/item, 4=\$9/item. 3 gives better value than 1, worse than 4!',
+      hint:
+          'Compare price per item: 1=\$10/item, 3=\$9.33/item, 4=\$9/item means 3 is middle value',
+      explanation:
+          'Option A: 1=\$10/item, 3=\$9.33/item, 4=\$9/item. 3 gives better value than 1, worse than 4!',
       difficulty: 6,
     ),
     // Year 5-7: Fractions and percentages
@@ -1709,32 +1785,39 @@ class HigherOrderThinkingNumeracyQuestions {
     NumeracyQuestion(
       id: 'hot_pct_1',
       skillId: 'skill_problem_solving',
-      question: 'A pair of shoes costs \$80. They go on sale at 35% off. What is the sale price?',
+      question:
+          'A pair of shoes costs \$80. They go on sale at 35% off. What is the sale price?',
       options: ['\$28', '\$45', '\$52', '\$72'],
       correctIndex: 2,
       hint: '35% of \$80 = \$28. Sale price = \$80 − \$28.',
-      explanation: '35% of \$80 = 0.35 × 80 = \$28. Sale price = \$80 − \$28 = \$52.',
+      explanation:
+          '35% of \$80 = 0.35 × 80 = \$28. Sale price = \$80 − \$28 = \$52.',
       difficulty: 4,
     ),
     NumeracyQuestion(
       id: 'hot_pct_2',
       skillId: 'skill_problem_solving',
-      question: 'A plant was 20 cm tall. It grew to 25 cm. What is the percentage increase?',
+      question:
+          'A plant was 20 cm tall. It grew to 25 cm. What is the percentage increase?',
       options: ['5%', '20%', '25%', '125%'],
       correctIndex: 2,
-      hint: 'Percentage increase = (increase ÷ original) × 100 = (5 ÷ 20) × 100.',
-      explanation: 'Increase = 5 cm. Percentage increase = (5 ÷ 20) × 100 = 25%.',
+      hint:
+          'Percentage increase = (increase ÷ original) × 100 = (5 ÷ 20) × 100.',
+      explanation:
+          'Increase = 5 cm. Percentage increase = (5 ÷ 20) × 100 = 25%.',
       difficulty: 5,
     ),
     // Year 6-7: Rates and ratio
     NumeracyQuestion(
       id: 'hot_ratio_1',
       skillId: 'skill_problem_solving',
-      question: 'A recipe uses 2 cups of flour for every 3 cups of oats. To make a batch using 12 cups of oats, how much flour is needed?',
+      question:
+          'A recipe uses 2 cups of flour for every 3 cups of oats. To make a batch using 12 cups of oats, how much flour is needed?',
       options: ['6 cups', '8 cups', '9 cups', '18 cups'],
       correctIndex: 1,
       hint: 'Ratio is 2:3. If oats = 12, flour = 12 × (2/3).',
-      explanation: 'Ratio flour:oats = 2:3. For 12 cups oats: 12 × (2/3) = 8 cups flour.',
+      explanation:
+          'Ratio flour:oats = 2:3. For 12 cups oats: 12 × (2/3) = 8 cups flour.',
       difficulty: 4,
     ),
     NumeracyQuestion(
@@ -1782,7 +1865,8 @@ class HigherOrderThinkingNumeracyQuestions {
     NumeracyQuestion(
       id: 'hot_prob_1',
       skillId: 'skill_problem_solving',
-      question: 'A bag has 3 red, 2 blue and 5 green marbles. What is the probability of picking red?',
+      question:
+          'A bag has 3 red, 2 blue and 5 green marbles. What is the probability of picking red?',
       options: ['1/10', '3/10', '5/10', '7/10'],
       correctIndex: 1,
       hint: 'Probability = favourable ÷ total. Total = 3 + 2 + 5.',
@@ -1792,32 +1876,42 @@ class HigherOrderThinkingNumeracyQuestions {
     NumeracyQuestion(
       id: 'hot_prob_2',
       skillId: 'skill_problem_solving',
-      question: 'If a dice is rolled, what is the probability of NOT getting a 6?',
+      question:
+          'If a dice is rolled, what is the probability of NOT getting a 6?',
       options: ['1/6', '5/6', '1/2', '4/6'],
       correctIndex: 1,
       hint: 'P(not 6) = 1 − P(6). P(6) = 1/6.',
-      explanation: 'P(not 6) = 1 − 1/6 = 5/6. There are 5 favourable outcomes (1,2,3,4,5) out of 6.',
+      explanation:
+          'P(not 6) = 1 − 1/6 = 5/6. There are 5 favourable outcomes (1,2,3,4,5) out of 6.',
       difficulty: 4,
     ),
     // Year 7: Negative numbers
     NumeracyQuestion(
       id: 'hot_neg_1',
       skillId: 'skill_problem_solving',
-      question: 'The temperature was −5°C. It rose by 12°C. What is the new temperature?',
+      question:
+          'The temperature was −5°C. It rose by 12°C. What is the new temperature?',
       options: ['7°C', '−7°C', '17°C', '−17°C'],
       correctIndex: 0,
       hint: '−5 + 12 = ?',
-      explanation: '−5 + 12 = 7°C. Moving right on the number line from −5 by 12 steps lands on 7.',
+      explanation:
+          '−5 + 12 = 7°C. Moving right on the number line from −5 by 12 steps lands on 7.',
       difficulty: 5,
     ),
     NumeracyQuestion(
       id: 'hot_neg_2',
       skillId: 'skill_problem_solving',
       question: 'Which list is correctly ordered from smallest to largest?',
-      options: ['−10, −5, 0, 3, 8', '−5, −10, 0, 3, 8', '0, −5, −10, 3, 8', '8, 3, 0, −5, −10'],
+      options: [
+        '−10, −5, 0, 3, 8',
+        '−5, −10, 0, 3, 8',
+        '0, −5, −10, 3, 8',
+        '8, 3, 0, −5, −10'
+      ],
       correctIndex: 0,
       hint: 'On a number line, more negative = smaller.',
-      explanation: '−10 < −5 < 0 < 3 < 8. Negative numbers are always less than positive numbers!',
+      explanation:
+          '−10 < −5 < 0 < 3 < 8. Negative numbers are always less than positive numbers!',
       difficulty: 5,
     ),
   ];

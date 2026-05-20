@@ -75,7 +75,6 @@ class _EnhancedZoneHeaderState extends State<EnhancedZoneHeader>
     return WorldTokens.fromZoneId(widget.zoneId).ambientParticles;
   }
 
-
   String _getZoneEmoji() {
     return WorldTokens.fromZoneId(widget.zoneId).emoji;
   }
@@ -122,13 +121,16 @@ class _EnhancedZoneHeaderState extends State<EnhancedZoneHeader>
                           Hero(
                             tag: 'zone_icon_${widget.zoneId}',
                             child: Transform.translate(
-                              offset: Offset(0,
-                                  math.sin(_floatController.value * math.pi) * 5),
+                              offset: Offset(
+                                  0,
+                                  math.sin(_floatController.value * math.pi) *
+                                      5),
                               child: Text(
                                 _getZoneEmoji(),
                                 style: const TextStyle(
                                   fontSize: 48,
-                                  decoration: TextDecoration.none, // Fix hero flight text style
+                                  decoration: TextDecoration
+                                      .none, // Fix hero flight text style
                                 ),
                               ),
                             ),

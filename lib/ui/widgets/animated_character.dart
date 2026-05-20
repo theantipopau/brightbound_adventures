@@ -423,6 +423,14 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
         return '🐺';
       case 'tiger':
         return '🐯';
+      case 'quokka':
+        return 'Q';
+      case 'platypus':
+        return 'P';
+      case 'turtle':
+        return 'T';
+      case 'dragon':
+        return 'D';
       default:
         return '🐻';
     }
@@ -454,6 +462,14 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
         return const Color(0xFF607D8B);
       case 'tiger':
         return const Color(0xFFFF8F00);
+      case 'quokka':
+        return const Color(0xFFC98A5A);
+      case 'platypus':
+        return const Color(0xFF7B5E57);
+      case 'turtle':
+        return const Color(0xFF2E7D32);
+      case 'dragon':
+        return const Color(0xFF7E57C2);
       default:
         return const Color(0xFF8B4513);
     }

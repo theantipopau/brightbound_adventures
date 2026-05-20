@@ -9,9 +9,11 @@ void _writeLine(String message) {
 }
 
 void main() async {
-  _writeLine('════════════════════════════════════════════════════════════════');
+  _writeLine(
+      '════════════════════════════════════════════════════════════════');
   _writeLine('  PHASE 7.2 PART B: COMPREHENSIVE QUESTION AUDIT REPORT');
-  _writeLine('════════════════════════════════════════════════════════════════\n');
+  _writeLine(
+      '════════════════════════════════════════════════════════════════\n');
 
   // Build comprehensive audit report
   final auditReport = {
@@ -97,7 +99,8 @@ void main() async {
 
   // Print summary
   _writeLine('QUESTION INVENTORY SUMMARY');
-  _writeLine('─────────────────────────────────────────────────────────────────\n');
+  _writeLine(
+      '─────────────────────────────────────────────────────────────────\n');
 
   _writeLine('Literacy Module: 78 estimated questions');
   _writeLine('  - Homophones, Apostrophes, Punctuation (37 already audited)');
@@ -111,26 +114,32 @@ void main() async {
   _writeLine('  - Sequencing, emotion, character analysis, dialogue, plot\n');
 
   _writeLine('Logic Module: 79 estimated questions');
-  _writeLine('  - Pattern recognition, reasoning, problem-solving, deduction\n');
+  _writeLine(
+      '  - Pattern recognition, reasoning, problem-solving, deduction\n');
 
-  _writeLine('─────────────────────────────────────────────────────────────────');
+  _writeLine(
+      '─────────────────────────────────────────────────────────────────');
   _writeLine('TOTAL SYSTEM QUESTIONS: ~358');
   _writeLine('AUDITED TO DATE: 37 (10.3%)');
   _writeLine('REMAINING TO AUDIT: 321 (89.7%)');
-  _writeLine('─────────────────────────────────────────────────────────────────\n');
+  _writeLine(
+      '─────────────────────────────────────────────────────────────────\n');
 
   // Quality baseline from initial audit
   _writeLine('BASELINE QUALITY METRICS (from 37 initial questions)');
-  _writeLine('─────────────────────────────────────────────────────────────────');
+  _writeLine(
+      '─────────────────────────────────────────────────────────────────');
   _writeLine('Average Quality Score: 80.3/100');
   _writeLine('Validity Rate: 88.8%');
   _writeLine('Primary Issues: Missing real-world context (24%)');
-  _writeLine('Cognitive Gap: Limited higher-order thinking (Analyze/Evaluate/Create)');
+  _writeLine(
+      'Cognitive Gap: Limited higher-order thinking (Analyze/Evaluate/Create)');
   _writeLine('Recommendation: Embed context, diversify cognitive levels\n');
 
   // Save report
   final reportFile = File('PHASE_7_2_FULL_AUDIT_PLAN.json');
-  await reportFile.writeAsString(JsonEncoder.withIndent('  ').convert(auditReport));
+  await reportFile
+      .writeAsString(JsonEncoder.withIndent('  ').convert(auditReport));
   _writeLine('✓ Audit plan saved: PHASE_7_2_FULL_AUDIT_PLAN.json\n');
 
   // Create execution checklist
@@ -196,7 +205,9 @@ Target: Complete Phase 7.2 Part B and move to implementation
   await checklistFile.writeAsString(checklist);
   _writeLine('✓ Execution checklist saved: PHASE_7_2_AUDIT_CHECKLIST.md\n');
 
-  _writeLine('════════════════════════════════════════════════════════════════');
+  _writeLine(
+      '════════════════════════════════════════════════════════════════');
   _writeLine('  AUDIT PLAN COMPLETE - READY TO BEGIN FULL AUDIT');
-  _writeLine('════════════════════════════════════════════════════════════════');
+  _writeLine(
+      '════════════════════════════════════════════════════════════════');
 }

@@ -108,19 +108,19 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
     // Update achievements
     try {
       final achievementService = context.read<AchievementService>();
-      
+
       // Stars earned achievement (10 stars per correct answer)
       final starsEarned = correct * 10;
       achievementService.updateProgress('achievement_stars_25', starsEarned);
       achievementService.updateProgress('achievement_stars_50', starsEarned);
       achievementService.updateProgress('achievement_stars_100', starsEarned);
-      
+
       // Perfect game achievement
       if (accuracy == 1.0) {
         achievementService.updateProgress('achievement_perfect_1', 1);
         achievementService.updateProgress('achievement_perfect_5', 1);
       }
-      
+
       // Quick learner achievement (3+ correct)
       if (correct >= 3) {
         achievementService.updateProgress('achievement_quick_learner', 1);
@@ -128,7 +128,7 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
     } catch (e) {
       // Achievement service not available
     }
-    
+
     // Update daily challenges - update progress for each correct answer
     try {
       final dailyService = context.read<DailyChallengeService>();
@@ -147,7 +147,7 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
     } catch (e) {
       // Daily challenge service not available
     }
-    
+
     setState(() {
       _showResults = true;
       _accuracy = accuracy;

@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/features/literacy/models/question.dart';
 import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
@@ -11,6 +10,7 @@ import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
+import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
 import 'package:brightbound_adventures/core/controllers/game_session_controller.dart';
 import 'package:brightbound_adventures/core/utils/question_variation_helper.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
@@ -59,7 +59,6 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   bool _autoReadQuestions = false;
   bool _aiHintsEnabled = false;
   bool _aiExplanationsEnabled = false;
-  bool _aiCloudMode = false;
   String? _activeHintText;
   String? _aiExplanationText;
 
@@ -139,26 +138,18 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   LiteracyQuestion get _currentQuestion => _shuffledQuestions[_currentIndex];
 
   Future<void> _loadAutoReadPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final autoRead = prefs.getBool('autoReadQuestions') ?? false;
-    final aiHintsEnabled = prefs.getBool('aiHintsEnabled') ?? false;
-    final aiExplanationsEnabled =
-        prefs.getBool('aiExplanationsEnabled') ?? false;
-    final aiCloudMode = prefs.getBool('aiCloudMode') ?? false;
+    final preferences = await QuizPreferencesService.load();
     if (!mounted) return;
 
     setState(() {
-      _autoReadQuestions = autoRead;
-      _aiHintsEnabled = aiHintsEnabled;
-      _aiExplanationsEnabled = aiExplanationsEnabled;
-      _aiCloudMode = aiCloudMode;
+      _autoReadQuestions = preferences.autoReadQuestions;
+      _aiHintsEnabled = preferences.aiHintsEnabled;
+      _aiExplanationsEnabled = preferences.aiExplanationsEnabled;
     });
 
-    _aiAssistant
-      ..setEnabled(aiHintsEnabled || aiExplanationsEnabled)
-      ..setCloudMode(_aiCloudMode);
+    QuizPreferencesService.applyToAssistant(_aiAssistant, preferences);
 
-    if (autoRead) {
+    if (preferences.autoReadQuestions) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _readCurrentQuestionAloud();
       });
@@ -194,7 +185,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
       hapticService.onCorrectAnswer();
       _audioManager.playCorrectAnswer();
       _starController.forward(from: 0);
-      showFloatingReward(context, '+10 ⭐');
+      showFloatingReward(context, '+${_gameController.lastPointsEarned} ⭐');
       // Avatar reacts with pride on 3-streak, joy otherwise
       avatarProvider.setEmotion(
         _gameController.streak >= 3 ? AvatarEmotion.proud : AvatarEmotion.happy,
@@ -364,8 +355,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
               } else if (_selectedIndex == null) {
                 setState(() => _selectedIndex = 0);
               }
-            } else if (key == LogicalKeyboardKey.enter &&
-                !_answered) {
+            } else if (key == LogicalKeyboardKey.enter && !_answered) {
               _selectAnswer(_selectedIndex ?? -1);
             } else if (key == LogicalKeyboardKey.escape) {
               _togglePause();
@@ -457,10 +447,12 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                                   key: ValueKey(_currentIndex),
                                   tween: Tween(begin: 1.0, end: 0.0),
                                   duration: Duration(
-                                      seconds: _gameController.maxTimePerQuestion),
+                                      seconds:
+                                          _gameController.maxTimePerQuestion),
                                   builder: (context, _, child) {
-                                    final ratio = _gameController.remainingTime /
-                                        _gameController.maxTimePerQuestion;
+                                    final ratio =
+                                        _gameController.remainingTime /
+                                            _gameController.maxTimePerQuestion;
                                     final isUrgent =
                                         _gameController.remainingTime < 10;
                                     return Stack(
@@ -484,7 +476,8 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                                                       ]
                                                     : [
                                                         widget.themeColor
-                                                            .withValues(alpha: 0.8),
+                                                            .withValues(
+                                                                alpha: 0.8),
                                                         widget.themeColor,
                                                       ],
                                               ),
@@ -566,16 +559,17 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
             ),
 
             // Floating Action Button for Hints
-            floatingActionButton: (((_currentQuestion.hint?.isNotEmpty ?? false) ||
-                  _aiHintsEnabled) &&
-                    !_answered &&
-                    _gameController.state == GameState.playing)
-                ? FloatingActionButton(
-                    backgroundColor: _hintUsed ? Colors.grey : Colors.amber,
-                    onPressed: _hintUsed ? null : _showHintDialog,
-                    child: const Icon(Icons.lightbulb),
-                  )
-                : null,
+            floatingActionButton:
+                (((_currentQuestion.hint?.isNotEmpty ?? false) ||
+                            _aiHintsEnabled) &&
+                        !_answered &&
+                        _gameController.state == GameState.playing)
+                    ? FloatingActionButton(
+                        backgroundColor: _hintUsed ? Colors.grey : Colors.amber,
+                        onPressed: _hintUsed ? null : _showHintDialog,
+                        child: const Icon(Icons.lightbulb),
+                      )
+                    : null,
           ),
         );
       },
@@ -635,14 +629,65 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   }
 
   Widget _buildQuestionCard() {
+    final width = MediaQuery.of(context).size.width;
+    final isCompact = width < 700;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        QuestionCard(
-          question: _currentQuestion.question,
-          accentColor: widget.themeColor,
-          questionNumber: _currentIndex + 1,
-          totalQuestions: _shuffledQuestions.length,
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(isCompact ? 16 : 22),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                widget.themeColor.withValues(alpha: 0.06),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(AppBorders.xl),
+            border: Border.all(
+              color: widget.themeColor.withValues(alpha: 0.20),
+              width: 1.5,
+            ),
+            boxShadow: AppShadows.md(widget.themeColor),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildQuizChip(
+                    icon: Icons.auto_awesome_rounded,
+                    label: 'Focus mode',
+                    color: widget.themeColor,
+                  ),
+                  _buildQuizChip(
+                    icon: Icons.question_mark_rounded,
+                    label: 'Q${_currentIndex + 1}/${_shuffledQuestions.length}',
+                    color: Colors.deepPurple,
+                  ),
+                  if (_autoReadQuestions)
+                    _buildQuizChip(
+                      icon: Icons.record_voice_over,
+                      label: 'Read aloud',
+                      color: Colors.teal,
+                    ),
+                ],
+              ),
+              SizedBox(height: isCompact ? 14 : 18),
+              QuestionCard(
+                question: _currentQuestion.question,
+                accentColor: widget.themeColor,
+                questionNumber: _currentIndex + 1,
+                totalQuestions: _shuffledQuestions.length,
+              ),
+            ],
+          ),
         ),
         if (_showHint) ...[
           const SizedBox(height: 12),
@@ -651,7 +696,14 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
             curve: AppMotion.enter,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.amber.shade50,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.amber.shade50,
+                  Colors.orange.shade50,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               border: Border.all(color: Colors.amber.shade300, width: 1.5),
               borderRadius: BorderRadius.circular(AppBorders.md),
               boxShadow: AppShadows.sm(Colors.amber),
@@ -713,7 +765,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
 
     return Container(
       padding:
-          EdgeInsets.fromLTRB(12, isCompact ? 6 : 8, 12, isCompact ? 6 : 8),
+          EdgeInsets.fromLTRB(12, isCompact ? 8 : 10, 12, isCompact ? 8 : 10),
       decoration: BoxDecoration(color: Colors.white, boxShadow: [
         BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -734,9 +786,12 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                 decoration: BoxDecoration(
                   color: widget.themeColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(11),
-                  border: Border.all(color: widget.themeColor.withValues(alpha: 0.3), width: 1.5),
+                  border: Border.all(
+                      color: widget.themeColor.withValues(alpha: 0.3),
+                      width: 1.5),
                 ),
-                child: Image.asset('assets/images/scroll.PNG', fit: BoxFit.contain),
+                child: Image.asset('assets/images/scroll.PNG',
+                    fit: BoxFit.contain),
               ),
             ),
           ),
@@ -753,11 +808,14 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                 decoration: BoxDecoration(
                   color: widget.themeColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(11),
-                  border: Border.all(color: widget.themeColor.withValues(alpha: 0.3), width: 1.5),
+                  border: Border.all(
+                      color: widget.themeColor.withValues(alpha: 0.3),
+                      width: 1.5),
                 ),
                 child: _gameController.state == GameState.paused
                     ? Icon(Icons.play_arrow, color: widget.themeColor, size: 22)
-                    : Image.asset('assets/images/questsandtasks.PNG', fit: BoxFit.contain),
+                    : Image.asset('assets/images/questsandtasks.PNG',
+                        fit: BoxFit.contain),
               ),
             ),
           ),
@@ -791,10 +849,27 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                         : 1;
                     return Padding(
                       padding: const EdgeInsets.only(top: 2),
-                      child: DifficultyIndicator(
-                        difficulty: difficulty,
-                        color: widget.themeColor,
-                        compact: true,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Answer carefully and keep your streak going',
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.black.withValues(alpha: 0.52),
+                              fontSize: isCompact ? 10 : 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          DifficultyIndicator(
+                            difficulty: difficulty,
+                            color: widget.themeColor,
+                            compact: true,
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -904,19 +979,51 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
   }
 
   Widget _buildFeedback(bool isCorrect) {
-    final msg = isCorrect
-        ? (_gameController.streak > 2
-            ? '🔥 Streak x${_gameController.streak}!'
-            : '✅ Correct!')
-        : '❌ Not quite!';
+    final correctMessages = [
+      'Brilliant! 🌟',
+      'Amazing! 🎉',
+      'You got it! 🏆',
+      'Correct! ✅',
+      'Well done! 💪',
+    ];
+    final streakMessages = [
+      '${_gameController.streak} in a row! 🔥',
+      'Streak x${_gameController.streak}!! ⚡',
+      'On fire! x${_gameController.streak} 🔥',
+    ];
+    final wrongMessages = [
+      'Nice try! Keep going 💛',
+      'Almost! You\'ve got this 💙',
+      'Not quite – try the next one! 🌈',
+    ];
+
+    String msg;
+    if (isCorrect) {
+      if (_gameController.streak >= 3) {
+        msg = streakMessages[_gameController.streak % streakMessages.length];
+      } else {
+        msg = correctMessages[_currentIndex % correctMessages.length];
+      }
+    } else {
+      msg = wrongMessages[_currentIndex % wrongMessages.length];
+    }
+
+    final pts = _gameController.lastPointsEarned;
+    final bgColor = isCorrect ? Colors.green.shade500 : Colors.red.shade400;
+
     return AnimatedContainer(
       duration: AppMotion.standard,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        gradient: isCorrect ? AppGradients.success : AppGradients.error,
+        gradient: LinearGradient(
+          colors: isCorrect
+              ? [Colors.green.shade500, Colors.teal.shade400]
+              : [Colors.red.shade400, Colors.deepOrange.shade400],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(AppBorders.pill),
-        boxShadow: AppShadows.md(
-            isCorrect ? const Color(0xFF06A77D) : const Color(0xFFE63946)),
+        boxShadow: AppShadows.md(bgColor),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -925,11 +1032,22 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
             msg,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 17,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.4,
             ),
           ),
+          if (isCorrect) ...[
+            const SizedBox(height: 4),
+            Text(
+              '+$pts pts',
+              style: TextStyle(
+                color: Colors.yellow.shade200,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
           if (_aiExplanationText != null) ...[
             const SizedBox(height: 6),
             Text(
@@ -943,6 +1061,36 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuizChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
         ],
       ),
     );

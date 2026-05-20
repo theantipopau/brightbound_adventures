@@ -19,12 +19,16 @@ class QuizResultsScreen extends StatefulWidget {
   final Color themeColor;
   final VoidCallback? onPlayAgain;
   final VoidCallback? onExit;
+
   /// Optional message from the zone guardian celebrating the skill completion.
   final String? guardianMessage;
+
   /// Optional guardian emoji for the banner.
   final String? guardianEmoji;
+
   /// Zone id used to check for zone mastery after the session.
   final String? zoneId;
+
   /// Display name of the zone (e.g. 'Word Woods').
   final String? zoneName;
 
@@ -111,9 +115,9 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
 
     // Schedule spaced repetition review
     context.read<SpacedRepetitionService>().recordSession(
-      skillId: widget.skillId,
-      accuracy: widget.accuracy,
-    );
+          skillId: widget.skillId,
+          accuracy: widget.accuracy,
+        );
 
     // Check if this session completed the whole zone
     checkAndShowZoneMastered(
@@ -444,7 +448,8 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                   ],
 
                   // Guardian message banner
-                  if (widget.guardianMessage != null) ...[                    const SizedBox(height: 20),
+                  if (widget.guardianMessage != null) ...[
+                    const SizedBox(height: 20),
                     _GuardianMessageBanner(
                       emoji: widget.guardianEmoji ?? '✨',
                       message: widget.guardianMessage!,
@@ -537,28 +542,13 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
 // Lightweight confetti painter for the results celebration
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ConfettiParticleData {
-  final double x;
-  final double y;
-  final double speed;
-  final double size;
-  final double angle;
-  final double spin;
-  final Color color;
-
-  const _ConfettiParticleData({
-    required this.x, required this.y, required this.speed,
-    required this.size, required this.angle, required this.spin,
-    required this.color,
-  });
-}
-
 class _ConfettiPainter extends CustomPainter {
   final double progress;
   final List<Color> colors;
   final int seed;
 
-  _ConfettiPainter({required this.progress, required this.colors, required this.seed});
+  _ConfettiPainter(
+      {required this.progress, required this.colors, required this.seed});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -582,11 +572,15 @@ class _ConfettiPainter extends CustomPainter {
       canvas.save();
       canvas.translate(cx, cy);
       canvas.rotate(angle + spin * t);
-      final paint = Paint()..color = c.withValues(alpha: fade)..style = PaintingStyle.fill;
+      final paint = Paint()
+        ..color = c.withValues(alpha: fade)
+        ..style = PaintingStyle.fill;
       if (i % 3 == 0) {
         canvas.drawCircle(Offset.zero, sz * 0.4, paint);
       } else {
-        canvas.drawRect(Rect.fromCenter(center: Offset.zero, width: sz, height: sz * 0.5), paint);
+        canvas.drawRect(
+            Rect.fromCenter(center: Offset.zero, width: sz, height: sz * 0.5),
+            paint);
       }
       canvas.restore();
     }

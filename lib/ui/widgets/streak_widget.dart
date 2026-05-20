@@ -247,7 +247,11 @@ class _StreakWidgetState extends State<StreakWidget>
             final played = weekActivity[i];
             final dayIdx = (todayWeekday - 1 - (6 - i)) % 7;
             final label = dayLabels[(dayIdx + 7) % 7];
-            return _buildDayDot(label: label, played: played, isToday: i == 6, color: activeColor);
+            return _buildDayDot(
+                label: label,
+                played: played,
+                isToday: i == 6,
+                color: activeColor);
           }),
         ),
       ],
@@ -269,16 +273,23 @@ class _StreakWidgetState extends State<StreakWidget>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: played ? color : Colors.grey.shade200,
-            border: isToday
-                ? Border.all(color: color, width: 2.5)
-                : null,
+            border: isToday ? Border.all(color: color, width: 2.5) : null,
             boxShadow: played
-                ? [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 6, spreadRadius: 1)]
+                ? [
+                    BoxShadow(
+                        color: color.withValues(alpha: 0.4),
+                        blurRadius: 6,
+                        spreadRadius: 1)
+                  ]
                 : null,
           ),
           child: Center(
             child: played
-                ? const Text('✓', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold))
+                ? const Text('✓',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold))
                 : null,
           ),
         ),
@@ -374,7 +385,7 @@ class _EnhancedStreakWidgetState extends State<EnhancedStreakWidget>
   void initState() {
     super.initState();
     _enhancedService = StreakEnhancedService(widget.streakService);
-    
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
@@ -626,7 +637,7 @@ class _StreakMilestoneCardState extends State<StreakMilestoneCard>
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 12,
-              ),
+                ),
                 decoration: BoxDecoration(
                   color: celebrationColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),

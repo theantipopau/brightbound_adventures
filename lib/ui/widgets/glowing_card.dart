@@ -54,7 +54,7 @@ class _GlowingCardState extends State<GlowingCard> {
               color: cardColor.withValues(alpha: _isHovered ? 0.6 : 0.2),
               width: _isHovered ? 2.5 : 1.5,
             ),
-            boxShadow: _isHovered 
+            boxShadow: _isHovered
                 ? AppShadows.glow(cardColor, intensity: widget.glowIntensity)
                 : AppShadows.sm(cardColor),
           ),

@@ -44,12 +44,16 @@ class _ScreenShakerState extends State<ScreenShaker>
       animation: _shakeController,
       builder: (context, child) {
         if (!_shakeController.isAnimating) return widget.child;
-        
+
         // Random shake offset based on intensity (controller value)
         // We use sine waves for smoother shake
-        final dx = sin(_shakeController.value * pi * 8) * (1 - _shakeController.value) * 10;
-        final dy = cos(_shakeController.value * pi * 5) * (1 - _shakeController.value) * 5;
-        
+        final dx = sin(_shakeController.value * pi * 8) *
+            (1 - _shakeController.value) *
+            10;
+        final dy = cos(_shakeController.value * pi * 5) *
+            (1 - _shakeController.value) *
+            5;
+
         return Transform.translate(
           offset: Offset(dx, dy),
           child: widget.child,

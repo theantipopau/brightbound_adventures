@@ -22,6 +22,7 @@ class ServiceRegistry {
   late AiQuestionService _aiQuestions;
   late QuestionFreshnessService _questionFreshness;
   late ThemeModeService _themeMode;
+  late VisualAccessibilityService _visualAccessibility;
 
   LocalStorageService get storage => _storage;
   AchievementService get achievements => _achievements;
@@ -37,6 +38,7 @@ class ServiceRegistry {
   AiQuestionService get aiQuestions => _aiQuestions;
   QuestionFreshnessService get questionFreshness => _questionFreshness;
   ThemeModeService get themeMode => _themeMode;
+  VisualAccessibilityService get visualAccessibility => _visualAccessibility;
 
   Future<void> initializeAll() async {
     _storage = LocalStorageService();
@@ -78,5 +80,8 @@ class ServiceRegistry {
 
     _themeMode = ThemeModeService();
     await _themeMode.initialize();
+
+    _visualAccessibility = VisualAccessibilityService();
+    await _visualAccessibility.initialize();
   }
 }

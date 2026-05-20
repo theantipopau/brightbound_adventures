@@ -21,7 +21,8 @@ class ParticleBackground extends StatefulWidget {
   State<ParticleBackground> createState() => _ParticleBackgroundState();
 }
 
-class _ParticleBackgroundState extends State<ParticleBackground> with SingleTickerProviderStateMixin {
+class _ParticleBackgroundState extends State<ParticleBackground>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late List<_Particle> _generatedParticles;
 
@@ -32,7 +33,7 @@ class _ParticleBackgroundState extends State<ParticleBackground> with SingleTick
       vsync: this,
       duration: const Duration(seconds: 10),
     )..repeat();
-    
+
     _initParticles();
   }
 
@@ -110,22 +111,22 @@ class _ParticlePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
-    // We simulate movement by using the controller's progress, 
-    // but since we want continuous looping, we just add speed * delta 
+    // We simulate movement by using the controller's progress,
+    // but since we want continuous looping, we just add speed * delta
     // in a real game loop. However, for a simple declarative animation,
     // we can calculate position based on time.
-    
+
     // Actually, to make them wrap properly without complex state management in painter,
     // let's just use the progress to advance them.
     // BUT: To make them independent, we better use stateful updates or time-based pos.
     // Let's stick to a simple vertical flow for now:
     // y = (initialY - progress * speed) % 1.0 (scrolling up)
-    
+
     // Better: Update the generic "tick" and calculate positions.
-    // Since `progress` loops 0->1, we can use that as a time delta 
+    // Since `progress` loops 0->1, we can use that as a time delta
     // if we tracked previous time. But simpler: just position = (start + time * speed) % 1.
     // Wait, the controller duration is 10s.
-    
+
     final time = DateTime.now().millisecondsSinceEpoch / 1000.0;
 
     for (var particle in particles) {
@@ -134,10 +135,11 @@ class _ParticlePainter extends CustomPainter {
       double currentY = (particle.y - (time * particle.speed)) % 1.2;
       // Map 1.2 range back to -0.2 to 1.0 so they start below and end above
       if (currentY < -0.2) currentY += 1.2;
-      
+
       // Add wobble to X
-      double currentX = particle.x + math.sin(time * particle.wobbleSpeed + particle.wobbleOffset) * 0.05;
-      
+      double currentX = particle.x +
+          math.sin(time * particle.wobbleSpeed + particle.wobbleOffset) * 0.05;
+
       final offset = Offset(
         currentX * size.width,
         (currentY - 0.1) * size.height, // -0.1 to account for 1.2 range shift
@@ -148,22 +150,21 @@ class _ParticlePainter extends CustomPainter {
         text: particle.emoji,
         style: TextStyle(
           fontSize: particle.size,
-          color: Colors.white.withValues(alpha: particle.opacity), 
+          color: Colors.white.withValues(alpha: particle.opacity),
         ),
       );
-      
+
       textPainter.layout();
-      
+
       // Only draw if on screen
       if (offset.dy > -50 && offset.dy < size.height + 50) {
-        textPainter.paint(
-          canvas, 
-          offset - Offset(textPainter.width / 2, textPainter.height / 2)
-        );
+        textPainter.paint(canvas,
+            offset - Offset(textPainter.width / 2, textPainter.height / 2));
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant _ParticlePainter oldDelegate) => true; // Always repaint for animation
+  bool shouldRepaint(covariant _ParticlePainter oldDelegate) =>
+      true; // Always repaint for animation
 }

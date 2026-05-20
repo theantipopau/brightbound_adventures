@@ -21,9 +21,11 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   late AnimationController _backgroundController;
   late AnimationController _sparkleController;
   late AnimationController _characterShowcaseController;
+  final FocusNode _screenFocusNode = FocusNode(debugLabel: 'avatar_creator');
 
   String _selectedCharacter = 'bear';
   String _selectedColor = '#E8C4A0';
+  String _selectedOutfit = 'outfit_adventure';
   int _currentStep = 0;
   CharacterAnimation _previewAnimation = CharacterAnimation.idle;
   String? _hoveredColor;
@@ -106,7 +108,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       'emoji': '🦦',
       'name': 'Ollie Otter',
       'trait': 'Playful & Bold',
-      'description': 'A splashy otter who turns learning into lively adventures!',
+      'description':
+          'A splashy otter who turns learning into lively adventures!',
       'color': const Color(0xFFB87333),
     },
     {
@@ -114,7 +117,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       'emoji': '🐺',
       'name': 'Willow Wolf',
       'trait': 'Focused & Fearless',
-      'description': 'A confident wolf who stays calm and tackles every challenge!',
+      'description':
+          'A confident wolf who stays calm and tackles every challenge!',
       'color': const Color(0xFF607D8B),
     },
     {
@@ -124,6 +128,41 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       'trait': 'Energetic & Brave',
       'description': 'A high-energy tiger who charges into every new lesson!',
       'color': const Color(0xFFFF8F00),
+    },
+    {
+      'id': 'quokka',
+      'emoji': 'Q',
+      'name': 'Quinn Quokka',
+      'trait': 'Cheerful & Curious',
+      'description': 'A sunny quokka who helps every challenge feel possible!',
+      'color': const Color(0xFFC98A5A),
+    },
+    {
+      'id': 'platypus',
+      'emoji': 'P',
+      'name': 'Perry Platypus',
+      'trait': 'Inventive & Calm',
+      'description':
+          'A clever platypus who loves experiments, patterns, and surprises!',
+      'color': const Color(0xFF7B5E57),
+    },
+    {
+      'id': 'turtle',
+      'emoji': 'T',
+      'name': 'Tara Turtle',
+      'trait': 'Patient & Steady',
+      'description':
+          'A thoughtful turtle who proves slow, careful thinking wins!',
+      'color': const Color(0xFF2E7D32),
+    },
+    {
+      'id': 'dragon',
+      'emoji': 'D',
+      'name': 'Nova Dragon',
+      'trait': 'Imaginative & Bold',
+      'description':
+          'A magical dragon who turns learning goals into epic quests!',
+      'color': const Color(0xFF7E57C2),
     },
   ];
 
@@ -159,7 +198,69 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     _backgroundController.dispose();
     _sparkleController.dispose();
     _characterShowcaseController.dispose();
+    _screenFocusNode.dispose();
     super.dispose();
+  }
+
+  int get _selectedCharacterIndex =>
+      _characters.indexWhere((c) => c['id'] == _selectedCharacter);
+
+  void _selectCharacterAt(int index) {
+    final wrappedIndex = (index + _characters.length) % _characters.length;
+    final character = _characters[wrappedIndex];
+    setState(() {
+      _selectedCharacter = character['id'];
+      _selectedColor =
+          CosmeticsLibrary.getSkinColorsForCharacter(character['id'])[0];
+      _previewAnimation = CharacterAnimation.celebrating;
+    });
+    HapticFeedback.selectionClick();
+  }
+
+  void _selectRelativeColor(int direction) {
+    final colors =
+        CosmeticsLibrary.getSkinColorsForCharacter(_selectedCharacter);
+    final index = colors.indexOf(_selectedColor);
+    final nextIndex = (index + direction + colors.length) % colors.length;
+    setState(() => _selectedColor = colors[nextIndex]);
+    HapticFeedback.selectionClick();
+  }
+
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent) return;
+
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.escape) {
+      _previousStep();
+      return;
+    }
+
+    if (_currentStep == 1) {
+      if (key == LogicalKeyboardKey.arrowLeft) {
+        _selectCharacterAt(_selectedCharacterIndex - 1);
+      } else if (key == LogicalKeyboardKey.arrowRight) {
+        _selectCharacterAt(_selectedCharacterIndex + 1);
+      } else if (key == LogicalKeyboardKey.arrowUp) {
+        _selectCharacterAt(_selectedCharacterIndex - 2);
+      } else if (key == LogicalKeyboardKey.arrowDown) {
+        _selectCharacterAt(_selectedCharacterIndex + 2);
+      } else if (key == LogicalKeyboardKey.enter ||
+          key == LogicalKeyboardKey.space) {
+        _nextStep();
+      }
+    } else if (_currentStep == 2) {
+      if (key == LogicalKeyboardKey.arrowLeft) {
+        _selectRelativeColor(-1);
+      } else if (key == LogicalKeyboardKey.arrowRight) {
+        _selectRelativeColor(1);
+      } else if (key == LogicalKeyboardKey.enter ||
+          key == LogicalKeyboardKey.space) {
+        _nextStep();
+      }
+    } else if (_currentStep == 3 &&
+        (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.space)) {
+      _createAvatar();
+    }
   }
 
   Future<void> _createAvatar() async {
@@ -187,6 +288,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             name: _nameController.text,
             baseCharacter: _selectedCharacter,
             skinColor: _selectedColor,
+            outfitId: _selectedOutfit,
           );
 
       if (mounted) {
@@ -231,6 +333,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
 
     if (_currentStep < 3) {
       setState(() => _currentStep++);
+      _screenFocusNode.requestFocus();
       _pageController.animateToPage(
         _currentStep,
         duration: const Duration(milliseconds: 400),
@@ -242,6 +345,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   void _previousStep() {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
+      _screenFocusNode.requestFocus();
       _pageController.animateToPage(
         _currentStep,
         duration: const Duration(milliseconds: 400),
@@ -253,13 +357,13 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   void _cyclePreviewAnimation() {
     setState(() {
       _previewAnimation = switch (_previewAnimation) {
-          CharacterAnimation.idle => CharacterAnimation.walking,
-          CharacterAnimation.walking => CharacterAnimation.jumping,
-          CharacterAnimation.jumping => CharacterAnimation.celebrating,
-          CharacterAnimation.celebrating => CharacterAnimation.idle,
-          CharacterAnimation.thinking => CharacterAnimation.idle,
-          CharacterAnimation.sleeping => CharacterAnimation.idle,
-        };
+        CharacterAnimation.idle => CharacterAnimation.walking,
+        CharacterAnimation.walking => CharacterAnimation.jumping,
+        CharacterAnimation.jumping => CharacterAnimation.celebrating,
+        CharacterAnimation.celebrating => CharacterAnimation.idle,
+        CharacterAnimation.thinking => CharacterAnimation.idle,
+        CharacterAnimation.sleeping => CharacterAnimation.idle,
+      };
     });
     HapticFeedback.selectionClick();
   }
@@ -270,70 +374,75 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     final screenHeight = mediaQuery.size.height;
     final isSmallScreen = screenHeight < 700;
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Animated gradient background
-          AnimatedBuilder(
-            animation: _backgroundController,
-            builder: (context, child) {
-              return Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      _getStepColor(_currentStep).withValues(alpha: 0.3),
-                      _getStepColor(_currentStep).withValues(alpha: 0.1),
-                      Colors.white,
-                    ],
-                    transform: GradientRotation(
-                        _backgroundController.value * 2 * math.pi),
+    return KeyboardListener(
+      focusNode: _screenFocusNode,
+      autofocus: true,
+      onKeyEvent: _handleKeyEvent,
+      child: Scaffold(
+        body: Stack(
+          children: [
+            // Animated gradient background
+            AnimatedBuilder(
+              animation: _backgroundController,
+              builder: (context, child) {
+                return Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        _getStepColor(_currentStep).withValues(alpha: 0.3),
+                        _getStepColor(_currentStep).withValues(alpha: 0.1),
+                        Colors.white,
+                      ],
+                      transform: GradientRotation(
+                          _backgroundController.value * 2 * math.pi),
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-
-          // Floating particles
-          AnimatedBuilder(
-            animation: _sparkleController,
-            builder: (context, child) {
-              return CustomPaint(
-                painter: _FloatingParticlesPainter(
-                  _sparkleController.value,
-                  _getStepColor(_currentStep),
-                ),
-                size: Size.infinite,
-              );
-            },
-          ),
-
-          // Main content
-          SafeArea(
-            child: Column(
-              children: [
-                _buildAppBar(isSmallScreen: isSmallScreen),
-                _buildProgressBar(),
-                if (!isSmallScreen) _buildLivePreviewBanner(scale: 1.0),
-                if (isSmallScreen) _buildLivePreviewBanner(scale: 0.75),
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-                      _buildWelcomeStep(),
-                      _buildCharacterStep(),
-                      _buildColorStep(),
-                      _buildReviewStep(),
-                    ],
-                  ),
-                ),
-                _buildNavigationButtons(isCompact: isSmallScreen),
-              ],
+                );
+              },
             ),
-          ),
-        ],
+
+            // Floating particles
+            AnimatedBuilder(
+              animation: _sparkleController,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: _FloatingParticlesPainter(
+                    _sparkleController.value,
+                    _getStepColor(_currentStep),
+                  ),
+                  size: Size.infinite,
+                );
+              },
+            ),
+
+            // Main content
+            SafeArea(
+              child: Column(
+                children: [
+                  _buildAppBar(isSmallScreen: isSmallScreen),
+                  _buildProgressBar(),
+                  if (!isSmallScreen) _buildLivePreviewBanner(scale: 1.0),
+                  if (isSmallScreen) _buildLivePreviewBanner(scale: 0.75),
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _buildWelcomeStep(),
+                        _buildCharacterStep(),
+                        _buildColorStep(),
+                        _buildReviewStep(),
+                      ],
+                    ),
+                  ),
+                  _buildNavigationButtons(isCompact: isSmallScreen),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -350,6 +459,41 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
         return AppColors.success;
       default:
         return AppColors.primary;
+    }
+  }
+
+  String _characterPropAsset(String characterId) {
+    switch (characterId) {
+      case 'bear':
+      case 'deer':
+        return 'assets/images/logpile.PNG';
+      case 'fox':
+      case 'wolf':
+        return 'assets/images/goldkey.PNG';
+      case 'rabbit':
+      case 'cat':
+        return 'assets/images/pinkcrystal.PNG';
+      case 'penguin':
+        return 'assets/images/bluecrystal.PNG';
+      case 'koala':
+      case 'panda':
+        return 'assets/images/greencrystal.PNG';
+      case 'owl':
+        return 'assets/images/scroll.PNG';
+      case 'otter':
+        return 'assets/images/potion.PNG';
+      case 'tiger':
+        return 'assets/images/goldpile.PNG';
+      case 'quokka':
+        return 'assets/images/questsandtasks.PNG';
+      case 'platypus':
+        return 'assets/images/bluecrystal.PNG';
+      case 'turtle':
+        return 'assets/images/greencrystal.PNG';
+      case 'dragon':
+        return 'assets/images/chest_open.PNG';
+      default:
+        return 'assets/images/chest_closed.PNG';
     }
   }
 
@@ -494,7 +638,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     final spacing = 14.0 * scale;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(20 * scale, 10 * scale, 20 * scale, 6 * scale),
+      padding:
+          EdgeInsets.fromLTRB(20 * scale, 10 * scale, 20 * scale, 6 * scale),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(24),
@@ -516,12 +661,14 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               ),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: (selectedCharacter['color'] as Color).withValues(alpha: 0.25),
+                color: (selectedCharacter['color'] as Color)
+                    .withValues(alpha: 0.25),
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: (selectedCharacter['color'] as Color).withValues(alpha: 0.18),
+                  color: (selectedCharacter['color'] as Color)
+                      .withValues(alpha: 0.18),
                   blurRadius: 18 * scale,
                   offset: Offset(0, 10 * scale),
                 ),
@@ -586,10 +733,11 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
-                    color:
-                        (selectedCharacter['color'] as Color).withValues(alpha: 0.12),
+                    color: (selectedCharacter['color'] as Color)
+                        .withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
@@ -633,10 +781,10 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 child: AnimatedBuilder(
                   animation: _characterShowcaseController,
                   builder: (context, child) {
-                    final index =
-                        (_characterShowcaseController.value * _characters.length)
+                    final index = (_characterShowcaseController.value *
+                                _characters.length)
                             .floor() %
-                            _characters.length;
+                        _characters.length;
                     final char = _characters[index];
                     return AnimatedSwitcher(
                       duration: const Duration(milliseconds: 500),
@@ -831,7 +979,10 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 600;
         final isTiny = constraints.maxHeight < 500;
-        final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
+        final selectorRows = isTiny ? 1 : 2;
+        final cardExtent = constraints.maxWidth < 420
+            ? 132.0
+            : (constraints.maxWidth < 760 ? 156.0 : 176.0);
 
         return Column(
           children: [
@@ -883,12 +1034,14 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             // Character grid - fits available space
             Expanded(
               child: GridView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const PageScrollPhysics(),
                 padding: EdgeInsets.symmetric(horizontal: isCompact ? 12 : 24),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
+                  crossAxisCount: selectorRows,
                   crossAxisSpacing: isCompact ? 12 : 16,
                   mainAxisSpacing: isCompact ? 12 : 16,
-                  childAspectRatio: 0.75,
+                  mainAxisExtent: cardExtent,
                 ),
                 itemCount: _characters.length,
                 itemBuilder: (context, index) {
@@ -905,139 +1058,183 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                         child: child,
                       );
                     },
-                    child: Material(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(24),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
+                    child: Semantics(
+                      button: true,
+                      selected: isSelected,
+                      label:
+                          '${character['name']}, ${character['trait']}. ${character['description']}',
+                      hint: 'Use arrow keys to choose a companion.',
+                      child: Material(
+                        color: Colors.transparent,
                         borderRadius: BorderRadius.circular(24),
-                        onTap: () {
-                          setState(() {
-                            _selectedCharacter = character['id'];
-                            _selectedColor =
-                                CosmeticsLibrary.getSkinColorsForCharacter(
-                                    character['id'])[0];
-                            _previewAnimation = CharacterAnimation.celebrating;
-                          });
-                          HapticFeedback.mediumImpact();
-                        },
-                        child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        decoration: BoxDecoration(
-                          gradient: isSelected
-                              ? LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    (character['color'] as Color)
-                                        .withValues(alpha: 0.1),
-                                    Colors.white,
-                                  ],
-                                )
-                              : null,
-                          color: isSelected ? null : Colors.white,
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: isSelected
-                                ? character['color']
-                                : Colors.grey.shade200,
-                            width: isSelected ? 4 : 2,
-                          ),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: (character['color'] as Color)
-                                        .withValues(alpha: 0.3),
-                                    blurRadius: 16,
-                                    spreadRadius: 2,
-                                  ),
-                                ]
-                              : [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                        ),
-                        child: LayoutBuilder(
-                          builder: (context, cardConstraints) {
-                            final isNarrow = cardConstraints.maxWidth < 150;
-
-                            return Stack(
-                              children: [
-                                if (isSelected)
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: Container(
-                                      width: 28,
-                                      height: 28,
-                                      decoration: BoxDecoration(
-                                        color: character['color'],
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(Icons.check,
-                                          color: Colors.white, size: 18),
+                          onTap: () {
+                            setState(() {
+                              _selectedCharacter = character['id'];
+                              _selectedColor =
+                                  CosmeticsLibrary.getSkinColorsForCharacter(
+                                      character['id'])[0];
+                              _previewAnimation =
+                                  CharacterAnimation.celebrating;
+                            });
+                            HapticFeedback.mediumImpact();
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            decoration: BoxDecoration(
+                              gradient: isSelected
+                                  ? LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        (character['color'] as Color)
+                                            .withValues(alpha: 0.18),
+                                        Colors.white,
+                                        (character['color'] as Color)
+                                            .withValues(alpha: 0.08),
+                                      ],
+                                    )
+                                  : LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Colors.white,
+                                        (character['color'] as Color)
+                                            .withValues(alpha: 0.04),
+                                      ],
                                     ),
-                                  ),
-                                Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      // Animated character preview
-                                      AnimatedCharacter(
-                                        character: character['id'],
-                                        size: isNarrow
-                                            ? 50
-                                            : (isSelected ? 70 : 60),
-                                        animation: isSelected
-                                            ? _previewAnimation
-                                            : CharacterAnimation.idle,
-                                        showParticles: isSelected &&
-                                            _previewAnimation ==
-                                                CharacterAnimation.celebrating,
-                                      ),
-                                      SizedBox(height: isNarrow ? 4 : 8),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 4),
-                                        child: Text(
-                                          character['name'],
-                                          style: TextStyle(
-                                            fontSize: isNarrow ? 12 : 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: isSelected
-                                                ? character['color']
-                                                : AppColors.textPrimary,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 4),
-                                        child: Text(
-                                          character['trait'],
-                                          style: TextStyle(
-                                            fontSize: isNarrow ? 10 : 11,
-                                            color: AppColors.textSecondary,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: isSelected
+                                    ? character['color']
+                                    : Colors.grey.shade200,
+                                width: isSelected ? 4 : 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (character['color'] as Color)
+                                      .withValues(
+                                          alpha: isSelected ? 0.34 : 0.10),
+                                  blurRadius: isSelected ? 18 : 9,
+                                  spreadRadius: isSelected ? 2 : 0,
+                                  offset: const Offset(0, 5),
                                 ),
                               ],
-                            );
-                          },
+                            ),
+                            child: LayoutBuilder(
+                              builder: (context, cardConstraints) {
+                                final isNarrow = cardConstraints.maxWidth < 150;
+
+                                return Stack(
+                                  children: [
+                                    Positioned(
+                                      left: 8,
+                                      top: 8,
+                                      child: Container(
+                                        width: isNarrow ? 26 : 32,
+                                        height: isNarrow ? 26 : 32,
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.92),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: (character['color'] as Color)
+                                                .withValues(alpha: 0.25),
+                                          ),
+                                        ),
+                                        child: Image.asset(
+                                          _characterPropAsset(character['id']),
+                                          fit: BoxFit.contain,
+                                          filterQuality: FilterQuality.medium,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Icon(
+                                            Icons.auto_awesome_rounded,
+                                            color: character['color'] as Color,
+                                            size: isNarrow ? 16 : 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: Container(
+                                          width: 28,
+                                          height: 28,
+                                          decoration: BoxDecoration(
+                                            color: character['color'],
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.check,
+                                              color: Colors.white, size: 18),
+                                        ),
+                                      ),
+                                    Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          // Animated character preview
+                                          AnimatedCharacter(
+                                            character: character['id'],
+                                            size: isNarrow
+                                                ? 50
+                                                : (isSelected ? 70 : 60),
+                                            animation: isSelected
+                                                ? _previewAnimation
+                                                : CharacterAnimation.idle,
+                                            showParticles: isSelected &&
+                                                _previewAnimation ==
+                                                    CharacterAnimation
+                                                        .celebrating,
+                                          ),
+                                          SizedBox(height: isNarrow ? 4 : 8),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 4),
+                                            child: Text(
+                                              character['name'],
+                                              style: TextStyle(
+                                                fontSize: isNarrow ? 12 : 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: isSelected
+                                                    ? character['color']
+                                                    : AppColors.textPrimary,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 4),
+                                            child: Text(
+                                              character['trait'],
+                                              style: TextStyle(
+                                                fontSize: isNarrow ? 10 : 11,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
                   );
                 },
               ),
@@ -1104,39 +1301,40 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               vertical: isCompact ? 8 : 10,
             ),
             constraints: const BoxConstraints(minHeight: 48),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.secondary : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isSelected ? AppColors.secondary : Colors.grey.shade300,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.secondary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(emoji, style: TextStyle(fontSize: isCompact ? 16 : 18)),
-              SizedBox(width: isCompact ? 4 : 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: isCompact ? 12 : 13,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Colors.white : AppColors.textPrimary,
-                ),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.secondary : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isSelected ? AppColors.secondary : Colors.grey.shade300,
               ),
-            ],
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.secondary.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(emoji, style: TextStyle(fontSize: isCompact ? 16 : 18)),
+                SizedBox(width: isCompact ? 4 : 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: isCompact ? 12 : 13,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -1156,12 +1354,55 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             const Spacer(flex: 1),
 
             // Large animated preview
-            AnimatedCharacter(
-              character: _selectedCharacter,
-              skinColor: _selectedColor,
-              size: isTiny ? 100 : (isCompact ? 120 : 140),
-              animation: CharacterAnimation.celebrating,
-              showParticles: true,
+            Container(
+              width: isTiny ? 128 : (isCompact ? 156 : 184),
+              height: isTiny ? 128 : (isCompact ? 156 : 184),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    Color(int.parse(
+                            '0xFF${_selectedColor.replaceFirst('#', '')}'))
+                        .withValues(alpha: 0.24),
+                    Colors.white.withValues(alpha: 0.92),
+                  ],
+                ),
+                border: Border.all(
+                  color: _getStepColor(_currentStep).withValues(alpha: 0.28),
+                  width: 3,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: _getStepColor(_currentStep).withValues(alpha: 0.20),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned(
+                    right: isTiny ? 18 : 24,
+                    bottom: isTiny ? 14 : 20,
+                    child: Opacity(
+                      opacity: 0.72,
+                      child: Image.asset(
+                        _characterPropAsset(_selectedCharacter),
+                        width: isTiny ? 34 : 44,
+                        filterQuality: FilterQuality.medium,
+                      ),
+                    ),
+                  ),
+                  AnimatedCharacter(
+                    character: _selectedCharacter,
+                    skinColor: _selectedColor,
+                    size: isTiny ? 100 : (isCompact ? 120 : 140),
+                    animation: CharacterAnimation.celebrating,
+                    showParticles: true,
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: isTiny ? 12 : (isCompact ? 16 : 24)),
 
@@ -1180,6 +1421,16 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     fontSize: isTiny ? 12 : (isCompact ? 13 : 14),
                   ),
             ),
+            if (!isTiny) ...[
+              const SizedBox(height: 6),
+              Text(
+                'Arrow keys switch colors. Tap or click any swatch.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ],
             SizedBox(height: isTiny ? 16 : (isCompact ? 20 : 32)),
 
             // Color options
@@ -1195,53 +1446,69 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     final colorValue =
                         Color(int.parse('0xFF${color.replaceFirst('#', '')}'));
 
-                    return Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onHover: (hovering) {
-                          setState(() {
-                            _hoveredColor = hovering ? color : null;
-                          });
-                        },
-                        onTap: () {
-                          setState(() => _selectedColor = color);
-                          HapticFeedback.selectionClick();
-                        },
-                        child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: isCompact ? (isHovered ? 56 : 50) : (isHovered ? 76 : 70),
-                        height: isCompact ? (isHovered ? 56 : 50) : (isHovered ? 76 : 70),
-                        decoration: BoxDecoration(
-                          gradient: RadialGradient(
-                            colors: [
-                              colorValue.withValues(alpha: 0.78),
-                              colorValue,
-                            ],
-                          ),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color:
-                                isSelected ? AppColors.tertiary : Colors.white,
-                            width: isSelected ? 4 : 3,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorValue.withValues(
-                                  alpha:
-                                      isSelected ? 0.5 : (isHovered ? 0.4 : 0.3)),
-                              blurRadius: isSelected ? 12 : (isHovered ? 11 : 8),
-                              spreadRadius: isSelected ? 3 : (isHovered ? 1 : 0),
+                    return Semantics(
+                      button: true,
+                      selected: isSelected,
+                      label:
+                          'Avatar color ${colors.indexOf(color) + 1} of ${colors.length}',
+                      hint: 'Use left and right arrows to change colors.',
+                      child: Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onHover: (hovering) {
+                            setState(() {
+                              _hoveredColor = hovering ? color : null;
+                            });
+                          },
+                          onTap: () {
+                            setState(() => _selectedColor = color);
+                            HapticFeedback.selectionClick();
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: isCompact
+                                ? (isHovered ? 56 : 50)
+                                : (isHovered ? 76 : 70),
+                            height: isCompact
+                                ? (isHovered ? 56 : 50)
+                                : (isHovered ? 76 : 70),
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                colors: [
+                                  colorValue.withValues(alpha: 0.78),
+                                  colorValue,
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.tertiary
+                                    : Colors.white,
+                                width: isSelected ? 4 : 3,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: colorValue.withValues(
+                                      alpha: isSelected
+                                          ? 0.5
+                                          : (isHovered ? 0.4 : 0.3)),
+                                  blurRadius:
+                                      isSelected ? 12 : (isHovered ? 11 : 8),
+                                  spreadRadius:
+                                      isSelected ? 3 : (isHovered ? 1 : 0),
+                                ),
+                              ],
                             ),
-                          ],
+                            child: isSelected
+                                ? Icon(Icons.check,
+                                    color: Colors.white,
+                                    size: isCompact ? 24 : 32)
+                                : null,
+                          ),
                         ),
-                        child: isSelected
-                            ? Icon(Icons.check,
-                                color: Colors.white, size: isCompact ? 24 : 32)
-                            : null,
-                      ),
                       ),
                     );
                   }).toList(),
@@ -1249,10 +1516,227 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               ),
             ),
 
+            SizedBox(height: isTiny ? 10 : 16),
+            _buildOutfitSelector(isCompact: isCompact),
+            if (!isTiny) ...[
+              const SizedBox(height: 10),
+              _buildUnlockPreview(isCompact: isCompact),
+            ],
+
             const Spacer(flex: 1),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildOutfitSelector({required bool isCompact}) {
+    final starterOutfits =
+        CosmeticsLibrary.defaultOutfits.where((outfit) => outfit.isUnlocked);
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 12 : 24),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 10,
+        runSpacing: 10,
+        children: starterOutfits.map((outfit) {
+          final isSelected = _selectedOutfit == outfit.id;
+          final outfitColor =
+              Color(int.parse('0xFF${outfit.color.replaceFirst('#', '')}'));
+
+          return Semantics(
+            button: true,
+            selected: isSelected,
+            label: '${outfit.name}. ${outfit.description}',
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(18),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: () {
+                  setState(() => _selectedOutfit = outfit.id);
+                  HapticFeedback.selectionClick();
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  constraints: const BoxConstraints(minHeight: 48),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isCompact ? 12 : 16,
+                    vertical: isCompact ? 8 : 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? outfitColor.withValues(alpha: 0.16)
+                        : Colors.white.withValues(alpha: 0.82),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isSelected
+                          ? outfitColor
+                          : AppColors.divider.withValues(alpha: 0.8),
+                      width: isSelected ? 2.5 : 1.2,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: outfitColor.withValues(alpha: 0.25),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: outfitColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        outfit.name,
+                        style: TextStyle(
+                          color:
+                              isSelected ? outfitColor : AppColors.textPrimary,
+                          fontWeight:
+                              isSelected ? FontWeight.w800 : FontWeight.w600,
+                          fontSize: isCompact ? 12 : 13,
+                        ),
+                      ),
+                      if (isSelected) ...[
+                        const SizedBox(width: 6),
+                        Icon(Icons.check_circle, size: 16, color: outfitColor),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildUnlockPreview({required bool isCompact}) {
+    final lockedOutfits =
+        CosmeticsLibrary.defaultOutfits.where((outfit) => !outfit.isUnlocked);
+    final lockedAccessories = CosmeticsLibrary.defaultAccessories
+        .where((accessory) => !accessory.isUnlocked);
+
+    return SizedBox(
+      height: isCompact ? 58 : 68,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: isCompact ? 12 : 24),
+        children: [
+          _buildUnlockChip(
+            icon: Icons.lock_open_rounded,
+            title: 'Starter styles unlocked',
+            subtitle: '3 outfits ready now',
+            color: AppColors.success,
+            isCompact: isCompact,
+          ),
+          ...lockedOutfits.take(3).map(
+                (outfit) => _buildUnlockChip(
+                  icon: Icons.checkroom_rounded,
+                  title: outfit.name,
+                  subtitle: 'Level ${outfit.unlockedAtLevel}',
+                  color: Color(
+                    int.parse('0xFF${outfit.color.replaceFirst('#', '')}'),
+                  ),
+                  isCompact: isCompact,
+                ),
+              ),
+          ...lockedAccessories.take(2).map(
+                (accessory) => _buildUnlockChip(
+                  icon: Icons.auto_awesome_rounded,
+                  title: accessory.name,
+                  subtitle: 'Level ${accessory.unlockedAtLevel}',
+                  color: AppColors.secondary,
+                  isCompact: isCompact,
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUnlockChip({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required bool isCompact,
+  }) {
+    return Container(
+      width: isCompact ? 150 : 176,
+      margin: const EdgeInsets.only(right: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 10 : 12,
+        vertical: isCompact ? 8 : 10,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: color.withValues(alpha: 0.24)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.12),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: isCompact ? 32 : 38,
+            height: isCompact ? 32 : 38,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: isCompact ? 18 : 20),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: isCompact ? 11 : 12,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: isCompact ? 10 : 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1343,6 +1827,14 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                         'Character',
                         _characters.firstWhere(
                             (c) => c['id'] == _selectedCharacter)['name'],
+                        isCompact),
+                    Divider(height: isCompact ? 12 : 16), // Reduced height
+                    _buildSummaryRow(
+                        'Style',
+                        'Outfit',
+                        CosmeticsLibrary.defaultOutfits
+                            .firstWhere((o) => o.id == _selectedOutfit)
+                            .name,
                         isCompact),
                     Divider(height: isCompact ? 12 : 16), // Reduced height
                     _buildSummaryRow(

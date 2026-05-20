@@ -41,6 +41,7 @@ flutter:
     - assets/images/
     - assets/sounds/
     - assets/fonts/
+    - lib/core/data/
 
   fonts:
     - family: Fredoka

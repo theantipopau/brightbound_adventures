@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Memory Match Card Game
 /// Match pairs of cards with emojis, words, or images
@@ -28,6 +30,9 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
   int _score = 0;
   int _timeRemaining = 60;
   bool _gameOver = false;
+  Timer? _timer;
+  final FocusNode _gameFocusNode = FocusNode(debugLabel: 'memory_match_game');
+  int _focusedCardIndex = 0;
 
   @override
   void initState() {
@@ -42,7 +47,9 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
 
   @override
   void dispose() {
+    _timer?.cancel();
     _controller.dispose();
+    _gameFocusNode.dispose();
     super.dispose();
   }
 
@@ -66,6 +73,7 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
     cards.shuffle(Random());
     setState(() {
       _cards = cards;
+      _focusedCardIndex = 0;
     });
   }
 
@@ -145,15 +153,18 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
   }
 
   void _startTimer() {
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted || _gameOver) return;
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || _gameOver) {
+        timer.cancel();
+        return;
+      }
       setState(() {
         _timeRemaining--;
         if (_timeRemaining <= 0) {
           _gameOver = true;
+          timer.cancel();
           _showGameOverDialog(false);
-        } else {
-          _startTimer();
         }
       });
     });
@@ -177,6 +188,34 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
     }
   }
 
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent || _cards.isEmpty || _gameOver) return;
+
+    final columns = _getGridSize().$1;
+    final key = event.logicalKey;
+    var nextIndex = _focusedCardIndex;
+
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      nextIndex = max(0, _focusedCardIndex - 1);
+    } else if (key == LogicalKeyboardKey.arrowRight) {
+      nextIndex = min(_cards.length - 1, _focusedCardIndex + 1);
+    } else if (key == LogicalKeyboardKey.arrowUp) {
+      nextIndex = max(0, _focusedCardIndex - columns);
+    } else if (key == LogicalKeyboardKey.arrowDown) {
+      nextIndex = min(_cards.length - 1, _focusedCardIndex + columns);
+    } else if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
+      _onCardTap(_focusedCardIndex);
+      return;
+    } else {
+      return;
+    }
+
+    if (nextIndex != _focusedCardIndex) {
+      setState(() => _focusedCardIndex = nextIndex);
+    }
+  }
+
   void _checkMatch() {
     _isChecking = true;
     final index1 = _flippedIndices[0];
@@ -196,6 +235,7 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
           // Check if game is won
           if (_matches == _cards.length / 2) {
             _gameOver = true;
+            _timer?.cancel();
             _showGameOverDialog(true);
           }
         });
@@ -259,6 +299,7 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
           ),
           ElevatedButton(
             onPressed: () {
+              _timer?.cancel();
               Navigator.pop(context);
               Navigator.pop(context);
             },
@@ -288,53 +329,60 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
   Widget build(BuildContext context) {
     final gridSize = _getGridSize();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Memory Match 🧠'),
-        backgroundColor: Colors.purple,
-        foregroundColor: Colors.white,
-      ),
-      body: Column(
-        children: [
-          // Stats bar
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.purple.withValues(alpha: 0.1),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatChip('⏱️ ${_timeRemaining}s', Colors.red),
-                _buildStatChip('🎯 Moves: $_moves', Colors.blue),
-                _buildStatChip(
-                    '✅ Pairs: $_matches/${_cards.length ~/ 2}', Colors.green),
-                _buildStatChip('⭐ Score: $_score', Colors.amber),
-              ],
+    return KeyboardListener(
+      focusNode: _gameFocusNode,
+      autofocus: true,
+      onKeyEvent: _handleKeyEvent,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Memory Match 🧠'),
+          backgroundColor: Colors.purple,
+          foregroundColor: Colors.white,
+        ),
+        body: Column(
+          children: [
+            // Stats bar
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.purple.withValues(alpha: 0.1),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildStatChip('⏱️ ${_timeRemaining}s', Colors.red),
+                  _buildStatChip('🎯 Moves: $_moves', Colors.blue),
+                  _buildStatChip(
+                      '✅ Pairs: $_matches/${_cards.length ~/ 2}', Colors.green),
+                  _buildStatChip('⭐ Score: $_score', Colors.amber),
+                ],
+              ),
             ),
-          ),
 
-          // Game grid
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: gridSize.$1,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 1,
+            // Game grid
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: gridSize.$1,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: _cards.length,
+                    itemBuilder: (context, index) {
+                      return _buildCard(_cards[index], index);
+                    },
                   ),
-                  itemCount: _cards.length,
-                  itemBuilder: (context, index) {
-                    return _buildCard(_cards[index], index);
-                  },
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -372,51 +420,67 @@ class _MemoryMatchGameState extends State<MemoryMatchGame>
   }
 
   Widget _buildCard(MemoryCard card, int index) {
+    final visible = card.isFlipped || card.isMatched;
+    final isFocused = index == _focusedCardIndex;
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => _onCardTap(index),
-        splashColor: Colors.purple.withValues(alpha: 0.3),
-        child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        decoration: BoxDecoration(
-          color: card.isMatched
-              ? Colors.green.withValues(alpha: 0.3)
-              : card.isFlipped
-                  ? Colors.white
-                  : Colors.purple,
+      child: Semantics(
+        button: true,
+        selected: visible,
+        enabled: !card.isMatched && !_isChecking,
+        label: visible
+            ? 'Memory card showing ${card.content}'
+            : 'Hidden memory card ${index + 1}',
+        hint: 'Use arrow keys to move and Enter or Space to flip.',
+        child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: card.isMatched ? Colors.green : Colors.purple[700]!,
-            width: 3,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Center(
-          child: card.isFlipped || card.isMatched
-              ? Text(
-                  card.content,
-                  style: TextStyle(
-                    fontSize: widget.category == 'emojis' ? 48 : 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )
-              : const Icon(
-                  Icons.question_mark,
-                  size: 48,
-                  color: Colors.white,
+          onTap: () {
+            setState(() => _focusedCardIndex = index);
+            _onCardTap(index);
+          },
+          splashColor: Colors.purple.withValues(alpha: 0.3),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            decoration: BoxDecoration(
+              color: card.isMatched
+                  ? Colors.green.withValues(alpha: 0.3)
+                  : card.isFlipped
+                      ? Colors.white
+                      : Colors.purple,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isFocused
+                    ? Colors.amber
+                    : (card.isMatched ? Colors.green : Colors.purple[700]!),
+                width: isFocused ? 5 : 3,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
+              ],
+            ),
+            child: Center(
+              child: card.isFlipped || card.isMatched
+                  ? Text(
+                      card.content,
+                      style: TextStyle(
+                        fontSize: widget.category == 'emojis' ? 48 : 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.question_mark,
+                      size: 48,
+                      color: Colors.white,
+                    ),
+            ),
+          ),
         ),
-      ),
       ),
     );
   }

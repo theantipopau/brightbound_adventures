@@ -82,7 +82,8 @@ class CreativeCornerQuestions {
       question: 'Which shape has FOUR equal sides?',
       options: ['Rectangle', 'Square', 'Rhombus', 'Both B and C'],
       correctIndex: 3,
-      hint: 'A square and a rhombus both have four equal sides, but different angles.',
+      hint:
+          'A square and a rhombus both have four equal sides, but different angles.',
       explanation:
           'A square has 4 equal sides AND 4 right angles. A rhombus has 4 equal sides but the angles are not all right angles.',
       difficulty: 2,
@@ -105,8 +106,7 @@ class CreativeCornerQuestions {
       options: ['4', '5', '6', '8'],
       correctIndex: 1,
       hint: '"Penta" is a Greek prefix meaning five.',
-      explanation:
-          'A pentagon has 5 sides. A hexagon has 6, an octagon has 8.',
+      explanation: 'A pentagon has 5 sides. A hexagon has 6, an octagon has 8.',
       difficulty: 2,
     ),
     LiteracyQuestion(
@@ -246,8 +246,7 @@ class CreativeCornerQuestions {
     LiteracyQuestion(
       id: 'cc_mu_9',
       skillId: 'skill_music',
-      question:
-          'A piece of music in 4/4 time has how many beats per bar?',
+      question: 'A piece of music in 4/4 time has how many beats per bar?',
       options: ['2', '3', '4', '6'],
       correctIndex: 2,
       hint: 'The top number in the time signature tells you.',
@@ -286,7 +285,8 @@ class CreativeCornerQuestions {
     LiteracyQuestion(
       id: 'cc_ae_2',
       skillId: 'skill_art_elements',
-      question: 'Which element of art refers to the EMPTY areas around objects?',
+      question:
+          'Which element of art refers to the EMPTY areas around objects?',
       options: ['Texture', 'Negative space', 'Line', 'Value'],
       correctIndex: 1,
       hint: 'Think of the space between objects in a drawing.',
@@ -417,7 +417,8 @@ class CreativeCornerQuestions {
           'Which is the BEST adjective to describe a very dark, stormy night?',
       options: ['Nice', 'Ominous', 'Happy', 'Colourful'],
       correctIndex: 1,
-      hint: 'This word means threatening or suggesting something bad will happen.',
+      hint:
+          'This word means threatening or suggesting something bad will happen.',
       explanation:
           '"Ominous" means suggesting something bad is coming — perfect for a dark, stormy night. Strong adjectives make writing vivid.',
       difficulty: 2,
@@ -425,8 +426,7 @@ class CreativeCornerQuestions {
     LiteracyQuestion(
       id: 'cc_ce_6',
       skillId: 'skill_creative_expression',
-      question:
-          'Giving human qualities to animals or objects is called:',
+      question: 'Giving human qualities to animals or objects is called:',
       options: ['Metaphor', 'Personification', 'Alliteration', 'Imagery'],
       correctIndex: 1,
       hint: '"The wind whispered secrets" — the wind can\'t really whisper.',
@@ -437,7 +437,8 @@ class CreativeCornerQuestions {
     LiteracyQuestion(
       id: 'cc_ce_7',
       skillId: 'skill_creative_expression',
-      question: 'A poem where each line starts with a letter that spells a word is called:',
+      question:
+          'A poem where each line starts with a letter that spells a word is called:',
       options: ['Haiku', 'Limerick', 'Acrostic', 'Sonnet'],
       correctIndex: 2,
       hint: 'Each line\'s first letter spells out a word down the page.',
@@ -454,7 +455,12 @@ class CreativeCornerQuestions {
       id: 'cc_fa_1',
       skillId: 'skill_famous_artists',
       question: 'Who painted the famous "Starry Night"?',
-      options: ['Pablo Picasso', 'Vincent van Gogh', 'Leonardo da Vinci', 'Claude Monet'],
+      options: [
+        'Pablo Picasso',
+        'Vincent van Gogh',
+        'Leonardo da Vinci',
+        'Claude Monet'
+      ],
       correctIndex: 1,
       hint: 'This Dutch artist used swirling, bold brushstrokes.',
       explanation:
@@ -465,7 +471,12 @@ class CreativeCornerQuestions {
       id: 'cc_fa_2',
       skillId: 'skill_famous_artists',
       question: 'The "Mona Lisa" was painted by which famous artist?',
-      options: ['Michelangelo', 'Raphael', 'Leonardo da Vinci', 'Salvador Dalí'],
+      options: [
+        'Michelangelo',
+        'Raphael',
+        'Leonardo da Vinci',
+        'Salvador Dalí'
+      ],
       correctIndex: 2,
       hint: 'He was also a scientist, engineer, and inventor.',
       explanation:
@@ -477,7 +488,12 @@ class CreativeCornerQuestions {
       skillId: 'skill_famous_artists',
       question:
           'Which artist is known for paintings of water lilies and his garden in Giverny?',
-      options: ['Georges Seurat', 'Paul Cézanne', 'Claude Monet', 'Pierre-Auguste Renoir'],
+      options: [
+        'Georges Seurat',
+        'Paul Cézanne',
+        'Claude Monet',
+        'Pierre-Auguste Renoir'
+      ],
       correctIndex: 2,
       hint: 'He was a founder of the Impressionist movement in France.',
       explanation:
@@ -489,7 +505,12 @@ class CreativeCornerQuestions {
       skillId: 'skill_famous_artists',
       question:
           'Cubism — breaking objects into geometric shapes — is most associated with which artist?',
-      options: ['Vincent van Gogh', 'Pablo Picasso', 'Andy Warhol', 'Jackson Pollock'],
+      options: [
+        'Vincent van Gogh',
+        'Pablo Picasso',
+        'Andy Warhol',
+        'Jackson Pollock'
+      ],
       correctIndex: 1,
       hint: 'He co-founded this movement with Georges Braque.',
       explanation:
@@ -508,8 +529,7 @@ class CreativeCornerQuestions {
         'Watercolour',
       ],
       correctIndex: 1,
-      hint:
-          'It originated in Central Australia in the early 1970s at Papunya.',
+      hint: 'It originated in Central Australia in the early 1970s at Papunya.',
       explanation:
           'Western Desert dot painting (acrylic dot painting) became prominent in the 1970s at Papunya in the Northern Territory. It represents Dreamtime stories using dot patterns.',
       difficulty: 2,
@@ -532,7 +552,8 @@ class CreativeCornerQuestions {
           'Andy Warhol is known as a leader of which 1960s art movement using popular culture images?',
       options: ['Cubism', 'Pop Art', 'Abstract Expressionism', 'Renaissance'],
       correctIndex: 1,
-      hint: 'Think of colourful Campbell\'s soup cans and Marilyn Monroe prints.',
+      hint:
+          'Think of colourful Campbell\'s soup cans and Marilyn Monroe prints.',
       explanation:
           'Andy Warhol was a leading figure of Pop Art, which used imagery from popular culture — advertising, celebrities, and everyday objects.',
       difficulty: 3,
@@ -541,20 +562,23 @@ class CreativeCornerQuestions {
 
   // ── Public API ────────────────────────────────────────────────────────────
 
-  static List<LiteracyQuestion> getBySkillId(String skillId, {int difficulty = 1}) {
+  static List<LiteracyQuestion> getBySkillId(String skillId,
+      {int difficulty = 1}) {
     final all = {
-      'skill_visual_arts': visualArts,
-      'skill_music': music,
-      'skill_art_elements': artElements,
-      'skill_creative_expression': creativeExpression,
-      'skill_famous_artists': famousArtists,
-    }[skillId] ?? famousArtists;
+          'skill_visual_arts': visualArts,
+          'skill_music': music,
+          'skill_art_elements': artElements,
+          'skill_creative_expression': creativeExpression,
+          'skill_famous_artists': famousArtists,
+        }[skillId] ??
+        famousArtists;
 
     final filtered = all.where((q) => q.difficulty <= difficulty + 1).toList();
     return filtered.isEmpty ? all : filtered;
   }
 
-  static List<LiteracyQuestion> getByDifficulty(String skillId, int difficulty) {
+  static List<LiteracyQuestion> getByDifficulty(
+      String skillId, int difficulty) {
     return getBySkillId(skillId, difficulty: difficulty);
   }
 }

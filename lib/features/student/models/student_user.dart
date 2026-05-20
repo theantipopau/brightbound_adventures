@@ -7,11 +7,11 @@ class StudentUser {
   final DateTime updatedAt;
   final String? avatarUrl;
   final bool isActive;
-  
+
   // NEW: Teacher linking fields
   final String? teacherId; // Which teacher manages this student
   final String? classId; // Which class this student belongs to
-  
+
   // Progress tracking
   final int totalQuestionsAnswered;
   final int currentStreak; // days
@@ -136,7 +136,8 @@ class StudentUser {
       isActive: isActive ?? this.isActive,
       teacherId: teacherId ?? this.teacherId,
       classId: classId ?? this.classId,
-      totalQuestionsAnswered: totalQuestionsAnswered ?? this.totalQuestionsAnswered,
+      totalQuestionsAnswered:
+          totalQuestionsAnswered ?? this.totalQuestionsAnswered,
       currentStreak: currentStreak ?? this.currentStreak,
       lastActiveDate: lastActiveDate ?? this.lastActiveDate,
     );
@@ -179,7 +180,8 @@ class StudentUser {
   }
 
   @override
-  String toString() => 'StudentUser(id: $id, name: $name, grade: $gradeLevel, teacher: $teacherId)';
+  String toString() =>
+      'StudentUser(id: $id, name: $name, grade: $gradeLevel, teacher: $teacherId)';
 
   @override
   bool operator ==(Object other) =>

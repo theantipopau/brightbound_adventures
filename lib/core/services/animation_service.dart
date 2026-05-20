@@ -24,7 +24,9 @@ class ConfettiParticle {
   /// Get position at given time elapsed (in seconds)
   Offset getPosition(double elapsed) {
     final x = initialPosition.dx + (velocity.dx * elapsed);
-    final y = initialPosition.dy + (velocity.dy * elapsed) + (0.5 * gravity * elapsed * elapsed);
+    final y = initialPosition.dy +
+        (velocity.dy * elapsed) +
+        (0.5 * gravity * elapsed * elapsed);
     return Offset(x, y);
   }
 
@@ -49,7 +51,7 @@ class AnimationService {
   static final Random _random = Random();
 
   /// Generate confetti particles for correct answer celebration
-  /// 
+  ///
   /// [center] - Starting point for particles
   /// [count] - Number of particles (default 40)
   /// [colors] - Custom colors or defaults to rainbow
@@ -58,25 +60,27 @@ class AnimationService {
     int count = 40,
     List<Color>? colors,
   }) {
-    final colorList = colors ?? [
-      Colors.red,
-      Colors.yellow,
-      Colors.green,
-      Colors.blue,
-      Colors.purple,
-      Colors.pink,
-      Colors.orange,
-      Colors.cyanAccent,
-      Colors.amberAccent,
-    ];
+    final colorList = colors ??
+        [
+          Colors.red,
+          Colors.yellow,
+          Colors.green,
+          Colors.blue,
+          Colors.purple,
+          Colors.pink,
+          Colors.orange,
+          Colors.cyanAccent,
+          Colors.amberAccent,
+        ];
 
     return List.generate(count, (index) {
       // Explosive randomized distribution (Fountain/Firework style)
       // Angle: Full 360 degrees but with random jitter so it doesn't look like spokes
       final baseAngle = (2 * pi * index) / count;
-      final angleJitter = (_random.nextDouble() - 0.5) * 0.5; // +/- ~15 degrees variation
+      final angleJitter =
+          (_random.nextDouble() - 0.5) * 0.5; // +/- ~15 degrees variation
       final angle = baseAngle + angleJitter;
-      
+
       // Speed: Much higher variance for "pop" feel
       final speed = 300 + _random.nextDouble() * 600; // 300-900 px/s
 
@@ -99,7 +103,7 @@ class AnimationService {
   }
 
   /// Calculate screen shake offset for wrong answer feedback
-  /// 
+  ///
   /// [elapsed] - Time elapsed in animation (0.0 to 1.0)
   /// [intensity] - How far to shake (default 10 pixels)
   static Offset getShakeOffset(double elapsed, {double intensity = 10.0}) {
@@ -115,7 +119,7 @@ class AnimationService {
   }
 
   /// Calculate scale for pop/bounce animation
-  /// 
+  ///
   /// [elapsed] - Time elapsed (0.0 to 1.0)
   /// Returns scale factor (1.0 = normal size)
   static double getBounceScale(double elapsed) {
@@ -125,12 +129,13 @@ class AnimationService {
       return Curves.easeOut.transform(elapsed / 0.6) * 1.15;
     } else {
       // Second phase: settle back down
-      return 1.0 + (0.15 * Curves.easeOut.transform(1.0 - ((elapsed - 0.6) / 0.4)));
+      return 1.0 +
+          (0.15 * Curves.easeOut.transform(1.0 - ((elapsed - 0.6) / 0.4)));
     }
   }
 
   /// Generate staggered animation timings for text reveal
-  /// 
+  ///
   /// [textLength] - Length of text to reveal
   /// [totalDuration] - Total reveal duration in milliseconds
   /// Returns list of start times for each character
@@ -146,7 +151,7 @@ class AnimationService {
   }
 
   /// Create a smooth color animation sequence
-  /// 
+  ///
   /// [startColor] - Starting color
   /// [endColor] - Ending color
   /// [elapsed] - Time elapsed (0.0 to 1.0)
@@ -155,7 +160,7 @@ class AnimationService {
   }
 
   /// Calculate particle opacity with fade in/out
-  /// 
+  ///
   /// [elapsed] - Time elapsed (0.0 to 1.0)
   /// [fadeInDuration] - Fade in time (0.0-1.0 relative)
   /// [fadeOutDuration] - Fade out time (0.0-1.0 relative)

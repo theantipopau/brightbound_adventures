@@ -78,8 +78,7 @@ class SkillProvider extends ChangeNotifier {
       } else if (zoneId == 'story_springs') {
         return skill.strand == Constants.strandCommunication;
       } else if (zoneId == 'science_explorers') {
-        return skill.strand == Constants.strandLogic ||
-            skill.strand == Constants.strandLiteracy;
+        return skill.strand == 'science';
       } else if (zoneId == 'creative_corner') {
         return skill.strand == 'arts';
       } else if (zoneId == 'puzzle_peaks') {

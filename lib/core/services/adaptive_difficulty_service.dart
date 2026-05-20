@@ -6,13 +6,13 @@ import 'dart:convert';
 class AdaptiveDifficultyService extends ChangeNotifier {
   static const String _performanceKey = 'adaptive_difficulty_performance';
   static const int _historyLength = 5; // Track last 5 answers per skill
-  static const int _minDifficulty = 3; // Level 3 = normal
-  static const int _maxDifficulty = 5; // Levels 4-5 = harder
+  static const int _minDifficulty = 1; // Level 1 = simplest support
+  static const int _maxDifficulty = 5; // Level 5 = hardest
 
   // Map of skillId -> list of recent correct/incorrect (true/false)
   final Map<String, List<bool>> _performanceHistory = {};
 
-  // Map of skillId -> current difficulty level (3-5: 3=normal, 4-5=harder)
+  // Map of skillId -> current difficulty level (1-5)
   final Map<String, int> _skillDifficulty = {};
 
   bool _initialized = false;
@@ -50,7 +50,7 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get the current difficulty level for a skill (3-5: 3=normal, 4-5=harder)
+  /// Get the current difficulty level for a skill (1-5)
   int getDifficultyForSkill(String skillId) {
     return _skillDifficulty[skillId] ?? _minDifficulty; // Default to level 3
   }
@@ -105,8 +105,10 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     // Increase difficulty if:
     // - 3 correct in a row, OR
     // - Accuracy >= 90% and not at max difficulty
-    if (threeInARow || (accuracy >= 0.9 && currentDifficulty < _maxDifficulty)) {
-      newDifficulty = (currentDifficulty + 1).clamp(_minDifficulty, _maxDifficulty);
+    if (threeInARow ||
+        (accuracy >= 0.9 && currentDifficulty < _maxDifficulty)) {
+      newDifficulty =
+          (currentDifficulty + 1).clamp(_minDifficulty, _maxDifficulty);
       if (newDifficulty != currentDifficulty) {
         debugPrint(
             '📈 Increasing difficulty for $skillId: $currentDifficulty → $newDifficulty');
@@ -115,8 +117,10 @@ class AdaptiveDifficultyService extends ChangeNotifier {
     // Decrease difficulty if:
     // - 2 wrong in a row, OR
     // - Accuracy < 40% and not at min difficulty
-    else if (twoWrongInRow || (accuracy < 0.4 && currentDifficulty > _minDifficulty)) {
-      newDifficulty = (currentDifficulty - 1).clamp(_minDifficulty, _maxDifficulty);
+    else if (twoWrongInRow ||
+        (accuracy < 0.4 && currentDifficulty > _minDifficulty)) {
+      newDifficulty =
+          (currentDifficulty - 1).clamp(_minDifficulty, _maxDifficulty);
       if (newDifficulty != currentDifficulty) {
         debugPrint(
             '📉 Decreasing difficulty for $skillId: $currentDifficulty → $newDifficulty');

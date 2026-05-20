@@ -14,10 +14,12 @@ class AnimatedCloudBackground extends StatefulWidget {
   });
 
   @override
-  State<AnimatedCloudBackground> createState() => _AnimatedCloudBackgroundState();
+  State<AnimatedCloudBackground> createState() =>
+      _AnimatedCloudBackgroundState();
 }
 
-class _AnimatedCloudBackgroundState extends State<AnimatedCloudBackground> with SingleTickerProviderStateMixin {
+class _AnimatedCloudBackgroundState extends State<AnimatedCloudBackground>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -52,7 +54,9 @@ class _AnimatedCloudBackgroundState extends State<AnimatedCloudBackground> with 
               ],
               stops: [
                 0.0,
-                0.5 + math.sin(_controller.value * math.pi) * 0.2, // Move the center stop
+                0.5 +
+                    math.sin(_controller.value * math.pi) *
+                        0.2, // Move the center stop
                 1.0,
               ],
             ),
@@ -92,12 +96,12 @@ class _CloudPainter extends CustomPainter {
       size.width * 0.5,
       paint,
     );
-    
+
     // Orb 3 - Pulsing center
     final centerPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.1)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80);
-      
+
     canvas.drawCircle(
       Offset(size.width * 0.5, size.height * 0.5),
       size.width * (0.3 + math.sin(time * math.pi * 2) * 0.05),

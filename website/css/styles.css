@@ -1362,6 +1362,73 @@ ul, ol {
     }
 }
 
+/* Manual dark mode override controlled by JS toggle */
+html[data-theme='dark'] {
+    --dark: #f8f9fa;
+    --dark-light: #e0e6ed;
+    --gray: #b2bec3;
+    --gray-light: #2d3436;
+    --light: #1a202c;
+    --white: #0f1419;
+}
+
+html[data-theme='dark'] body {
+    color: var(--dark);
+    background-color: var(--white);
+}
+
+html[data-theme='dark'] .navbar {
+    background: rgba(15, 20, 25, 0.92);
+    border-bottom-color: rgba(200, 210, 220, 0.15);
+}
+
+html[data-theme='dark'] .zone-card,
+html[data-theme='dark'] .feature-card,
+html[data-theme='dark'] .value-card,
+html[data-theme='dark'] .requirement-card,
+html[data-theme='dark'] .team-card,
+html[data-theme='dark'] .web-play,
+html[data-theme='dark'] .faq-item,
+html[data-theme='dark'] .journey-card,
+html[data-theme='dark'] .roadmap-item,
+html[data-theme='dark'] .testimonial-card {
+    background: rgba(45, 52, 66, 0.8);
+    border-color: rgba(200, 210, 220, 0.15);
+}
+
+html[data-theme='dark'] .faq-question:hover,
+html[data-theme='dark'] .faq-item.active {
+    background: rgba(200, 210, 220, 0.08);
+}
+
+html[data-theme='dark'] .hero,
+html[data-theme='dark'] .play-hero,
+html[data-theme='dark'] .page-header {
+    background: linear-gradient(135deg, #1a2f3c 0%, #0f1f2e 100%);
+}
+
+html[data-theme='dark'] .cta-section {
+    background: linear-gradient(135deg, #0d3c50 0%, #082a38 100%);
+}
+
+html[data-theme='dark'] .footer {
+    background: #081b2b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
 /* Add Dark Mode Toggle Button */
 .dark-mode-toggle {
     position: fixed;

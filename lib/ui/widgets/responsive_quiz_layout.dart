@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Helper to determine screen breakpoints
 class ScreenBreakpoints {
@@ -94,9 +96,9 @@ class ResponsiveQuizLayout extends StatelessWidget {
       child: Container(
         constraints: BoxConstraints(maxWidth: maxWidth),
         padding: EdgeInsets.symmetric(horizontal: padding, vertical: vSpacing),
-        child: isWide 
-          ? _buildSideBySideLayout(vSpacing) 
-          : _buildStackedLayout(vSpacing),
+        child: isWide
+            ? _buildSideBySideLayout(vSpacing)
+            : _buildStackedLayout(vSpacing),
       ),
     );
   }
@@ -189,13 +191,14 @@ class HoverCard extends StatefulWidget {
 
 class _HoverCardState extends State<HoverCard> {
   bool _hovered = false;
+  bool _focused = false;
 
   @override
   Widget build(BuildContext context) {
     Widget card = MouseRegion(
-      cursor: widget.enabled && widget.onTap != null 
-        ? SystemMouseCursors.click 
-        : SystemMouseCursors.basic,
+      cursor: widget.enabled && widget.onTap != null
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
       onEnter: (_) {
         if (widget.enabled && widget.onTap != null) {
           setState(() => _hovered = true);
@@ -214,38 +217,71 @@ class _HoverCardState extends State<HoverCard> {
           splashColor: widget.borderColor.withValues(alpha: 0.15),
           highlightColor: widget.borderColor.withValues(alpha: 0.05),
           child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          decoration: BoxDecoration(
-            color: widget.backgroundColor,
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-            border: Border.all(
-              color: _hovered && widget.enabled
-                ? widget.borderColor.withValues(alpha: 0.7)
-                : widget.borderColor.withValues(alpha: 0.4),
-              width: _hovered && widget.enabled ? 2.5 : 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: _hovered && widget.enabled
-                  ? Colors.black.withValues(alpha: 0.15)
-                  : Colors.black.withValues(alpha: 0.08),
-                blurRadius: _hovered && widget.enabled ? 24 : 12,
-                offset: Offset(0, _hovered && widget.enabled ? 10 : 4),
-                spreadRadius: _hovered && widget.enabled ? 2 : 0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            decoration: BoxDecoration(
+              color: widget.backgroundColor,
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+              border: Border.all(
+                color: (_hovered || _focused) && widget.enabled
+                    ? widget.borderColor.withValues(alpha: 0.7)
+                    : widget.borderColor.withValues(alpha: 0.4),
+                width: (_hovered || _focused) && widget.enabled
+                    ? AppInput.focusRingWidth
+                    : 1.5,
               ),
-            ],
-          ),
-          transform: (_hovered && widget.enabled)
-            ? Matrix4.translationValues(0, -5, 0)
-            : Matrix4.identity(),
-          child: AnimatedOpacity(
-            opacity: widget.enabled ? 1.0 : 0.6,
-            duration: const Duration(milliseconds: 200),
-            child: widget.child,
+              boxShadow: [
+                BoxShadow(
+                  color: (_hovered || _focused) && widget.enabled
+                      ? Colors.black.withValues(alpha: 0.15)
+                      : Colors.black.withValues(alpha: 0.08),
+                  blurRadius: (_hovered || _focused) && widget.enabled
+                      ? 24
+                      : 12,
+                  offset:
+                      Offset(0, (_hovered || _focused) && widget.enabled ? 10 : 4),
+                  spreadRadius:
+                      (_hovered || _focused) && widget.enabled ? 2 : 0,
+                ),
+              ],
+            ),
+            transform: ((_hovered || _focused) && widget.enabled)
+                ? Matrix4.translationValues(0, -5, 0)
+                : Matrix4.identity(),
+            child: AnimatedOpacity(
+              opacity: widget.enabled ? 1.0 : 0.6,
+              duration: const Duration(milliseconds: 200),
+              child: widget.child,
+            ),
           ),
         ),
+      ),
+    );
+
+    card = FocusableActionDetector(
+      enabled: widget.enabled && widget.onTap != null,
+      mouseCursor: widget.enabled && widget.onTap != null
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
+      onShowFocusHighlight: (focused) {
+        if (mounted) setState(() => _focused = focused);
+      },
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (_) {
+            if (widget.enabled) widget.onTap?.call();
+            return null;
+          },
         ),
+      },
+      child: Semantics(
+        button: widget.onTap != null,
+        enabled: widget.enabled,
+        child: card,
       ),
     );
 
@@ -286,8 +322,10 @@ class HoverButton extends StatefulWidget {
   State<HoverButton> createState() => _HoverButtonState();
 }
 
-class _HoverButtonState extends State<HoverButton> with SingleTickerProviderStateMixin {
+class _HoverButtonState extends State<HoverButton>
+    with SingleTickerProviderStateMixin {
   bool _hovered = false;
+  bool _focused = false;
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
 
@@ -345,61 +383,96 @@ class _HoverButtonState extends State<HoverButton> with SingleTickerProviderStat
           splashColor: Colors.white.withValues(alpha: 0.2),
           highlightColor: Colors.white.withValues(alpha: 0.08),
           child: AnimatedBuilder(
-          animation: _scaleAnimation,
-          builder: (context, child) => Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          ),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-            height: widget.height,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: _hovered && widget.enabled
-                    ? [
-                        widget.hoverColor,
-                        widget.hoverColor.withValues(alpha: 0.85),
-                      ]
-                    : [
-                        widget.backgroundColor,
-                        widget.backgroundColor.withValues(alpha: 0.9),
-                      ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.white.withValues(
-                    alpha: _hovered && widget.enabled ? 0.5 : 0.2),
-                width: _hovered && widget.enabled ? 2.5 : 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: (_hovered && widget.enabled
-                          ? widget.hoverColor
-                          : widget.backgroundColor)
-                      .withValues(
-                          alpha: _hovered && widget.enabled ? 0.5 : 0.2),
-                  blurRadius: _hovered && widget.enabled ? 24 : 12,
-                  offset: Offset(0, _hovered && widget.enabled ? 8 : 4),
-                  spreadRadius: _hovered && widget.enabled ? 2 : 0,
+            animation: _scaleAnimation,
+            builder: (context, child) => Transform.scale(
+              scale: _scaleAnimation.value,
+              child: child,
+            ),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              height: widget.height,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: (_hovered || _focused) && widget.enabled
+                      ? [
+                          widget.hoverColor,
+                          widget.hoverColor.withValues(alpha: 0.85),
+                        ]
+                      : [
+                          widget.backgroundColor,
+                          widget.backgroundColor.withValues(alpha: 0.9),
+                        ],
                 ),
-              ],
-            ),
-            transform: (_hovered && widget.enabled)
-                ? Matrix4.translationValues(0, -3, 0)
-                : Matrix4.identity(),
-            child: Center(
-              child: AnimatedOpacity(
-                opacity: widget.enabled ? 1.0 : 0.65,
-                duration: const Duration(milliseconds: 200),
-                child: widget.child,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white.withValues(
+                      alpha: (_hovered || _focused) && widget.enabled
+                          ? 0.5
+                          : 0.2),
+                  width: (_hovered || _focused) && widget.enabled
+                      ? AppInput.focusRingWidth
+                      : 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: ((_hovered || _focused) && widget.enabled
+                            ? widget.hoverColor
+                            : widget.backgroundColor)
+                        .withValues(
+                            alpha: (_hovered || _focused) && widget.enabled
+                                ? 0.5
+                                : 0.2),
+                    blurRadius:
+                        (_hovered || _focused) && widget.enabled ? 24 : 12,
+                    offset: Offset(
+                        0, (_hovered || _focused) && widget.enabled ? 8 : 4),
+                    spreadRadius:
+                        (_hovered || _focused) && widget.enabled ? 2 : 0,
+                  ),
+                ],
+              ),
+              transform: ((_hovered || _focused) && widget.enabled)
+                  ? Matrix4.translationValues(0, -3, 0)
+                  : Matrix4.identity(),
+              child: Center(
+                child: AnimatedOpacity(
+                  opacity: widget.enabled ? 1.0 : 0.65,
+                  duration: const Duration(milliseconds: 200),
+                  child: widget.child,
+                ),
               ),
             ),
-          ),
           ),
         ),
+      ),
+    );
+
+    button = FocusableActionDetector(
+      enabled: widget.enabled,
+      mouseCursor:
+          widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
+      onShowFocusHighlight: (focused) {
+        if (mounted) setState(() => _focused = focused);
+      },
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (_) {
+            if (widget.enabled) widget.onPressed();
+            return null;
+          },
+        ),
+      },
+      child: Semantics(
+        button: true,
+        enabled: widget.enabled,
+        child: button,
       ),
     );
 

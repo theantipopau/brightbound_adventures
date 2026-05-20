@@ -6,34 +6,34 @@ import 'package:uuid/uuid.dart';
 class QuestionInstance extends Equatable {
   /// Unique ID for this question instance
   final String instanceId;
-  
+
   /// ID of the skill this question tests
   final String skillId;
-  
+
   /// Hash of question text (used to prevent exact repetitions)
   final String questionHash;
-  
+
   /// When this question was shown to the user
   final DateTime askedAt;
-  
+
   /// User's answer (or null if skipped)
   final dynamic userAnswer;
-  
+
   /// Correct answer
   final dynamic correctAnswer;
-  
+
   /// Whether the user got it correct
   final bool isCorrect;
-  
+
   /// Time spent on question (milliseconds)
   final int timeSpentMs;
-  
+
   /// Confidence level of answer (1-5 if available)
   final int? confidenceLevel;
-  
+
   /// Context of question (e.g., "shopping", "sports", "cooking")
   final String? context;
-  
+
   /// Bloom's taxonomy level
   final String? bloomLevel;
 
@@ -79,18 +79,18 @@ class QuestionInstance extends Equatable {
 
   /// Convert to JSON for storage
   Map<String, dynamic> toJson() => {
-    'instanceId': instanceId,
-    'skillId': skillId,
-    'questionHash': questionHash,
-    'askedAt': askedAt.toIso8601String(),
-    'userAnswer': userAnswer.toString(),
-    'correctAnswer': correctAnswer.toString(),
-    'isCorrect': isCorrect,
-    'timeSpentMs': timeSpentMs,
-    'confidenceLevel': confidenceLevel,
-    'context': context,
-    'bloomLevel': bloomLevel,
-  };
+        'instanceId': instanceId,
+        'skillId': skillId,
+        'questionHash': questionHash,
+        'askedAt': askedAt.toIso8601String(),
+        'userAnswer': userAnswer.toString(),
+        'correctAnswer': correctAnswer.toString(),
+        'isCorrect': isCorrect,
+        'timeSpentMs': timeSpentMs,
+        'confidenceLevel': confidenceLevel,
+        'context': context,
+        'bloomLevel': bloomLevel,
+      };
 
   /// Create from JSON
   factory QuestionInstance.fromJson(Map<String, dynamic> json) {
@@ -111,37 +111,37 @@ class QuestionInstance extends Equatable {
 
   @override
   List<Object?> get props => [
-    instanceId,
-    skillId,
-    questionHash,
-    askedAt,
-    userAnswer,
-    correctAnswer,
-    isCorrect,
-    timeSpentMs,
-    confidenceLevel,
-    context,
-    bloomLevel,
-  ];
+        instanceId,
+        skillId,
+        questionHash,
+        askedAt,
+        userAnswer,
+        correctAnswer,
+        isCorrect,
+        timeSpentMs,
+        confidenceLevel,
+        context,
+        bloomLevel,
+      ];
 }
 
 /// Statistics about a specific question hash (used to avoid repetition)
 class QuestionStatistics extends Equatable {
   /// Hash of the question
   final String questionHash;
-  
+
   /// How many times this exact question has been shown
   final int timesShown;
-  
+
   /// How many times answered correctly
   final int correctCount;
-  
+
   /// Average time spent (milliseconds)
   final int avgTimeMs;
-  
+
   /// When this question was last shown
   final DateTime? lastShownAt;
-  
+
   /// Days since last shown (null if never shown)
   int? get daysSinceLastShown {
     if (lastShownAt == null) return null;
@@ -178,12 +178,12 @@ class QuestionStatistics extends Equatable {
 
   /// Convert to JSON
   Map<String, dynamic> toJson() => {
-    'questionHash': questionHash,
-    'timesShown': timesShown,
-    'correctCount': correctCount,
-    'avgTimeMs': avgTimeMs,
-    'lastShownAt': lastShownAt?.toIso8601String(),
-  };
+        'questionHash': questionHash,
+        'timesShown': timesShown,
+        'correctCount': correctCount,
+        'avgTimeMs': avgTimeMs,
+        'lastShownAt': lastShownAt?.toIso8601String(),
+      };
 
   /// Create from JSON
   factory QuestionStatistics.fromJson(Map<String, dynamic> json) {
@@ -200,10 +200,10 @@ class QuestionStatistics extends Equatable {
 
   @override
   List<Object?> get props => [
-    questionHash,
-    timesShown,
-    correctCount,
-    avgTimeMs,
-    lastShownAt,
-  ];
+        questionHash,
+        timesShown,
+        correctCount,
+        avgTimeMs,
+        lastShownAt,
+      ];
 }

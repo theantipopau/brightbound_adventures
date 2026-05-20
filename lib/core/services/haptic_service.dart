@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
 /// Service for providing haptic feedback across the app.
-/// 
+///
 /// Provides different vibration patterns for different events:
 /// - Correct answers: Heavy single vibration
 /// - Wrong answers: Light double vibration

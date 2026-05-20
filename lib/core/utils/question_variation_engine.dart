@@ -42,23 +42,23 @@ class GeneratedQuestion {
 
   /// Convert to JSON for storage/transport
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'skillId': skillId,
-    'questionText': questionText,
-    'options': options,
-    'correctIndex': correctIndex,
-    'explanation': explanation,
-    'difficulty': difficulty,
-    'context': context,
-    'bloomLevel': bloomLevel,
-    'naplanStrand': naplanStrand?.toString().split('.').last,
-    'naplanCategory': naplanCategory,
-    'estimatedTimeSeconds': estimatedTimeSeconds,
-  };
+        'id': id,
+        'skillId': skillId,
+        'questionText': questionText,
+        'options': options,
+        'correctIndex': correctIndex,
+        'explanation': explanation,
+        'difficulty': difficulty,
+        'context': context,
+        'bloomLevel': bloomLevel,
+        'naplanStrand': naplanStrand?.toString().split('.').last,
+        'naplanCategory': naplanCategory,
+        'estimatedTimeSeconds': estimatedTimeSeconds,
+      };
 }
 
 /// Generates question variations to support infinite replayability
-/// 
+///
 /// This system ensures:
 /// 1. Same skill can be practiced repeatedly
 /// 2. Questions are genuinely different (different numbers, contexts, scenarios)
@@ -105,9 +105,25 @@ abstract class QuestionVariationEngine {
   static List<String> _getContextsForSkill(String skillId) {
     // Map skills to appropriate contexts
     if (skillId.contains('numeracy') || skillId.contains('number')) {
-      return ['shopping', 'sports', 'money', 'cooking', 'travel', 'time', 'school'];
+      return [
+        'shopping',
+        'sports',
+        'money',
+        'cooking',
+        'travel',
+        'time',
+        'school'
+      ];
     } else if (skillId.contains('literacy') || skillId.contains('reading')) {
-      return ['stories', 'recipes', 'emails', 'news', 'ads', 'instructions', 'poetry'];
+      return [
+        'stories',
+        'recipes',
+        'emails',
+        'news',
+        'ads',
+        'instructions',
+        'poetry'
+      ];
     } else {
       return ['general', 'interesting', 'engaging', 'real-world', 'adventure'];
     }
@@ -149,21 +165,21 @@ class WordWoodsVariationEngine extends QuestionVariationEngine {
     required int difficulty,
   }) {
     final pairs = [
-      {'their': 'there', 'they\'re': 'wrong'},
-      {'to': 'too', 'two': 'also'},
-      {'write': 'right': 'wrong'},
-      {'break': 'brake': 'wrong'},
-      {'meet': 'meat': 'wrong'},
-      {'hear': 'here': 'wrong'},
-      {'be': 'bee': 'wrong'},
-      {'sea': 'see': 'wrong'},
-      {'knight': 'night': 'wrong'},
-      {'knows': 'nose': 'wrong'},
+      ('their', 'there'),
+      ('to', 'too'),
+      ('write', 'right'),
+      ('break', 'brake'),
+      ('meet', 'meat'),
+      ('hear', 'here'),
+      ('be', 'bee'),
+      ('sea', 'see'),
+      ('knight', 'night'),
+      ('knows', 'nose'),
     ];
 
-    final pair = pairs[_random.nextInt(pairs.length)] as Map<String, dynamic>;
-    final correct = pair.entries.first.key;
-    final homophone = pair.entries.first.value;
+    final pair = pairs[_random.nextInt(pairs.length)];
+    final correct = pair.$1;
+    final homophone = pair.$2;
 
     return GeneratedQuestion(
       id: 'homophone_${DateTime.now().millisecondsSinceEpoch}',
@@ -172,7 +188,8 @@ class WordWoodsVariationEngine extends QuestionVariationEngine {
           'Which word is correct? "I can $homophone / $correct the answer."',
       options: [correct, homophone, 'nither', 'none of these'],
       correctIndex: 0,
-      explanation: '$correct and $homophone sound the same but mean different things!',
+      explanation:
+          '$correct and $homophone sound the same but mean different things!',
       difficulty: difficulty,
       context: 'literacy',
       bloomLevel: CognitiveLevelBloom.understand.toString(),
@@ -208,6 +225,7 @@ class WordWoodsVariationEngine extends QuestionVariationEngine {
     ];
 
     final scenario = scenarios[_random.nextInt(scenarios.length)];
+    final context = _wordContexts[_random.nextInt(_wordContexts.length)];
     final options = [
       scenario['correct'] as String,
       ...((scenario['options'] as List).cast<String>())
@@ -222,7 +240,7 @@ class WordWoodsVariationEngine extends QuestionVariationEngine {
       correctIndex: correctIndex,
       explanation: scenario['explanation'] as String,
       difficulty: difficulty,
-      context: 'literacy',
+      context: context,
       bloomLevel: CognitiveLevelBloom.understand.toString(),
       naplanStrand: NaplanStrand.vocabulary,
       estimatedTimeSeconds: 45,
@@ -235,26 +253,39 @@ class WordWoodsVariationEngine extends QuestionVariationEngine {
   }) {
     final stories = [
       {
-        'text': 'Sam looked at his lunch box. It was empty. His eyes went wide. His stomach rumbled loudly.',
+        'text':
+            'Sam looked at his lunch box. It was empty. His eyes went wide. His stomach rumbled loudly.',
         'question': 'Why did Sam\'s eyes go wide?',
         'correct': 'He realised he forgot his lunch',
         'options': ['He was happy', 'He was scared', 'He was bored'],
       },
       {
-        'text': 'The sky turned dark grey. The wind started to blow. People hurried inside with umbrellas.',
+        'text':
+            'The sky turned dark grey. The wind started to blow. People hurried inside with umbrellas.',
         'question': 'What was about to happen?',
         'correct': 'It was going to rain',
-        'options': ['It was sunset', 'An eclipse was coming', 'A UFO was landing'],
+        'options': [
+          'It was sunset',
+          'An eclipse was coming',
+          'A UFO was landing'
+        ],
       },
       {
-        'text': 'Maya hadn\'t ridden her bike in a whole year. She was nervous as she pedalled down the street.',
+        'text':
+            'Maya hadn\'t ridden her bike in a whole year. She was nervous as she pedalled down the street.',
         'question': 'Why was Maya nervous?',
         'correct': 'She worried she might have forgotten how to ride',
-        'options': ['Her bike was broken', 'The street was dangerous', 'She didn\'t like biking'],
+        'options': [
+          'Her bike was broken',
+          'The street was dangerous',
+          'She didn\'t like biking'
+        ],
       },
     ];
 
     final story = stories[_random.nextInt(stories.length)];
+    final culturalReference = _australianCulturalReferences[
+        _random.nextInt(_australianCulturalReferences.length)];
     final options = [
       story['correct'] as String,
       ...((story['options'] as List).cast<String>())
@@ -264,10 +295,11 @@ class WordWoodsVariationEngine extends QuestionVariationEngine {
     return GeneratedQuestion(
       id: 'inference_${DateTime.now().millisecondsSinceEpoch}',
       skillId: 'skill_inference',
-      questionText: story['text'] as String + '\n\n${story['question']}',
+      questionText: '${story['text']}\n\n${story['question']}',
       options: options,
       correctIndex: correctIndex,
-      explanation: 'We can infer this from the clues in the story.',
+      explanation:
+          'We can infer this from the clues in the story. This is the same skill readers use when exploring texts about $culturalReference.',
       difficulty: difficulty,
       context: 'stories',
       bloomLevel: CognitiveLevelBloom.analyze.toString(),
@@ -277,7 +309,6 @@ class WordWoodsVariationEngine extends QuestionVariationEngine {
     );
   }
 
-  @override
   static GeneratedQuestion generateForSkill({
     required String skillId,
     required int difficulty,
@@ -308,7 +339,13 @@ class NumberNebulaVariationEngine extends QuestionVariationEngine {
     // Difficulty 1-2: 0-10
     // Difficulty 3-4: 0-20
     // Difficulty 5: 0-50
-    int maxNum = difficulty == 1 ? 5 : difficulty <= 2 ? 10 : difficulty <= 4 ? 20 : 50;
+    int maxNum = difficulty == 1
+        ? 5
+        : difficulty <= 2
+            ? 10
+            : difficulty <= 4
+                ? 20
+                : 50;
 
     final a = _random.nextInt(maxNum + 1);
     final b = _random.nextInt(maxNum + 1);
@@ -323,17 +360,19 @@ class NumberNebulaVariationEngine extends QuestionVariationEngine {
     ];
 
     final context = contexts[_random.nextInt(contexts.length)];
-    final distractors = [answer + 1, answer - 1, answer + 2];
+    final options = [
+      answer.toString(),
+      (answer + 1).toString(),
+      (answer - 1).toString(),
+      (answer + 2).toString(),
+    ]..shuffle();
 
     return GeneratedQuestion(
       id: 'addition_${DateTime.now().millisecondsSinceEpoch}',
       skillId: 'skill_addition',
       questionText: context,
-      options: [
-        answer.toString(),
-        ...distractors.map((d) => d.toString())
-      ]..shuffle(),
-      correctIndex: 0,
+      options: options,
+      correctIndex: options.indexOf(answer.toString()),
       explanation: '$a + $b = $answer',
       difficulty: difficulty,
       context: 'practical_maths',
@@ -350,8 +389,11 @@ class NumberNebulaVariationEngine extends QuestionVariationEngine {
     // Difficulty 1-2: Times tables 2-5
     // Difficulty 3-4: Times tables 6-10
     // Difficulty 5: Times tables 11-12 or larger numbers
-    final multiplier =
-        difficulty <= 2 ? _random.nextInt(4) + 2 : difficulty <= 4 ? _random.nextInt(5) + 6 : _random.nextInt(3) + 10;
+    final multiplier = difficulty <= 2
+        ? _random.nextInt(4) + 2
+        : difficulty <= 4
+            ? _random.nextInt(5) + 6
+            : _random.nextInt(3) + 10;
     final multiplicand = _random.nextInt(12) + 1;
     final answer = multiplier * multiplicand;
 
@@ -363,17 +405,19 @@ class NumberNebulaVariationEngine extends QuestionVariationEngine {
 
     final context = contexts[_random.nextInt(contexts.length)];
 
+    final options = [
+      answer.toString(),
+      (answer + 1).toString(),
+      (answer - 1).toString(),
+      (answer + multiplier).toString(),
+    ]..shuffle();
+
     return GeneratedQuestion(
       id: 'multiplication_${DateTime.now().millisecondsSinceEpoch}',
       skillId: 'skill_multiplication',
       questionText: context,
-      options: [
-        answer.toString(),
-        (answer + 1).toString(),
-        (answer - 1).toString(),
-        (answer + multiplier).toString(),
-      ]..shuffle(),
-      correctIndex: 0,
+      options: options,
+      correctIndex: options.indexOf(answer.toString()),
       explanation: '$multiplier × $multiplicand = $answer',
       difficulty: difficulty,
       context: 'practical_maths',
@@ -383,7 +427,6 @@ class NumberNebulaVariationEngine extends QuestionVariationEngine {
     );
   }
 
-  @override
   static GeneratedQuestion generateForSkill({
     required String skillId,
     required int difficulty,

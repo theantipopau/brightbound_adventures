@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// A small speaker button that reads text aloud via TTS.
 /// Drop into any quiz header — pass the text to speak on tap.
@@ -23,6 +25,8 @@ class TtsSpeakerButton extends StatefulWidget {
 class _TtsSpeakerButtonState extends State<TtsSpeakerButton>
     with SingleTickerProviderStateMixin {
   bool _isSpeaking = false;
+  bool _isHovered = false;
+  bool _isFocused = false;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -57,41 +61,88 @@ class _TtsSpeakerButtonState extends State<TtsSpeakerButton>
     }
   }
 
+  void _toggleSpeak() {
+    if (_isSpeaking) {
+      TtsService().stop();
+      if (mounted) {
+        setState(() => _isSpeaking = false);
+        _pulseController.stop();
+        _pulseController.reset();
+      }
+      return;
+    }
+    _speak();
+  }
+
   @override
   Widget build(BuildContext context) {
     final effectiveColor = widget.color ?? Colors.blueAccent;
+    final targetSize = widget.size < AppInput.minTouchTarget
+        ? AppInput.minTouchTarget
+        : widget.size;
     return Tooltip(
-      message: 'Read question aloud',
-      child: Semantics(
-        button: true,
-        label: 'Read question aloud',
-        child: GestureDetector(
-          onTap: _isSpeaking ? TtsService().stop : _speak,
-          child: AnimatedBuilder(
-            animation: _pulseAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _isSpeaking ? _pulseAnimation.value : 1.0,
-                child: child,
-              );
+      message: _isSpeaking ? 'Stop reading' : 'Read question aloud',
+      child: FocusableActionDetector(
+        mouseCursor: SystemMouseCursors.click,
+        onShowHoverHighlight: (hovered) {
+          if (mounted) setState(() => _isHovered = hovered);
+        },
+        onShowFocusHighlight: (focused) {
+          if (mounted) setState(() => _isFocused = focused);
+        },
+        shortcuts: const <ShortcutActivator, Intent>{
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              _toggleSpeak();
+              return null;
             },
-            child: Container(
-              width: widget.size,
-              height: widget.size,
-              decoration: BoxDecoration(
-                color: _isSpeaking
-                    ? effectiveColor
-                    : effectiveColor.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: effectiveColor.withValues(alpha: 0.35),
-                  width: 1.5,
+          ),
+        },
+        child: Semantics(
+          button: true,
+          toggled: _isSpeaking,
+          label: _isSpeaking ? 'Stop reading aloud' : 'Read question aloud',
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _toggleSpeak,
+            child: AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _isSpeaking
+                      ? _pulseAnimation.value
+                      : ((_isHovered || _isFocused) ? 1.06 : 1.0),
+                  child: child,
+                );
+              },
+              child: AnimatedContainer(
+                duration: AppMotion.fast,
+                width: targetSize,
+                height: targetSize,
+                decoration: BoxDecoration(
+                  color: _isSpeaking
+                      ? effectiveColor
+                      : effectiveColor.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _isFocused
+                        ? effectiveColor
+                        : effectiveColor.withValues(alpha: 0.35),
+                    width: _isFocused ? AppInput.focusRingWidth : 1.5,
+                  ),
+                  boxShadow: (_isSpeaking || _isHovered || _isFocused)
+                      ? AppShadows.sm(effectiveColor)
+                      : null,
                 ),
-              ),
-              child: Icon(
-                _isSpeaking ? Icons.stop : Icons.volume_up_rounded,
-                size: widget.size * 0.48,
-                color: _isSpeaking ? Colors.white : effectiveColor,
+                child: Icon(
+                  _isSpeaking ? Icons.stop : Icons.volume_up_rounded,
+                  size: targetSize * 0.46,
+                  color: _isSpeaking ? Colors.white : effectiveColor,
+                ),
               ),
             ),
           ),
@@ -231,4 +282,311 @@ void showFloatingReward(
     ),
   );
   overlay.insert(entry);
+}
+
+/// Compact, reusable answer feedback panel for quiz screens.
+///
+/// Keeps result feedback visually consistent across learning worlds while
+/// exposing the scoring breakdown kids care about: points, time bonus, and
+/// streak momentum.
+class AnswerFeedbackPanel extends StatelessWidget {
+  final bool isCorrect;
+  final String explanation;
+  final int pointsEarned;
+  final int timeBonus;
+  final int streak;
+  final Color accentColor;
+  final VoidCallback? onContinue;
+
+  const AnswerFeedbackPanel({
+    super.key,
+    required this.isCorrect,
+    required this.explanation,
+    required this.pointsEarned,
+    required this.timeBonus,
+    required this.streak,
+    this.accentColor = AppColors.primary,
+    this.onContinue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final feedbackColor = isCorrect
+        ? AppColors.correctFeedbackBorder
+        : AppColors.incorrectFeedbackBorder;
+    final title = isCorrect ? 'Correct' : 'Try the next one';
+
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: '$title. $explanation',
+      child: AnimatedContainer(
+        duration: AppMotion.standard,
+        curve: AppMotion.enter,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              feedbackColor.withValues(alpha: 0.14),
+              Colors.white.withValues(alpha: 0.96),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppBorders.lg),
+          border: Border.all(
+            color: feedbackColor.withValues(alpha: 0.42),
+            width: 2,
+          ),
+          boxShadow: AppShadows.sm(feedbackColor),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: feedbackColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isCorrect ? Icons.check_rounded : Icons.refresh_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: feedbackColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (explanation.trim().isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Text(
+                explanation,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  height: 1.35,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (pointsEarned > 0)
+                  _FeedbackChip(
+                    icon: Icons.star_rounded,
+                    label: '+$pointsEarned',
+                    color: AppColors.reward,
+                  ),
+                if (timeBonus > 0)
+                  _FeedbackChip(
+                    icon: Icons.bolt_rounded,
+                    label: '+$timeBonus speed',
+                    color: Colors.orange,
+                  ),
+                if (streak > 1)
+                  _FeedbackChip(
+                    icon: Icons.local_fire_department_rounded,
+                    label: 'x$streak streak',
+                    color: Colors.deepOrange,
+                  ),
+              ],
+            ),
+            if (onContinue != null) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: onContinue,
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  label: const Text('Continue'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: accentColor,
+                    foregroundColor: Colors.white,
+                    minimumSize:
+                        const Size.fromHeight(AppInput.preferredTouchTarget),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedbackChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _FeedbackChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppBorders.pill),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Small progress summary strip for quiz/game headers.
+///
+/// This keeps timer/progress/lives/streak information visually consistent
+/// without forcing every subject game to rebuild the same dense row.
+class QuizStatusStrip extends StatelessWidget {
+  final int currentQuestion;
+  final int totalQuestions;
+  final int score;
+  final int lives;
+  final int streak;
+  final int remainingSeconds;
+  final int maxSeconds;
+  final Color accentColor;
+
+  const QuizStatusStrip({
+    super.key,
+    required this.currentQuestion,
+    required this.totalQuestions,
+    required this.score,
+    required this.lives,
+    required this.streak,
+    required this.remainingSeconds,
+    required this.maxSeconds,
+    this.accentColor = AppColors.primary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final safeTotal = totalQuestions <= 0 ? 1 : totalQuestions;
+    final progress = (currentQuestion / safeTotal).clamp(0.0, 1.0).toDouble();
+    final timeProgress = maxSeconds <= 0
+        ? 0.0
+        : (remainingSeconds / maxSeconds).clamp(0.0, 1.0).toDouble();
+    final timeColor = remainingSeconds <= 10 ? Colors.redAccent : accentColor;
+
+    return Semantics(
+      container: true,
+      label:
+          'Question $currentQuestion of $totalQuestions. Score $score. $lives lives. $remainingSeconds seconds left.',
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.92),
+          borderRadius: BorderRadius.circular(AppBorders.lg),
+          border: Border.all(color: accentColor.withValues(alpha: 0.18)),
+          boxShadow: AppShadows.sm(accentColor),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppBorders.pill),
+                    child: LinearProgressIndicator(
+                      minHeight: 8,
+                      value: progress,
+                      backgroundColor: Colors.blueGrey.withValues(alpha: 0.12),
+                      valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  '$currentQuestion/$totalQuestions',
+                  style: TextStyle(
+                    color: accentColor,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _FeedbackChip(
+                  icon: Icons.star_rounded,
+                  label: '$score',
+                  color: AppColors.reward,
+                ),
+                _FeedbackChip(
+                  icon: Icons.favorite_rounded,
+                  label: '$lives',
+                  color: Colors.redAccent,
+                ),
+                if (streak > 0)
+                  _FeedbackChip(
+                    icon: Icons.local_fire_department_rounded,
+                    label: '$streak',
+                    color: Colors.deepOrange,
+                  ),
+                _FeedbackChip(
+                  icon: Icons.timer_rounded,
+                  label: '${remainingSeconds}s',
+                  color: timeColor,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppBorders.pill),
+              child: LinearProgressIndicator(
+                minHeight: 6,
+                value: timeProgress,
+                backgroundColor: Colors.blueGrey.withValues(alpha: 0.10),
+                valueColor: AlwaysStoppedAnimation<Color>(timeColor),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

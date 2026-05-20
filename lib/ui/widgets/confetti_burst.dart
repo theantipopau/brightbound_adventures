@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/services/animation_service.dart';
 
 /// Widget that displays a confetti burst animation
-/// 
+///
 /// Used to celebrate correct answers and achievements
 class ConfettiBurst extends StatefulWidget {
   /// Center point where confetti bursts from
@@ -78,7 +78,8 @@ class _ConfettiBurstState extends State<ConfettiBurst>
         return CustomPaint(
           painter: ConfettiPainter(
             particles: _particles,
-            elapsed: _controller.value * widget.duration.inMilliseconds / 1000.0,
+            elapsed:
+                _controller.value * widget.duration.inMilliseconds / 1000.0,
             totalDuration: widget.duration.inMilliseconds / 1000.0,
           ),
           size: Size.infinite,
@@ -106,7 +107,8 @@ class ConfettiPainter extends CustomPainter {
       final position = particle.getPosition(elapsed);
 
       // Skip particles that are off-screen
-      if (position.dx < -20 || position.dx > size.width + 20 ||
+      if (position.dx < -20 ||
+          position.dx > size.width + 20 ||
           position.dy > size.height + 20) {
         continue;
       }

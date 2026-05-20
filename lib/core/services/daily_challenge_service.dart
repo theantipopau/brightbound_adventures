@@ -30,16 +30,17 @@ class DailyChallengeService extends ChangeNotifier {
 
       // Check if challenges for today already exist
       final savedChallenges = _storage.getDailyChallenges(todayString);
-      
+
       if (savedChallenges.isNotEmpty) {
         _todaysChallenges = savedChallenges;
       } else {
         // Generate new challenges for today
-        _todaysChallenges = DailyChallengeGenerator.generateDailyChallenges(today);
+        _todaysChallenges =
+            DailyChallengeGenerator.generateDailyChallenges(today);
         // Save them
         await _storage.saveDailyChallenges(todayString, _todaysChallenges);
       }
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading daily challenges: $e');

@@ -64,7 +64,8 @@ class _AnimatedScoreCounterState extends State<AnimatedScoreCounter>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.9),
         borderRadius: AppBorders.radiusPill,
-        border: Border.all(color: widget.color.withValues(alpha: 0.4), width: 2),
+        border:
+            Border.all(color: widget.color.withValues(alpha: 0.4), width: 2),
         boxShadow: AppShadows.sm(widget.color),
       ),
       child: Row(

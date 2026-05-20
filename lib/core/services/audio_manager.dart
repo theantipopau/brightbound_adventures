@@ -10,7 +10,9 @@ class AudioManager extends ChangeNotifier {
   AudioManager._internal();
 
   final AudioPlayer _musicPlayer = AudioPlayer();
-  final AudioPlayer _sfxPlayer = AudioPlayer();
+  final List<AudioPlayer> _sfxPool =
+      List<AudioPlayer>.generate(6, (_) => AudioPlayer());
+  int _sfxPoolCursor = 0;
 
   bool _isMusicEnabled = true;
   bool _isSfxEnabled = true;
@@ -55,6 +57,10 @@ class AudioManager extends ChangeNotifier {
   Future<void> initialize() async {
     // Set up audio players
     await _musicPlayer.setReleaseMode(ReleaseMode.loop);
+    for (final player in _sfxPool) {
+      await player.setReleaseMode(ReleaseMode.stop);
+      await player.setVolume(_sfxVolume);
+    }
     await _loadBundledAudioManifest();
     _updateVolumes();
   }
@@ -78,14 +84,14 @@ class AudioManager extends ChangeNotifier {
     } catch (e) {
       // If manifest parsing fails (rare), fall back to runtime try/catch checks.
       _assetManifestLoaded = false;
-      debugPrint('AudioManager: failed to read AssetManifest, using runtime checks only.');
+      debugPrint(
+          'AudioManager: failed to read AssetManifest, using runtime checks only.');
     }
   }
 
   String _manifestKeyFor(String assetPath) {
-    final normalized = assetPath.startsWith('assets/')
-        ? assetPath
-        : 'assets/$assetPath';
+    final normalized =
+        assetPath.startsWith('assets/') ? assetPath : 'assets/$assetPath';
     return normalized.replaceAll('\\\\', '/');
   }
 
@@ -114,7 +120,8 @@ class AudioManager extends ChangeNotifier {
   void _markMissingAsset(String assetPath, String category) {
     if (_failedAssets.contains(assetPath)) return;
     _failedAssets.add(assetPath);
-    debugPrint('Note: $category asset $assetPath is not bundled. Using fallback behavior.');
+    debugPrint(
+        'Note: $category asset $assetPath is not bundled. Using fallback behavior.');
   }
 
   void toggleMusic() {
@@ -167,7 +174,7 @@ class AudioManager extends ChangeNotifier {
       'sounds/music/zones/$zoneId.mp3',
       'sounds/music/zones/${zoneId.replaceAll('_', '-')}.mp3',
     ];
-    
+
     for (final musicPath in variations) {
       if (!_failedAssets.contains(musicPath)) {
         await playMusic(musicPath);
@@ -200,19 +207,10 @@ class AudioManager extends ChangeNotifier {
     }
 
     try {
-      // Create a temporary player for SFX to allow overlapping sounds
-      final player = AudioPlayer();
+      final player = _sfxPool[_sfxPoolCursor++ % _sfxPool.length];
+      await player.stop();
       await player.setVolume(_sfxVolume);
-
-      // On web, assets missing often cause CORS/404 errors that can't be caught by try/catch 
-      // around 'play' easily because they happen in the browser's fetch.
-      // We log it once and then skip.
       await player.play(AssetSource(assetPath));
-
-      // Dispose player after completion
-      player.onPlayerComplete.listen((_) {
-        player.dispose();
-      });
     } catch (e) {
       _markMissingAsset(assetPath, 'SFX');
       _triggerHapticFallback(assetPath);
@@ -288,13 +286,17 @@ class AudioManager extends ChangeNotifier {
 
   void _updateVolumes() {
     _musicPlayer.setVolume(_musicVolume);
-    _sfxPlayer.setVolume(_sfxVolume);
+    for (final player in _sfxPool) {
+      player.setVolume(_sfxVolume);
+    }
   }
 
   @override
   void dispose() {
     _musicPlayer.dispose();
-    _sfxPlayer.dispose();
+    for (final player in _sfxPool) {
+      player.dispose();
+    }
     super.dispose();
   }
 }

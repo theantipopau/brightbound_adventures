@@ -13,9 +13,10 @@ class StorySpringsSkillQuestions {
   };
 
   /// Main entry point to get questions for a skill
-  static List<StoryQuestion> getQuestionsForSkill(String skill, int difficulty) {
+  static List<StoryQuestion> getQuestionsForSkill(
+      String skill, int difficulty) {
     final skillLower = skill.toLowerCase();
-    
+
     // Find bank by key or sub-match
     List<StoryQuestion>? bank;
     for (final entry in _skillBanks.entries) {
@@ -37,7 +38,12 @@ class StorySpringsSkillQuestions {
       id: 'ss_seq_1',
       skillId: 'skill_story_sequencing',
       question: 'What happens FIRST when getting ready for a day at the beach?',
-      options: ['Swim in the ocean', 'Put on sunscreen', 'Build a sandcastle', 'Eat a meat pie'],
+      options: [
+        'Swim in the ocean',
+        'Put on sunscreen',
+        'Build a sandcastle',
+        'Eat a meat pie'
+      ],
       correctIndex: 1,
       hint: 'Sun safety first!',
       difficulty: 1,
@@ -47,7 +53,12 @@ class StorySpringsSkillQuestions {
       id: 'ss_seq_2',
       skillId: 'skill_story_sequencing',
       question: 'How does a Koala joey grow up? What happens SECOND?',
-      options: ['It lives in the pouch', 'It starts eating leaves on mom\'s back', 'It finds its own tree', 'It learns to sleep 20 hours'],
+      options: [
+        'It lives in the pouch',
+        'It starts eating leaves on mom\'s back',
+        'It finds its own tree',
+        'It learns to sleep 20 hours'
+      ],
       correctIndex: 1,
       hint: 'After the pouch, it hitches a ride!',
       difficulty: 1,
@@ -57,7 +68,12 @@ class StorySpringsSkillQuestions {
       id: 'ss_seq_3',
       skillId: 'skill_story_sequencing',
       question: 'Making a Lamington: What happens LAST?',
-      options: ['Bake the sponge cake', 'Dip it in chocolate', 'Roll it in coconut', 'Wait for it to cool'],
+      options: [
+        'Bake the sponge cake',
+        'Dip it in chocolate',
+        'Roll it in coconut',
+        'Wait for it to cool'
+      ],
       correctIndex: 2,
       hint: 'The white fluffy part at the end!',
       difficulty: 1,
@@ -67,7 +83,12 @@ class StorySpringsSkillQuestions {
       id: 'ss_seq_4',
       skillId: 'skill_story_sequencing',
       question: 'A storm in the Outback: What happens THIRD?',
-      options: ['Clouds get dark', 'Thunder rumbles', 'The rain pours down', 'The sun comes back out'],
+      options: [
+        'Clouds get dark',
+        'Thunder rumbles',
+        'The rain pours down',
+        'The sun comes back out'
+      ],
       correctIndex: 2,
       hint: 'The actual weather part!',
       difficulty: 1,
@@ -77,8 +98,14 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_seq_5',
       skillId: 'skill_story_sequencing',
-      question: 'Watching a game of Cricket: What happens after the bowler throws the ball?',
-      options: ['The batsman hits the ball', 'The crowd cheers', 'The game ends', 'Players go to lunch'],
+      question:
+          'Watching a game of Cricket: What happens after the bowler throws the ball?',
+      options: [
+        'The batsman hits the ball',
+        'The crowd cheers',
+        'The game ends',
+        'Players go to lunch'
+      ],
       correctIndex: 0,
       hint: 'Action and reaction!',
       difficulty: 2,
@@ -97,7 +124,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_seq_7',
       skillId: 'skill_story_sequencing',
-      question: 'Cause-and-effect: Riley forgot her hat on a scorching 40°C Australian summer day. What is the most DIRECT effect?',
+      question:
+          'Cause-and-effect: Riley forgot her hat on a scorching 40°C Australian summer day. What is the most DIRECT effect?',
       options: [
         'She immediately gets tired',
         'The sun shines more',
@@ -112,7 +140,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_seq_8',
       skillId: 'skill_story_sequencing',
-      question: 'A story starts: "Now, ten years later, Jade stood at the top of the cliff — but it was that rainy afternoon at age seven that had started it all." What technique is being used?',
+      question:
+          'A story starts: "Now, ten years later, Jade stood at the top of the cliff — but it was that rainy afternoon at age seven that had started it all." What technique is being used?',
       options: [
         'Foreshadowing — hinting at what comes next',
         'Flashback — the narrator looks back at a past event',
@@ -127,7 +156,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_seq_9',
       skillId: 'skill_story_sequencing',
-      question: 'A book has three parallel storylines happening at the same time: a scientist in Melbourne, a fisherman in Darwin, and a student in Hobart. What is this narrative technique?',
+      question:
+          'A book has three parallel storylines happening at the same time: a scientist in Melbourne, a fisherman in Darwin, and a student in Hobart. What is this narrative technique?',
       options: [
         'Linear narrative — events in time order',
         'Circular narrative — ending where it began',
@@ -135,7 +165,8 @@ class StorySpringsSkillQuestions {
         'Retrospective narrative — looking back at the past',
       ],
       correctIndex: 2,
-      hint: 'All three stories are happening simultaneously in different locations.',
+      hint:
+          'All three stories are happening simultaneously in different locations.',
       difficulty: 5,
       imageEmoji: '🗺️',
     ),
@@ -145,7 +176,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_emo_1',
       skillId: 'skill_emotion_recognition',
-      question: 'The Matildas just scored a goal at the World Cup! How does the crowd feel?',
+      question:
+          'The Matildas just scored a goal at the World Cup! How does the crowd feel?',
       options: ['Disappointed', 'Ecstatic & Joyful', 'Bored', 'Sleepy'],
       correctIndex: 1,
       hint: 'A huge achievement for Australia!',
@@ -155,7 +187,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_emo_2',
       skillId: 'skill_emotion_recognition',
-      question: 'Benny Bear sees a huge huntsman spider in his tent. How does he feel?',
+      question:
+          'Benny Bear sees a huge huntsman spider in his tent. How does he feel?',
       options: ['Terrified', 'Hungry', 'Relaxed', 'Proud'],
       correctIndex: 0,
       hint: 'Spiders can be very scary!',
@@ -165,7 +198,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_emo_3',
       skillId: 'skill_emotion_recognition',
-      question: 'Little Roo lost his favorite boomerang in the tall grass. How does he feel?',
+      question:
+          'Little Roo lost his favorite boomerang in the tall grass. How does he feel?',
       options: ['Upset & Sad', 'Excited', 'Funny', 'Brave'],
       correctIndex: 0,
       hint: 'Losing something you love is hard.',
@@ -175,7 +209,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_emo_4',
       skillId: 'skill_emotion_recognition',
-      question: 'The surfers are waiting for a wave at Bells Beach, but no waves are coming. How do they feel?',
+      question:
+          'The surfers are waiting for a wave at Bells Beach, but no waves are coming. How do they feel?',
       options: ['Impatient', 'Scared', 'Cold', 'Surprised'],
       correctIndex: 0,
       hint: 'Waiting a long time for something good...',
@@ -185,7 +220,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_emo_5',
       skillId: 'skill_emotion_recognition',
-      question: 'Kylie is trying Vegemite for the FIRST time. She\'s not sure if she\'ll like it. She feels...',
+      question:
+          'Kylie is trying Vegemite for the FIRST time. She\'s not sure if she\'ll like it. She feels...',
       options: ['Apprehensive/Hesitant', 'Guilty', 'Angry', 'Confident'],
       correctIndex: 0,
       hint: 'A new, strong taste can be worrying!',
@@ -195,7 +231,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_emo_6',
       skillId: 'skill_emotion_recognition',
-      question: 'Jasmine wins the school cross-country race but her best friend comes last. Jasmine feels proud AND...',
+      question:
+          'Jasmine wins the school cross-country race but her best friend comes last. Jasmine feels proud AND...',
       options: [
         'Angry at her friend for losing',
         'Only happy without any other feeling',
@@ -203,14 +240,16 @@ class StorySpringsSkillQuestions {
         'Bored because winning is easy',
       ],
       correctIndex: 2,
-      hint: 'Can you feel two different things at the same time when someone else is hurting?',
+      hint:
+          'Can you feel two different things at the same time when someone else is hurting?',
       difficulty: 3,
       imageEmoji: '🏃',
     ),
     StoryQuestion(
       id: 'ss_emo_7',
       skillId: 'skill_emotion_recognition',
-      question: 'A character says "Yeah, sure, this is totally fine" while his hands shake and he avoids eye contact. He is actually feeling...',
+      question:
+          'A character says "Yeah, sure, this is totally fine" while his hands shake and he avoids eye contact. He is actually feeling...',
       options: [
         'Perfectly calm and happy',
         'Anxious but concealing it with sarcasm',
@@ -218,14 +257,16 @@ class StorySpringsSkillQuestions {
         'Confused',
       ],
       correctIndex: 1,
-      hint: 'His words say one thing but his body language reveals another. This is sarcasm masking anxiety.',
+      hint:
+          'His words say one thing but his body language reveals another. This is sarcasm masking anxiety.',
       difficulty: 4,
       imageEmoji: '😓',
     ),
     StoryQuestion(
       id: 'ss_emo_8',
       skillId: 'skill_emotion_recognition',
-      question: 'To write a character experiencing grief authentically, a skilled author would MOST likely...',
+      question:
+          'To write a character experiencing grief authentically, a skilled author would MOST likely...',
       options: [
         'Simply write "She was very sad"',
         'Describe physical sensations, behaviours, and moments when grief suddenly resurfaces',
@@ -233,7 +274,8 @@ class StorySpringsSkillQuestions {
         'Only mention it once',
       ],
       correctIndex: 1,
-      hint: 'Real grief is complex, physical, and comes in waves at unexpected moments.',
+      hint:
+          'Real grief is complex, physical, and comes in waves at unexpected moments.',
       difficulty: 5,
       imageEmoji: '🌧️',
     ),
@@ -243,7 +285,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_char_1',
       skillId: 'skill_character_development',
-      question: 'Wally the Wombat always shares his burrow during a bushfire. What trait is this?',
+      question:
+          'Wally the Wombat always shares his burrow during a bushfire. What trait is this?',
       options: ['Selfless & Kind', 'Greedy', 'Cowardly', 'Noisy'],
       correctIndex: 0,
       hint: 'He is thinking of others.',
@@ -253,7 +296,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_char_2',
       skillId: 'skill_character_development',
-      question: 'Pip the Penguin practices his slide every single day until he master it. Pip is...',
+      question:
+          'Pip the Penguin practices his slide every single day until he master it. Pip is...',
       options: ['Persistent', 'Lazy', 'Mean', 'Silly'],
       correctIndex: 0,
       hint: 'He keeps trying even if it\'s hard.',
@@ -273,7 +317,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_char_4',
       skillId: 'skill_character_development',
-      question: 'Oscar the Echidna breaks his friend\'s toy by accident. He says sorry and offers to fix it. What character trait does this show?',
+      question:
+          'Oscar the Echidna breaks his friend\'s toy by accident. He says sorry and offers to fix it. What character trait does this show?',
       options: ['Responsibility', 'Jealousy', 'Impatience', 'Arrogance'],
       correctIndex: 0,
       hint: 'He owns his mistake and tries to make it right.',
@@ -283,7 +328,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_char_5',
       skillId: 'skill_character_development',
-      question: 'In a story, a surfer keeps wiping out but never gives up. Her MOTIVATION (reason for continuing) is most likely...',
+      question:
+          'In a story, a surfer keeps wiping out but never gives up. Her MOTIVATION (reason for continuing) is most likely...',
       options: [
         'She is bored with other activities',
         'She loves surfing and wants to master it',
@@ -298,7 +344,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_char_6',
       skillId: 'skill_character_development',
-      question: 'A character is kind to everyone but is terrified of speaking in public. This makes them...',
+      question:
+          'A character is kind to everyone but is terrified of speaking in public. This makes them...',
       options: [
         'A poorly written character',
         'A realistic character with both strengths and flaws',
@@ -313,7 +360,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_char_7',
       skillId: 'skill_character_development',
-      question: 'In a story set in the Queensland rainforest, the cautious cassowary never leaves his territory while the adventurous rosella flies everywhere. These two characters are...',
+      question:
+          'In a story set in the Queensland rainforest, the cautious cassowary never leaves his territory while the adventurous rosella flies everywhere. These two characters are...',
       options: [
         'Foils — their contrasting traits highlight each other',
         'Identical characters',
@@ -328,7 +376,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_char_8',
       skillId: 'skill_character_development',
-      question: 'At the start of the story Mia is selfish and rude. By the end she is caring and brave. Mia is a...',
+      question:
+          'At the start of the story Mia is selfish and rude. By the end she is caring and brave. Mia is a...',
       options: [
         'Static character — she stays the same',
         'Dynamic character — she changes significantly through events',
@@ -347,7 +396,12 @@ class StorySpringsSkillQuestions {
       id: 'ss_dia_1',
       skillId: 'skill_dialogue_creation',
       question: 'How would a friendly Platypus greet a friend?',
-      options: ['"G\'day mate! Fancy a swim?"', '"Go away!"', '"I am a rock."', '...Silence...'],
+      options: [
+        '"G\'day mate! Fancy a swim?"',
+        '"Go away!"',
+        '"I am a rock."',
+        '...Silence...'
+      ],
       correctIndex: 0,
       hint: 'Think of common Australian greetings.',
       difficulty: 1,
@@ -357,7 +411,12 @@ class StorySpringsSkillQuestions {
       id: 'ss_dia_2',
       skillId: 'skill_dialogue_creation',
       question: 'Which sentence needs quotation marks for dialogue?',
-      options: ['The bird sang a song.', 'I love the beach said Toby.', 'It was very hot today.', 'She ran fast.'],
+      options: [
+        'The bird sang a song.',
+        'I love the beach said Toby.',
+        'It was very hot today.',
+        'She ran fast.'
+      ],
       correctIndex: 1,
       hint: 'Dialogue is what someone says.',
       difficulty: 2,
@@ -367,7 +426,12 @@ class StorySpringsSkillQuestions {
       id: 'ss_dia_3',
       skillId: 'skill_dialogue_creation',
       question: 'Choose the best way to show someone is WHISPERING:',
-      options: ['"BE QUIET!" he yelled.', '"Someone is coming," she breathed softly.', '"YES!" he shouted.', '"I am here," he said.'],
+      options: [
+        '"BE QUIET!" he yelled.',
+        '"Someone is coming," she breathed softly.',
+        '"YES!" he shouted.',
+        '"I am here," he said.'
+      ],
       correctIndex: 1,
       hint: 'Soft voices use soft words.',
       difficulty: 2,
@@ -376,7 +440,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_dia_4',
       skillId: 'skill_dialogue_creation',
-      question: 'Which sentence correctly shows anger WITHOUT using the word "angry"?',
+      question:
+          'Which sentence correctly shows anger WITHOUT using the word "angry"?',
       options: [
         '"I am very angry," said Leo.',
         '"Fine. Whatever," Leo muttered, turning away without looking up.',
@@ -399,14 +464,16 @@ class StorySpringsSkillQuestions {
         '"I love Tim Tams." said Priya.',
       ],
       correctIndex: 1,
-      hint: 'The comma goes INSIDE the closing quote mark when followed by a dialogue tag.',
+      hint:
+          'The comma goes INSIDE the closing quote mark when followed by a dialogue tag.',
       difficulty: 3,
       imageEmoji: '🍫',
     ),
     StoryQuestion(
       id: 'ss_dia_6',
       skillId: 'skill_dialogue_creation',
-      question: 'A proud character who has just won the swimming nationals would most likely say:',
+      question:
+          'A proud character who has just won the swimming nationals would most likely say:',
       options: [
         '"I guess I sort of won or something."',
         '"I AM THE CHAMPION! I trained every day and it paid off!"',
@@ -414,14 +481,16 @@ class StorySpringsSkillQuestions {
         '"I didn\'t really try."',
       ],
       correctIndex: 1,
-      hint: 'Dialogue should match a character\'s personality and current emotional state.',
+      hint:
+          'Dialogue should match a character\'s personality and current emotional state.',
       difficulty: 3,
       imageEmoji: '🏅',
     ),
     StoryQuestion(
       id: 'ss_dia_7',
       skillId: 'skill_dialogue_creation',
-      question: 'Two characters sit in silence, then one says "Nice weather." They both know the other is moving overseas tomorrow. What does this dialogue show?',
+      question:
+          'Two characters sit in silence, then one says "Nice weather." They both know the other is moving overseas tomorrow. What does this dialogue show?',
       options: [
         'They are genuinely interested in the weather',
         'Subtext — they are avoiding the real topic because it is too painful',
@@ -440,7 +509,12 @@ class StorySpringsSkillQuestions {
       id: 'ss_plot_1',
       skillId: 'skill_plot_structure',
       question: 'What is the CLIMAX of a story?',
-      options: ['The very beginning', 'The most exciting part', 'The final page', 'The table of contents'],
+      options: [
+        'The very beginning',
+        'The most exciting part',
+        'The final page',
+        'The table of contents'
+      ],
       correctIndex: 1,
       hint: 'The part where everything happens!',
       difficulty: 3,
@@ -450,7 +524,12 @@ class StorySpringsSkillQuestions {
       id: 'ss_plot_2',
       skillId: 'skill_plot_structure',
       question: 'In "The Boy Who Cried Wolf," what was the RESOLUTION?',
-      options: ['He lied about the wolf', 'The wolf finally came', 'The boy learned to tell the truth', 'He ate lunch'],
+      options: [
+        'He lied about the wolf',
+        'The wolf finally came',
+        'The boy learned to tell the truth',
+        'He ate lunch'
+      ],
       correctIndex: 2,
       hint: 'The lesson or the end of the problem.',
       difficulty: 3,
@@ -460,7 +539,12 @@ class StorySpringsSkillQuestions {
       id: 'ss_plot_3',
       skillId: 'skill_plot_structure',
       question: 'Which element starts the adventure in a story?',
-      options: ['The Middle', 'The Inciting Incident', 'The Resolution', 'The Glossary'],
+      options: [
+        'The Middle',
+        'The Inciting Incident',
+        'The Resolution',
+        'The Glossary'
+      ],
       correctIndex: 1,
       hint: 'The spark that starts the flame.',
       difficulty: 3,
@@ -469,7 +553,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_plot_4',
       skillId: 'skill_plot_structure',
-      question: 'In most adventure stories, the CONFLICT drives the plot. A conflict is...',
+      question:
+          'In most adventure stories, the CONFLICT drives the plot. A conflict is...',
       options: [
         'A type of character',
         'The problem or struggle the main character faces',
@@ -484,7 +569,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_plot_5',
       skillId: 'skill_plot_structure',
-      question: 'After the inciting incident, the story enters the RISING ACTION. What happens here?',
+      question:
+          'After the inciting incident, the story enters the RISING ACTION. What happens here?',
       options: [
         'The problem is solved immediately',
         'The character faces a series of challenges that build toward the climax',
@@ -492,14 +578,16 @@ class StorySpringsSkillQuestions {
         'New characters replace the original ones',
       ],
       correctIndex: 1,
-      hint: 'Think of it as building tension, like climbing a hill before the peak.',
+      hint:
+          'Think of it as building tension, like climbing a hill before the peak.',
       difficulty: 3,
       imageEmoji: '📈',
     ),
     StoryQuestion(
       id: 'ss_plot_6',
       skillId: 'skill_plot_structure',
-      question: 'An author writes early in the book: "Marco tucked the old key into his pocket, not yet knowing it would unlock a secret that changed everything." This is...',
+      question:
+          'An author writes early in the book: "Marco tucked the old key into his pocket, not yet knowing it would unlock a secret that changed everything." This is...',
       options: [
         'A flashback to earlier events',
         'Foreshadowing — a hint about something important to come',
@@ -514,7 +602,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_plot_7',
       skillId: 'skill_plot_structure',
-      question: 'A story is about a young girl who learns that helping her community is more important than being famous. This underlying message is the story\'s...',
+      question:
+          'A story is about a young girl who learns that helping her community is more important than being famous. This underlying message is the story\'s...',
       options: [
         'Setting',
         'Climax',
@@ -542,7 +631,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_desc_2',
       skillId: 'skill_descriptive_language',
-      question: 'Complete the sentence with a vivid word: The outback sun was...',
+      question:
+          'Complete the sentence with a vivid word: The outback sun was...',
       options: ['blistering', 'nice', 'okay', 'blue'],
       correctIndex: 0,
       hint: 'It is very, very hot!',
@@ -567,7 +657,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_desc_4',
       skillId: 'skill_descriptive_language',
-      question: 'Which sentence uses a METAPHOR to describe the Sydney Harbour?',
+      question:
+          'Which sentence uses a METAPHOR to describe the Sydney Harbour?',
       options: [
         'The harbour was very big and blue.',
         'The harbour was like a huge mirror.',
@@ -582,7 +673,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_desc_5',
       skillId: 'skill_descriptive_language',
-      question: 'Which sentence gives the wind a HUMAN quality (personification)?',
+      question:
+          'Which sentence gives the wind a HUMAN quality (personification)?',
       options: [
         'The wind was very strong.',
         'The wind blew hard all day.',
@@ -597,7 +689,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_desc_6',
       skillId: 'skill_descriptive_language',
-      question: 'Which sentence uses the most senses to describe a bushfire warning day?',
+      question:
+          'Which sentence uses the most senses to describe a bushfire warning day?',
       options: [
         'It was hot.',
         'The sky was orange.',
@@ -612,7 +705,8 @@ class StorySpringsSkillQuestions {
     StoryQuestion(
       id: 'ss_desc_7',
       skillId: 'skill_descriptive_language',
-      question: 'Which word choice creates the most TENSION in this sentence about a crocodile?\n\n"The crocodile _____ through the water."',
+      question:
+          'Which word choice creates the most TENSION in this sentence about a crocodile?\n\n"The crocodile _____ through the water."',
       options: ['swam', 'moved', 'slid', 'glided silently'],
       correctIndex: 3,
       hint: 'Which word sounds most threatening and stealthy?',

@@ -17,8 +17,10 @@ class NumeracyResultsScreen extends StatefulWidget {
   final Color themeColor;
   final VoidCallback onPlayAgain;
   final VoidCallback onExit;
+
   /// Zone id used to check for zone mastery after the session.
   final String? zoneId;
+
   /// Display name of the zone (e.g. 'Number Nebula').
   final String? zoneName;
 
@@ -86,9 +88,9 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
 
     // Schedule spaced repetition review
     context.read<SpacedRepetitionService>().recordSession(
-      skillId: widget.skillId,
-      accuracy: widget.accuracy,
-    );
+          skillId: widget.skillId,
+          accuracy: widget.accuracy,
+        );
 
     // Check if this session completed the whole zone
     checkAndShowZoneMastered(
@@ -383,7 +385,8 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   elevation: 6,
-                                  shadowColor: widget.themeColor.withValues(alpha: 0.4),
+                                  shadowColor:
+                                      widget.themeColor.withValues(alpha: 0.4),
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -391,10 +394,14 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                                     SizedBox(
                                       width: 22,
                                       height: 22,
-                                      child: Image.asset('assets/images/potion.PNG', fit: BoxFit.contain),
+                                      child: Image.asset(
+                                          'assets/images/potion.PNG',
+                                          fit: BoxFit.contain),
                                     ),
                                     const SizedBox(width: 8),
-                                    const Text('Play Again', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    const Text('Play Again',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
                                   ],
                                 ),
                               ),

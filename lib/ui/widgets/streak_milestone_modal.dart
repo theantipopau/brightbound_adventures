@@ -217,15 +217,15 @@ class _StreakMilestoneModalState extends State<StreakMilestoneModal>
                           ),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.6),
                             width: 1.5,
                           ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('⭐',
-                                style: TextStyle(fontSize: 24)),
+                            const Text('⭐', style: TextStyle(fontSize: 24)),
                             const SizedBox(width: 8),
                             Text(
                               '+${widget.bonusStars} Bonus Stars!',

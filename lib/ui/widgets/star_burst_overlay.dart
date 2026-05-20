@@ -118,12 +118,15 @@ class _StarBurstPainter extends CustomPainter {
 
         // Slight angle jitter per ring
         final angle = baseAngle + phaseOff * 0.18 * (ring + 1);
-        final pos = center + Offset(math.cos(angle) * radius, math.sin(angle) * radius);
+        final pos =
+            center + Offset(math.cos(angle) * radius, math.sin(angle) * radius);
 
         // Sparkle size — grows then shrinks with progress
-        final sparkleSize = 4.0 * sizeFactor * (1.0 - math.pow(progress, 1.5).toDouble()) + 1.0;
+        final sparkleSize =
+            4.0 * sizeFactor * (1.0 - math.pow(progress, 1.5).toDouble()) + 1.0;
 
-        _drawSparkle(canvas, pos, sparkleSize, color.withValues(alpha: alpha), angle);
+        _drawSparkle(
+            canvas, pos, sparkleSize, color.withValues(alpha: alpha), angle);
       }
     }
 
@@ -142,7 +145,8 @@ class _StarBurstPainter extends CustomPainter {
   }
 
   /// 4-pointed star sparkle.
-  void _drawSparkle(Canvas canvas, Offset center, double size, Color c, double rotation) {
+  void _drawSparkle(
+      Canvas canvas, Offset center, double size, Color c, double rotation) {
     if (size <= 0) return;
     final paint = Paint()
       ..color = c
@@ -166,14 +170,11 @@ class _StarBurstPainter extends CustomPainter {
 
       path.moveTo(
           center.dx + math.cos(rot) * tips, center.dy + math.sin(rot) * tips);
-      path.lineTo(
-          center.dx + math.cos(rot + math.pi / 2) * waist,
+      path.lineTo(center.dx + math.cos(rot + math.pi / 2) * waist,
           center.dy + math.sin(rot + math.pi / 2) * waist);
-      path.lineTo(
-          center.dx + math.cos(rot + math.pi) * tips,
+      path.lineTo(center.dx + math.cos(rot + math.pi) * tips,
           center.dy + math.sin(rot + math.pi) * tips);
-      path.lineTo(
-          center.dx + math.cos(rot - math.pi / 2) * waist,
+      path.lineTo(center.dx + math.cos(rot - math.pi / 2) * waist,
           center.dy + math.sin(rot - math.pi / 2) * waist);
       path.close();
 

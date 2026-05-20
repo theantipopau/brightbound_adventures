@@ -3,13 +3,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
 import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
+import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/controllers/game_session_controller.dart';
 import 'package:brightbound_adventures/core/utils/question_variation_helper.dart';
@@ -58,7 +58,6 @@ class _NumeracyGameState extends State<NumeracyGame>
   bool _autoReadQuestions = false;
   bool _aiHintsEnabled = false;
   bool _aiExplanationsEnabled = false;
-  bool _aiCloudMode = false;
   String? _activeHintText;
   String? _aiExplanationText;
 
@@ -146,26 +145,18 @@ class _NumeracyGameState extends State<NumeracyGame>
   NumeracyQuestion get _currentQuestion => _shuffledQuestions[_currentIndex];
 
   Future<void> _loadAutoReadPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final autoRead = prefs.getBool('autoReadQuestions') ?? false;
-    final aiHintsEnabled = prefs.getBool('aiHintsEnabled') ?? false;
-    final aiExplanationsEnabled =
-        prefs.getBool('aiExplanationsEnabled') ?? false;
-    final aiCloudMode = prefs.getBool('aiCloudMode') ?? false;
+    final preferences = await QuizPreferencesService.load();
     if (!mounted) return;
 
     setState(() {
-      _autoReadQuestions = autoRead;
-      _aiHintsEnabled = aiHintsEnabled;
-      _aiExplanationsEnabled = aiExplanationsEnabled;
-      _aiCloudMode = aiCloudMode;
+      _autoReadQuestions = preferences.autoReadQuestions;
+      _aiHintsEnabled = preferences.aiHintsEnabled;
+      _aiExplanationsEnabled = preferences.aiExplanationsEnabled;
     });
 
-    _aiAssistant
-      ..setEnabled(aiHintsEnabled || aiExplanationsEnabled)
-      ..setCloudMode(_aiCloudMode);
+    QuizPreferencesService.applyToAssistant(_aiAssistant, preferences);
 
-    if (autoRead) {
+    if (preferences.autoReadQuestions) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _readCurrentQuestionAloud();
       });
@@ -206,14 +197,15 @@ class _NumeracyGameState extends State<NumeracyGame>
     _gameController.submitAnswer(isCorrect);
     _prepareAiExplanation();
 
-    final avatarProvider = context.read<AvatarProvider>();
+    final avatarProvider = _maybeReadAvatarProvider();
 
     if (isCorrect) {
       hapticService.onCorrectAnswer();
       _audioManager.playCorrectAnswer();
       _starController.forward(from: 0);
-      showFloatingReward(context, '+10 ⭐', color: Colors.amber);
-      avatarProvider.setEmotion(
+      showFloatingReward(context, '+${_gameController.lastPointsEarned} ⭐',
+          color: Colors.amber);
+      avatarProvider?.setEmotion(
         _gameController.streak >= 3 ? AvatarEmotion.proud : AvatarEmotion.happy,
         resetAfter: const Duration(milliseconds: 1800),
       );
@@ -227,11 +219,11 @@ class _NumeracyGameState extends State<NumeracyGame>
       Future.delayed(const Duration(milliseconds: 1500), _nextQuestion);
     } else {
       hapticService.onWrongAnswer();
-      avatarProvider.setEmotion(AvatarEmotion.sad,
+      avatarProvider?.setEmotion(AvatarEmotion.sad,
           resetAfter: const Duration(milliseconds: 800));
       Future.delayed(const Duration(milliseconds: 800), () {
         if (mounted) {
-          avatarProvider.setEmotion(AvatarEmotion.thinking,
+          avatarProvider?.setEmotion(AvatarEmotion.thinking,
               resetAfter: const Duration(milliseconds: 1200));
         }
       });
@@ -239,6 +231,14 @@ class _NumeracyGameState extends State<NumeracyGame>
     }
 
     _feedbackController.forward(from: 0);
+  }
+
+  AvatarProvider? _maybeReadAvatarProvider() {
+    try {
+      return context.read<AvatarProvider>();
+    } on ProviderNotFoundException {
+      return null;
+    }
   }
 
   void _nextQuestion() {
@@ -415,8 +415,7 @@ class _NumeracyGameState extends State<NumeracyGame>
               } else if (_selectedIndex == null) {
                 setState(() => _selectedIndex = 0);
               }
-            } else if (key == LogicalKeyboardKey.enter &&
-                !_answered) {
+            } else if (key == LogicalKeyboardKey.enter && !_answered) {
               _selectAnswer(_selectedIndex ?? -1);
             } else if (key == LogicalKeyboardKey.escape) {
               _togglePause();
@@ -529,16 +528,17 @@ class _NumeracyGameState extends State<NumeracyGame>
             ),
 
             // Floating Action Button for Hints
-            floatingActionButton: (((_currentQuestion.hint?.isNotEmpty ?? false) ||
-                  _aiHintsEnabled) &&
-                    !_answered &&
-                    _gameController.state == GameState.playing)
-                ? FloatingActionButton(
-                    backgroundColor: _hintUsed ? Colors.grey : Colors.amber,
-                    onPressed: _hintUsed ? null : _showHintDialog,
-                    child: const Icon(Icons.lightbulb),
-                  )
-                : null,
+            floatingActionButton:
+                (((_currentQuestion.hint?.isNotEmpty ?? false) ||
+                            _aiHintsEnabled) &&
+                        !_answered &&
+                        _gameController.state == GameState.playing)
+                    ? FloatingActionButton(
+                        backgroundColor: _hintUsed ? Colors.grey : Colors.amber,
+                        onPressed: _hintUsed ? null : _showHintDialog,
+                        child: const Icon(Icons.lightbulb),
+                      )
+                    : null,
           ),
         );
       },
@@ -619,6 +619,30 @@ class _NumeracyGameState extends State<NumeracyGame>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildQuizChip(
+                icon: Icons.auto_awesome_rounded,
+                label: 'Focus mode',
+                color: widget.themeColor,
+              ),
+              _buildQuizChip(
+                icon: Icons.calculate_rounded,
+                label: 'Q${_currentIndex + 1}/${_shuffledQuestions.length}',
+                color: Colors.deepPurple,
+              ),
+              if (_autoReadQuestions)
+                _buildQuizChip(
+                  icon: Icons.record_voice_over,
+                  label: 'Read aloud',
+                  color: Colors.teal,
+                ),
+            ],
+          ),
+          SizedBox(height: isCompact ? 14 : 18),
           // Q number chip
           Align(
             alignment: Alignment.centerLeft,
@@ -657,7 +681,14 @@ class _NumeracyGameState extends State<NumeracyGame>
               duration: AppMotion.standard,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.amber.shade50,
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.amber.shade50,
+                    Colors.orange.shade50,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 border: Border.all(color: Colors.amber.shade200),
                 borderRadius: BorderRadius.circular(AppBorders.md),
                 boxShadow: AppShadows.sm(Colors.amber),
@@ -669,7 +700,8 @@ class _NumeracyGameState extends State<NumeracyGame>
                   Expanded(
                     child: Text(
                       _activeHintText ?? _currentQuestion.hint ?? '',
-                      style: TextStyle(color: Colors.brown.shade800, fontSize: 15),
+                      style:
+                          TextStyle(color: Colors.brown.shade800, fontSize: 15),
                     ),
                   ),
                 ],
@@ -736,9 +768,11 @@ class _NumeracyGameState extends State<NumeracyGame>
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(11),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.5),
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.35), width: 1.5),
                 ),
-                child: Image.asset('assets/images/scroll.PNG', fit: BoxFit.contain),
+                child: Image.asset('assets/images/scroll.PNG',
+                    fit: BoxFit.contain),
               ),
             ),
           ),
@@ -755,11 +789,14 @@ class _NumeracyGameState extends State<NumeracyGame>
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(11),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.5),
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.35), width: 1.5),
                 ),
                 child: _gameController.state == GameState.paused
-                    ? const Icon(Icons.play_arrow, color: Colors.white, size: 22)
-                    : Image.asset('assets/images/questsandtasks.PNG', fit: BoxFit.contain),
+                    ? const Icon(Icons.play_arrow,
+                        color: Colors.white, size: 22)
+                    : Image.asset('assets/images/questsandtasks.PNG',
+                        fit: BoxFit.contain),
               ),
             ),
           ),
@@ -846,7 +883,7 @@ class _NumeracyGameState extends State<NumeracyGame>
                     horizontal: isCompact ? 8 : 12,
                     vertical: isCompact ? 4 : 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.22),
+                  color: Colors.white.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.4),
@@ -878,7 +915,6 @@ class _NumeracyGameState extends State<NumeracyGame>
   }
 
   Widget _buildFeedback(bool isCorrect) {
-    // Varied correct messages for variety
     final correctMessages = [
       'Brilliant! 🌟',
       'Amazing! 🎉',
@@ -909,7 +945,7 @@ class _NumeracyGameState extends State<NumeracyGame>
       message = wrongMessages[_currentIndex % wrongMessages.length];
     }
 
-    final pts = _gameController.multiplier * 10;
+    final pts = _gameController.lastPointsEarned;
     final bgColor = isCorrect ? Colors.green.shade500 : Colors.red.shade400;
 
     return ScaleTransition(
@@ -981,6 +1017,36 @@ class _NumeracyGameState extends State<NumeracyGame>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildQuizChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }

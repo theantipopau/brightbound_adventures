@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Word Search Game
 /// Find hidden words in a grid of letters
@@ -22,6 +23,8 @@ class _WordSearchGameState extends State<WordSearchGame> {
   late List<GridPosition> _selectedCells;
   int _gridSize = 10;
   int _score = 0;
+  final FocusNode _gameFocusNode = FocusNode(debugLabel: 'word_search_game');
+  GridPosition _focusedCell = GridPosition(0, 0);
 
   @override
   void initState() {
@@ -31,12 +34,19 @@ class _WordSearchGameState extends State<WordSearchGame> {
     _initializeGame();
   }
 
+  @override
+  void dispose() {
+    _gameFocusNode.dispose();
+    super.dispose();
+  }
+
   void _initializeGame() {
     _gridSize = _getGridSize();
     _wordsToFind = _getWords();
     _grid = _generateGrid();
     _placeWords();
     _fillEmptySpaces();
+    _focusedCell = GridPosition(0, 0);
   }
 
   int _getGridSize() {
@@ -174,6 +184,7 @@ class _WordSearchGameState extends State<WordSearchGame> {
 
   void _onCellTap(int row, int col) {
     setState(() {
+      _focusedCell = GridPosition(row, col);
       final position = GridPosition(row, col);
       if (_selectedCells.contains(position)) {
         _selectedCells.remove(position);
@@ -183,26 +194,69 @@ class _WordSearchGameState extends State<WordSearchGame> {
     });
   }
 
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent) return;
+
+    final key = event.logicalKey;
+    var nextRow = _focusedCell.row;
+    var nextCol = _focusedCell.col;
+
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      nextCol = max(0, nextCol - 1);
+    } else if (key == LogicalKeyboardKey.arrowRight) {
+      nextCol = min(_gridSize - 1, nextCol + 1);
+    } else if (key == LogicalKeyboardKey.arrowUp) {
+      nextRow = max(0, nextRow - 1);
+    } else if (key == LogicalKeyboardKey.arrowDown) {
+      nextRow = min(_gridSize - 1, nextRow + 1);
+    } else if (key == LogicalKeyboardKey.space) {
+      _onCellTap(_focusedCell.row, _focusedCell.col);
+      return;
+    } else if (key == LogicalKeyboardKey.enter) {
+      _checkWord();
+      return;
+    } else if (key == LogicalKeyboardKey.escape) {
+      setState(() => _selectedCells.clear());
+      return;
+    } else {
+      return;
+    }
+
+    if (nextRow != _focusedCell.row || nextCol != _focusedCell.col) {
+      setState(() => _focusedCell = GridPosition(nextRow, nextCol));
+    }
+  }
+
   void _checkWord() {
     if (_selectedCells.isEmpty) return;
 
-    // Sort cells to form word
-    _selectedCells.sort((a, b) {
-      if (a.row != b.row) return a.row.compareTo(b.row);
-      return a.col.compareTo(b.col);
-    });
+    if (!_isStraightSelection(_selectedCells)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Select letters in one straight line.'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      setState(() {
+        _selectedCells.clear();
+      });
+      return;
+    }
 
     final word = _selectedCells.map((pos) => _grid[pos.row][pos.col]).join();
+    final reversed = word.split('').reversed.join();
+    final matchedWord = _wordsToFind.contains(word) ? word : reversed;
 
-    if (_wordsToFind.contains(word) && !_foundWords.contains(word)) {
+    if (_wordsToFind.contains(matchedWord) &&
+        !_foundWords.contains(matchedWord)) {
       setState(() {
-        _foundWords.add(word);
-        _score += word.length * 10;
+        _foundWords.add(matchedWord);
+        _score += matchedWord.length * 10;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Found: $word! 🎉'),
+          content: Text('Found: $matchedWord! 🎉'),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 1),
         ),
@@ -216,6 +270,28 @@ class _WordSearchGameState extends State<WordSearchGame> {
     setState(() {
       _selectedCells.clear();
     });
+  }
+
+  bool _isStraightSelection(List<GridPosition> cells) {
+    if (cells.length <= 1) return true;
+
+    final first = cells[0];
+    final second = cells[1];
+    final rowStep = (second.row - first.row).sign;
+    final colStep = (second.col - first.col).sign;
+
+    if (rowStep == 0 && colStep == 0) return false;
+
+    for (int i = 1; i < cells.length; i++) {
+      final previous = cells[i - 1];
+      final current = cells[i];
+      if (current.row - previous.row != rowStep ||
+          current.col - previous.col != colStep) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   void _showGameOverDialog() {
@@ -275,169 +351,188 @@ class _WordSearchGameState extends State<WordSearchGame> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Word Search 🔤'),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
-      ),
-      body: Column(
-        children: [
-          // Stats
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.teal.withValues(alpha: 0.1),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Text(
-                  '✅ ${_foundWords.length}/${_wordsToFind.length} Words',
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  '⭐ Score: $_score',
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-
-          // Word list
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _wordsToFind.map((word) {
-                final isFound = _foundWords.contains(word);
-                return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isFound
-                        ? Colors.green.withValues(alpha: 0.2)
-                        : Colors.grey.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isFound ? Colors.green : Colors.grey,
-                      width: 2,
-                    ),
+    return KeyboardListener(
+      focusNode: _gameFocusNode,
+      autofocus: true,
+      onKeyEvent: _handleKeyEvent,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Word Search 🔤'),
+          backgroundColor: Colors.teal,
+          foregroundColor: Colors.white,
+        ),
+        body: Column(
+          children: [
+            // Stats
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.teal.withValues(alpha: 0.1),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16,
+                runSpacing: 8,
+                children: [
+                  Text(
+                    '✅ ${_foundWords.length}/${_wordsToFind.length} Words',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  child: Text(
-                    word,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: isFound ? Colors.green[800] : Colors.grey[800],
-                      decoration: isFound ? TextDecoration.lineThrough : null,
-                    ),
+                  Text(
+                    '⭐ Score: $_score',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                );
-              }).toList(),
+                ],
+              ),
             ),
-          ),
 
-          // Grid
-          Expanded(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: GridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: _gridSize,
-                      mainAxisSpacing: 2,
-                      crossAxisSpacing: 2,
+            // Word list
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _wordsToFind.map((word) {
+                  final isFound = _foundWords.contains(word);
+                  return Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isFound
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : Colors.grey.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isFound ? Colors.green : Colors.grey,
+                        width: 2,
+                      ),
                     ),
-                    itemCount: _gridSize * _gridSize,
-                    itemBuilder: (context, index) {
-                      final row = index ~/ _gridSize;
-                      final col = index % _gridSize;
-                      final position = GridPosition(row, col);
-                      final isSelected = _selectedCells.contains(position);
+                    child: Text(
+                      word,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isFound ? Colors.green[800] : Colors.grey[800],
+                        decoration: isFound ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
 
-                      return GestureDetector(
-                        onTap: () => _onCellTap(row, col),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.teal.withValues(alpha: 0.5)
-                                : Colors.white,
-                            border: Border.all(
-                              color: Colors.teal.withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              _grid[row][col],
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color:
-                                    isSelected ? Colors.white : Colors.black87,
+            // Grid
+            Expanded(
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: _gridSize,
+                        mainAxisSpacing: 2,
+                        crossAxisSpacing: 2,
+                      ),
+                      itemCount: _gridSize * _gridSize,
+                      itemBuilder: (context, index) {
+                        final row = index ~/ _gridSize;
+                        final col = index % _gridSize;
+                        final position = GridPosition(row, col);
+                        final isSelected = _selectedCells.contains(position);
+                        final isFocused = _focusedCell == position;
+
+                        return Semantics(
+                          button: true,
+                          selected: isSelected,
+                          label:
+                              'Letter ${_grid[row][col]} at row ${row + 1}, column ${col + 1}',
+                          hint:
+                              'Use arrow keys to move, Space to select, and Enter to check.',
+                          child: GestureDetector(
+                            onTap: () => _onCellTap(row, col),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Colors.teal.withValues(alpha: 0.5)
+                                    : Colors.white,
+                                border: Border.all(
+                                  color: isFocused
+                                      ? Colors.amber
+                                      : Colors.teal.withValues(alpha: 0.3),
+                                  width: isFocused ? 3 : 1,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  _grid[row][col],
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // Check button
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _selectedCells.isEmpty ? null : _checkWord,
+            // Check button
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _selectedCells.isEmpty ? null : _checkWord,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Check Word',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedCells.clear();
+                      });
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
+                      backgroundColor: Colors.grey,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 24),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Check Word',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
+                    child: const Text('Clear'),
                   ),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _selectedCells.clear();
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 24),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('Clear'),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

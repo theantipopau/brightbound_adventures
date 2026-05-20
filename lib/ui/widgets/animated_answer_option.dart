@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// The state of an answer option button
@@ -23,12 +24,12 @@ enum AnswerState { idle, selected, correct, incorrect }
 ///   )
 class AnimatedAnswerOption extends StatefulWidget {
   final String label;
-  final String optionLetter;   // 'A', 'B', 'C', 'D'
+  final String optionLetter; // 'A', 'B', 'C', 'D'
   final AnswerState state;
   final bool isSelected;
   final VoidCallback? onTap;
   final Color accentColor;
-  final int animationDelay;    // ms delay before entrance animation
+  final int animationDelay; // ms delay before entrance animation
 
   const AnimatedAnswerOption({
     super.key,
@@ -58,6 +59,7 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
   late Animation<double> _shakeX;
 
   bool _hovered = false;
+  bool _focused = false;
 
   @override
   void initState() {
@@ -92,7 +94,8 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
       CurvedAnimation(parent: _stateCtrl, curve: AppMotion.pop),
     );
     _checkmarkDraw = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _stateCtrl,
+      CurvedAnimation(
+          parent: _stateCtrl,
           curve: const Interval(0.2, 1.0, curve: Curves.easeOut)),
     );
 
@@ -133,9 +136,7 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
       case AnswerState.correct:
         return AppColors.correctFeedback;
       case AnswerState.incorrect:
-        return widget.isSelected
-            ? AppColors.incorrectFeedback
-            : Colors.white;
+        return widget.isSelected ? AppColors.incorrectFeedback : Colors.white;
       case AnswerState.selected:
         return widget.accentColor.withValues(alpha: 0.1);
       case AnswerState.idle:
@@ -268,17 +269,15 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
 
   @override
   Widget build(BuildContext context) {
-    final canTap =
-        widget.state == AnswerState.idle && widget.onTap != null;
+    final canTap = widget.state == AnswerState.idle && widget.onTap != null;
 
     return AnimatedBuilder(
-      animation: Listenable.merge(
-          [_entranceCtrl, _stateCtrl, _shakeCtrl]),
+      animation: Listenable.merge([_entranceCtrl, _stateCtrl, _shakeCtrl]),
       builder: (context, child) {
         // Shake offset for wrong answers
-        final shakeOffset = widget.state == AnswerState.incorrect && widget.isSelected
-            ? math.sin(_shakeX.value * math.pi * 5) *
-                (1 - _shakeX.value) * 10
+        final shakeOffset = widget.state == AnswerState.incorrect &&
+                widget.isSelected
+            ? math.sin(_shakeX.value * math.pi * 5) * (1 - _shakeX.value) * 10
             : 0.0;
 
         return FadeTransition(
@@ -292,85 +291,118 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
           ),
         );
       },
-      child: MouseRegion(
-        cursor: canTap ? SystemMouseCursors.click : MouseCursor.defer,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
+      child: FocusableActionDetector(
+        enabled: canTap,
+        mouseCursor: canTap ? SystemMouseCursors.click : MouseCursor.defer,
+        onShowFocusHighlight: (focused) {
+          if (mounted) setState(() => _focused = focused);
+        },
+        onShowHoverHighlight: (hovered) {
+          if (mounted) setState(() => _hovered = hovered);
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              if (canTap) widget.onTap?.call();
+              return null;
+            },
+          ),
+        },
+        shortcuts: const <ShortcutActivator, Intent>{
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
         child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: canTap ? widget.onTap : null,
-          child: AnimatedContainer(
-            duration: AppMotion.standard,
-            curve: AppMotion.enter,
-            margin: const EdgeInsets.symmetric(vertical: 5),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: _getFillGradient() == null ? _getFillColor() : null,
-              gradient: _getFillGradient(),
-              borderRadius: BorderRadius.circular(AppBorders.lg),
-              border: Border.all(
-                color: _getBorderColor(),
-                width: widget.state != AnswerState.idle ? 2.0 : (_hovered ? 1.8 : 1.2),
+          child: Semantics(
+            button: true,
+            enabled: canTap,
+            selected: widget.isSelected,
+            label: 'Answer ${widget.optionLetter}: ${widget.label}',
+            child: AnimatedContainer(
+              duration: AppMotion.standard,
+              curve: AppMotion.enter,
+              margin: const EdgeInsets.symmetric(vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              constraints: const BoxConstraints(
+                  minHeight: AppInput.preferredTouchTarget),
+              decoration: BoxDecoration(
+                color: _getFillGradient() == null ? _getFillColor() : null,
+                gradient: _getFillGradient(),
+                borderRadius: BorderRadius.circular(AppBorders.lg),
+                border: Border.all(
+                  color: _focused ? widget.accentColor : _getBorderColor(),
+                  width: _focused
+                      ? AppInput.focusRingWidth
+                      : (widget.state != AnswerState.idle
+                          ? 2.0
+                          : (_hovered ? 1.8 : 1.2)),
+                ),
+                boxShadow: widget.state == AnswerState.correct
+                    ? AppShadows.glow(AppColors.correctFeedbackBorder,
+                        intensity: 0.3)
+                    : (widget.state == AnswerState.incorrect &&
+                            widget.isSelected
+                        ? AppShadows.sm(AppColors.incorrectFeedbackBorder)
+                        : ((_hovered || _focused) && canTap
+                            ? AppShadows.md(widget.accentColor)
+                            : AppShadows.neutral)),
               ),
-              boxShadow: widget.state == AnswerState.correct
-                  ? AppShadows.glow(AppColors.correctFeedbackBorder, intensity: 0.3)
-                  : (widget.state == AnswerState.incorrect && widget.isSelected
-                      ? AppShadows.sm(AppColors.incorrectFeedbackBorder)
-                      : (_hovered && canTap
-                          ? AppShadows.md(widget.accentColor)
-                          : AppShadows.neutral)),
-            ),
-            child: Row(
-              children: [
-                // Option letter badge
-                AnimatedContainer(
-                  duration: AppMotion.standard,
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: _getBadgeColor(),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      widget.optionLetter,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: _getBadgeTextColor(),
-                        fontFamily: AppTheme.fontPrimary,
+              child: Row(
+                children: [
+                  // Option letter badge
+                  AnimatedContainer(
+                    duration: AppMotion.standard,
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: _getBadgeColor(),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        widget.optionLetter,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: _getBadgeTextColor(),
+                          fontFamily: AppTheme.fontPrimary,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
+                  const SizedBox(width: 12),
 
-                // Label
-                Expanded(
-                  child: Text(
-                    widget.label,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: widget.isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: widget.state == AnswerState.correct
-                          ? const Color(0xFF2E7D32)
-                          : (widget.state == AnswerState.incorrect && widget.isSelected
-                              ? const Color(0xFFC62828)
-                              : AppColors.textPrimary),
-                      fontFamily: AppTheme.fontBody,
+                  // Label
+                  Expanded(
+                    child: Text(
+                      widget.label,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: widget.isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: widget.state == AnswerState.correct
+                            ? const Color(0xFF2E7D32)
+                            : (widget.state == AnswerState.incorrect &&
+                                    widget.isSelected
+                                ? const Color(0xFFC62828)
+                                : AppColors.textPrimary),
+                        fontFamily: AppTheme.fontBody,
+                      ),
                     ),
                   ),
-                ),
 
-                // Trailing icon (check/x)
-                if (_getTrailingIcon() != null) ...[
-                  const SizedBox(width: 8),
-                  _getTrailingIcon()!,
+                  // Trailing icon (check/x)
+                  if (_getTrailingIcon() != null) ...[
+                    const SizedBox(width: 8),
+                    _getTrailingIcon()!,
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
@@ -435,63 +467,116 @@ class _QuestionCardState extends State<QuestionCard>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeIn,
-      child: SlideTransition(
-        position: _slideIn,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white,
-                widget.accentColor.withValues(alpha: 0.07),
-              ],
+    return Semantics(
+      container: true,
+      label:
+          'Question ${widget.questionNumber} of ${widget.totalQuestions}. ${widget.question}',
+      child: FadeTransition(
+        opacity: _fadeIn,
+        child: SlideTransition(
+          position: _slideIn,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white,
+                  widget.accentColor.withValues(alpha: 0.09),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(AppBorders.xl),
+              border: Border.all(
+                color: widget.accentColor.withValues(alpha: 0.28),
+                width: 1.5,
+              ),
+              boxShadow: AppShadows.md(widget.accentColor),
             ),
-            borderRadius: BorderRadius.circular(AppBorders.xl),
-            border: Border.all(
-              color: widget.accentColor.withValues(alpha: 0.25),
-              width: 1.5,
-            ),
-            boxShadow: AppShadows.md(widget.accentColor),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Q number chip
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: widget.accentColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(AppBorders.pill),
-                ),
-                child: Text(
-                  'Q${widget.questionNumber} of ${widget.totalQuestions}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: widget.accentColor,
-                    letterSpacing: 0.5,
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -18,
+                  top: -18,
+                  child: Icon(
+                    Icons.auto_stories_rounded,
+                    size: 96,
+                    color: widget.accentColor.withValues(alpha: 0.06),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                widget.question,
-                maxLines: 6,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A2E),
-                  height: 1.5,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: widget.accentColor.withValues(alpha: 0.15),
+                            borderRadius:
+                                BorderRadius.circular(AppBorders.pill),
+                            border: Border.all(
+                              color: widget.accentColor.withValues(alpha: 0.20),
+                            ),
+                          ),
+                          child: Text(
+                            'Q${widget.questionNumber} of ${widget.totalQuestions}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: widget.accentColor,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.blueGrey.withValues(alpha: 0.08),
+                            borderRadius:
+                                BorderRadius.circular(AppBorders.pill),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.touch_app_rounded,
+                                  size: 13, color: AppColors.textSecondary),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'Choose one answer',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      widget.question,
+                      maxLines: 7,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A2E),
+                        height: 1.42,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

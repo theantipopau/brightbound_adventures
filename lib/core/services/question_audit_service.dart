@@ -2,7 +2,7 @@ import 'dart:convert';
 import '../utils/question_metadata_generator.dart';
 
 /// Question Audit Service for Phase 7.2
-/// 
+///
 /// This service orchestrates the auditing of questions through the metadata generator,
 /// creating comprehensive quality reports for each question bank and identifying
 /// patterns, gaps, and quality issues.
@@ -39,19 +39,23 @@ class QuestionAuditService {
   static Map<String, dynamic> _validateMetadata(Map<String, dynamic> metadata) {
     final issues = <String>[];
 
-    if (!metadata.containsKey('primaryStandard') || metadata['primaryStandard'] == null) {
+    if (!metadata.containsKey('primaryStandard') ||
+        metadata['primaryStandard'] == null) {
       issues.add('missing_primary_standard');
     }
 
-    if (!metadata.containsKey('acaraCodes') || (metadata['acaraCodes'] as List).isEmpty) {
+    if (!metadata.containsKey('acaraCodes') ||
+        (metadata['acaraCodes'] as List).isEmpty) {
       issues.add('missing_acara_codes');
     }
 
-    if (!metadata.containsKey('cognitive_level') || metadata['cognitive_level'] == null) {
+    if (!metadata.containsKey('cognitive_level') ||
+        metadata['cognitive_level'] == null) {
       issues.add('missing_cognitive_level');
     }
 
-    if (!metadata.containsKey('naplanStrand') || metadata['naplanStrand'] == null) {
+    if (!metadata.containsKey('naplanStrand') ||
+        metadata['naplanStrand'] == null) {
       issues.add('missing_naplan_strand');
     }
 
@@ -59,7 +63,8 @@ class QuestionAuditService {
       issues.add('missing_context');
     }
 
-    if (!metadata.containsKey('estimated_difficulty') || metadata['estimated_difficulty'] == null) {
+    if (!metadata.containsKey('estimated_difficulty') ||
+        metadata['estimated_difficulty'] == null) {
       issues.add('missing_estimated_difficulty');
     }
 
@@ -82,9 +87,11 @@ class QuestionAuditService {
       'estimated_difficulty',
     ];
 
-    final presentFields = requiredFields.where(
-      (field) => metadata.containsKey(field) && metadata[field] != null,
-    ).length;
+    final presentFields = requiredFields
+        .where(
+          (field) => metadata.containsKey(field) && metadata[field] != null,
+        )
+        .length;
 
     return (presentFields / requiredFields.length) * 100;
   }
@@ -124,7 +131,8 @@ class QuestionAuditService {
       }
     }
 
-    if (metadata['acaraCodes'] == null || (metadata['acaraCodes'] as List).isEmpty) {
+    if (metadata['acaraCodes'] == null ||
+        (metadata['acaraCodes'] as List).isEmpty) {
       flags.add('unaligned_acara');
     }
 
@@ -145,13 +153,20 @@ class QuestionAuditService {
     required int totalQuestions,
     required List<Map<String, dynamic>> auditResults,
   }) {
-    final validCount = auditResults.where((r) => r['validationStatus']['isValid'] as bool).length;
-    final flaggedCount = auditResults.where((r) => (r['flags'] as List).isNotEmpty).length;
-    
-    final qualityScores = auditResults.map((r) => r['qualityScore'] as double).toList();
-    final averageQuality = qualityScores.isEmpty ? 0.0 : qualityScores.reduce((a, b) => a + b) / qualityScores.length;
+    final validCount = auditResults
+        .where((r) => r['validationStatus']['isValid'] as bool)
+        .length;
+    final flaggedCount =
+        auditResults.where((r) => (r['flags'] as List).isNotEmpty).length;
 
-    final allFlags = auditResults.expand((r) => r['flags'] as List).cast<String>().toList();
+    final qualityScores =
+        auditResults.map((r) => r['qualityScore'] as double).toList();
+    final averageQuality = qualityScores.isEmpty
+        ? 0.0
+        : qualityScores.reduce((a, b) => a + b) / qualityScores.length;
+
+    final allFlags =
+        auditResults.expand((r) => r['flags'] as List).cast<String>().toList();
     final flagSummary = _summarizeFlags(allFlags);
 
     return {
@@ -161,7 +176,8 @@ class QuestionAuditService {
       'auditedQuestions': auditResults.length,
       'validQuestions': validCount,
       'validityRate': (validCount / auditResults.length) * 100,
-      'averageQualityScore': (averageQuality * 100) / 100, // Round to 2 decimals
+      'averageQualityScore':
+          (averageQuality * 100) / 100, // Round to 2 decimals
       'flaggedQuestions': flaggedCount,
       'flagRate': (flaggedCount / auditResults.length) * 100,
       'flagSummary': flagSummary,
@@ -197,27 +213,33 @@ class QuestionAuditService {
     final recommendations = <String>[];
 
     if ((flagSummary['too_easy'] ?? 0) > 0) {
-      recommendations.add('Review ${flagSummary['too_easy']} questions with difficulty < 0.2. Consider increasing complexity.');
+      recommendations.add(
+          'Review ${flagSummary['too_easy']} questions with difficulty < 0.2. Consider increasing complexity.');
     }
 
     if ((flagSummary['too_hard'] ?? 0) > 0) {
-      recommendations.add('Review ${flagSummary['too_hard']} questions with difficulty > 0.8. Consider simplifying or providing hints.');
+      recommendations.add(
+          'Review ${flagSummary['too_hard']} questions with difficulty > 0.8. Consider simplifying or providing hints.');
     }
 
     if ((flagSummary['unaligned_acara'] ?? 0) > 0) {
-      recommendations.add('${flagSummary['unaligned_acara']} questions lack ACARA alignment. Review skill tags and content.');
+      recommendations.add(
+          '${flagSummary['unaligned_acara']} questions lack ACARA alignment. Review skill tags and content.');
     }
 
     if ((flagSummary['unaligned_naplan'] ?? 0) > 0) {
-      recommendations.add('${flagSummary['unaligned_naplan']} questions lack NAPLAN strand alignment. Consider broader curriculum coverage.');
+      recommendations.add(
+          '${flagSummary['unaligned_naplan']} questions lack NAPLAN strand alignment. Consider broader curriculum coverage.');
     }
 
     if ((flagSummary['no_context'] ?? 0) > 0) {
-      recommendations.add('${flagSummary['no_context']} questions lack real-world context. Consider embedding in meaningful scenarios.');
+      recommendations.add(
+          '${flagSummary['no_context']} questions lack real-world context. Consider embedding in meaningful scenarios.');
     }
 
     if (auditResults.isEmpty) {
-      recommendations.add('No questions to audit. Ensure question bank is populated.');
+      recommendations
+          .add('No questions to audit. Ensure question bank is populated.');
     }
 
     return recommendations;
@@ -239,11 +261,14 @@ class QuestionAuditService {
     sb.writeln('| Bank Name | ${report['bankName']} |');
     sb.writeln('| Total Questions | ${report['totalQuestions']} |');
     sb.writeln('| Audited | ${report['auditedQuestions']} |');
-    sb.writeln('| Valid | ${report['validQuestions']} (${(report['validityRate'] as double).toStringAsFixed(1)}%) |');
-    sb.writeln('| Avg Quality | ${(report['averageQualityScore'] as double).toStringAsFixed(1)}/100 |');
-    sb.writeln('| Flagged | ${report['flaggedQuestions']} (${(report['flagRate'] as double).toStringAsFixed(1)}%) |');
+    sb.writeln(
+        '| Valid | ${report['validQuestions']} (${(report['validityRate'] as double).toStringAsFixed(1)}%) |');
+    sb.writeln(
+        '| Avg Quality | ${(report['averageQualityScore'] as double).toStringAsFixed(1)}/100 |');
+    sb.writeln(
+        '| Flagged | ${report['flaggedQuestions']} (${(report['flagRate'] as double).toStringAsFixed(1)}%) |');
     sb.writeln();
-    
+
     if ((report['flagSummary'] as Map).isNotEmpty) {
       sb.writeln('## Flags');
       sb.writeln('| Flag | Count |');

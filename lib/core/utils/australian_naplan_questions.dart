@@ -500,7 +500,8 @@ class AustralianNAPLANQuestions {
       },
       // New scenarios (expansion)
       {
-        'context': 'A cake is cut into 6 equal pieces. You take 2 pieces. What fraction is that?',
+        'context':
+            'A cake is cut into 6 equal pieces. You take 2 pieces. What fraction is that?',
         'answer': '1/3',
         'theme': 'food'
       },
@@ -511,7 +512,8 @@ class AustralianNAPLANQuestions {
         'theme': 'school'
       },
       {
-        'context': 'A ribbon is 10 metres long. You cut off 5 metres. What fraction did you cut?',
+        'context':
+            'A ribbon is 10 metres long. You cut off 5 metres. What fraction did you cut?',
         'answer': '1/2',
         'theme': 'craft'
       },
@@ -522,7 +524,8 @@ class AustralianNAPLANQuestions {
         'theme': 'food'
       },
       {
-        'context': 'A hour has 60 minutes. 15 minutes is what fraction of an hour?',
+        'context':
+            'A hour has 60 minutes. 15 minutes is what fraction of an hour?',
         'answer': '1/4',
         'theme': 'time'
       },
@@ -596,20 +599,17 @@ class AustralianNAPLANQuestions {
         'unit': 'cm'
       },
       {
-        'context':
-            'A beach is 3 kilometres long. How many metres is that?',
+        'context': 'A beach is 3 kilometres long. How many metres is that?',
         'answer': 3000,
         'unit': 'm'
       },
       {
-        'context':
-            'Your backpack weighs 2.5 kilograms. How many grams?',
+        'context': 'Your backpack weighs 2.5 kilograms. How many grams?',
         'answer': 2500,
         'unit': 'g'
       },
       {
-        'context':
-            'A milk carton holds 1 litre. How many millilitres?',
+        'context': 'A milk carton holds 1 litre. How many millilitres?',
         'answer': 1000,
         'unit': 'mL'
       },

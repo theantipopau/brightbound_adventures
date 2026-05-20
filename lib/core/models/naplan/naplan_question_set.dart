@@ -7,9 +7,8 @@ class NaplanQuestionSet {
   factory NaplanQuestionSet.fromJson(Map<String, dynamic> json) {
     return NaplanQuestionSet(
       meta: Meta.fromJson(json['meta']),
-      questions: (json['questions'] as List)
-          .map((i) => Question.fromJson(i))
-          .toList(),
+      questions:
+          (json['questions'] as List).map((i) => Question.fromJson(i)).toList(),
     );
   }
 }

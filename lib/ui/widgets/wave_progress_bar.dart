@@ -73,7 +73,8 @@ class _WaveProgressBarState extends State<WaveProgressBar>
     _fillAnimation = Tween<double>(
       begin: widget.progress,
       end: widget.progress,
-    ).animate(CurvedAnimation(parent: _fillController, curve: Curves.easeOutCubic));
+    ).animate(
+        CurvedAnimation(parent: _fillController, curve: Curves.easeOutCubic));
   }
 
   @override
@@ -83,7 +84,8 @@ class _WaveProgressBarState extends State<WaveProgressBar>
       _fillAnimation = Tween<double>(
         begin: _previousProgress,
         end: widget.progress,
-      ).animate(CurvedAnimation(parent: _fillController, curve: Curves.easeOutCubic));
+      ).animate(
+          CurvedAnimation(parent: _fillController, curve: Curves.easeOutCubic));
       _previousProgress = widget.progress;
       _fillController.forward(from: 0);
     }
@@ -161,9 +163,15 @@ class _WavePainter extends CustomPainter {
     for (int i = 0; i <= segments; i++) {
       final x = size.width * i / segments;
       // Two overlapping sine waves for a more organic look
-      final y = surfaceY
-          + amp * math.sin(x / size.width * math.pi * 2.5 + wavePhase * math.pi * 2)
-          + amp * 0.4 * math.sin(x / size.width * math.pi * 4.2 + wavePhase * math.pi * 2 * 0.7 + 1.0);
+      final y = surfaceY +
+          amp *
+              math.sin(
+                  x / size.width * math.pi * 2.5 + wavePhase * math.pi * 2) +
+          amp *
+              0.4 *
+              math.sin(x / size.width * math.pi * 4.2 +
+                  wavePhase * math.pi * 2 * 0.7 +
+                  1.0);
       path.lineTo(x, y);
     }
 
@@ -183,7 +191,8 @@ class _WavePainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..shader = gradient.createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+        ..shader =
+            gradient.createShader(Rect.fromLTWH(0, 0, size.width, size.height))
         ..style = PaintingStyle.fill,
     );
 
@@ -192,9 +201,17 @@ class _WavePainter extends CustomPainter {
     highlightPath.moveTo(0, size.height);
     for (int i = 0; i <= segments; i++) {
       final x = size.width * i / segments;
-      final y = surfaceY - amp * 0.3
-          + amp * 0.5 * math.sin(x / size.width * math.pi * 3.1 + wavePhase * math.pi * 2 * 1.3 + 2.5)
-          + amp * 0.25 * math.sin(x / size.width * math.pi * 5.7 + wavePhase * math.pi * 2 * 0.9);
+      final y = surfaceY -
+          amp * 0.3 +
+          amp *
+              0.5 *
+              math.sin(x / size.width * math.pi * 3.1 +
+                  wavePhase * math.pi * 2 * 1.3 +
+                  2.5) +
+          amp *
+              0.25 *
+              math.sin(x / size.width * math.pi * 5.7 +
+                  wavePhase * math.pi * 2 * 0.9);
       highlightPath.lineTo(x, y);
     }
     highlightPath.lineTo(size.width, size.height);

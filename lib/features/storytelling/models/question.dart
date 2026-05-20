@@ -331,7 +331,8 @@ class EmotionRecognitionQuestions {
         'Guilt is stronger; embarrassment is weaker',
       ],
       correctIndex: 1,
-      hint: 'Guilt is about your impact on others; embarrassment is about how others see you.',
+      hint:
+          'Guilt is about your impact on others; embarrassment is about how others see you.',
       explanation:
           'Guilt focuses on the harm done to another person. Embarrassment focuses on how you appear in others\' eyes. Good stories use both to create complex characters.',
       difficulty: 4,
@@ -509,8 +510,7 @@ class DescriptiveLanguageQuestions {
     StoryQuestion(
       id: 'desc_8',
       skillId: 'skill_descriptive_language',
-      question:
-          'Which sentence is a METAPHOR (not a simile)?',
+      question: 'Which sentence is a METAPHOR (not a simile)?',
       options: [
         'The old tree was like a wise elder.',
         'Her voice was as sweet as honey.',
@@ -518,7 +518,8 @@ class DescriptiveLanguageQuestions {
         'He ran as fast as a cheetah.',
       ],
       correctIndex: 2,
-      hint: 'A metaphor directly states something IS something else — no "like" or "as".',
+      hint:
+          'A metaphor directly states something IS something else — no "like" or "as".',
       explanation:
           '"Life is a rollercoaster" is a metaphor — it states directly that life IS a rollercoaster. The others use "like" or "as", making them similes.',
       difficulty: 4,
@@ -536,7 +537,8 @@ class DescriptiveLanguageQuestions {
         'The house was old and grey.',
       ],
       correctIndex: 1,
-      hint: 'Can the wind actually whisper? Which option gives the wind a human action?',
+      hint:
+          'Can the wind actually whisper? Which option gives the wind a human action?',
       explanation:
           '"Whispered secrets" gives the wind a human ability (whispering). Personification makes descriptions more vivid and emotional!',
       difficulty: 4,
@@ -724,7 +726,8 @@ class DialogueCreationQuestions {
         '"I\'m scared," She whispered.',
       ],
       correctIndex: 1,
-      hint: 'After dialogue, a comma BEFORE the closing quotation mark leads into a dialogue tag in lower case.',
+      hint:
+          'After dialogue, a comma BEFORE the closing quotation mark leads into a dialogue tag in lower case.',
       explanation:
           'When a dialogue tag (e.g. "she whispered") follows speech, use a comma before the closing quote and keep the tag in lower case. "I\'m scared," she whispered.',
       difficulty: 4,
@@ -742,7 +745,8 @@ class DialogueCreationQuestions {
         'Make them say long speeches',
       ],
       correctIndex: 1,
-      hint: 'Show, don\'t tell — how do angry people actually speak and behave?',
+      hint:
+          'Show, don\'t tell — how do angry people actually speak and behave?',
       explanation:
           'Short sharp sentences, interrupted speech ("But I—" "No!"), and physical description (clenched jaw, turned away) all SHOW anger without stating it directly.',
       difficulty: 5,
@@ -887,8 +891,7 @@ class PlotStructureQuestions {
     StoryQuestion(
       id: 'plot_8',
       skillId: 'skill_plot_structure',
-      question:
-          'After the climax of a story, what typically comes next?',
+      question: 'After the climax of a story, what typically comes next?',
       options: [
         'The introduction of new characters',
         'Another climax of equal intensity',
@@ -896,7 +899,8 @@ class PlotStructureQuestions {
         'The story restarts from the beginning',
       ],
       correctIndex: 2,
-      hint: 'After the peak of tension, what direction does a story usually go?',
+      hint:
+          'After the peak of tension, what direction does a story usually go?',
       explanation:
           'After the climax, the "falling action" shows the consequences and how things settle. Then comes the resolution (dénouement) which wraps up loose threads.',
       difficulty: 4,
@@ -1035,8 +1039,7 @@ class CharacterDevelopmentQuestions {
     StoryQuestion(
       id: 'char_7',
       skillId: 'skill_character_development',
-      question:
-          'A DYNAMIC character is one who...',
+      question: 'A DYNAMIC character is one who...',
       options: [
         'Moves around a lot in the story',
         'Changes significantly through the story\'s events',
@@ -1044,7 +1047,8 @@ class CharacterDevelopmentQuestions {
         'Stays the same from beginning to end',
       ],
       correctIndex: 1,
-      hint: 'Dynamic = changing. Think about how experiences can change people.',
+      hint:
+          'Dynamic = changing. Think about how experiences can change people.',
       explanation:
           'Dynamic characters grow or change significantly. A STATIC character stays the same throughout. Protagonists are usually dynamic; villains are often static.',
       difficulty: 4,
@@ -1062,7 +1066,8 @@ class CharacterDevelopmentQuestions {
         'To give the main character a best friend',
       ],
       correctIndex: 1,
-      hint: 'If the hero is brave and the foil is cowardly, what does that reveal?',
+      hint:
+          'If the hero is brave and the foil is cowardly, what does that reveal?',
       explanation:
           'Foil characters work like mirrors in reverse — their contrasting traits make the main character\'s qualities stand out more clearly. Sherlock Holmes and Watson are a classic foil pair.',
       difficulty: 4,
@@ -1080,7 +1085,8 @@ class CharacterDevelopmentQuestions {
         'Having them appear in every scene',
       ],
       correctIndex: 1,
-      hint: 'Real people always have reasons for their behaviour — even bad behaviour.',
+      hint:
+          'Real people always have reasons for their behaviour — even bad behaviour.',
       explanation:
           'Complex villains with understandable motivations (even if we disagree with them) are far more compelling than one-dimensional "pure evil" characters. This creates moral depth.',
       difficulty: 5,
@@ -1101,11 +1107,18 @@ class HigherOrderThinkingStorytellingQuestions {
     StoryQuestion(
       id: 'hot_story_1',
       skillId: 'skill_story_creation',
-      question: 'Two story endings. A) "And they lived happily ever after." B) "She learned an important lesson and smiled, knowing better days lay ahead." Which is more satisfying?',
-      options: ['A is better', 'B is better', 'Both are equal', 'Neither works'],
+      question:
+          'Two story endings. A) "And they lived happily ever after." B) "She learned an important lesson and smiled, knowing better days lay ahead." Which is more satisfying?',
+      options: [
+        'A is better',
+        'B is better',
+        'Both are equal',
+        'Neither works'
+      ],
       correctIndex: 1,
       hint: 'Which provides more meaning?',
-      explanation: 'B shows character growth and hope, providing deeper satisfaction than cliché "ever after"',
+      explanation:
+          'B shows character growth and hope, providing deeper satisfaction than cliché "ever after"',
       difficulty: 4,
       type: StoryQuestionType.multipleChoice,
       imageEmoji: '✨',
@@ -1113,11 +1126,18 @@ class HigherOrderThinkingStorytellingQuestions {
     StoryQuestion(
       id: 'hot_story_2',
       skillId: 'skill_story_creation',
-      question: 'Evaluate this plot twist: Hero thinks villain is evil, but villain is actually good. Why might this be problematic?',
-      options: ['Twists are always good', 'No setup for reader, feels fake', 'Too confusing', 'Not a real problem'],
+      question:
+          'Evaluate this plot twist: Hero thinks villain is evil, but villain is actually good. Why might this be problematic?',
+      options: [
+        'Twists are always good',
+        'No setup for reader, feels fake',
+        'Too confusing',
+        'Not a real problem'
+      ],
       correctIndex: 1,
       hint: 'Does the story prepare the reader?',
-      explanation: 'Without clues hinting at the twist, it feels cheap and unearned. Good twists need setup!',
+      explanation:
+          'Without clues hinting at the twist, it feels cheap and unearned. Good twists need setup!',
       difficulty: 5,
       type: StoryQuestionType.multipleChoice,
       imageEmoji: '🔄',
@@ -1125,11 +1145,18 @@ class HigherOrderThinkingStorytellingQuestions {
     StoryQuestion(
       id: 'hot_story_3',
       skillId: 'skill_story_creation',
-      question: 'Two character descriptions. A) "He was mean." B) "He never listened, always interrupted, and mocked others\' ideas." Which shows character better?',
-      options: ['A is stronger', 'B is stronger', 'Both equal', 'Neither works'],
+      question:
+          'Two character descriptions. A) "He was mean." B) "He never listened, always interrupted, and mocked others\' ideas." Which shows character better?',
+      options: [
+        'A is stronger',
+        'B is stronger',
+        'Both equal',
+        'Neither works'
+      ],
       correctIndex: 1,
       hint: 'Which lets you SEE the character?',
-      explanation: 'B shows meanness through specific behaviors instead of just telling, making character vivid',
+      explanation:
+          'B shows meanness through specific behaviors instead of just telling, making character vivid',
       difficulty: 5,
       type: StoryQuestionType.multipleChoice,
       imageEmoji: '👤',
@@ -1137,11 +1164,18 @@ class HigherOrderThinkingStorytellingQuestions {
     StoryQuestion(
       id: 'hot_story_4',
       skillId: 'skill_story_creation',
-      question: 'Assess this dialogue: "Hi." "Hi." "How are you?" "Good." Why is this weak?',
-      options: ['Too short', 'No personality/emotion shown', 'Too many words', 'Nothing wrong'],
+      question:
+          'Assess this dialogue: "Hi." "Hi." "How are you?" "Good." Why is this weak?',
+      options: [
+        'Too short',
+        'No personality/emotion shown',
+        'Too many words',
+        'Nothing wrong'
+      ],
       correctIndex: 1,
       hint: 'What can readers learn from dialogue?',
-      explanation: 'Good dialogue reveals character, emotion, and conflict. This is generic and flat.',
+      explanation:
+          'Good dialogue reveals character, emotion, and conflict. This is generic and flat.',
       difficulty: 5,
       type: StoryQuestionType.multipleChoice,
       imageEmoji: '💬',
@@ -1152,10 +1186,16 @@ class HigherOrderThinkingStorytellingQuestions {
       id: 'hot_story_5',
       skillId: 'skill_story_creation',
       question: 'Create a story twist. What\'s most important?',
-      options: ['Make it shocking', 'Plant subtle clues early so readers feel clever discovering it', 'Don\'t tell anyone', 'Make it confusing'],
+      options: [
+        'Make it shocking',
+        'Plant subtle clues early so readers feel clever discovering it',
+        'Don\'t tell anyone',
+        'Make it confusing'
+      ],
       correctIndex: 1,
       hint: 'Think about reader experience',
-      explanation: 'Best twists have foreshadowing - readers enjoy realizing they missed subtle hints!',
+      explanation:
+          'Best twists have foreshadowing - readers enjoy realizing they missed subtle hints!',
       difficulty: 6,
       type: StoryQuestionType.multipleChoice,
       imageEmoji: '🎬',
@@ -1164,10 +1204,16 @@ class HigherOrderThinkingStorytellingQuestions {
       id: 'hot_story_6',
       skillId: 'skill_story_creation',
       question: 'Design a character with growth. Most important element?',
-      options: ['Make them like you', 'Show a clear flaw and how they overcome it through the story', 'Make them perfect', 'Keep them static'],
+      options: [
+        'Make them like you',
+        'Show a clear flaw and how they overcome it through the story',
+        'Make them perfect',
+        'Keep them static'
+      ],
       correctIndex: 1,
       hint: 'What makes growth believable?',
-      explanation: 'Starting flaw → struggle → growth is the arc readers connect with most',
+      explanation:
+          'Starting flaw → struggle → growth is the arc readers connect with most',
       difficulty: 6,
       type: StoryQuestionType.multipleChoice,
       imageEmoji: '📈',
@@ -1176,10 +1222,16 @@ class HigherOrderThinkingStorytellingQuestions {
       id: 'hot_story_7',
       skillId: 'skill_story_creation',
       question: 'Create a theme for your story. How should you show it?',
-      options: ['Tell readers the lesson directly', 'Show it through character actions and consequences', 'Put it in footnotes', 'Don\'t show themes'],
+      options: [
+        'Tell readers the lesson directly',
+        'Show it through character actions and consequences',
+        'Put it in footnotes',
+        'Don\'t show themes'
+      ],
       correctIndex: 1,
       hint: 'How do readers truly learn themes?',
-      explanation: 'Readers engage most when they discover themes through story events, not when told directly',
+      explanation:
+          'Readers engage most when they discover themes through story events, not when told directly',
       difficulty: 6,
       type: StoryQuestionType.multipleChoice,
       imageEmoji: '📚',
@@ -1187,11 +1239,18 @@ class HigherOrderThinkingStorytellingQuestions {
     StoryQuestion(
       id: 'hot_story_8',
       skillId: 'skill_story_creation',
-      question: 'Revise a weak beginning. Original: "A girl walked to school. It was a nice day." What\'s crucial?',
-      options: ['Add more detail', 'Hook reader with a question, problem, or vivid image', 'Add more characters', 'Use longer sentences'],
+      question:
+          'Revise a weak beginning. Original: "A girl walked to school. It was a nice day." What\'s crucial?',
+      options: [
+        'Add more detail',
+        'Hook reader with a question, problem, or vivid image',
+        'Add more characters',
+        'Use longer sentences'
+      ],
       correctIndex: 1,
       hint: 'What makes readers WANT to keep reading?',
-      explanation: 'Strong openings create intrigue or tension that makes readers curious to continue',
+      explanation:
+          'Strong openings create intrigue or tension that makes readers curious to continue',
       difficulty: 6,
       type: StoryQuestionType.multipleChoice,
       imageEmoji: '🚀',

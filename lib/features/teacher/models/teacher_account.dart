@@ -4,7 +4,8 @@ class TeacherAccount {
   final String email;
   final String fullName;
   final String schoolName;
-  final String licenseType; // 'free' | 'starter' | 'professional' | 'enterprise'
+  final String
+      licenseType; // 'free' | 'starter' | 'professional' | 'enterprise'
   final DateTime createdAt;
   final DateTime licenseExpiresAt;
   final List<String> classIds;
@@ -115,7 +116,7 @@ class TeacherAccount {
       fullName: json['fullName'] ?? '',
       schoolName: json['schoolName'] ?? '',
       licenseType: json['licenseType'] ?? 'free',
-      createdAt: json['createdAt'] is String 
+      createdAt: json['createdAt'] is String
           ? DateTime.parse(json['createdAt'] as String)
           : json['createdAt'] as DateTime,
       licenseExpiresAt: json['licenseExpiresAt'] is String
@@ -162,7 +163,8 @@ class TeacherAccount {
   }
 
   @override
-  String toString() => 'TeacherAccount(id: $id, email: $email, name: $fullName, license: $licenseType)';
+  String toString() =>
+      'TeacherAccount(id: $id, email: $email, name: $fullName, license: $licenseType)';
 
   @override
   bool operator ==(Object other) =>

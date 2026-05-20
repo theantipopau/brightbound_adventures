@@ -128,7 +128,8 @@ class StudentClass {
   }
 
   @override
-  String toString() => 'StudentClass(id: $id, name: $name, grade: $gradeLevel, students: ${studentIds.length})';
+  String toString() =>
+      'StudentClass(id: $id, name: $name, grade: $gradeLevel, students: ${studentIds.length})';
 
   @override
   bool operator ==(Object other) =>

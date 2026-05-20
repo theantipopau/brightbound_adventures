@@ -22,12 +22,25 @@ class AiQuestion {
   });
 
   factory AiQuestion.fromJson(Map<String, dynamic> json) {
-    final options = (json['options'] as List).cast<String>();
+    final rawOptions = (json['options'] as List?) ?? const [];
+    final options = rawOptions
+        .map((item) => item.toString().trim())
+        .where((item) => item.isNotEmpty)
+        .toList()
+        .cast<String>();
+    if (options.length != 4 || options.toSet().length != 4) {
+      throw FormatException('Invalid AI question options');
+    }
+    final correctIndex = (json['correctIndex'] as num).toInt();
+    if (correctIndex < 0 || correctIndex > 3) {
+      throw FormatException('Invalid AI question answer index');
+    }
     return AiQuestion(
       question: (json['question'] as String).trim(),
-      options: options.map((o) => o.trim()).toList(),
-      correctIndex: (json['correctIndex'] as num).toInt().clamp(0, 3),
-      hint: (json['hint'] as String?)?.trim() ?? 'Think carefully about all the options.',
+      options: options,
+      correctIndex: correctIndex,
+      hint: (json['hint'] as String?)?.trim() ??
+          'Think carefully about all the options.',
       explanation: (json['explanation'] as String?)?.trim() ?? '',
     );
   }
@@ -171,10 +184,14 @@ class AiQuestionService extends ChangeNotifier {
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final rawList = (body['questions'] as List?) ?? [];
-        final questions = rawList
-            .whereType<Map<String, dynamic>>()
-            .map(AiQuestion.fromJson)
-            .toList();
+        final questions = <AiQuestion>[];
+        for (final item in rawList.whereType<Map<String, dynamic>>()) {
+          try {
+            questions.add(AiQuestion.fromJson(item));
+          } catch (_) {
+            // Drop malformed or repetitive items from the cache.
+          }
+        }
         if (questions.isNotEmpty) {
           _mergeIntoPool(key, questions);
           await _persistToPrefs(key, questions);
@@ -234,16 +251,14 @@ class AiQuestionService extends ChangeNotifier {
             .map(AiQuestion.fromJson)
             .toList();
         final poolKey = prefKey.replaceFirst('aiq_', '');
-        _pool[poolKey] =
-            _AiCache(questions: questions, fetchedAt: fetchedAt);
+        _pool[poolKey] = _AiCache(questions: questions, fetchedAt: fetchedAt);
       } catch (_) {
         _prefs!.remove(prefKey);
       }
     }
   }
 
-  Future<void> _persistToPrefs(
-      String key, List<AiQuestion> questions) async {
+  Future<void> _persistToPrefs(String key, List<AiQuestion> questions) async {
     if (_prefs == null) return;
     try {
       final payload = jsonEncode({

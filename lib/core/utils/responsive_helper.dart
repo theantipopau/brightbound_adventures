@@ -41,7 +41,8 @@ class ResponsiveHelper {
   /// Check if device is tablet (any orientation)
   static bool isTablet(BuildContext context) {
     final type = getDeviceTypeFromContext(context);
-    return type == DeviceType.tabletPortrait || type == DeviceType.tabletLandscape;
+    return type == DeviceType.tabletPortrait ||
+        type == DeviceType.tabletLandscape;
   }
 
   /// Check if device is desktop or larger
@@ -70,7 +71,8 @@ class ResponsiveHelper {
   }
 
   /// Get responsive spacing based on device type
-  static double getResponsiveSpacing(BuildContext context, {
+  static double getResponsiveSpacing(
+    BuildContext context, {
     required double phoneValue,
     required double tabletValue,
     required double desktopValue,
@@ -91,7 +93,8 @@ class ResponsiveHelper {
   }
 
   /// Get responsive font size
-  static double getResponsiveFontSize(BuildContext context, {
+  static double getResponsiveFontSize(
+    BuildContext context, {
     required double base,
     double phoneMultiplier = 0.9,
     double tabletMultiplier = 1.0,
@@ -168,7 +171,8 @@ extension ResponsiveContext on BuildContext {
   bool get supportsWideLayout => ResponsiveHelper.supportsWideLayout(this);
 
   /// Get responsive padding
-  EdgeInsets get responsivePadding => ResponsiveHelper.getResponsivePadding(this);
+  EdgeInsets get responsivePadding =>
+      ResponsiveHelper.getResponsivePadding(this);
 
   /// Get max content width
   double get maxContentWidth => ResponsiveHelper.getMaxContentWidth(this);

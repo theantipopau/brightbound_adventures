@@ -21,7 +21,7 @@ class StreakEnhancedService {
   ({int nextMilestone, int daysUntil, String? cosmeticReward})
       getNextMilestone() {
     final current = streakService.currentStreak;
-    
+
     // Find next milestone
     for (final milestone in milestoneCosmeticIds.keys.toList()..sort()) {
       if (current < milestone) {

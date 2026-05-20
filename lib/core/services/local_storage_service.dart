@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 
@@ -47,19 +46,14 @@ class LocalStorageService {
 
   // Avatar operations
   Future<void> saveAvatar(Avatar avatar) async {
-    debugPrint('LocalStorageService.saveAvatar called');
     final box = Hive.box(avatarBoxName);
     final map = _avatarToMap(avatar);
-    debugPrint('Avatar map: $map');
     await box.put('current', map);
-    debugPrint('Avatar saved to Hive');
   }
 
   Future<Avatar?> getAvatar() async {
-    debugPrint('LocalStorageService.getAvatar called');
     final box = Hive.box(avatarBoxName);
     final data = box.get('current');
-    debugPrint('Avatar data from Hive: $data');
     if (data == null) return null;
     return _mapToAvatar(data);
   }

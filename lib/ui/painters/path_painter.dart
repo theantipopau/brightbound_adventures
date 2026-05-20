@@ -89,7 +89,8 @@ class PathPainter extends CustomPainter {
             ?.position;
 
         if (pos != null) {
-          canvas.drawCircle(pos, 10, dotPaint..color = Colors.amber.withValues(alpha: 0.35));
+          canvas.drawCircle(
+              pos, 10, dotPaint..color = Colors.amber.withValues(alpha: 0.35));
           canvas.drawCircle(pos, 6, dotPaint..color = Colors.amber);
         }
       }

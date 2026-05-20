@@ -34,44 +34,35 @@ function errorResponse(message, status = 400) {
 }
 async function hashPassword(password) {
     const salt = crypto.getRandomValues(new Uint8Array(16));
-    const keyMaterial = await crypto.subtle.importKey(
-        'raw',
-        new TextEncoder().encode(password),
-        'PBKDF2',
-        false,
-        ['deriveBits'],
-    );
-    const hashBuffer = await crypto.subtle.deriveBits(
-        { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
-        keyMaterial,
-        256,
-    );
+    const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+    const hashBuffer = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' }, keyMaterial, 256);
     const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('');
     const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
     return `${saltHex}:${hashHex}`;
 }
 async function verifyPassword(password, stored) {
     const colonIdx = stored.indexOf(':');
-    if (colonIdx === -1) return false;
+    if (colonIdx === -1)
+        return false;
     const saltHex = stored.slice(0, colonIdx);
     const hashHex = stored.slice(colonIdx + 1);
     const saltBytes = saltHex.match(/.{2}/g);
-    if (!saltBytes) return false;
+    if (!saltBytes)
+        return false;
     const salt = new Uint8Array(saltBytes.map(b => parseInt(b, 16)));
-    const keyMaterial = await crypto.subtle.importKey(
-        'raw',
-        new TextEncoder().encode(password),
-        'PBKDF2',
-        false,
-        ['deriveBits'],
-    );
-    const hashBuffer = await crypto.subtle.deriveBits(
-        { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
-        keyMaterial,
-        256,
-    );
+    const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+    const hashBuffer = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' }, keyMaterial, 256);
     const computedHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-    return computedHex === hashHex;
+    return timingSafeEqual(computedHex, hashHex);
+}
+function timingSafeEqual(a, b) {
+    if (a.length !== b.length)
+        return false;
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+        result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return result === 0;
 }
 function generateToken() {
     const bytes = crypto.getRandomValues(new Uint8Array(48));
@@ -172,6 +163,9 @@ router.post('/api/teachers/register', async (req, env) => {
         // Validation
         if (!email || !password || !fullName || !schoolName) {
             return errorResponse('Missing required fields', 400);
+        }
+        if (String(password).length < 10) {
+            return errorResponse('Password must be at least 10 characters', 400);
         }
         await initializeDatabase(env.DB);
         // Check if teacher exists

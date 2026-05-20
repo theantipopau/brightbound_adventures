@@ -22,3 +22,5 @@ export 'question_freshness_service.dart';
 export 'spaced_repetition_service.dart';
 export 'ai_question_service.dart';
 export 'theme_mode_service.dart';
+export 'quiz_preferences_service.dart';
+export 'visual_accessibility_service.dart';

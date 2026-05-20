@@ -183,8 +183,7 @@ class _ZoneMasteredDialogState extends State<_ZoneMasteredDialog>
           Center(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-              padding:
-                  const EdgeInsets.symmetric(vertical: 36, horizontal: 28),
+              padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 28),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -339,7 +338,9 @@ class _ZoneMasteredDialogState extends State<_ZoneMasteredDialog>
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        context.read<AvatarProvider>().setEmotion(AvatarEmotion.proud);
+                        context
+                            .read<AvatarProvider>()
+                            .setEmotion(AvatarEmotion.proud);
                         Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
@@ -421,9 +422,7 @@ class _ConfettiPainter extends CustomPainter {
       final x = (p.x + xOff).clamp(0.0, 1.0) * size.width;
 
       // Fade near bottom
-      final opacity = rawY > 0.85
-          ? ((1.0 - rawY) / 0.15).clamp(0.0, 1.0)
-          : 1.0;
+      final opacity = rawY > 0.85 ? ((1.0 - rawY) / 0.15).clamp(0.0, 1.0) : 1.0;
 
       paint.color = p.color.withValues(alpha: opacity * 0.85);
       canvas.drawRRect(

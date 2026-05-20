@@ -441,6 +441,13 @@ class SkillDatabase {
         return wordWoodsSkills;
       case 'number_nebula':
         return numberNebulaSkills;
+      case 'math_facts':
+        return numberNebulaSkills
+            .where((skill) =>
+                skill.id.contains('multiplication') ||
+                skill.id.contains('addition') ||
+                skill.id.contains('subtraction'))
+            .toList(growable: false);
       case 'story_springs':
         return storyspringsSkills;
       case 'puzzle_peaks':

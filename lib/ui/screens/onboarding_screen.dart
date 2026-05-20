@@ -55,8 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _PageContent(
       emoji: '🎨',
       title: 'Customise Your Character',
-      description:
-          'Create your avatar and unlock new outfits as you progress!',
+      description: 'Create your avatar and unlock new outfits as you progress!',
     ),
     // Page 6 & 7 are rendered as interactive overrides below
     _PageContent(emoji: '', title: '', description: ''),
@@ -234,8 +233,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('🎮',
-                style: TextStyle(fontSize: 64)),
+            const Text('🎮', style: TextStyle(fontSize: 64)),
             const SizedBox(height: 20),
             const Text(
               'Choose Your Hero!',
@@ -250,8 +248,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               'Tap one to pick your adventure character',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withValues(alpha: 0.85)),
+                  fontSize: 16, color: Colors.white.withValues(alpha: 0.85)),
             ),
             const SizedBox(height: 28),
             Wrap(
@@ -294,14 +291,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(emoji,
-                            style: TextStyle(
-                                fontSize: selected ? 44 : 36)),
+                            style: TextStyle(fontSize: selected ? 44 : 36)),
                         const SizedBox(height: 4),
                         Text(
                           id,
                           style: TextStyle(
-                            color:
-                                selected ? AppColors.primary : Colors.white,
+                            color: selected ? AppColors.primary : Colors.white,
                             fontWeight: FontWeight.w700,
                             fontSize: 12,
                           ),
@@ -326,8 +321,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('🎯',
-                style: TextStyle(fontSize: 80)),
+            const Text('🎯', style: TextStyle(fontSize: 80)),
             const SizedBox(height: 24),
             const Text(
               'Complete Quests Every Day!',
@@ -431,8 +425,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               Text(
                 '👆 Tap the card above!',
                 style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 14),
+                    color: Colors.white.withValues(alpha: 0.7), fontSize: 14),
               ),
             ],
           ],
@@ -503,9 +496,7 @@ class OnboardingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _StaticOnboardingPage(
-      page: _PageContent(
-          emoji: emoji, title: title, description: description),
+      page: _PageContent(emoji: emoji, title: title, description: description),
     );
   }
 }
-

@@ -3,12 +3,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
+import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/controllers/game_session_controller.dart';
 import 'package:brightbound_adventures/core/utils/question_variation_helper.dart';
@@ -54,7 +54,6 @@ class _ScienceGameState extends State<ScienceGame>
   bool _autoReadQuestions = false;
   bool _aiHintsEnabled = false;
   bool _aiExplanationsEnabled = false;
-  bool _aiCloudMode = false;
   String? _aiExplanationText;
 
   int _discoveryMeter = 0;
@@ -142,26 +141,18 @@ class _ScienceGameState extends State<ScienceGame>
   dynamic get _currentQuestion => _shuffledQuestions[_currentIndex];
 
   Future<void> _loadAutoReadPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final autoRead = prefs.getBool('autoReadQuestions') ?? false;
-    final aiHintsEnabled = prefs.getBool('aiHintsEnabled') ?? false;
-    final aiExplanationsEnabled =
-        prefs.getBool('aiExplanationsEnabled') ?? false;
-    final aiCloudMode = prefs.getBool('aiCloudMode') ?? false;
+    final preferences = await QuizPreferencesService.load();
     if (!mounted) return;
 
     setState(() {
-      _autoReadQuestions = autoRead;
-      _aiHintsEnabled = aiHintsEnabled;
-      _aiExplanationsEnabled = aiExplanationsEnabled;
-      _aiCloudMode = aiCloudMode;
+      _autoReadQuestions = preferences.autoReadQuestions;
+      _aiHintsEnabled = preferences.aiHintsEnabled;
+      _aiExplanationsEnabled = preferences.aiExplanationsEnabled;
     });
 
-    _aiAssistant
-      ..setEnabled(aiHintsEnabled || aiExplanationsEnabled)
-      ..setCloudMode(_aiCloudMode);
+    QuizPreferencesService.applyToAssistant(_aiAssistant, preferences);
 
-    if (autoRead) {
+    if (preferences.autoReadQuestions) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _readCurrentQuestionAloud();
       });
@@ -213,7 +204,8 @@ class _ScienceGameState extends State<ScienceGame>
       hapticService.onCorrectAnswer();
       _audioManager.playCorrectAnswer();
       _starController.forward(from: 0);
-      showFloatingReward(context, '+10 ⭐', color: Colors.purpleAccent);
+      showFloatingReward(context, '+${_gameController.lastPointsEarned} ⭐',
+          color: Colors.purpleAccent);
       avatarProvider.setEmotion(
         _gameController.streak >= 3 ? AvatarEmotion.proud : AvatarEmotion.happy,
         resetAfter: const Duration(milliseconds: 1800),
@@ -354,7 +346,8 @@ class _ScienceGameState extends State<ScienceGame>
     }
 
     final questionIndex = _currentIndex;
-    final options = (_currentQuestion.options as List).map((e) => '$e').toList();
+    final options =
+        (_currentQuestion.options as List).map((e) => '$e').toList();
     final selectedAnswer = options[_selectedIndex!];
     final correctAnswer = options[_currentQuestion.correctIndex as int];
 
@@ -504,8 +497,7 @@ class _ScienceGameState extends State<ScienceGame>
               } else if (_selectedIndex == null) {
                 setState(() => _selectedIndex = 0);
               }
-            } else if (key == LogicalKeyboardKey.enter &&
-                !_answered) {
+            } else if (key == LogicalKeyboardKey.enter && !_answered) {
               _selectAnswer(_selectedIndex ?? -1);
             } else if (key == LogicalKeyboardKey.escape) {
               _togglePause();
@@ -702,6 +694,30 @@ class _ScienceGameState extends State<ScienceGame>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildQuizChip(
+                icon: Icons.auto_awesome_rounded,
+                label: 'Focus mode',
+                color: widget.themeColor,
+              ),
+              _buildQuizChip(
+                icon: Icons.biotech_rounded,
+                label: 'Q${_currentIndex + 1}/${_shuffledQuestions.length}',
+                color: Colors.indigo,
+              ),
+              if (_autoReadQuestions)
+                _buildQuizChip(
+                  icon: Icons.record_voice_over,
+                  label: 'Read aloud',
+                  color: Colors.teal,
+                ),
+            ],
+          ),
+          SizedBox(height: isCompact ? 14 : 16),
           // Q number chip
           Align(
             alignment: Alignment.centerLeft,
@@ -843,9 +859,12 @@ class _ScienceGameState extends State<ScienceGame>
                 decoration: BoxDecoration(
                   color: widget.themeColor.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(11),
-                  border: Border.all(color: widget.themeColor.withValues(alpha: 0.3), width: 1.5),
+                  border: Border.all(
+                      color: widget.themeColor.withValues(alpha: 0.3),
+                      width: 1.5),
                 ),
-                child: Image.asset('assets/images/scroll.PNG', fit: BoxFit.contain),
+                child: Image.asset('assets/images/scroll.PNG',
+                    fit: BoxFit.contain),
               ),
             ),
           ),
@@ -862,11 +881,14 @@ class _ScienceGameState extends State<ScienceGame>
                 decoration: BoxDecoration(
                   color: widget.themeColor.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(11),
-                  border: Border.all(color: widget.themeColor.withValues(alpha: 0.3), width: 1.5),
+                  border: Border.all(
+                      color: widget.themeColor.withValues(alpha: 0.3),
+                      width: 1.5),
                 ),
                 child: _gameController.state == GameState.paused
                     ? Icon(Icons.play_arrow, color: widget.themeColor, size: 22)
-                    : Image.asset('assets/images/questsandtasks.PNG', fit: BoxFit.contain),
+                    : Image.asset('assets/images/questsandtasks.PNG',
+                        fit: BoxFit.contain),
               ),
             ),
           ),
@@ -913,6 +935,16 @@ class _ScienceGameState extends State<ScienceGame>
                     color: Colors.grey[700],
                     fontWeight: FontWeight.w600,
                     fontSize: isCompact ? 10 : 12,
+                  ),
+                ),
+                Text(
+                  'Run experiments and keep your streak alive',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w600,
+                    fontSize: isCompact ? 9 : 10,
                   ),
                 ),
               ],
@@ -977,6 +1009,30 @@ class _ScienceGameState extends State<ScienceGame>
   }
 
   Widget _buildFeedback(bool isCorrect) {
+    final correctMessages = [
+      'Correct!',
+      'Great experiment! 🧪',
+      'Excellent science thinking! 🔬',
+      'Discovery confirmed! ✅',
+    ];
+    final retryMessages = [
+      'Nice try!',
+      'Close one. Recheck the evidence.',
+      'Good attempt. Test another idea!',
+      'Keep experimenting. You are improving.',
+    ];
+    final streakMessages = [
+      'Streak x${_gameController.streak}!!',
+      'Science streak x${_gameController.streak}! 🔥',
+    ];
+
+    final message = isCorrect
+        ? (_gameController.streak > 2
+            ? streakMessages[_currentIndex % streakMessages.length]
+            : correctMessages[_currentIndex % correctMessages.length])
+        : retryMessages[_currentIndex % retryMessages.length];
+    final pts = _gameController.lastPointsEarned;
+
     return ScaleTransition(
       scale: _feedbackAnimation,
       child: Container(
@@ -1008,17 +1064,22 @@ class _ScienceGameState extends State<ScienceGame>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isCorrect
-                        ? (_gameController.streak > 2
-                            ? 'Streak x${_gameController.streak}!!'
-                            : 'Correct!')
-                        : 'Nice try!',
+                    message,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  if (isCorrect)
+                    Text(
+                      '+$pts pts',
+                      style: const TextStyle(
+                        color: Color(0xFFFFF1A8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   if (_aiExplanationText != null) ...[
                     const SizedBox(height: 4),
                     Text(
@@ -1036,6 +1097,36 @@ class _ScienceGameState extends State<ScienceGame>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildQuizChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -20,18 +20,25 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Animal Classification',
       hint: 'Mammals have fur or hair and feed their babies milk.',
-      explanation: 'A koala is a mammal — it has fur and raises its joey in a pouch.',
+      explanation:
+          'A koala is a mammal — it has fur and raises its joey in a pouch.',
     ),
     ScienceQuestion(
       id: 'bank_bio_002',
       skillId: 'skill_biological_sciences',
       question: 'What do all living things need to survive? 💧',
-      options: ['Only sunlight', 'Water and food', 'Only air', 'Only sunlight and air'],
+      options: [
+        'Only sunlight',
+        'Water and food',
+        'Only air',
+        'Only sunlight and air'
+      ],
       correctIndex: 1,
       difficulty: 1,
       topic: 'Needs of Living Things',
       hint: 'Think about what you need every day.',
-      explanation: 'All living things need water and food (energy) to survive, plus air for most animals.',
+      explanation:
+          'All living things need water and food (energy) to survive, plus air for most animals.',
     ),
     ScienceQuestion(
       id: 'bank_bio_003',
@@ -42,7 +49,8 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Living and Non-living',
       hint: 'Living things grow and move on their own.',
-      explanation: 'A river stone is not alive — it does not grow, breathe, or reproduce.',
+      explanation:
+          'A river stone is not alive — it does not grow, breathe, or reproduce.',
     ),
     ScienceQuestion(
       id: 'bank_bio_004',
@@ -53,7 +61,8 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Habitats',
       hint: 'Polar bears have thick white fur to stay warm.',
-      explanation: 'Polar bears live in the Arctic — they are adapted to survive on snow and ice.',
+      explanation:
+          'Polar bears live in the Arctic — they are adapted to survive on snow and ice.',
     ),
     ScienceQuestion(
       id: 'bank_bio_005',
@@ -64,18 +73,25 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Animal Features',
       hint: 'Think of what you can see shining on a fish.',
-      explanation: 'Fish have scales — thin, overlapping plates that protect their bodies.',
+      explanation:
+          'Fish have scales — thin, overlapping plates that protect their bodies.',
     ),
     ScienceQuestion(
       id: 'bank_bio_006',
       skillId: 'skill_biological_sciences',
       question: 'What is the job of roots on a plant? 🌿',
-      options: ['Make seeds', 'Absorb water and nutrients', 'Attract insects', 'Make food from sunlight'],
+      options: [
+        'Make seeds',
+        'Absorb water and nutrients',
+        'Attract insects',
+        'Make food from sunlight'
+      ],
       correctIndex: 1,
       difficulty: 1,
       topic: 'Plant Parts',
       hint: 'Roots grow underground — what do they collect there?',
-      explanation: 'Roots anchor the plant in soil and absorb water and minerals the plant needs to grow.',
+      explanation:
+          'Roots anchor the plant in soil and absorb water and minerals the plant needs to grow.',
     ),
     ScienceQuestion(
       id: 'bank_bio_007',
@@ -86,7 +102,8 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Animal Classification',
       hint: 'All insects share the same number of legs.',
-      explanation: 'All insects have 6 legs — that\'s one of the main features of insects.',
+      explanation:
+          'All insects have 6 legs — that\'s one of the main features of insects.',
     ),
     ScienceQuestion(
       id: 'bank_bio_008',
@@ -97,7 +114,8 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Animal Classification',
       hint: 'Reptiles have scaly skin and are cold-blooded.',
-      explanation: 'A lizard is a reptile. Reptiles have scaly skin and lay eggs on land.',
+      explanation:
+          'A lizard is a reptile. Reptiles have scaly skin and lay eggs on land.',
     ),
 
     // ── BIOLOGY: difficulty 2 ─────────────────────────────────────────────────
@@ -105,24 +123,28 @@ class ScienceQuestionBank {
     ScienceQuestion(
       id: 'bank_bio_009',
       skillId: 'skill_biological_sciences',
-      question: 'In a food chain, what is an animal called that ONLY eats plants?',
+      question:
+          'In a food chain, what is an animal called that ONLY eats plants?',
       options: ['Carnivore', 'Omnivore', 'Herbivore', 'Decomposer'],
       correctIndex: 2,
       difficulty: 2,
       topic: 'Food Chains',
       hint: '"Herb" means plant — which word starts with herb?',
-      explanation: 'A herbivore only eats plants. Cows, rabbits, and caterpillars are herbivores.',
+      explanation:
+          'A herbivore only eats plants. Cows, rabbits, and caterpillars are herbivores.',
     ),
     ScienceQuestion(
       id: 'bank_bio_010',
       skillId: 'skill_biological_sciences',
-      question: 'What process do plants use to make their own food using sunlight?',
+      question:
+          'What process do plants use to make their own food using sunlight?',
       options: ['Respiration', 'Photosynthesis', 'Digestion', 'Evaporation'],
       correctIndex: 1,
       difficulty: 2,
       topic: 'Photosynthesis',
       hint: '"Photo" means light — which process uses light?',
-      explanation: 'Photosynthesis: plants use sunlight, water, and carbon dioxide to make glucose (sugar).',
+      explanation:
+          'Photosynthesis: plants use sunlight, water, and carbon dioxide to make glucose (sugar).',
     ),
     ScienceQuestion(
       id: 'bank_bio_011',
@@ -132,8 +154,10 @@ class ScienceQuestionBank {
       correctIndex: 2,
       difficulty: 2,
       topic: 'Food Chains',
-      hint: 'The grass makes its own food — what are things called that make food?',
-      explanation: 'Plants are producers — they produce (make) their own food using sunlight.',
+      hint:
+          'The grass makes its own food — what are things called that make food?',
+      explanation:
+          'Plants are producers — they produce (make) their own food using sunlight.',
     ),
     ScienceQuestion(
       id: 'bank_bio_012',
@@ -144,29 +168,39 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Human Body',
       hint: 'You can feel it beating in your chest.',
-      explanation: 'The heart pumps blood around the body, delivering oxygen and nutrients to every cell.',
+      explanation:
+          'The heart pumps blood around the body, delivering oxygen and nutrients to every cell.',
     ),
     ScienceQuestion(
       id: 'bank_bio_013',
       skillId: 'skill_biological_sciences',
       question: 'What do lungs do? 🫁',
-      options: ['Pump blood', 'Digest food', 'Take in oxygen from air', 'Send signals to muscles'],
+      options: [
+        'Pump blood',
+        'Digest food',
+        'Take in oxygen from air',
+        'Send signals to muscles'
+      ],
       correctIndex: 2,
       difficulty: 2,
       topic: 'Human Body',
       hint: 'Lungs are in your chest and help you breathe.',
-      explanation: 'Lungs breathe in air and extract oxygen, which the blood carries to all cells.',
+      explanation:
+          'Lungs breathe in air and extract oxygen, which the blood carries to all cells.',
     ),
     ScienceQuestion(
       id: 'bank_bio_014',
       skillId: 'skill_biological_sciences',
-      question: 'During metamorphosis, what stage does a butterfly spend inside a chrysalis?',
+      question:
+          'During metamorphosis, what stage does a butterfly spend inside a chrysalis?',
       options: ['Larva (caterpillar)', 'Egg', 'Pupa', 'Adult'],
       correctIndex: 2,
       difficulty: 2,
       topic: 'Life Cycles',
-      hint: 'The chrysalis is the case — what stage is the butterfly IN the case?',
-      explanation: 'Inside the chrysalis, the caterpillar is in the PUPA stage, transforming into a butterfly.',
+      hint:
+          'The chrysalis is the case — what stage is the butterfly IN the case?',
+      explanation:
+          'Inside the chrysalis, the caterpillar is in the PUPA stage, transforming into a butterfly.',
     ),
     ScienceQuestion(
       id: 'bank_bio_015',
@@ -177,18 +211,26 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Plants',
       hint: 'The stamen is the male part of the flower.',
-      explanation: 'The stamen (male part) produces pollen. Pollen is carried to other flowers for reproduction.',
+      explanation:
+          'The stamen (male part) produces pollen. Pollen is carried to other flowers for reproduction.',
     ),
     ScienceQuestion(
       id: 'bank_bio_016',
       skillId: 'skill_biological_sciences',
       question: 'What is a habitat?',
-      options: ['An animal\'s diet', 'The natural home of an animal or plant', 'How an animal moves', 'An animal\'s colour pattern'],
+      options: [
+        'An animal\'s diet',
+        'The natural home of an animal or plant',
+        'How an animal moves',
+        'An animal\'s colour pattern'
+      ],
       correctIndex: 1,
       difficulty: 2,
       topic: 'Habitats',
-      hint: '"Hab" comes from Latin meaning "to dwell" — where an animal dwells.',
-      explanation: 'A habitat is the natural environment where an animal or plant lives, finding food and shelter.',
+      hint:
+          '"Hab" comes from Latin meaning "to dwell" — where an animal dwells.',
+      explanation:
+          'A habitat is the natural environment where an animal or plant lives, finding food and shelter.',
     ),
     ScienceQuestion(
       id: 'bank_bio_017',
@@ -199,7 +241,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Animal Classification',
       hint: 'Amphibians live in water AND on land.',
-      explanation: 'Frogs are amphibians — they start life in water as tadpoles then live on land as adults.',
+      explanation:
+          'Frogs are amphibians — they start life in water as tadpoles then live on land as adults.',
     ),
 
     // ── BIOLOGY: difficulty 3 ─────────────────────────────────────────────────
@@ -207,7 +250,8 @@ class ScienceQuestionBank {
     ScienceQuestion(
       id: 'bank_bio_018',
       skillId: 'skill_biological_sciences',
-      question: 'In a food chain, what happens if all the rabbits disappeared from: Grass → Rabbit → Fox → Eagle?',
+      question:
+          'In a food chain, what happens if all the rabbits disappeared from: Grass → Rabbit → Fox → Eagle?',
       options: [
         'Eagles would get more food',
         'Grass would die out quickly',
@@ -218,12 +262,14 @@ class ScienceQuestionBank {
       difficulty: 3,
       topic: 'Ecosystems',
       hint: 'What do foxes eat in this chain?',
-      explanation: 'Foxes depend on rabbits for food. Fewer rabbits means foxes have less to eat and may decline in numbers.',
+      explanation:
+          'Foxes depend on rabbits for food. Fewer rabbits means foxes have less to eat and may decline in numbers.',
     ),
     ScienceQuestion(
       id: 'bank_bio_019',
       skillId: 'skill_biological_sciences',
-      question: 'What do decomposers like fungi and bacteria do in an ecosystem?',
+      question:
+          'What do decomposers like fungi and bacteria do in an ecosystem?',
       options: [
         'Hunt prey',
         'Photosynthesize like plants',
@@ -234,18 +280,21 @@ class ScienceQuestionBank {
       difficulty: 3,
       topic: 'Ecosystems',
       hint: '"De-compose" means to break apart.',
-      explanation: 'Decomposers break down dead plants and animals, returning nutrients to the soil for new plants to use.',
+      explanation:
+          'Decomposers break down dead plants and animals, returning nutrients to the soil for new plants to use.',
     ),
     ScienceQuestion(
       id: 'bank_bio_020',
       skillId: 'skill_biological_sciences',
-      question: 'A cactus has thick stems to store water and spines instead of leaves. What is this an example of?',
+      question:
+          'A cactus has thick stems to store water and spines instead of leaves. What is this an example of?',
       options: ['Migration', 'Adaptation', 'Reproduction', 'Classification'],
       correctIndex: 1,
       difficulty: 3,
       topic: 'Adaptation',
       hint: 'The cactus\'s features SUIT the desert environment.',
-      explanation: 'Adaptation is when a species develops features over time that help it survive in its environment.',
+      explanation:
+          'Adaptation is when a species develops features over time that help it survive in its environment.',
     ),
     ScienceQuestion(
       id: 'bank_bio_021',
@@ -261,7 +310,8 @@ class ScienceQuestionBank {
       difficulty: 3,
       topic: 'Ecosystems',
       hint: 'Bees collect nectar. Pollen sticks to their bodies as they move.',
-      explanation: 'Bees collect nectar for honey. As they move between flowers, pollen sticks to them, pollinating other flowers.',
+      explanation:
+          'Bees collect nectar for honey. As they move between flowers, pollen sticks to them, pollinating other flowers.',
     ),
     ScienceQuestion(
       id: 'bank_bio_022',
@@ -277,18 +327,25 @@ class ScienceQuestionBank {
       difficulty: 3,
       topic: 'Plants',
       hint: 'Flowers are brightly coloured for a reason.',
-      explanation: 'Flowers attract insects and animals that carry pollen, enabling fertilisation and seed production.',
+      explanation:
+          'Flowers attract insects and animals that carry pollen, enabling fertilisation and seed production.',
     ),
     ScienceQuestion(
       id: 'bank_bio_023',
       skillId: 'skill_biological_sciences',
       question: 'Which body system controls breathing and speaking?',
-      options: ['Circulatory system', 'Digestive system', 'Respiratory system', 'Skeletal system'],
+      options: [
+        'Circulatory system',
+        'Digestive system',
+        'Respiratory system',
+        'Skeletal system'
+      ],
       correctIndex: 2,
       difficulty: 3,
       topic: 'Human Body',
       hint: 'Think about respiration — what verb is inside that word?',
-      explanation: 'The respiratory system (lungs, windpipe, diaphragm) controls breathing and the intake of oxygen.',
+      explanation:
+          'The respiratory system (lungs, windpipe, diaphragm) controls breathing and the intake of oxygen.',
     ),
 
     // ── BIOLOGY: difficulty 4–5 ────────────────────────────────────────────────
@@ -296,7 +353,8 @@ class ScienceQuestionBank {
     ScienceQuestion(
       id: 'bank_bio_024',
       skillId: 'skill_biological_sciences',
-      question: 'A rain forest is cleared for farming. How would this MOST LIKELY affect food chains in the area?',
+      question:
+          'A rain forest is cleared for farming. How would this MOST LIKELY affect food chains in the area?',
       options: [
         'Food chains would become stronger',
         'Organisms would adapt instantly',
@@ -307,12 +365,14 @@ class ScienceQuestionBank {
       difficulty: 4,
       topic: 'Ecosystems',
       hint: 'A food chain depends on every link. Remove the plants…',
-      explanation: 'Clearing a rainforest destroys habitats and removes producers (plants), causing food chains throughout the ecosystem to collapse.',
+      explanation:
+          'Clearing a rainforest destroys habitats and removes producers (plants), causing food chains throughout the ecosystem to collapse.',
     ),
     ScienceQuestion(
       id: 'bank_bio_025',
       skillId: 'skill_biological_sciences',
-      question: 'Sharks in the open ocean rarely move into freshwater rivers. What BEST explains this?',
+      question:
+          'Sharks in the open ocean rarely move into freshwater rivers. What BEST explains this?',
       options: [
         'They are afraid of fresh water',
         'Their bodies are adapted to saltwater and can\'t easily regulate salt levels in freshwater',
@@ -322,8 +382,10 @@ class ScienceQuestionBank {
       correctIndex: 1,
       difficulty: 5,
       topic: 'Adaptation',
-      hint: 'Their bodies maintain a certain salt balance — called osmoregulation.',
-      explanation: 'Marine sharks are adapted to regulate salt from seawater. In fresh water, their osmoregulation system is overwhelmed.',
+      hint:
+          'Their bodies maintain a certain salt balance — called osmoregulation.',
+      explanation:
+          'Marine sharks are adapted to regulate salt from seawater. In fresh water, their osmoregulation system is overwhelmed.',
     ),
 
     // ── EARTH & SPACE: difficulty 1 ───────────────────────────────────────────
@@ -342,7 +404,8 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Earth and Space',
       hint: 'Think of the Earth as a spinning ball.',
-      explanation: 'Earth spins (rotates) on its axis once every 24 hours. The side facing the sun has day; the other side has night.',
+      explanation:
+          'Earth spins (rotates) on its axis once every 24 hours. The side facing the sun has day; the other side has night.',
     ),
     ScienceQuestion(
       id: 'bank_earth_002',
@@ -353,7 +416,8 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Seasons',
       hint: 'School holidays in January fall in which season?',
-      explanation: 'Summer is Australia\'s warmest season. In Australia, summer runs from December to February.',
+      explanation:
+          'Summer is Australia\'s warmest season. In Australia, summer runs from December to February.',
     ),
     ScienceQuestion(
       id: 'bank_earth_003',
@@ -364,7 +428,8 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Sun',
       hint: 'It rises in the east every morning.',
-      explanation: 'The Sun is our nearest star. It provides light and warmth that makes life on Earth possible.',
+      explanation:
+          'The Sun is our nearest star. It provides light and warmth that makes life on Earth possible.',
     ),
     ScienceQuestion(
       id: 'bank_earth_004',
@@ -375,18 +440,25 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Solar System',
       hint: 'The planet with oceans and lots of life!',
-      explanation: 'We live on Earth, the third planet from the Sun and the only planet known to support life.',
+      explanation:
+          'We live on Earth, the third planet from the Sun and the only planet known to support life.',
     ),
     ScienceQuestion(
       id: 'bank_earth_005',
       skillId: 'skill_earth_sciences',
       question: 'What is a cloud made of? ☁️',
-      options: ['Cotton', 'Smoke', 'Tiny water droplets or ice crystals', 'Dust particles'],
+      options: [
+        'Cotton',
+        'Smoke',
+        'Tiny water droplets or ice crystals',
+        'Dust particles'
+      ],
       correctIndex: 2,
       difficulty: 1,
       topic: 'Weather',
       hint: 'Clouds are part of the water cycle.',
-      explanation: 'Clouds form when water vapour in the air cools and condenses into tiny water droplets or ice crystals.',
+      explanation:
+          'Clouds form when water vapour in the air cools and condenses into tiny water droplets or ice crystals.',
     ),
 
     // ── EARTH & SPACE: difficulty 2 ───────────────────────────────────────────
@@ -400,18 +472,22 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Water Cycle',
       hint: '"Evaporate" sounds like "vapour".',
-      explanation: 'Evaporation happens when the sun\'s heat turns liquid water (oceans, lakes) into water vapour that rises into the sky.',
+      explanation:
+          'Evaporation happens when the sun\'s heat turns liquid water (oceans, lakes) into water vapour that rises into the sky.',
     ),
     ScienceQuestion(
       id: 'bank_earth_007',
       skillId: 'skill_earth_sciences',
-      question: 'Put the water cycle steps in order: Evaporation → ? → Precipitation',
+      question:
+          'Put the water cycle steps in order: Evaporation → ? → Precipitation',
       options: ['Runoff', 'Condensation', 'Absorption', 'Freezing'],
       correctIndex: 1,
       difficulty: 2,
       topic: 'Water Cycle',
-      hint: 'Water vapour cools down and turns back into liquid — what is that called?',
-      explanation: 'Condensation is when water vapour cools and turns back into water droplets, forming clouds.',
+      hint:
+          'Water vapour cools down and turns back into liquid — what is that called?',
+      explanation:
+          'Condensation is when water vapour cools and turns back into water droplets, forming clouds.',
     ),
     ScienceQuestion(
       id: 'bank_earth_008',
@@ -422,7 +498,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Solar System',
       hint: 'Pluto was reclassified as a dwarf planet in 2006.',
-      explanation: 'There are 8 planets: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune.',
+      explanation:
+          'There are 8 planets: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune.',
     ),
     ScienceQuestion(
       id: 'bank_earth_009',
@@ -433,7 +510,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Solar System',
       hint: 'It\'s the smallest planet too.',
-      explanation: 'Mercury is the closest planet to the Sun. It\'s also the smallest planet in our solar system.',
+      explanation:
+          'Mercury is the closest planet to the Sun. It\'s also the smallest planet in our solar system.',
     ),
     ScienceQuestion(
       id: 'bank_earth_010',
@@ -449,7 +527,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Light and Atmosphere',
       hint: 'Different colours of light scatter differently in the atmosphere.',
-      explanation: 'When sunlight enters the atmosphere, blue light (shorter wavelength) scatters in all directions — we see this scattered blue light.',
+      explanation:
+          'When sunlight enters the atmosphere, blue light (shorter wavelength) scatters in all directions — we see this scattered blue light.',
     ),
     ScienceQuestion(
       id: 'bank_earth_011',
@@ -465,7 +544,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Seasons',
       hint: 'Earth leans at an angle — this tilt matters.',
-      explanation: 'Earth\'s axis is tilted 23.5°. As Earth orbits the Sun, the tilt causes different hemispheres to receive more direct sunlight at different times.',
+      explanation:
+          'Earth\'s axis is tilted 23.5°. As Earth orbits the Sun, the tilt causes different hemispheres to receive more direct sunlight at different times.',
     ),
     ScienceQuestion(
       id: 'bank_earth_012',
@@ -476,7 +556,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Rocks and Minerals',
       hint: '"Ignite" means to set on fire — magma is very hot.',
-      explanation: 'Igneous rocks form when molten rock (magma or lava) cools and solidifies. Basalt and granite are examples.',
+      explanation:
+          'Igneous rocks form when molten rock (magma or lava) cools and solidifies. Basalt and granite are examples.',
     ),
     ScienceQuestion(
       id: 'bank_earth_013',
@@ -487,7 +568,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Earth and Space',
       hint: 'That\'s why we have a calendar year!',
-      explanation: 'Earth takes approximately 365.25 days (one year) to complete one full orbit around the Sun.',
+      explanation:
+          'Earth takes approximately 365.25 days (one year) to complete one full orbit around the Sun.',
     ),
 
     // ── EARTH & SPACE: difficulty 3–4 ─────────────────────────────────────────
@@ -505,8 +587,10 @@ class ScienceQuestionBank {
       correctIndex: 1,
       difficulty: 3,
       topic: 'Moon',
-      hint: 'The Moon\'s rotation and orbit periods happen to be the same length.',
-      explanation: 'The Moon\'s rotation period equals its orbital period around Earth (both ~27 days), so the same face always points at us — this is called tidal locking.',
+      hint:
+          'The Moon\'s rotation and orbit periods happen to be the same length.',
+      explanation:
+          'The Moon\'s rotation period equals its orbital period around Earth (both ~27 days), so the same face always points at us — this is called tidal locking.',
     ),
     ScienceQuestion(
       id: 'bank_earth_015',
@@ -522,7 +606,8 @@ class ScienceQuestionBank {
       difficulty: 3,
       topic: 'Fossils',
       hint: 'They show us what lived millions of years ago.',
-      explanation: 'Fossils are preserved remains (bones, shells, imprints) of dead organisms embedded in rock over millions of years.',
+      explanation:
+          'Fossils are preserved remains (bones, shells, imprints) of dead organisms embedded in rock over millions of years.',
     ),
     ScienceQuestion(
       id: 'bank_earth_016',
@@ -538,7 +623,8 @@ class ScienceQuestionBank {
       difficulty: 3,
       topic: 'Natural Events',
       hint: 'Earth\'s surface is made of large moving sections.',
-      explanation: 'Earth\'s crust is made of large tectonic plates. When they suddenly slip past each other, energy is released as seismic waves — an earthquake.',
+      explanation:
+          'Earth\'s crust is made of large tectonic plates. When they suddenly slip past each other, energy is released as seismic waves — an earthquake.',
     ),
     ScienceQuestion(
       id: 'bank_earth_017',
@@ -553,8 +639,10 @@ class ScienceQuestionBank {
       correctIndex: 1,
       difficulty: 4,
       topic: 'Solar System',
-      hint: 'The "-ite" suffix often means a mineral or rock on Earth\'s surface.',
-      explanation: 'A meteor is a space rock burning in the atmosphere (shooting star). A meteorite is one that has survived and landed on Earth.',
+      hint:
+          'The "-ite" suffix often means a mineral or rock on Earth\'s surface.',
+      explanation:
+          'A meteor is a space rock burning in the atmosphere (shooting star). A meteorite is one that has survived and landed on Earth.',
     ),
 
     // ── PHYSICAL SCIENCE: difficulty 1–2 ──────────────────────────────────────
@@ -568,7 +656,8 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Forces',
       hint: 'You use force every time you open a door.',
-      explanation: 'A force is a push or pull that can change an object\'s speed, direction, or shape.',
+      explanation:
+          'A force is a push or pull that can change an object\'s speed, direction, or shape.',
     ),
     ScienceQuestion(
       id: 'bank_phys_002',
@@ -579,7 +668,8 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Materials',
       hint: 'Water cannot pass through this material.',
-      explanation: 'Plastic is waterproof — water cannot soak through it, making it ideal for rain gear.',
+      explanation:
+          'Plastic is waterproof — water cannot soak through it, making it ideal for rain gear.',
     ),
     ScienceQuestion(
       id: 'bank_phys_003',
@@ -590,18 +680,25 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Magnetism',
       hint: 'Not all metals are attracted to magnets.',
-      explanation: 'Magnets attract iron and steel (and a few other metals like nickel and cobalt), not all metals.',
+      explanation:
+          'Magnets attract iron and steel (and a few other metals like nickel and cobalt), not all metals.',
     ),
     ScienceQuestion(
       id: 'bank_phys_004',
       skillId: 'skill_physical_sciences',
       question: 'What happens to most solids when they are heated? 🔥',
-      options: ['They shrink', 'They turn into gas immediately', 'They melt into liquid', 'Nothing happens'],
+      options: [
+        'They shrink',
+        'They turn into gas immediately',
+        'They melt into liquid',
+        'Nothing happens'
+      ],
       correctIndex: 2,
       difficulty: 1,
       topic: 'States of Matter',
       hint: 'Think of ice heating up.',
-      explanation: 'When enough heat is applied, most solids melt and become liquid (e.g. ice → water, wax → liquid wax).',
+      explanation:
+          'When enough heat is applied, most solids melt and become liquid (e.g. ice → water, wax → liquid wax).',
     ),
     ScienceQuestion(
       id: 'bank_phys_005',
@@ -612,12 +709,14 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Electricity',
       hint: 'Electrical wires are made of metal.',
-      explanation: 'Copper is a metal and a good conductor — electricity flows easily through it. That\'s why wires are made from copper.',
+      explanation:
+          'Copper is a metal and a good conductor — electricity flows easily through it. That\'s why wires are made from copper.',
     ),
     ScienceQuestion(
       id: 'bank_phys_006',
       skillId: 'skill_physical_sciences',
-      question: 'Why does a ball slow down after being rolled along the ground?',
+      question:
+          'Why does a ball slow down after being rolled along the ground?',
       options: [
         'Gravity pushes it downward',
         'Friction between the ball and ground removes energy',
@@ -628,7 +727,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Forces',
       hint: 'Think about what force opposes motion.',
-      explanation: 'Friction is a force between surfaces that opposes motion. As the ball rolls, friction gradually removes its kinetic energy and slows it down.',
+      explanation:
+          'Friction is a force between surfaces that opposes motion. As the ball rolls, friction gradually removes its kinetic energy and slows it down.',
     ),
     ScienceQuestion(
       id: 'bank_phys_007',
@@ -639,7 +739,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Light',
       hint: 'A torch beam doesn\'t curve around corners.',
-      explanation: 'Light travels in straight lines — that\'s why shadows have sharp edges and you can\'t see around corners.',
+      explanation:
+          'Light travels in straight lines — that\'s why shadows have sharp edges and you can\'t see around corners.',
     ),
     ScienceQuestion(
       id: 'bank_phys_008',
@@ -655,7 +756,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Sound',
       hint: 'Touch a guitar string after plucking it — what do you feel?',
-      explanation: 'Sound is created by vibrations. These vibrations travel through air (or other materials) as waves and reach our ears.',
+      explanation:
+          'Sound is created by vibrations. These vibrations travel through air (or other materials) as waves and reach our ears.',
     ),
     ScienceQuestion(
       id: 'bank_phys_009',
@@ -666,7 +768,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Forces',
       hint: 'We measure it in Newtons.',
-      explanation: 'Weight is the force of gravity pulling on an object\'s mass. Mass is the amount of matter; weight depends on the gravitational pull.',
+      explanation:
+          'Weight is the force of gravity pulling on an object\'s mass. Mass is the amount of matter; weight depends on the gravitational pull.',
     ),
     ScienceQuestion(
       id: 'bank_phys_010',
@@ -682,7 +785,8 @@ class ScienceQuestionBank {
       difficulty: 2,
       topic: 'Light',
       hint: 'A prism separates white light into its components.',
-      explanation: 'White light is made of all the rainbow colours (red to violet). A prism bends each colour at a different angle, splitting them apart.',
+      explanation:
+          'White light is made of all the rainbow colours (red to violet). A prism bends each colour at a different angle, splitting them apart.',
     ),
 
     // ── PHYSICAL SCIENCE: difficulty 3–5 ──────────────────────────────────────
@@ -690,13 +794,16 @@ class ScienceQuestionBank {
     ScienceQuestion(
       id: 'bank_phys_011',
       skillId: 'skill_physical_sciences',
-      question: 'A lever has its pivot (fulcrum) in the MIDDLE. What type of simple machine is a seesaw?',
+      question:
+          'A lever has its pivot (fulcrum) in the MIDDLE. What type of simple machine is a seesaw?',
       options: ['Inclined plane', 'Pulley', 'First-class lever', 'Wedge'],
       correctIndex: 2,
       difficulty: 3,
       topic: 'Simple Machines',
-      hint: 'When the fulcrum is between the load and effort, it\'s a first-class lever.',
-      explanation: 'A seesaw is a first-class lever — the fulcrum (pivot) sits between the applied force (effort) and the load.',
+      hint:
+          'When the fulcrum is between the load and effort, it\'s a first-class lever.',
+      explanation:
+          'A seesaw is a first-class lever — the fulcrum (pivot) sits between the applied force (effort) and the load.',
     ),
     ScienceQuestion(
       id: 'bank_phys_012',
@@ -706,8 +813,10 @@ class ScienceQuestionBank {
       correctIndex: 2,
       difficulty: 3,
       topic: 'States of Matter',
-      hint: 'This state keeps its shape whether you put it in a cup or leave it on a table.',
-      explanation: 'Solids have both a fixed shape and fixed volume. Liquids have fixed volume but no fixed shape. Gases have neither.',
+      hint:
+          'This state keeps its shape whether you put it in a cup or leave it on a table.',
+      explanation:
+          'Solids have both a fixed shape and fixed volume. Liquids have fixed volume but no fixed shape. Gases have neither.',
     ),
     ScienceQuestion(
       id: 'bank_phys_013',
@@ -723,12 +832,14 @@ class ScienceQuestionBank {
       difficulty: 4,
       topic: 'Energy',
       hint: 'Solar panels use the photovoltaic effect.',
-      explanation: 'Solar panels contain photovoltaic cells that convert sunlight (photons) directly into electrical energy (electrons).',
+      explanation:
+          'Solar panels contain photovoltaic cells that convert sunlight (photons) directly into electrical energy (electrons).',
     ),
     ScienceQuestion(
       id: 'bank_phys_014',
       skillId: 'skill_physical_sciences',
-      question: 'An astronaut on the Moon weighs LESS than on Earth but has the SAME mass. Why?',
+      question:
+          'An astronaut on the Moon weighs LESS than on Earth but has the SAME mass. Why?',
       options: [
         'The Moon has no air',
         'The Moon is smaller and has weaker gravity',
@@ -739,12 +850,14 @@ class ScienceQuestionBank {
       difficulty: 4,
       topic: 'Forces',
       hint: 'Weight = mass × gravity. The Moon\'s gravity is 1/6 of Earth\'s.',
-      explanation: 'Mass is the amount of matter — it never changes. Weight depends on gravity. The Moon has weaker gravity, so the same mass weighs less there.',
+      explanation:
+          'Mass is the amount of matter — it never changes. Weight depends on gravity. The Moon has weaker gravity, so the same mass weighs less there.',
     ),
     ScienceQuestion(
       id: 'bank_phys_015',
       skillId: 'skill_physical_sciences',
-      question: 'In a hydroelectric power station, what energy conversions take place?',
+      question:
+          'In a hydroelectric power station, what energy conversions take place?',
       options: [
         'Chemical → electrical',
         'Solar → kinetic → electrical',
@@ -754,8 +867,10 @@ class ScienceQuestionBank {
       correctIndex: 2,
       difficulty: 5,
       topic: 'Energy',
-      hint: 'Water falls (gravity), spins a turbine (kinetic), then a generator makes electricity.',
-      explanation: 'Water at height has gravitational potential energy. Falling converts it to kinetic energy (movement). A turbine+generator converts that to electrical energy.',
+      hint:
+          'Water falls (gravity), spins a turbine (kinetic), then a generator makes electricity.',
+      explanation:
+          'Water at height has gravitational potential energy. Falling converts it to kinetic energy (movement). A turbine+generator converts that to electrical energy.',
     ),
 
     // ── WEATHER & ENVIRONMENT: difficulty 1–3 ─────────────────────────────────
@@ -769,7 +884,8 @@ class ScienceQuestionBank {
       difficulty: 1,
       topic: 'Weather',
       hint: 'It has mercury or coloured liquid inside a glass tube.',
-      explanation: 'A thermometer measures temperature. In Celsius (°C), water freezes at 0° and boils at 100°.',
+      explanation:
+          'A thermometer measures temperature. In Celsius (°C), water freezes at 0° and boils at 100°.',
     ),
     ScienceQuestion(
       id: 'bank_env_002',
@@ -784,8 +900,10 @@ class ScienceQuestionBank {
       correctIndex: 1,
       difficulty: 2,
       topic: 'Weather and Water Cycle',
-      hint: 'This is the part of the water cycle where water falls back to Earth.',
-      explanation: 'Precipitation is any form of water falling from clouds: rain, snow, hail, sleet, or drizzle.',
+      hint:
+          'This is the part of the water cycle where water falls back to Earth.',
+      explanation:
+          'Precipitation is any form of water falling from clouds: rain, snow, hail, sleet, or drizzle.',
     ),
     ScienceQuestion(
       id: 'bank_env_003',
@@ -801,7 +919,8 @@ class ScienceQuestionBank {
       difficulty: 3,
       topic: 'Light and Weather',
       hint: 'Each water droplet acts like a tiny prism.',
-      explanation: 'Sunlight enters a raindrop, reflects inside, and refracts as it exits — separating white light into its spectrum of colours.',
+      explanation:
+          'Sunlight enters a raindrop, reflects inside, and refracts as it exits — separating white light into its spectrum of colours.',
     ),
     ScienceQuestion(
       id: 'bank_env_004',
@@ -817,7 +936,8 @@ class ScienceQuestionBank {
       difficulty: 3,
       topic: 'Environment',
       hint: 'Think about what sea turtles might mistake a plastic bag for.',
-      explanation: 'Marine animals like turtles and seabirds often mistake plastic for food. Ingesting plastic can cause internal injuries or blockages that kill them.',
+      explanation:
+          'Marine animals like turtles and seabirds often mistake plastic for food. Ingesting plastic can cause internal injuries or blockages that kill them.',
     ),
     ScienceQuestion(
       id: 'bank_env_005',
@@ -833,7 +953,8 @@ class ScienceQuestionBank {
       difficulty: 3,
       topic: 'Climate',
       hint: 'Some gases in the air act like a warm blanket around Earth.',
-      explanation: 'Greenhouse gases (CO₂, methane, water vapour) let sunlight in but trap some heat from escaping back to space, warming Earth\'s surface.',
+      explanation:
+          'Greenhouse gases (CO₂, methane, water vapour) let sunlight in but trap some heat from escaping back to space, warming Earth\'s surface.',
     ),
   ];
 

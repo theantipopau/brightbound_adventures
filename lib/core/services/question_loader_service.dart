@@ -7,7 +7,8 @@ class QuestionLoaderService {
 
   Future<NaplanQuestionSet> loadQuestions(String filename) async {
     try {
-      final String jsonString = await rootBundle.loadString('$_basePath/$filename');
+      final String jsonString =
+          await rootBundle.loadString('$_basePath/$filename');
       final Map<String, dynamic> jsonMap = json.decode(jsonString);
       return NaplanQuestionSet.fromJson(jsonMap);
     } catch (e) {

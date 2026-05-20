@@ -395,7 +395,11 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                     ),
                     const SizedBox(height: 24),
                     // Mini number pad
-                    ...[ ['1','2','3'], ['4','5','6'], ['7','8','9'] ].map((row) {
+                    ...[
+                      ['1', '2', '3'],
+                      ['4', '5', '6'],
+                      ['7', '8', '9']
+                    ].map((row) {
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: row.map((n) {
@@ -415,9 +419,11 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                                         confirmPin += n;
                                       }
                                     });
-                                    final updated = step == 0 ? newPin : confirmPin;
+                                    final updated =
+                                        step == 0 ? newPin : confirmPin;
                                     if (updated.length == 4) {
-                                      final messenger = ScaffoldMessenger.maybeOf(context);
+                                      final messenger =
+                                          ScaffoldMessenger.maybeOf(context);
                                       if (step == 0) {
                                         setDialogState(() => step = 1);
                                       } else {
@@ -426,7 +432,8 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                                           _savePin(newPin);
                                           messenger?.showSnackBar(
                                             const SnackBar(
-                                              content: Text('PIN changed successfully'),
+                                              content: Text(
+                                                  'PIN changed successfully'),
                                               backgroundColor: Colors.green,
                                             ),
                                           );
@@ -438,7 +445,8 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                                           });
                                           messenger?.showSnackBar(
                                             const SnackBar(
-                                              content: Text('PINs did not match — try again'),
+                                              content: Text(
+                                                  'PINs did not match — try again'),
                                               backgroundColor: Colors.red,
                                             ),
                                           );
@@ -451,7 +459,8 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                                   width: 60,
                                   height: 60,
                                   child: Center(
-                                    child: Text(n,
+                                    child: Text(
+                                      n,
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 24,
@@ -479,14 +488,21 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                               onTap: () {
                                 setDialogState(() {
                                   if (step == 0 && newPin.isNotEmpty) {
-                                    newPin = newPin.substring(0, newPin.length - 1);
-                                  } else if (step == 1 && confirmPin.isNotEmpty) {
-                                    confirmPin = confirmPin.substring(0, confirmPin.length - 1);
+                                    newPin =
+                                        newPin.substring(0, newPin.length - 1);
+                                  } else if (step == 1 &&
+                                      confirmPin.isNotEmpty) {
+                                    confirmPin = confirmPin.substring(
+                                        0, confirmPin.length - 1);
                                   }
                                 });
                               },
-                              child: const SizedBox(width: 60, height: 60,
-                                child: Center(child: Icon(Icons.backspace_outlined, color: Colors.white, size: 24))),
+                              child: const SizedBox(
+                                  width: 60,
+                                  height: 60,
+                                  child: Center(
+                                      child: Icon(Icons.backspace_outlined,
+                                          color: Colors.white, size: 24))),
                             ),
                           ),
                         ),
@@ -509,8 +525,15 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                                   });
                                 }
                               },
-                              child: const SizedBox(width: 60, height: 60,
-                                child: Center(child: Text('0', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)))),
+                              child: const SizedBox(
+                                  width: 60,
+                                  height: 60,
+                                  child: Center(
+                                      child: Text('0',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold)))),
                             ),
                           ),
                         ),
@@ -522,8 +545,12 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
                               onTap: () => Navigator.pop(dialogContext),
-                              child: const SizedBox(width: 60, height: 60,
-                                child: Center(child: Icon(Icons.close, color: Colors.white, size: 24))),
+                              child: const SizedBox(
+                                  width: 60,
+                                  height: 60,
+                                  child: Center(
+                                      child: Icon(Icons.close,
+                                          color: Colors.white, size: 24))),
                             ),
                           ),
                         ),
@@ -580,11 +607,15 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                   ],
                   flexibleSpace: FlexibleSpaceBar(
                     title: const Text('Parent Dashboard',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold)),
                     background: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.indigo.shade800, Colors.purple.shade600],
+                          colors: [
+                            Colors.indigo.shade800,
+                            Colors.purple.shade600
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -675,8 +706,9 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
   // ── Player Card ─────────────────────────────────────────────────────────
 
   Widget _buildPlayerCard(dynamic avatar, StreakService streakService) {
-    final xpProgress =
-        avatar.nextLevelXP > 0 ? avatar.experiencePoints / avatar.nextLevelXP : 0.0;
+    final xpProgress = avatar.nextLevelXP > 0
+        ? avatar.experiencePoints / avatar.nextLevelXP
+        : 0.0;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -948,8 +980,10 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
   // ── Skills overview donut ────────────────────────────────────────────────
 
   Widget _buildSkillsBreakdownCard(dynamic stats) {
-    final total =
-        stats.mastered + stats.practising + stats.introduced + stats.locked as int;
+    final total = stats.mastered +
+        stats.practising +
+        stats.introduced +
+        stats.locked as int;
     final pct = total > 0 ? (stats.mastered * 100 ~/ total) : 0;
 
     return Container(
@@ -996,7 +1030,8 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                 _legendRow(const Color(0xFF2196F3), 'Practising',
                     stats.practising as int),
                 const SizedBox(height: 6),
-                _legendRow(Colors.orange, 'Introduced', stats.introduced as int),
+                _legendRow(
+                    Colors.orange, 'Introduced', stats.introduced as int),
                 const SizedBox(height: 6),
                 _legendRow(Colors.grey.shade400, 'Locked', stats.locked as int),
               ],
@@ -1012,17 +1047,12 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
           Container(
               width: 11,
               height: 11,
-              decoration: BoxDecoration(
-                  color: color, shape: BoxShape.circle)),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 7),
-          Expanded(
-              child: Text(label,
-                  style: const TextStyle(fontSize: 12))),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 12))),
           Text('$count',
               style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                  fontSize: 12)),
+                  fontWeight: FontWeight.bold, color: color, fontSize: 12)),
         ],
       );
 
@@ -1124,8 +1154,8 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                       masteryProgress >= 1.0
                           ? '✅ Zone Mastered!'
                           : '${(masteryProgress * 100).toStringAsFixed(0)}% mastered',
-                      style: TextStyle(
-                          fontSize: 11, color: Colors.grey.shade500),
+                      style:
+                          TextStyle(fontSize: 11, color: Colors.grey.shade500),
                     ),
                     if (accuracy > 0)
                       Container(
@@ -1200,8 +1230,8 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
               decoration: BoxDecoration(
                 border: i < bottom5.length - 1
                     ? Border(
-                        bottom: BorderSide(
-                            color: Colors.grey.shade100, width: 1))
+                        bottom:
+                            BorderSide(color: Colors.grey.shade100, width: 1))
                     : null,
               ),
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -1219,8 +1249,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                                 fontWeight: FontWeight.w600, fontSize: 13)),
                         Text('${skill.attempts} session(s)',
                             style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey.shade500)),
+                                fontSize: 11, color: Colors.grey.shade500)),
                       ],
                     ),
                   ),
@@ -1315,15 +1344,13 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                     value: progress,
                     minHeight: 8,
                     backgroundColor: Colors.grey.shade200,
-                    valueColor:
-                        const AlwaysStoppedAnimation(Colors.amber),
+                    valueColor: const AlwaysStoppedAnimation(Colors.amber),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${(progress * 100).toStringAsFixed(0)}% complete',
-                  style: TextStyle(
-                      fontSize: 11, color: Colors.grey.shade500),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 ),
               ],
             ),

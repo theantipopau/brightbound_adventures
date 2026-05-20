@@ -10,17 +10,29 @@ class ScienceQuestGenerator {
   /// Map theme string to a skill ID understood by the question bank.
   static String _themeToSkillId(String theme) {
     final t = theme.toLowerCase();
-    if (t.contains('animal') || t.contains('living') || t.contains('plant') ||
-        t.contains('lifecycle') || t.contains('food') || t.contains('body')) {
+    if (t.contains('animal') ||
+        t.contains('living') ||
+        t.contains('plant') ||
+        t.contains('lifecycle') ||
+        t.contains('food') ||
+        t.contains('body')) {
       return 'skill_biological_sciences';
     }
-    if (t.contains('weather') || t.contains('season') || t.contains('solar') ||
-        t.contains('space') || t.contains('rock') || t.contains('water cycle') ||
+    if (t.contains('weather') ||
+        t.contains('season') ||
+        t.contains('solar') ||
+        t.contains('space') ||
+        t.contains('rock') ||
+        t.contains('water cycle') ||
         t.contains('earth')) {
       return 'skill_earth_sciences';
     }
-    if (t.contains('force') || t.contains('material') || t.contains('light') ||
-        t.contains('sound') || t.contains('energy') || t.contains('electric')) {
+    if (t.contains('force') ||
+        t.contains('material') ||
+        t.contains('light') ||
+        t.contains('sound') ||
+        t.contains('energy') ||
+        t.contains('electric')) {
       return 'skill_physical_sciences';
     }
     return ''; // all topics
@@ -40,17 +52,19 @@ class ScienceQuestGenerator {
       difficulty: difficulty,
       count: count ~/ 2,
     );
-    final aiConverted = aiRaw.map((aq) => ScienceQuestion(
-          id: 'ai_sci_${aq.question.hashCode.abs()}',
-          skillId: skillId.isEmpty ? 'skill_biological_sciences' : skillId,
-          question: aq.question,
-          options: aq.options,
-          correctIndex: aq.correctIndex,
-          difficulty: difficulty,
-          topic: 'AI Generated',
-          hint: aq.hint,
-          explanation: aq.explanation,
-        )).toList();
+    final aiConverted = aiRaw
+        .map((aq) => ScienceQuestion(
+              id: 'ai_sci_${aq.question.hashCode.abs()}',
+              skillId: skillId.isEmpty ? 'skill_biological_sciences' : skillId,
+              question: aq.question,
+              options: aq.options,
+              correctIndex: aq.correctIndex,
+              difficulty: difficulty,
+              topic: 'AI Generated',
+              hint: aq.hint,
+              explanation: aq.explanation,
+            ))
+        .toList();
 
     // 2. Fill remainder from the static bank.
     final needed = count - aiConverted.length;
@@ -63,10 +77,12 @@ class ScienceQuestGenerator {
     // 3. Fall back to procedural generator if still short.
     final staticPool = [...bankQuestions];
     while (staticPool.length < needed) {
-      staticPool.add(_generateSingleQuestion(theme, difficulty, staticPool.length));
+      staticPool
+          .add(_generateSingleQuestion(theme, difficulty, staticPool.length));
     }
 
-    final combined = [...aiConverted, ...staticPool.take(needed)]..shuffle(_random);
+    final combined = [...aiConverted, ...staticPool.take(needed)]
+      ..shuffle(_random);
     return combined.take(count).toList();
   }
 
@@ -81,9 +97,14 @@ class ScienceQuestGenerator {
       return _generatePlantQuestion(difficulty, index);
     } else if (t.contains('material')) {
       return _generateMaterialsQuestion(difficulty, index);
-    } else if (t.contains('force') || t.contains('motion') || t.contains('push') || t.contains('pull')) {
+    } else if (t.contains('force') ||
+        t.contains('motion') ||
+        t.contains('push') ||
+        t.contains('pull')) {
       return _generateForcesQuestion(difficulty, index);
-    } else if (t.contains('season') || t.contains('weather') || t.contains('water cycle')) {
+    } else if (t.contains('season') ||
+        t.contains('weather') ||
+        t.contains('water cycle')) {
       return _generateSeasonsQuestion(difficulty, index);
     } else {
       // Mixed bag using all categories
@@ -279,7 +300,8 @@ class ScienceQuestGenerator {
       final stageIdx = _random.nextInt(stages.length - 1);
       final current = stages[stageIdx];
       final correct = stages[stageIdx + 1];
-      final wrongPool = stages.where((s) => s != correct && s != current).toList();
+      final wrongPool =
+          stages.where((s) => s != correct && s != current).toList();
       wrongPool.shuffle(_random);
       final distractors = wrongPool.take(3).toList();
       final options = EnhancedQuestionGenerator.smartShuffle(
@@ -299,10 +321,8 @@ class ScienceQuestGenerator {
     } else {
       // Count of stages
       final correct = '${stages.length}';
-      final allCounts = ['3', '4', '5', '6']
-          .where((c) => c != correct)
-          .take(3)
-          .toList();
+      final allCounts =
+          ['3', '4', '5', '6'].where((c) => c != correct).take(3).toList();
       final options = EnhancedQuestionGenerator.smartShuffle(
           [correct, ...allCounts], correct);
       return ScienceQuestion(
@@ -326,19 +346,22 @@ class ScienceQuestGenerator {
       'q': 'Which part of a plant absorbs water and nutrients from the soil?',
       'correct': 'Roots',
       'wrong': ['Leaves', 'Stem', 'Flower'],
-      'exp': 'Roots grow underground and absorb water and minerals from the soil.',
+      'exp':
+          'Roots grow underground and absorb water and minerals from the soil.',
     },
     {
       'q': 'What is the process called when plants use sunlight to make food?',
       'correct': 'Photosynthesis',
       'wrong': ['Respiration', 'Pollination', 'Germination'],
-      'exp': 'Photosynthesis is how plants use sunlight, water, and carbon dioxide to make food.',
+      'exp':
+          'Photosynthesis is how plants use sunlight, water, and carbon dioxide to make food.',
     },
     {
       'q': 'Which gas do plants take in during photosynthesis?',
       'correct': 'Carbon dioxide',
       'wrong': ['Oxygen', 'Nitrogen', 'Hydrogen'],
-      'exp': 'Plants take in carbon dioxide (CO₂) and release oxygen during photosynthesis.',
+      'exp':
+          'Plants take in carbon dioxide (CO₂) and release oxygen during photosynthesis.',
     },
     {
       'q': 'What do leaves produce that animals need to breathe?',
@@ -347,34 +370,40 @@ class ScienceQuestGenerator {
       'exp': 'Leaves produce oxygen as a by-product of photosynthesis.',
     },
     {
-      'q': 'Which part of the plant carries water from the roots to the leaves?',
+      'q':
+          'Which part of the plant carries water from the roots to the leaves?',
       'correct': 'Stem',
       'wrong': ['Roots', 'Petals', 'Seeds'],
-      'exp': 'The stem acts like a pipeline, transporting water and nutrients up to the leaves.',
+      'exp':
+          'The stem acts like a pipeline, transporting water and nutrients up to the leaves.',
     },
     {
       'q': 'What do seeds need to start growing (germinating)?',
       'correct': 'Water',
       'wrong': ['Sunlight', 'Soil', 'Wind'],
-      'exp': 'Seeds need water to germinate. They also need warmth, but NOT sunlight at first.',
+      'exp':
+          'Seeds need water to germinate. They also need warmth, but NOT sunlight at first.',
     },
     {
       'q': 'Which part of a flower develops into a fruit?',
       'correct': 'Ovary',
       'wrong': ['Petal', 'Stamen', 'Sepal'],
-      'exp': 'After pollination, the ovary of a flower develops into a fruit containing seeds.',
+      'exp':
+          'After pollination, the ovary of a flower develops into a fruit containing seeds.',
     },
     {
       'q': 'What is the green pigment in leaves that captures sunlight?',
       'correct': 'Chlorophyll',
       'wrong': ['Melanin', 'Keratin', 'Carotene'],
-      'exp': 'Chlorophyll is the green pigment in leaves that absorbs sunlight for photosynthesis.',
+      'exp':
+          'Chlorophyll is the green pigment in leaves that absorbs sunlight for photosynthesis.',
     },
     {
       'q': 'Which type of plant does NOT have roots, stems, or leaves?',
       'correct': 'Moss',
       'wrong': ['Fern', 'Oak tree', 'Rose'],
-      'exp': 'Mosses are non-vascular plants — they lack true roots, stems and leaves.',
+      'exp':
+          'Mosses are non-vascular plants — they lack true roots, stems and leaves.',
     },
     {
       'q': 'How do bees help plants reproduce?',
@@ -384,7 +413,8 @@ class ScienceQuestGenerator {
         'They plant seeds',
         'They eat the leaves'
       ],
-      'exp': 'Bees pick up pollen on their bodies and transfer it to other flowers (pollination).',
+      'exp':
+          'Bees pick up pollen on their bodies and transfer it to other flowers (pollination).',
     },
   ];
 
@@ -417,7 +447,8 @@ class ScienceQuestGenerator {
       'exp': 'Gravity is the force that pulls everything towards Earth.',
     },
     {
-      'q': 'What is the name for a force that slows down objects as they slide?',
+      'q':
+          'What is the name for a force that slows down objects as they slide?',
       'correct': 'Friction',
       'wrong': ['Gravity', 'Tension', 'Thrust'],
       'exp': 'Friction acts against motion when two surfaces rub together.',
@@ -437,7 +468,11 @@ class ScienceQuestGenerator {
     {
       'q': 'What happens to a moving object if no forces act on it?',
       'correct': 'It keeps moving at the same speed',
-      'wrong': ['It speeds up', 'It slows down and stops', 'It changes direction'],
+      'wrong': [
+        'It speeds up',
+        'It slows down and stops',
+        'It changes direction'
+      ],
       'exp':
           'Without forces acting on it, an object continues at the same speed (Newton\'s 1st Law).',
     },
@@ -445,7 +480,8 @@ class ScienceQuestGenerator {
       'q': 'What slows a skydiver\'s fall before the parachute opens?',
       'correct': 'Air resistance',
       'wrong': ['Gravity', 'Magnetism', 'Friction'],
-      'exp': 'Air resistance (drag) pushes upwards against the falling skydiver.',
+      'exp':
+          'Air resistance (drag) pushes upwards against the falling skydiver.',
     },
     {
       'q': 'Which surface would have the MOST friction?',
@@ -454,7 +490,8 @@ class ScienceQuestGenerator {
       'exp': 'Rough surfaces produce more friction than smooth surfaces.',
     },
     {
-      'q': 'A magnet attracting a metal paperclip is an example of which force?',
+      'q':
+          'A magnet attracting a metal paperclip is an example of which force?',
       'correct': 'Magnetic force',
       'wrong': ['Gravity', 'Friction', 'Air resistance'],
       'exp': 'Magnetic force acts between magnets and magnetic materials.',
@@ -463,13 +500,16 @@ class ScienceQuestGenerator {
       'q': 'What do we call a force that acts without touching an object?',
       'correct': 'Non-contact force',
       'wrong': ['Contact force', 'Push force', 'Friction force'],
-      'exp': 'Gravity and magnetism are non-contact forces — they act at a distance.',
+      'exp':
+          'Gravity and magnetism are non-contact forces — they act at a distance.',
     },
     {
-      'q': 'If you double the force pushing an object, what happens to its acceleration?',
+      'q':
+          'If you double the force pushing an object, what happens to its acceleration?',
       'correct': 'It doubles',
       'wrong': ['It halves', 'It stays the same', 'It triples'],
-      'exp': 'Greater force → greater acceleration (F = ma, Newton\'s 2nd Law).',
+      'exp':
+          'Greater force → greater acceleration (F = ma, Newton\'s 2nd Law).',
     },
   ];
 
@@ -502,64 +542,86 @@ class ScienceQuestGenerator {
 
   static const List<Map<String, dynamic>> _weatherFacts = [
     {
-      'q': 'What is the process called when liquid water turns into water vapour?',
+      'q':
+          'What is the process called when liquid water turns into water vapour?',
       'correct': 'Evaporation',
       'wrong': ['Condensation', 'Precipitation', 'Transpiration'],
-      'exp': 'Evaporation is when heat causes liquid water to become water vapour (gas).',
+      'exp':
+          'Evaporation is when heat causes liquid water to become water vapour (gas).',
     },
     {
-      'q': 'What is the process called when water vapour cools and turns into liquid droplets?',
+      'q':
+          'What is the process called when water vapour cools and turns into liquid droplets?',
       'correct': 'Condensation',
       'wrong': ['Evaporation', 'Precipitation', 'Filtration'],
-      'exp': 'Condensation happens when water vapour cools and forms tiny liquid droplets (like clouds).',
+      'exp':
+          'Condensation happens when water vapour cools and forms tiny liquid droplets (like clouds).',
     },
     {
       'q': 'What is the name for rain, snow, and hail falling from clouds?',
       'correct': 'Precipitation',
       'wrong': ['Evaporation', 'Condensation', 'Runoff'],
-      'exp': 'Precipitation is any water that falls from the sky — rain, snow, sleet, or hail.',
+      'exp':
+          'Precipitation is any water that falls from the sky — rain, snow, sleet, or hail.',
     },
     {
       'q': 'What do clouds form from?',
       'correct': 'Tiny water droplets or ice crystals',
       'wrong': ['Steam from factories', 'Smoke', 'Dust particles'],
-      'exp': 'Clouds are made of millions of tiny water droplets or ice crystals suspended in the air.',
+      'exp':
+          'Clouds are made of millions of tiny water droplets or ice crystals suspended in the air.',
     },
     {
       'q': 'Which weather instrument measures temperature?',
       'correct': 'Thermometer',
       'wrong': ['Barometer', 'Anemometer', 'Rain gauge'],
-      'exp': 'A thermometer measures temperature in degrees Celsius or Fahrenheit.',
+      'exp':
+          'A thermometer measures temperature in degrees Celsius or Fahrenheit.',
     },
     {
-      'q': 'What do we call the daily weather pattern that repeats over a long time in a region?',
+      'q':
+          'What do we call the daily weather pattern that repeats over a long time in a region?',
       'correct': 'Climate',
       'wrong': ['Weather', 'Season', 'Forecast'],
-      'exp': 'Climate is the average weather pattern in an area over many years.',
+      'exp':
+          'Climate is the average weather pattern in an area over many years.',
     },
     {
-      'q': 'Where does most of the water that evaporates into clouds come from?',
+      'q':
+          'Where does most of the water that evaporates into clouds come from?',
       'correct': 'Oceans, lakes and rivers',
       'wrong': ['Volcanoes', 'Plants only', 'Underground caves'],
-      'exp': 'Most evaporation comes from oceans, lakes, and rivers, which cover most of Earth.',
+      'exp':
+          'Most evaporation comes from oceans, lakes, and rivers, which cover most of Earth.',
     },
     {
       'q': 'What type of cloud is very high, thin, and wispy?',
       'correct': 'Cirrus',
       'wrong': ['Cumulus', 'Stratus', 'Nimbus'],
-      'exp': 'Cirrus clouds are high, thin, feathery clouds made of ice crystals.',
+      'exp':
+          'Cirrus clouds are high, thin, feathery clouds made of ice crystals.',
     },
     {
       'q': 'In the water cycle, what happens to rainwater on a slope?',
       'correct': 'It flows downhill as runoff into rivers',
-      'wrong': ['It evaporates immediately', 'It turns to ice', 'It disappears into space'],
-      'exp': 'Runoff is rainwater that flows over land into rivers and eventually into the ocean.',
+      'wrong': [
+        'It evaporates immediately',
+        'It turns to ice',
+        'It disappears into space'
+      ],
+      'exp':
+          'Runoff is rainwater that flows over land into rivers and eventually into the ocean.',
     },
     {
       'q': 'What causes wind?',
       'correct': 'Differences in air pressure',
-      'wrong': ['The Moon\'s gravity', 'Earth\'s rotation only', 'Cloud movement'],
-      'exp': 'Wind is caused by air moving from areas of high pressure to areas of low pressure.',
+      'wrong': [
+        'The Moon\'s gravity',
+        'Earth\'s rotation only',
+        'Cloud movement'
+      ],
+      'exp':
+          'Wind is caused by air moving from areas of high pressure to areas of low pressure.',
     },
   ];
 

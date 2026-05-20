@@ -68,32 +68,31 @@ class AvatarProvider extends ChangeNotifier {
     required String name,
     required String baseCharacter,
     required String skinColor,
+    String outfitId = 'outfit_adventure',
+    List<String> unlockedOutfits = const [
+      'outfit_adventure',
+      'outfit_sky_scout',
+      'outfit_garden_hero',
+    ],
+    List<String> unlockedAccessories = const ['acc_bow'],
   }) async {
-    debugPrint('AvatarProvider.createAvatar called');
-
     _avatar = Avatar(
       id: 'avatar_${DateTime.now().millisecondsSinceEpoch}',
       name: name,
       baseCharacter: baseCharacter,
       skinColor: skinColor,
-      outfitId: 'outfit_adventure', // Default outfit
-      unlockedOutfits: const ['outfit_adventure'],
-      unlockedAccessories: const ['acc_bow'],
+      outfitId: outfitId,
+      unlockedOutfits: unlockedOutfits,
+      unlockedAccessories: unlockedAccessories,
       experiencePoints: 0,
       level: 1,
       createdAt: DateTime.now(),
       lastModified: DateTime.now(),
     );
 
-    debugPrint('Avatar object created: ${_avatar!.name}');
-
     await _storageService.saveAvatar(_avatar!);
 
-    debugPrint('Avatar saved to storage');
-
     notifyListeners();
-
-    debugPrint('Listeners notified');
   }
 
   Future<void> updateAvatarName(String newName) async {

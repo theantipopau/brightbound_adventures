@@ -27,7 +27,8 @@ class QuestionVariationHelper {
       return const [];
     }
 
-    final recentIds = _recentQuestionIdsBySession.putIfAbsent(sessionKey, () => <String>[]);
+    final recentIds =
+        _recentQuestionIdsBySession.putIfAbsent(sessionKey, () => <String>[]);
     final pool = List<T>.from(deduped)..shuffle(rng);
 
     final unseen = <T>[];
@@ -52,7 +53,8 @@ class QuestionVariationHelper {
     if (selected.length < desiredCount && unseen.isNotEmpty) {
       final additionalPool = List<T>.from(unseen)..shuffle(rng);
       int addIndex = 0;
-      while (selected.length < desiredCount && addIndex < additionalPool.length) {
+      while (
+          selected.length < desiredCount && addIndex < additionalPool.length) {
         final candidate = additionalPool[addIndex++];
         if (!selected.any((s) => idOf(s) == idOf(candidate))) {
           selected.add(candidate);
@@ -64,7 +66,8 @@ class QuestionVariationHelper {
     if (selected.length < desiredCount && fallback.isNotEmpty) {
       final additionalFallback = List<T>.from(fallback)..shuffle(rng);
       int addIndex = 0;
-      while (selected.length < desiredCount && addIndex < additionalFallback.length) {
+      while (selected.length < desiredCount &&
+          addIndex < additionalFallback.length) {
         final candidate = additionalFallback[addIndex++];
         if (!selected.any((s) => idOf(s) == idOf(candidate))) {
           selected.add(candidate);
@@ -304,7 +307,7 @@ class QuestionVariationHelper {
     if (selectedQuestions.isEmpty) return 0.0;
 
     final recentIds = _recentQuestionIdsBySession[sessionKey] ?? <String>[];
-    
+
     // Count how many selected questions were already in recent history
     // before this session was generated
     int unseenCount = 0;

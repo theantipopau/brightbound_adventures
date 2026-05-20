@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
+import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
 import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
 import 'package:brightbound_adventures/ui/widgets/difficulty_indicator.dart';
@@ -43,7 +43,6 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   bool _autoReadQuestions = false;
   bool _aiHintsEnabled = false;
   bool _aiExplanationsEnabled = false;
-  bool _aiCloudMode = false;
   String? _aiExplanationText;
   final AudioManager _audioManager = AudioManager();
   final AiLearningAssistantService _aiAssistant = AiLearningAssistantService();
@@ -89,8 +88,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
 
     _pageController.forward();
     _generateFloatingElements();
-    _loadAutoReadPreference();
-    _loadAiPreferences();
+    _loadQuizPreferences();
 
     _focusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -124,14 +122,16 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
 
   StoryQuestion get _currentQuestion => widget.questions[_currentIndex];
 
-  Future<void> _loadAutoReadPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final autoRead = prefs.getBool('autoReadQuestions') ?? false;
+  Future<void> _loadQuizPreferences() async {
+    final preferences = await QuizPreferencesService.load();
     if (!mounted) return;
-
-    setState(() => _autoReadQuestions = autoRead);
-
-    if (autoRead) {
+    setState(() {
+      _autoReadQuestions = preferences.autoReadQuestions;
+      _aiHintsEnabled = preferences.aiHintsEnabled;
+      _aiExplanationsEnabled = preferences.aiExplanationsEnabled;
+    });
+    QuizPreferencesService.applyToAssistant(_aiAssistant, preferences);
+    if (preferences.autoReadQuestions) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _readCurrentQuestionAloud();
       });
@@ -145,21 +145,6 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
     await TtsService().speak(questionText);
   }
 
-  Future<void> _loadAiPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    final hintsEnabled = prefs.getBool('aiHintsEnabled') ?? false;
-    final explanationsEnabled = prefs.getBool('aiExplanationsEnabled') ?? false;
-    final cloudMode = prefs.getBool('aiCloudMode') ?? false;
-    if (!mounted) return;
-    setState(() {
-      _aiHintsEnabled = hintsEnabled;
-      _aiExplanationsEnabled = explanationsEnabled;
-      _aiCloudMode = cloudMode;
-    });
-    _aiAssistant.setEnabled(_aiHintsEnabled || _aiExplanationsEnabled);
-    _aiAssistant.setCloudMode(_aiCloudMode);
-  }
-
   Future<void> _prepareAiExplanation() async {
     if (!_aiExplanationsEnabled || _currentIndex >= widget.questions.length) {
       return;
@@ -168,7 +153,9 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       final explanation = await _aiAssistant.explainAnswer(
         question: _currentQuestion.question,
         correctAnswer: _currentQuestion.options[_currentQuestion.correctIndex],
-        selectedAnswer: _selectedAnswer != null ? _currentQuestion.options[_selectedAnswer!] : '',
+        selectedAnswer: _selectedAnswer != null
+            ? _currentQuestion.options[_selectedAnswer!]
+            : '',
       );
       if (mounted) {
         setState(() => _aiExplanationText = explanation);
@@ -316,8 +303,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
           } else if (_selectedAnswer == null) {
             setState(() => _selectedAnswer = 0);
           }
-        } else if (key == LogicalKeyboardKey.enter &&
-            !_showFeedback) {
+        } else if (key == LogicalKeyboardKey.enter && !_showFeedback) {
           _selectAnswer(_selectedAnswer ?? -1);
         }
       },
@@ -389,7 +375,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Row(
         children: [
           Tooltip(
@@ -403,9 +389,11 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.5),
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.35), width: 1.5),
                 ),
-                child: Image.asset('assets/images/scroll.PNG', fit: BoxFit.contain),
+                child: Image.asset('assets/images/scroll.PNG',
+                    fit: BoxFit.contain),
               ),
             ),
           ),
@@ -446,6 +434,11 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                 Text(
                   'Question ${_currentIndex + 1} of ${widget.questions.length}',
                   style: const TextStyle(color: Colors.white60, fontSize: 14),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Follow the clues and pick the best answer',
+                  style: TextStyle(color: Colors.white54, fontSize: 11),
                 ),
               ],
             ),
@@ -524,6 +517,30 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
             padding: const EdgeInsets.all(28),
             child: Column(
               children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    _buildQuizChip(
+                      icon: Icons.auto_awesome_rounded,
+                      label: 'Focus mode',
+                      color: Colors.purpleAccent,
+                    ),
+                    _buildQuizChip(
+                      icon: Icons.menu_book_rounded,
+                      label: 'Q${_currentIndex + 1}/${widget.questions.length}',
+                      color: Colors.deepPurpleAccent,
+                    ),
+                    if (_autoReadQuestions)
+                      _buildQuizChip(
+                        icon: Icons.record_voice_over,
+                        label: 'Read aloud',
+                        color: Colors.tealAccent,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 18),
                 // Question emoji - animated with bounce
                 if (_currentQuestion.imageEmoji != null) ...[
                   AnimatedBuilder(
@@ -649,6 +666,22 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   }
 
   Widget _buildFeedback() {
+    final correctMessages = [
+      'Excellent! 🌟',
+      'Great storytelling sense! 📚',
+      'You read that perfectly! ✨',
+      'Brilliant choice! ✅',
+    ];
+    final retryMessages = [
+      'Good try!',
+      'Nice attempt. Keep reading closely!',
+      'Almost there, next story clue!',
+      'You are improving every round!',
+    ];
+    final message = _isCorrect
+        ? correctMessages[_currentIndex % correctMessages.length]
+        : retryMessages[_currentIndex % retryMessages.length];
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.all(16),
@@ -674,7 +707,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
               ),
               const SizedBox(width: 8),
               Text(
-                _isCorrect ? 'Excellent! 🌟' : 'Good try!',
+                message,
                 style: TextStyle(
                   color: _isCorrect ? Colors.greenAccent : Colors.orange,
                   fontSize: 20,
@@ -683,6 +716,17 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
               ),
             ],
           ),
+          if (_isCorrect) ...[
+            const SizedBox(height: 6),
+            Text(
+              '+15 pts',
+              style: TextStyle(
+                color: Colors.yellow.shade200,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
           if (_aiExplanationText != null) ...[
             const SizedBox(height: 12),
             Text(
@@ -704,6 +748,36 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuizChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ],
       ),
     );
@@ -745,11 +819,13 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
             }),
           ),
           const SizedBox(height: 12),
-          if (!_showFeedback && ((_currentQuestion.hint?.isNotEmpty ?? false) || _aiHintsEnabled))
+          if (!_showFeedback &&
+              ((_currentQuestion.hint?.isNotEmpty ?? false) || _aiHintsEnabled))
             TextButton.icon(
               onPressed: () => _showHint(),
               icon: const Icon(Icons.lightbulb_outline, color: Colors.amber),
-              label: const Text('Need a hint?', style: TextStyle(color: Colors.amber)),
+              label: const Text('Need a hint?',
+                  style: TextStyle(color: Colors.amber)),
             ),
         ],
       ),
@@ -835,7 +911,8 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
           ),
           backgroundColor: Colors.purple.shade700,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           duration: const Duration(seconds: 4),
         ),
       );

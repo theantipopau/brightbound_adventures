@@ -48,6 +48,8 @@ void main() async {
             value: registry.aiQuestions),
         ChangeNotifierProvider<ThemeModeService>.value(
             value: registry.themeMode),
+        ChangeNotifierProvider<VisualAccessibilityService>.value(
+            value: registry.visualAccessibility),
       ],
       child: const BrightBoundApp(),
     ),
@@ -59,24 +61,45 @@ class BrightBoundApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeModeService>(
-      builder: (context, themeModeService, _) {
+    return Consumer2<ThemeModeService, VisualAccessibilityService>(
+      builder: (context, themeModeService, visualAccessibility, _) {
+        final lightTheme = visualAccessibility.highContrast
+            ? _highContrastTheme(AppTheme.lightTheme())
+            : AppTheme.lightTheme();
+        final darkTheme = visualAccessibility.highContrast
+            ? _highContrastTheme(AppTheme.darkTheme())
+            : AppTheme.darkTheme();
         return MaterialApp(
           title: 'BrightBound Adventures',
-          theme: AppTheme.lightTheme(),
-          darkTheme: AppTheme.darkTheme(),
+          theme: lightTheme,
+          darkTheme: darkTheme,
           themeMode: themeModeService.themeMode,
           builder: (context, child) {
+            final mediaQuery = MediaQuery.of(context);
+            final platformReducedMotion = mediaQuery.disableAnimations ||
+                WidgetsBinding.instance.platformDispatcher.accessibilityFeatures
+                    .disableAnimations;
+            final textScale = visualAccessibility.largeText ? 1.16 : 1.0;
+            final adjustedMediaQuery = mediaQuery.copyWith(
+              disableAnimations:
+                  platformReducedMotion || visualAccessibility.reduceMotion,
+              textScaler: TextScaler.linear(
+                (mediaQuery.textScaler.scale(1) * textScale).clamp(1.0, 1.28),
+              ),
+            );
             // DefaultTextStyle.merge ensures the bundled NotoEmoji font is listed
             // as a fallback for every Text widget, preventing Flutter Web CanvasKit
             // from spinning in requestAnimationFrame trying to download Noto fonts.
-            return DefaultTextStyle.merge(
-              style: const TextStyle(fontFamilyFallback: ['NotoEmoji']),
-              child: ResponsiveWrapper(
-                designSize: const Size(1280, 800),
-                minWidth: true,
-                minHeight: true,
-                child: child!,
+            return MediaQuery(
+              data: adjustedMediaQuery,
+              child: DefaultTextStyle.merge(
+                style: const TextStyle(fontFamilyFallback: ['NotoEmoji']),
+                child: ResponsiveWrapper(
+                  designSize: const Size(1280, 800),
+                  minWidth: true,
+                  minHeight: true,
+                  child: child!,
+                ),
               ),
             );
           },
@@ -84,65 +107,66 @@ class BrightBoundApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           onGenerateRoute: (settings) {
             final routes = <String, WidgetBuilder>{
-          '/avatar-creator': (_) => const AvatarCreatorScreen(),
-          '/world-map': (_) => const WorldMapScreen(),
-          '/world-entry': (_) => const WorldEntryScreen(),
-          '/settings': (_) => const SettingsScreen(),
-          '/profile-stats': (_) => const ProfileStatsScreen(),
-          '/parent-dashboard': (_) => const ParentDashboardScreen(),
-          '/word-woods': (_) => const ZoneDetailScreen(
-                zoneId: 'word_woods',
-                zoneName: '🌲 Word Woods',
-                zoneDescription:
-                    'Explore literacy, reading, and communication skills',
-                zoneColor: AppColors.wordWoodsColor,
-              ),
-          '/number-nebula': (_) => const ZoneDetailScreen(
-                zoneId: 'number_nebula',
-                zoneName: '🌌 Number Nebula',
-                zoneDescription: 'Master numeracy, math, and problem solving',
-                zoneColor: AppColors.numberNebulaColor,
-              ),
-          '/math-facts': (_) => const ZoneDetailScreen(
-                zoneId: 'number_nebula',
-                zoneName: '⚡ Math Facts',
-                zoneDescription: 'Speed rounds, combos, and fact mastery',
-                zoneColor: AppColors.numberNebulaColor,
-              ),
-          '/puzzle-peaks': (_) => const ZoneDetailScreen(
-                zoneId: 'puzzle_peaks',
-                zoneName: '🧠 Puzzle Peaks',
-                zoneDescription:
-                    'Challenge your logic, patterns, and reasoning',
-                zoneColor: AppColors.puzzlePeaksColor,
-              ),
-          '/story-springs': (_) => const ZoneDetailScreen(
-                zoneId: 'story_springs',
-                zoneName: '📖 Story Springs',
-                zoneDescription:
-                    'Create stories, express emotions, develop characters',
-                zoneColor: AppColors.storyspringsColor,
-              ),
-          '/adventure-arena': (_) => const ZoneDetailScreen(
-                zoneId: 'adventure_arena',
-                zoneName: '🏟️ Adventure Arena',
-                zoneDescription:
-                    'Improve hand-eye coordination and motor skills',
-                zoneColor: AppColors.adventureArenaColor,
-              ),
-          '/science-explorers': (_) => const ZoneDetailScreen(
-                zoneId: 'science_explorers',
-                zoneName: '🔬 Science Explorers',
-                zoneDescription: 'Discover the world around you!',
-                zoneColor: Color(0xFF4DB6AC),
-              ),
-          '/creative-corner': (_) => const ZoneDetailScreen(
-                zoneId: 'creative_corner',
-                zoneName: '🎨 Creative Corner',
-                zoneDescription: 'Express yourself with art and music',
-                zoneColor: Color(0xFFFFB74D),
-              ),
-        };
+              '/avatar-creator': (_) => const AvatarCreatorScreen(),
+              '/world-map': (_) => const WorldMapScreen(),
+              '/world-entry': (_) => const WorldEntryScreen(),
+              '/settings': (_) => const SettingsScreen(),
+              '/profile-stats': (_) => const ProfileStatsScreen(),
+              '/parent-dashboard': (_) => const ParentDashboardScreen(),
+              '/word-woods': (_) => const ZoneDetailScreen(
+                    zoneId: 'word_woods',
+                    zoneName: '🌲 Word Woods',
+                    zoneDescription:
+                        'Explore literacy, reading, and communication skills',
+                    zoneColor: AppColors.wordWoodsColor,
+                  ),
+              '/number-nebula': (_) => const ZoneDetailScreen(
+                    zoneId: 'math_facts',
+                    zoneName: '🌌 Number Nebula',
+                    zoneDescription:
+                        'Master numeracy, math, and problem solving',
+                    zoneColor: AppColors.numberNebulaColor,
+                  ),
+              '/math-facts': (_) => const ZoneDetailScreen(
+                    zoneId: 'number_nebula',
+                    zoneName: '⚡ Math Facts',
+                    zoneDescription: 'Speed rounds, combos, and fact mastery',
+                    zoneColor: AppColors.numberNebulaColor,
+                  ),
+              '/puzzle-peaks': (_) => const ZoneDetailScreen(
+                    zoneId: 'puzzle_peaks',
+                    zoneName: '🧠 Puzzle Peaks',
+                    zoneDescription:
+                        'Challenge your logic, patterns, and reasoning',
+                    zoneColor: AppColors.puzzlePeaksColor,
+                  ),
+              '/story-springs': (_) => const ZoneDetailScreen(
+                    zoneId: 'story_springs',
+                    zoneName: '📖 Story Springs',
+                    zoneDescription:
+                        'Create stories, express emotions, develop characters',
+                    zoneColor: AppColors.storyspringsColor,
+                  ),
+              '/adventure-arena': (_) => const ZoneDetailScreen(
+                    zoneId: 'adventure_arena',
+                    zoneName: '🏟️ Adventure Arena',
+                    zoneDescription:
+                        'Improve hand-eye coordination and motor skills',
+                    zoneColor: AppColors.adventureArenaColor,
+                  ),
+              '/science-explorers': (_) => const ZoneDetailScreen(
+                    zoneId: 'science_explorers',
+                    zoneName: '🔬 Science Explorers',
+                    zoneDescription: 'Discover the world around you!',
+                    zoneColor: Color(0xFF4DB6AC),
+                  ),
+              '/creative-corner': (_) => const ZoneDetailScreen(
+                    zoneId: 'creative_corner',
+                    zoneName: '🎨 Creative Corner',
+                    zoneDescription: 'Express yourself with art and music',
+                    zoneColor: Color(0xFFFFB74D),
+                  ),
+            };
             final builder = routes[settings.name];
             if (builder != null) {
               return FadeSlidePageRoute(page: Builder(builder: builder));
@@ -151,6 +175,27 @@ class BrightBoundApp extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  ThemeData _highContrastTheme(ThemeData theme) {
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final adjustedScheme = scheme.copyWith(
+      primary: isDark ? const Color(0xFFFFD6E5) : const Color(0xFF9A003F),
+      secondary: isDark ? const Color(0xFFD8C8FF) : const Color(0xFF3200A3),
+      tertiary: isDark ? const Color(0xFFB9FAFF) : const Color(0xFF006B78),
+      surface: isDark ? Colors.black : Colors.white,
+      onSurface: isDark ? Colors.white : Colors.black,
+      error: isDark ? const Color(0xFFFFB4AB) : const Color(0xFFB00020),
+    );
+
+    return theme.copyWith(
+      colorScheme: adjustedScheme,
+      scaffoldBackgroundColor: isDark ? Colors.black : Colors.white,
+      dividerColor: adjustedScheme.onSurface.withValues(alpha: 0.42),
+      focusColor: adjustedScheme.tertiary.withValues(alpha: 0.55),
+      highlightColor: adjustedScheme.tertiary.withValues(alpha: 0.18),
     );
   }
 }
@@ -180,8 +225,8 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    _prefersReducedMotion =
-        WidgetsBinding.instance.platformDispatcher.accessibilityFeatures.disableAnimations;
+    _prefersReducedMotion = WidgetsBinding
+        .instance.platformDispatcher.accessibilityFeatures.disableAnimations;
 
     final logoDuration = _prefersReducedMotion
         ? const Duration(milliseconds: 300)
@@ -264,10 +309,18 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAppState() async {
+    final startedAt = DateTime.now();
+
     // Load avatar from storage
     await context.read<AvatarProvider>().loadAvatar();
 
-    await Future.delayed(const Duration(seconds: 3));
+    // Keep the splash long enough to feel intentional, but do not force every
+    // returning player to wait three seconds after the app is already ready.
+    const minimumSplash = Duration(milliseconds: 900);
+    final elapsed = DateTime.now().difference(startedAt);
+    if (elapsed < minimumSplash) {
+      await Future.delayed(minimumSplash - elapsed);
+    }
 
     if (!mounted) return;
 
@@ -277,12 +330,14 @@ class _SplashScreenState extends State<SplashScreen>
       // First time user - go to avatar creation
       if (mounted) {
         await _stopSplashAudio();
+        if (!mounted) return;
         Navigator.of(context).pushReplacementNamed('/avatar-creator');
       }
     } else {
       // Existing user - go to world map
       if (mounted) {
         await _stopSplashAudio();
+        if (!mounted) return;
         Navigator.of(context).pushReplacementNamed('/world-map');
       }
     }
@@ -408,9 +463,12 @@ class _SplashScreenState extends State<SplashScreen>
                                                 decoration: BoxDecoration(
                                                   gradient: LinearGradient(
                                                     colors: [
-                                                      Colors.white.withValues(alpha: 0),
-                                                      Colors.white.withValues(alpha: 0.5),
-                                                      Colors.white.withValues(alpha: 0),
+                                                      Colors.white
+                                                          .withValues(alpha: 0),
+                                                      Colors.white.withValues(
+                                                          alpha: 0.5),
+                                                      Colors.white
+                                                          .withValues(alpha: 0),
                                                     ],
                                                   ),
                                                 ),
@@ -456,7 +514,7 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                             ),
                             const Text(
-                              '✨ Adventures ✨',
+                              'Adventures',
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.w500,
@@ -473,40 +531,73 @@ class _SplashScreenState extends State<SplashScreen>
                                 letterSpacing: 3,
                               ),
                             ),
+                            const SizedBox(height: 20),
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: const [
+                                _SplashFeatureChip(
+                                  icon: Icons.lock_outline,
+                                  label: 'Offline first',
+                                ),
+                                _SplashFeatureChip(
+                                  icon: Icons.school_outlined,
+                                  label: 'Curriculum aligned',
+                                ),
+                                _SplashFeatureChip(
+                                  icon: Icons.emoji_events_outlined,
+                                  label: 'Rewards and streaks',
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 30),
 
                     // Loading indicator
                     FadeTransition(
                       opacity: _textOpacity,
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: 200,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: LinearProgressIndicator(
-                                backgroundColor:
-                                    Colors.white.withValues(alpha: 0.2),
-                                valueColor: const AlwaysStoppedAnimation(
-                                  Color(0xFF4ECDC4),
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: 220,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(999),
+                                child: LinearProgressIndicator(
+                                  backgroundColor:
+                                      Colors.white.withValues(alpha: 0.16),
+                                  valueColor: const AlwaysStoppedAnimation(
+                                    Color(0xFF4ECDC4),
+                                  ),
+                                  minHeight: 7,
                                 ),
-                                minHeight: 6,
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Loading your adventure...',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.6),
-                              fontSize: 14,
+                            const SizedBox(height: 12),
+                            Text(
+                              'Loading your adventure...',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.72),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -516,7 +607,7 @@ class _SplashScreenState extends State<SplashScreen>
 
             // Bottom decorations
             Positioned(
-              bottom: 20,
+              bottom: 14,
               left: 0,
               right: 0,
               child: FadeTransition(
@@ -525,13 +616,20 @@ class _SplashScreenState extends State<SplashScreen>
                   animation: _orbitController,
                   builder: (context, child) {
                     const zoneIcons = ['🌲', '🌌', '📖', '🧩', '🏟️'];
-                    const zoneLabels = ['Words', 'Numbers', 'Stories', 'Puzzles', 'Games'];
+                    const zoneLabels = [
+                      'Words',
+                      'Numbers',
+                      'Stories',
+                      'Puzzles',
+                      'Games'
+                    ];
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(zoneIcons.length, (i) {
                         final yFloat = math.sin(
-                          _orbitController.value * math.pi * 2 + i * 1.2,
-                        ) * 5.0;
+                              _orbitController.value * math.pi * 2 + i * 1.2,
+                            ) *
+                            4.0;
                         return Transform.translate(
                           offset: Offset(0, yFloat),
                           child: _buildZoneIcon(zoneIcons[i], zoneLabels[i]),
@@ -561,6 +659,45 @@ class _SplashScreenState extends State<SplashScreen>
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.5),
               fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SplashFeatureChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _SplashFeatureChip({
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.14),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

@@ -90,6 +90,20 @@ class CosmeticsLibrary {
       isUnlocked: true,
     ),
     const Outfit(
+      id: 'outfit_sky_scout',
+      name: 'Sky Scout',
+      description: 'Bright, breezy, and ready to learn',
+      color: '#2979FF',
+      isUnlocked: true,
+    ),
+    const Outfit(
+      id: 'outfit_garden_hero',
+      name: 'Garden Hero',
+      description: 'Fresh, friendly, and nature-smart',
+      color: '#00A86B',
+      isUnlocked: true,
+    ),
+    const Outfit(
       id: 'outfit_forest',
       name: 'Forest Outfit',
       description: 'Green and natural',
@@ -168,16 +182,62 @@ class CosmeticsLibrary {
   static final Map<String, List<String>> characterSkinColors = {
     'bear': ['#D4A574', '#8B6F47', '#E8C4A0', '#A0826D', '#C68A58', '#5C4033'],
     'fox': ['#FF6B35', '#C85A23', '#FF8A50', '#D9553E', '#F6A04D', '#8B3E2F'],
-    'rabbit': ['#FFB6C1', '#FFC0CB', '#F0F8FF', '#E6F3FF', '#DDA0DD', '#F5E6FF'],
+    'rabbit': [
+      '#FFB6C1',
+      '#FFC0CB',
+      '#F0F8FF',
+      '#E6F3FF',
+      '#DDA0DD',
+      '#F5E6FF'
+    ],
     'deer': ['#8B5A3C', '#A0682A', '#B8860B', '#CD853F', '#D2B48C', '#6F4E37'],
     'cat': ['#FF8C94', '#FFA07A', '#FFD700', '#D3D3D3', '#C7A27C', '#8C8C8C'],
-    'penguin': ['#4A90E2', '#87CEEB', '#000000', '#708090', '#B0E0E6', '#F8F8FF'],
+    'penguin': [
+      '#4A90E2',
+      '#87CEEB',
+      '#000000',
+      '#708090',
+      '#B0E0E6',
+      '#F8F8FF'
+    ],
     'koala': ['#9E9E9E', '#BDBDBD', '#757575', '#607D8B', '#CFCFCF', '#8A9AA5'],
     'panda': ['#000000', '#333333', '#FFFFFF', '#F5F5F5', '#E0E0E0', '#6D6D6D'],
     'owl': ['#8D6E63', '#A1887F', '#6D4C41', '#D7CCC8', '#BCAAA4', '#5D4037'],
     'otter': ['#B87333', '#C68642', '#D2A679', '#8C5A3C', '#E6BE8A', '#7A5230'],
     'wolf': ['#607D8B', '#90A4AE', '#B0BEC5', '#455A64', '#CFD8DC', '#78909C'],
     'tiger': ['#FF8F00', '#FFA726', '#FFB74D', '#E65100', '#F57C00', '#6D4C41'],
+    'quokka': [
+      '#C98A5A',
+      '#D7A06F',
+      '#E6BA86',
+      '#9C6644',
+      '#B07D62',
+      '#F1D0A5'
+    ],
+    'platypus': [
+      '#7B5E57',
+      '#8D6E63',
+      '#5D4037',
+      '#6D8FA3',
+      '#B08D57',
+      '#C7A27C'
+    ],
+    'turtle': [
+      '#2E7D32',
+      '#43A047',
+      '#66BB6A',
+      '#8D6E63',
+      '#A5D6A7',
+      '#1B5E20'
+    ],
+    'dragon': [
+      '#7E57C2',
+      '#5E35B1',
+      '#26A69A',
+      '#FF7043',
+      '#AB47BC',
+      '#FFD54F'
+    ],
   };
 
   static List<String> getSkinColorsForCharacter(String character) {

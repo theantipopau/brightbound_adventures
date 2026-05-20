@@ -295,3 +295,13 @@ Unauthorised copying, distribution, or modification is prohibited.
   Made with ❤️ in Australia &nbsp;·&nbsp; Built with Flutter &nbsp;·&nbsp; Powered by Cloudflare
 </p>
 
+
+## Codex Audit and Upgrade Notes
+
+A detailed implementation changelog for the recent technical, gameplay, visual, UI/UX, accessibility, backend-safety, world map, avatar creator, mini-game, and question-system upgrade pass is available in [CHANGELOG_CODEX.md](CHANGELOG_CODEX.md).
+
+A shorter triage summary, including the current VS Code problem-count note and recommended analyzer workflow, is available in [README_CODEX_AUDIT.md](README_CODEX_AUDIT.md).
+
+The VS Code problem backlog can be worked through using [docs/VS_CODE_PROBLEMS_TRIAGE.md](docs/VS_CODE_PROBLEMS_TRIAGE.md).
+
+Flutter/Dart tooling setup notes are available in [docs/FLUTTER_TOOLING_SETUP.md](docs/FLUTTER_TOOLING_SETUP.md).

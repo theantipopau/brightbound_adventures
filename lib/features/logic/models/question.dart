@@ -668,11 +668,18 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_1',
       skillId: 'skill_logical_reasoning',
-      question: 'Two solutions to a puzzle: A) Red, Blue, Green pattern | B) Red, Green, Blue pattern. Which is correct?',
-      options: ['A is correct', 'B is correct', 'Both are correct', 'Neither is correct'],
+      question:
+          'Two solutions to a puzzle: A) Red, Blue, Green pattern | B) Red, Green, Blue pattern. Which is correct?',
+      options: [
+        'A is correct',
+        'B is correct',
+        'Both are correct',
+        'Neither is correct'
+      ],
       correctIndex: 2,
       hint: 'Can there be multiple valid patterns?',
-      explanation: 'Both A and B are valid patterns! Logic often has multiple correct solutions.',
+      explanation:
+          'Both A and B are valid patterns! Logic often has multiple correct solutions.',
       difficulty: 4,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🎨',
@@ -680,11 +687,18 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_2',
       skillId: 'skill_logical_reasoning',
-      question: 'Three statements: (1) All dogs bark. (2) Max is a dog. (3) Max barks. Is this valid reasoning?',
-      options: ['No, Max might not bark', 'Yes, the conclusion follows logically', 'Maybe, depends on Max\'s mood', 'Cannot determine'],
+      question:
+          'Three statements: (1) All dogs bark. (2) Max is a dog. (3) Max barks. Is this valid reasoning?',
+      options: [
+        'No, Max might not bark',
+        'Yes, the conclusion follows logically',
+        'Maybe, depends on Max\'s mood',
+        'Cannot determine'
+      ],
       correctIndex: 1,
       hint: 'Does statement 3 logically follow from 1 and 2?',
-      explanation: 'If all dogs bark AND Max is a dog, then Max MUST bark. Valid deductive reasoning!',
+      explanation:
+          'If all dogs bark AND Max is a dog, then Max MUST bark. Valid deductive reasoning!',
       difficulty: 5,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🐕',
@@ -692,11 +706,18 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_3',
       skillId: 'skill_logical_reasoning',
-      question: 'Which problem-solving strategy is best? A) Try everything randomly B) Identify pattern, test hypothesis',
-      options: ['A is faster', 'B is better and more efficient', 'Both are equally good', 'Neither works'],
+      question:
+          'Which problem-solving strategy is best? A) Try everything randomly B) Identify pattern, test hypothesis',
+      options: [
+        'A is faster',
+        'B is better and more efficient',
+        'Both are equally good',
+        'Neither works'
+      ],
       correctIndex: 1,
       hint: 'Which method reduces wasted effort?',
-      explanation: 'Strategy B (pattern recognition → hypothesis → testing) is more efficient and logical',
+      explanation:
+          'Strategy B (pattern recognition → hypothesis → testing) is more efficient and logical',
       difficulty: 5,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🧠',
@@ -704,11 +725,18 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_4',
       skillId: 'skill_logical_reasoning',
-      question: 'Why might a pattern fail? (Rule: 1, 2, 4, 8, ___ should be 16)',
-      options: ['The pattern is wrong', 'Numbers might not always double', 'Context determines if pattern applies', 'There\'s always a reason'],
+      question:
+          'Why might a pattern fail? (Rule: 1, 2, 4, 8, ___ should be 16)',
+      options: [
+        'The pattern is wrong',
+        'Numbers might not always double',
+        'Context determines if pattern applies',
+        'There\'s always a reason'
+      ],
       correctIndex: 2,
       hint: 'Are all patterns universal?',
-      explanation: 'Context matters: the pattern works in math, but not all real-world sequences follow it',
+      explanation:
+          'Context matters: the pattern works in math, but not all real-world sequences follow it',
       difficulty: 5,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '📊',
@@ -718,11 +746,18 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_5',
       skillId: 'skill_logical_reasoning',
-      question: 'Create your own pattern rule. Which is best? A) Red, Blue B) Red, Blue, Green, Red, Blue, Green',
-      options: ['A is better', 'B shows more complete pattern understanding', 'Both equal', 'Neither is good'],
+      question:
+          'Create your own pattern rule. Which is best? A) Red, Blue B) Red, Blue, Green, Red, Blue, Green',
+      options: [
+        'A is better',
+        'B shows more complete pattern understanding',
+        'Both equal',
+        'Neither is good'
+      ],
       correctIndex: 1,
       hint: 'Which demonstrates clearer pattern recognition?',
-      explanation: 'B shows a complete cycle revealing the pattern more clearly: repeat of 3-color sequence',
+      explanation:
+          'B shows a complete cycle revealing the pattern more clearly: repeat of 3-color sequence',
       difficulty: 6,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🔄',
@@ -730,11 +765,18 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_6',
       skillId: 'skill_logical_reasoning',
-      question: 'Design a logic puzzle rule. If A=1, B=2, and you want C to equal 5, how would you make it work?',
-      options: ['C = A + B + 2', 'C = A × B + 3', 'C = B × 2 + 1', 'All could work'],
+      question:
+          'Design a logic puzzle rule. If A=1, B=2, and you want C to equal 5, how would you make it work?',
+      options: [
+        'C = A + B + 2',
+        'C = A × B + 3',
+        'C = B × 2 + 1',
+        'All could work'
+      ],
       correctIndex: 3,
       hint: 'Test each formula with A=1 and B=2',
-      explanation: 'All three work! A+B+2 = 1+2+2 = 5 ✓, A×B+3 = 1×2+3 = 5 ✓, B×2+1 = 2×2+1 = 5 ✓. Multiple rules can produce the same result!',
+      explanation:
+          'All three work! A+B+2 = 1+2+2 = 5 ✓, A×B+3 = 1×2+3 = 5 ✓, B×2+1 = 2×2+1 = 5 ✓. Multiple rules can produce the same result!',
       difficulty: 6,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🧩',
@@ -742,11 +784,18 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_7',
       skillId: 'skill_logical_reasoning',
-      question: 'Analyze an error: A student says "2+3 could equal 6". Why is this wrong logically?',
-      options: ['It just is', '2+3 always equals 5 in all systems, math is absolute', 'The system changed', 'Logic requires consistency'],
+      question:
+          'Analyze an error: A student says "2+3 could equal 6". Why is this wrong logically?',
+      options: [
+        'It just is',
+        '2+3 always equals 5 in all systems, math is absolute',
+        'The system changed',
+        'Logic requires consistency'
+      ],
       correctIndex: 3,
       hint: 'What makes logic valid?',
-      explanation: 'Logic requires consistent rules; if we change definitions, it\'s no longer standard math',
+      explanation:
+          'Logic requires consistent rules; if we change definitions, it\'s no longer standard math',
       difficulty: 6,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '➕',
@@ -755,7 +804,8 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_8',
       skillId: 'skill_logical_reasoning',
-      question: 'All squares are rectangles. This shape is a square. What can we conclude?',
+      question:
+          'All squares are rectangles. This shape is a square. What can we conclude?',
       options: [
         'It is not a rectangle',
         'It is a rectangle',
@@ -764,7 +814,8 @@ class HigherOrderThinkingLogicQuestions {
       ],
       correctIndex: 1,
       hint: 'If ALL squares are rectangles, and this IS a square...',
-      explanation: 'Valid deduction: all squares → rectangles, this is a square, therefore it IS a rectangle. This is syllogistic logic!',
+      explanation:
+          'Valid deduction: all squares → rectangles, this is a square, therefore it IS a rectangle. This is syllogistic logic!',
       difficulty: 4,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🟦',
@@ -772,7 +823,8 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_9',
       skillId: 'skill_logical_reasoning',
-      question: '"If it rains, the ground gets wet. The ground IS wet." Does this prove it rained?',
+      question:
+          '"If it rains, the ground gets wet. The ground IS wet." Does this prove it rained?',
       options: [
         'Yes, definitely',
         'No — something else (sprinklers, flood) could have made it wet',
@@ -781,7 +833,8 @@ class HigherOrderThinkingLogicQuestions {
       ],
       correctIndex: 1,
       hint: 'Can the ground get wet another way?',
-      explanation: 'This is a logical fallacy called "affirming the consequent". Wet ground has many possible causes!',
+      explanation:
+          'This is a logical fallacy called "affirming the consequent". Wet ground has many possible causes!',
       difficulty: 4,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🌧️',
@@ -798,7 +851,8 @@ class HigherOrderThinkingLogicQuestions {
       ],
       correctIndex: 1,
       hint: 'Think of penguins vs eagles — both are birds',
-      explanation: '"Some X are not Y" never means "no X are Y". Penguins can\'t fly but eagles can!',
+      explanation:
+          '"Some X are not Y" never means "no X are Y". Penguins can\'t fly but eagles can!',
       difficulty: 4,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🦅',
@@ -807,7 +861,8 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_11',
       skillId: 'skill_logical_reasoning',
-      question: 'A rule says: multiply the position number by 3, then subtract 1. What is the 6th term?',
+      question:
+          'A rule says: multiply the position number by 3, then subtract 1. What is the 6th term?',
       options: ['15', '17', '18', '20'],
       correctIndex: 1,
       hint: '6 × 3 = 18, then subtract 1',
@@ -819,11 +874,13 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_12',
       skillId: 'skill_logical_reasoning',
-      question: 'A café offers 3 pasta types and 4 sauce options. How many different pasta-sauce combinations are possible?',
+      question:
+          'A café offers 3 pasta types and 4 sauce options. How many different pasta-sauce combinations are possible?',
       options: ['7', '9', '12', '16'],
       correctIndex: 2,
       hint: 'Each pasta can pair with each sauce: 3 × 4 = ?',
-      explanation: '3 pastas × 4 sauces = 12 combinations total. This is called the multiplication principle!',
+      explanation:
+          '3 pastas × 4 sauces = 12 combinations total. This is called the multiplication principle!',
       difficulty: 5,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🍝',
@@ -831,10 +888,12 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_13',
       skillId: 'skill_logical_reasoning',
-      question: 'Four students shake hands with each other exactly once. How many handshakes occur in total?',
+      question:
+          'Four students shake hands with each other exactly once. How many handshakes occur in total?',
       options: ['4', '6', '8', '12'],
       correctIndex: 1,
-      hint: 'Student 1: 3 shakes, Student 2: 2 new shakes, Student 3: 1 new shake',
+      hint:
+          'Student 1: 3 shakes, Student 2: 2 new shakes, Student 3: 1 new shake',
       explanation: '3 + 2 + 1 = 6 handshakes. Formula: n×(n−1)÷2 = 4×3÷2 = 6!',
       difficulty: 5,
       type: LogicQuestionType.multipleChoice,
@@ -843,7 +902,8 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_14',
       skillId: 'skill_logical_reasoning',
-      question: '"Most students in my class like cricket, so most Australians must like cricket." What is wrong with this argument?',
+      question:
+          '"Most students in my class like cricket, so most Australians must like cricket." What is wrong with this argument?',
       options: [
         'Nothing, it is valid',
         'The sample is too small and unrepresentative of all Australians',
@@ -852,7 +912,8 @@ class HigherOrderThinkingLogicQuestions {
       ],
       correctIndex: 1,
       hint: 'Is one class a good sample for all of Australia?',
-      explanation: 'This is a "hasty generalisation" fallacy — a small or biased sample cannot represent an entire population.',
+      explanation:
+          'This is a "hasty generalisation" fallacy — a small or biased sample cannot represent an entire population.',
       difficulty: 5,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '🏏',
@@ -860,11 +921,18 @@ class HigherOrderThinkingLogicQuestions {
     LogicQuestion(
       id: 'hot_logic_8',
       skillId: 'skill_logical_reasoning',
-      question: 'Create a counterexample: "All shortcuts save time." What beats this statement?',
-      options: ['Shortcuts always help', 'A shortcut that creates problems later', 'Shortcuts sometimes fail', 'Impossible to disprove'],
+      question:
+          'Create a counterexample: "All shortcuts save time." What beats this statement?',
+      options: [
+        'Shortcuts always help',
+        'A shortcut that creates problems later',
+        'Shortcuts sometimes fail',
+        'Impossible to disprove'
+      ],
       correctIndex: 1,
       hint: 'Find an exception to prove it wrong',
-      explanation: 'A shortcut that causes problems later (like cutting corners in homework = wrong answers)',
+      explanation:
+          'A shortcut that causes problems later (like cutting corners in homework = wrong answers)',
       difficulty: 6,
       type: LogicQuestionType.multipleChoice,
       imageEmoji: '❌',

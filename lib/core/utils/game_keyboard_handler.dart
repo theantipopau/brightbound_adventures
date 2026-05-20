@@ -1,14 +1,14 @@
 import 'package:flutter/services.dart';
 
 /// Reusable keyboard handler mixin for game screens with multiple choice answers
-/// 
+///
 /// Provides standardized keyboard shortcuts:
 /// - Arrow Up/Down: Navigate answer options
 /// - Enter: Submit selected answer
 /// - Escape: Pause/Exit
 mixin GameKeyboardHandler {
   /// Handle keyboard shortcuts for game screens
-  /// 
+  ///
   /// Returns true if key was handled, false otherwise
   bool handleGameKeyPress(
     KeyEvent event, {

@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Pattern Puzzle Game
 /// Identify and complete patterns with shapes, colors, and sequences
@@ -23,11 +24,19 @@ class _PatternPuzzleGameState extends State<PatternPuzzleGame> {
   final int _totalQuestions = 10;
   bool _showingFeedback = false;
   bool _isCorrect = false;
+  final FocusNode _gameFocusNode = FocusNode(debugLabel: 'pattern_puzzle_game');
+  int _selectedOptionIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _generatePuzzles();
+  }
+
+  @override
+  void dispose() {
+    _gameFocusNode.dispose();
+    super.dispose();
   }
 
   void _generatePuzzles() {
@@ -99,11 +108,16 @@ class _PatternPuzzleGameState extends State<PatternPuzzleGame> {
       final shapes = ['●', '■', '▲'];
       final shape = shapes[random.nextInt(shapes.length)];
       final pattern = [shape, shape, shape, shape, shape, '?'];
+      final optionPool = [...shapes, '\u25C6', '\u2605'];
+      final options = <String>{shape};
+      while (options.length < 4) {
+        options.add(optionPool[random.nextInt(optionPool.length)]);
+      }
 
       return PatternPuzzle(
         id: 'easy_$index',
         pattern: pattern.sublist(0, 5),
-        options: [shape, shapes[(random.nextInt(shapes.length))]],
+        options: options.toList()..shuffle(),
         correctAnswer: shape,
         hint: 'All the same shape!',
       );
@@ -212,6 +226,8 @@ class _PatternPuzzleGameState extends State<PatternPuzzleGame> {
   }
 
   void _checkAnswer(String answer) {
+    if (_showingFeedback) return;
+
     setState(() {
       _showingFeedback = true;
       _isCorrect = answer == _puzzles[_currentPuzzleIndex].correctAnswer;
@@ -227,11 +243,40 @@ class _PatternPuzzleGameState extends State<PatternPuzzleGame> {
         setState(() {
           _currentPuzzleIndex++;
           _showingFeedback = false;
+          _selectedOptionIndex = 0;
         });
       } else {
         _showGameOverDialog();
       }
     });
+  }
+
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent || _showingFeedback) return;
+
+    final optionCount = _puzzles[_currentPuzzleIndex].options.length;
+    final key = event.logicalKey;
+    var nextIndex = _selectedOptionIndex;
+
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      nextIndex = max(0, _selectedOptionIndex - 1);
+    } else if (key == LogicalKeyboardKey.arrowRight) {
+      nextIndex = min(optionCount - 1, _selectedOptionIndex + 1);
+    } else if (key == LogicalKeyboardKey.arrowUp) {
+      nextIndex = max(0, _selectedOptionIndex - 2);
+    } else if (key == LogicalKeyboardKey.arrowDown) {
+      nextIndex = min(optionCount - 1, _selectedOptionIndex + 2);
+    } else if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
+      _checkAnswer(_puzzles[_currentPuzzleIndex].options[_selectedOptionIndex]);
+      return;
+    } else {
+      return;
+    }
+
+    if (nextIndex != _selectedOptionIndex) {
+      setState(() => _selectedOptionIndex = nextIndex);
+    }
   }
 
   void _showGameOverDialog() {
@@ -273,6 +318,7 @@ class _PatternPuzzleGameState extends State<PatternPuzzleGame> {
                 _score = 0;
                 _correctAnswers = 0;
                 _showingFeedback = false;
+                _selectedOptionIndex = 0;
                 _generatePuzzles();
               });
             },
@@ -294,155 +340,169 @@ class _PatternPuzzleGameState extends State<PatternPuzzleGame> {
   Widget build(BuildContext context) {
     final puzzle = _puzzles[_currentPuzzleIndex];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pattern Puzzle 🧩'),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-      ),
-      body: Column(
-        children: [
-          // Progress bar
-          LinearProgressIndicator(
-            value: (_currentPuzzleIndex + 1) / _totalQuestions,
-            backgroundColor: Colors.grey[300],
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-            minHeight: 8,
-          ),
-
-          // Stats
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.deepPurple.withValues(alpha: 0.1),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Text(
-                  'Question ${_currentPuzzleIndex + 1}/$_totalQuestions',
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  '⭐ Score: $_score',
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
+    return KeyboardListener(
+      focusNode: _gameFocusNode,
+      autofocus: true,
+      onKeyEvent: _handleKeyEvent,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Pattern Puzzle 🧩'),
+          backgroundColor: Colors.deepPurple,
+          foregroundColor: Colors.white,
+        ),
+        body: Column(
+          children: [
+            // Progress bar
+            LinearProgressIndicator(
+              value: (_currentPuzzleIndex + 1) / _totalQuestions,
+              backgroundColor: Colors.grey[300],
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+              minHeight: 8,
             ),
-          ),
 
-          // Pattern display
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
+            // Stats
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.deepPurple.withValues(alpha: 0.1),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16,
+                runSpacing: 8,
                 children: [
-                  const Text(
-                    'What comes next?',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  Text(
+                    'Question ${_currentPuzzleIndex + 1}/$_totalQuestions',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Pattern
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      ...puzzle.pattern.map((item) => _buildPatternItem(item)),
-                      _buildPatternItem('?', isQuestion: true),
-                    ],
+                  Text(
+                    '⭐ Score: $_score',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
+                ],
+              ),
+            ),
 
-                  const SizedBox(height: 30),
-
-                  // Hint
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue, width: 2),
+            // Pattern display
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    const Text(
+                      'What comes next?',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
-                    child: Row(
+                    const SizedBox(height: 20),
+
+                    // Pattern
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.center,
                       children: [
-                        const Icon(Icons.lightbulb, color: Colors.blue),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            puzzle.hint,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ),
+                        ...puzzle.pattern
+                            .map((item) => _buildPatternItem(item)),
+                        _buildPatternItem('?', isQuestion: true),
                       ],
                     ),
-                  ),
 
-                  const SizedBox(height: 30),
+                    const SizedBox(height: 30),
 
-                  // Options
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: 1.5,
-                    ),
-                    itemCount: puzzle.options.length,
-                    itemBuilder: (context, index) {
-                      return _buildOptionButton(puzzle.options[index]);
-                    },
-                  ),
-
-                  // Feedback
-                  if (_showingFeedback) ...[
-                    const SizedBox(height: 20),
+                    // Hint
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: _isCorrect
-                            ? Colors.green.withValues(alpha: 0.2)
-                            : Colors.red.withValues(alpha: 0.2),
+                        color: Colors.blue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: _isCorrect ? Colors.green : Colors.red,
-                          width: 2,
-                        ),
+                        border: Border.all(color: Colors.blue, width: 2),
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            _isCorrect ? Icons.check_circle : Icons.cancel,
-                            color: _isCorrect ? Colors.green : Colors.red,
-                            size: 32,
-                          ),
-                          const SizedBox(width: 12),
+                          const Icon(Icons.lightbulb, color: Colors.blue),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              _isCorrect
-                                  ? 'Correct! Great job!'
-                                  : 'Not quite. Try the next one!',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: _isCorrect
-                                    ? Colors.green[800]
-                                    : Colors.red[800],
-                              ),
+                              puzzle.hint,
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ),
                         ],
                       ),
                     ),
+
+                    const SizedBox(height: 30),
+
+                    // Options
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        childAspectRatio: 1.5,
+                      ),
+                      itemCount: puzzle.options.length,
+                      itemBuilder: (context, index) {
+                        return _buildOptionButton(
+                          puzzle.options[index],
+                          index == _selectedOptionIndex,
+                          () => setState(() => _selectedOptionIndex = index),
+                        );
+                      },
+                    ),
+
+                    // Feedback
+                    if (_showingFeedback) ...[
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _isCorrect
+                              ? Colors.green.withValues(alpha: 0.2)
+                              : Colors.red.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _isCorrect ? Colors.green : Colors.red,
+                            width: 2,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _isCorrect ? Icons.check_circle : Icons.cancel,
+                              color: _isCorrect ? Colors.green : Colors.red,
+                              size: 32,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _isCorrect
+                                    ? 'Correct! Great job!'
+                                    : 'Not quite. Try the next one!',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: _isCorrect
+                                      ? Colors.green[800]
+                                      : Colors.red[800],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -480,23 +540,43 @@ class _PatternPuzzleGameState extends State<PatternPuzzleGame> {
     );
   }
 
-  Widget _buildOptionButton(String option) {
-    return ElevatedButton(
-      onPressed: _showingFeedback ? null : () => _checkAnswer(option),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+  Widget _buildOptionButton(
+    String option,
+    bool isSelected,
+    VoidCallback onFocusOption,
+  ) {
+    return Semantics(
+      button: true,
+      enabled: !_showingFeedback,
+      selected: isSelected,
+      label: 'Pattern answer option $option',
+      hint: 'Use arrow keys to choose, then Enter or Space to answer.',
+      child: ElevatedButton(
+        onPressed: _showingFeedback
+            ? null
+            : () {
+                onFocusOption();
+                _checkAnswer(option);
+              },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isSelected ? Colors.amber[700] : Colors.deepPurple,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+              color: isSelected ? Colors.white : Colors.transparent,
+              width: isSelected ? 3 : 0,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: isSelected ? 8 : 4,
         ),
-        elevation: 4,
-      ),
-      child: Text(
-        option,
-        style: TextStyle(
-          fontSize: option.length == 1 && option.codeUnits[0] > 127 ? 32 : 24,
-          fontWeight: FontWeight.bold,
+        child: Text(
+          option,
+          style: TextStyle(
+            fontSize: option.length == 1 && option.codeUnits[0] > 127 ? 32 : 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

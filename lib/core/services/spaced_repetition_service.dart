@@ -37,9 +37,7 @@ class SpacedRepetitionService extends ChangeNotifier {
   /// Number of skills whose review date is today or earlier.
   int get dueCount {
     final today = _today();
-    return _schedule.values
-        .where((e) => !e.nextReview.isAfter(today))
-        .length;
+    return _schedule.values.where((e) => !e.nextReview.isAfter(today)).length;
   }
 
   /// Skill IDs whose review date is today or earlier.
@@ -71,7 +69,8 @@ class SpacedRepetitionService extends ChangeNotifier {
       try {
         final map = jsonDecode(raw) as Map<String, dynamic>;
         for (final entry in map.entries) {
-          _schedule[entry.key] = SrsEntry.fromJson(entry.value as Map<String, dynamic>);
+          _schedule[entry.key] =
+              SrsEntry.fromJson(entry.value as Map<String, dynamic>);
         }
       } catch (_) {
         // corrupt data — start fresh
@@ -142,9 +141,7 @@ class SpacedRepetitionService extends ChangeNotifier {
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    final map = {
-      for (final e in _schedule.entries) e.key: e.value.toJson()
-    };
+    final map = {for (final e in _schedule.entries) e.key: e.value.toJson()};
     await prefs.setString(_prefsKey, jsonEncode(map));
   }
 

@@ -19,7 +19,8 @@ const CORS_HEADERS = {
 
 const SYSTEM_PROMPT = `You are an educational question generator for Australian primary school children (ages 4–12).
 Generate engaging, factually accurate multiple-choice questions aligned to the Australian Curriculum.
-ALWAYS return ONLY a valid JSON array. No markdown, no prose, no code fences — just the raw JSON array.`;
+ALWAYS return ONLY a valid JSON array. No markdown, no prose, no code fences — just the raw JSON array.
+Do not use trick questions, ambiguous wording, or duplicate option text.`;
 
 const ZONE_CONTEXTS = {
   word_woods:
@@ -39,6 +40,7 @@ const ZONE_CONTEXTS = {
 };
 
 const DIFF_LABELS = ['very easy', 'easy', 'medium', 'hard', 'very hard'];
+const ALLOWED_AGE_GROUPS = new Set(['4-5', '6-7', '8-9', '10-12', '6-9']);
 
 export default {
   async fetch(request, env) {
@@ -65,9 +67,24 @@ export default {
     if (!zone || !skill) {
       return jsonError(400, 'zone and skill are required');
     }
+    if (typeof zone !== 'string' || typeof skill !== 'string') {
+      return jsonError(400, 'zone and skill must be strings');
+    }
+    if (zone.length > 64 || skill.length > 96) {
+      return jsonError(400, 'zone or skill is too long');
+    }
+    if (!/^[a-z0-9_-]+$/.test(zone) || !/^[a-zA-Z0-9_ -]+$/.test(skill)) {
+      return jsonError(400, 'zone or skill contains unsupported characters');
+    }
+    if (!ALLOWED_AGE_GROUPS.has(String(ageGroup))) {
+      return jsonError(400, 'unsupported ageGroup');
+    }
 
     const clampedCount = Math.min(Math.max(1, Number(count)), 10);
     const clampedDiff = Math.min(Math.max(1, Number(difficulty)), 5);
+    if (!Number.isFinite(clampedCount) || !Number.isFinite(clampedDiff)) {
+      return jsonError(400, 'count and difficulty must be numbers');
+    }
     const context = ZONE_CONTEXTS[zone] ?? 'Australian primary school curriculum';
     const diffLabel = DIFF_LABELS[clampedDiff - 1];
     const skillLabel = String(skill).replace(/skill_/g, '').replace(/_/g, ' ');
@@ -81,7 +98,7 @@ export default {
           { role: 'user', content: prompt },
         ],
         max_tokens: 2000,
-        temperature: 0.85,
+        temperature: 0.7,
       });
 
       const text = aiResponse?.response ?? '';
@@ -100,11 +117,13 @@ export default {
 // ─── Prompt builder ───────────────────────────────────────────────────────────
 
 function buildPrompt(context, skillLabel, diffLabel, count, ageGroup) {
+  const ageGuidance = getAgeGuidance(ageGroup);
   return `Generate exactly ${count} multiple-choice questions for Australian children aged ${ageGroup}.
 
 Topic: ${skillLabel}
 Curriculum area: ${context}
 Difficulty: ${diffLabel}
+Age guidance: ${ageGuidance}
 
 Return ONLY a JSON array in this exact format (no text outside the array):
 [
@@ -119,15 +138,19 @@ Return ONLY a JSON array in this exact format (no text outside the array):
 
 Rules:
 - correctIndex is 0-based: 0 = first option, 1 = second, etc.
-- questions[i].options must have exactly 4 items
+- questions[i].options must have exactly 4 unique items
+- Exactly one option must be correct
 - All 4 options must be plausible — no obviously wrong distractors
-- Every answer must be factually correct
+- Every answer must be factually correct and unambiguous
 - Use Australian English spelling (colour, behaviour, maths, recognise)
 - Vary question types: what/why/how/which/scenario/true-false
+- Keep wording age-appropriate, concrete, and concise
 - For difficulty very easy / easy: simple recall, concrete examples, short sentences
 - For difficulty medium: application and understanding, use context clues
 - For difficulty hard / very hard: inference, analysis, multi-step reasoning
-- Use emojis occasionally to make questions fun 🎉
+- Use emojis sparingly, only when they genuinely improve engagement
+- Avoid identical stems, repeated answer patterns, or the same distractor twice
+- Avoid "all of the above" and "none of the above"
 - Questions must not be identical or repetitive`;
 }
 
@@ -142,6 +165,7 @@ function parseQuestions(text) {
     const arr = JSON.parse(text.slice(start, end + 1));
     if (!Array.isArray(arr)) return [];
 
+    const seen = new Set();
     return arr
       .filter(
         (q) =>
@@ -159,9 +183,35 @@ function parseQuestions(text) {
         correctIndex: Math.round(q.correctIndex),
         hint: q.hint ? String(q.hint).trim() : 'Think carefully about all the options.',
         explanation: q.explanation ? String(q.explanation).trim() : '',
-      }));
+      }))
+      .filter((q) => {
+        if (!q.question || q.question.length < 6 || q.question.length > 180) return false;
+        if (q.options.some((option) => !option || option.length === 0)) return false;
+        const uniqueOptions = new Set(q.options.map((option) => option.toLowerCase()));
+        if (uniqueOptions.size !== 4) return false;
+        if (/all of the above|none of the above/i.test(q.question)) return false;
+        const fingerprint = `${q.question.toLowerCase()}|${q.options.join('|').toLowerCase()}`;
+        if (seen.has(fingerprint)) return false;
+        seen.add(fingerprint);
+        return true;
+      });
   } catch {
     return [];
+  }
+}
+
+function getAgeGuidance(ageGroup) {
+  switch (String(ageGroup)) {
+    case '4-5':
+      return 'Use very short sentences, familiar objects, and simple counting or recognition tasks.';
+    case '6-7':
+      return 'Use short sentences, concrete examples, and simple one-step thinking.';
+    case '8-9':
+      return 'Use clear context, simple reasoning, and age-appropriate curriculum words.';
+    case '10-12':
+      return 'Use richer vocabulary, multi-step reasoning, and more realistic classroom contexts.';
+    default:
+      return 'Use clear, age-appropriate language with concrete examples.';
   }
 }
 

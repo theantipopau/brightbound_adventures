@@ -178,6 +178,18 @@ class AppSpacing {
   static const double xxl = 48.0;
 }
 
+class AppInput {
+  static const double minTouchTarget = 48.0;
+  static const double preferredTouchTarget = 56.0;
+  static const double compactIconButton = 44.0;
+  static const double focusRingWidth = 3.0;
+
+  static Border focusBorder(Color color) => Border.all(
+        color: color.withValues(alpha: 0.95),
+        width: focusRingWidth,
+      );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // APP MOTION — standard durations and curves for consistent animation feel
 // ─────────────────────────────────────────────────────────────────────────────
@@ -207,55 +219,55 @@ class AppMotion {
 class AppShadows {
   /// Subtle card lift
   static List<BoxShadow> sm(Color color) => [
-    BoxShadow(
-      color: color.withValues(alpha: 0.12),
-      blurRadius: 8,
-      offset: const Offset(0, 3),
-    ),
-  ];
+        BoxShadow(
+          color: color.withValues(alpha: 0.12),
+          blurRadius: 8,
+          offset: const Offset(0, 3),
+        ),
+      ];
 
   /// Standard card shadow
   static List<BoxShadow> md(Color color) => [
-    BoxShadow(
-      color: color.withValues(alpha: 0.18),
-      blurRadius: 16,
-      offset: const Offset(0, 6),
-      spreadRadius: 1,
-    ),
-  ];
+        BoxShadow(
+          color: color.withValues(alpha: 0.18),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+          spreadRadius: 1,
+        ),
+      ];
 
   /// Elevated panel
   static List<BoxShadow> lg(Color color) => [
-    BoxShadow(
-      color: color.withValues(alpha: 0.22),
-      blurRadius: 28,
-      offset: const Offset(0, 10),
-      spreadRadius: 2,
-    ),
-  ];
+        BoxShadow(
+          color: color.withValues(alpha: 0.22),
+          blurRadius: 28,
+          offset: const Offset(0, 10),
+          spreadRadius: 2,
+        ),
+      ];
 
   /// Glow effect (no offset, spread-based)
   static List<BoxShadow> glow(Color color, {double intensity = 0.5}) => [
-    BoxShadow(
-      color: color.withValues(alpha: intensity * 0.6),
-      blurRadius: 20,
-      spreadRadius: 4,
-    ),
-    BoxShadow(
-      color: color.withValues(alpha: intensity * 0.25),
-      blurRadius: 40,
-      spreadRadius: 8,
-    ),
-  ];
+        BoxShadow(
+          color: color.withValues(alpha: intensity * 0.6),
+          blurRadius: 20,
+          spreadRadius: 4,
+        ),
+        BoxShadow(
+          color: color.withValues(alpha: intensity * 0.25),
+          blurRadius: 40,
+          spreadRadius: 8,
+        ),
+      ];
 
   /// Outer ring glow for stars/trophies
   static List<BoxShadow> pulse(Color color, double progress) => [
-    BoxShadow(
-      color: color.withValues(alpha: 0.3 + progress * 0.3),
-      blurRadius: 12 + progress * 20,
-      spreadRadius: progress * 6,
-    ),
-  ];
+        BoxShadow(
+          color: color.withValues(alpha: 0.3 + progress * 0.3),
+          blurRadius: 12 + progress * 20,
+          spreadRadius: progress * 6,
+        ),
+      ];
 
   /// Neutral soft shadow
   static const List<BoxShadow> neutral = [
@@ -295,42 +307,41 @@ class WorldTokens {
 
   // ── Quick access for quiz/detail backgrounds ──────────────────
   LinearGradient get quizBackground => LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      skyGradient.first.withValues(alpha: 0.18),
-      skyGradient.last.withValues(alpha: 0.06),
-    ],
-  );
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          skyGradient.first.withValues(alpha: 0.18),
+          skyGradient.last.withValues(alpha: 0.06),
+        ],
+      );
 
   LinearGradient get headerGradient => LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomCenter,
-    colors: [primaryColor, secondaryColor],
-  );
+        begin: Alignment.topLeft,
+        end: Alignment.bottomCenter,
+        colors: [primaryColor, secondaryColor],
+      );
 
   BoxDecoration cardDecoration({bool hovered = false}) => BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [Colors.white, primaryColor.withValues(alpha: 0.06)],
-    ),
-    borderRadius: BorderRadius.circular(AppBorders.lg),
-    border: Border.all(
-      color: primaryColor.withValues(alpha: hovered ? 0.55 : 0.25),
-      width: hovered ? 2.5 : 1.5,
-    ),
-    boxShadow: hovered
-        ? AppShadows.md(primaryColor)
-        : AppShadows.sm(primaryColor),
-  );
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, primaryColor.withValues(alpha: 0.06)],
+        ),
+        borderRadius: BorderRadius.circular(AppBorders.lg),
+        border: Border.all(
+          color: primaryColor.withValues(alpha: hovered ? 0.55 : 0.25),
+          width: hovered ? 2.5 : 1.5,
+        ),
+        boxShadow:
+            hovered ? AppShadows.md(primaryColor) : AppShadows.sm(primaryColor),
+      );
 
   // ── Static instances per zone ──────────────────────────────────
   static const wordWoods = WorldTokens(
     zoneId: 'word-woods',
     displayName: 'Word Woods',
     emoji: '🌲',
-    primaryColor: Color(0xFF2D7D32),   // Forest green
+    primaryColor: Color(0xFF2D7D32), // Forest green
     secondaryColor: Color(0xFF1B5E20),
     accentColor: Color(0xFF81C784),
     skyGradient: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
@@ -342,7 +353,7 @@ class WorldTokens {
     zoneId: 'number-nebula',
     displayName: 'Number Nebula',
     emoji: '🌌',
-    primaryColor: Color(0xFF3949AB),   // Indigo
+    primaryColor: Color(0xFF3949AB), // Indigo
     secondaryColor: Color(0xFF1A237E),
     accentColor: Color(0xFF7986CB),
     skyGradient: [Color(0xFFE8EAF6), Color(0xFFC5CAE9)],
@@ -354,7 +365,7 @@ class WorldTokens {
     zoneId: 'math-facts',
     displayName: 'Math Facts',
     emoji: '🔢',
-    primaryColor: Color(0xFFE53935),   // Red
+    primaryColor: Color(0xFFE53935), // Red
     secondaryColor: Color(0xFFB71C1C),
     accentColor: Color(0xFFEF9A9A),
     skyGradient: [Color(0xFFFFEBEE), Color(0xFFFFCDD2)],
@@ -366,7 +377,7 @@ class WorldTokens {
     zoneId: 'story-springs',
     displayName: 'Story Springs',
     emoji: '📖',
-    primaryColor: Color(0xFF1565C0),   // Blue
+    primaryColor: Color(0xFF1565C0), // Blue
     secondaryColor: Color(0xFF0D47A1),
     accentColor: Color(0xFF64B5F6),
     skyGradient: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
@@ -378,7 +389,7 @@ class WorldTokens {
     zoneId: 'science-explorers',
     displayName: 'Science Explorers',
     emoji: '🔬',
-    primaryColor: Color(0xFF00695C),   // Teal
+    primaryColor: Color(0xFF00695C), // Teal
     secondaryColor: Color(0xFF004D40),
     accentColor: Color(0xFF4DB6AC),
     skyGradient: [Color(0xFFE0F2F1), Color(0xFFB2DFDB)],
@@ -390,7 +401,7 @@ class WorldTokens {
     zoneId: 'creative-corner',
     displayName: 'Creative Corner',
     emoji: '🎨',
-    primaryColor: Color(0xFFE65100),   // Deep orange
+    primaryColor: Color(0xFFE65100), // Deep orange
     secondaryColor: Color(0xFFBF360C),
     accentColor: Color(0xFFFFB74D),
     skyGradient: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
@@ -402,7 +413,7 @@ class WorldTokens {
     zoneId: 'puzzle-peaks',
     displayName: 'Puzzle Peaks',
     emoji: '🧩',
-    primaryColor: Color(0xFF6A1B9A),   // Purple
+    primaryColor: Color(0xFF6A1B9A), // Purple
     secondaryColor: Color(0xFF4A148C),
     accentColor: Color(0xFFCE93D8),
     skyGradient: [Color(0xFFF3E5F5), Color(0xFFE1BEE7)],
@@ -414,7 +425,7 @@ class WorldTokens {
     zoneId: 'adventure-arena',
     displayName: 'Adventure Arena',
     emoji: '🏆',
-    primaryColor: Color(0xFFF9A825),   // Gold
+    primaryColor: Color(0xFFF9A825), // Gold
     secondaryColor: Color(0xFFF57F17),
     accentColor: Color(0xFFFFEE58),
     skyGradient: [Color(0xFFFFFDE7), Color(0xFFFFF9C4)],
@@ -423,8 +434,14 @@ class WorldTokens {
   );
 
   static const List<WorldTokens> all = [
-    wordWoods, numberNebula, mathFacts, storySprings,
-    scienceExplorers, creativeCorner, puzzlePeaks, adventureArena,
+    wordWoods,
+    numberNebula,
+    mathFacts,
+    storySprings,
+    scienceExplorers,
+    creativeCorner,
+    puzzlePeaks,
+    adventureArena,
   ];
 
   /// Resolve from a zone ID or subject string (fallback gracefully)
@@ -445,7 +462,10 @@ class WorldTokens {
       final dg = (w.primaryColor.g - color.g).abs();
       final db = (w.primaryColor.b - color.b).abs();
       final dist = dr + dg + db;
-      if (dist < best) { best = dist; result = w; }
+      if (dist < best) {
+        best = dist;
+        result = w;
+      }
     }
     return result;
   }

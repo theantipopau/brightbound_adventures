@@ -41,7 +41,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('NumeracyGame Tests', () {
-    testWidgets('renders current question and all answer options', (WidgetTester tester) async {
+    testWidgets('renders current question and all answer options',
+        (WidgetTester tester) async {
       final question = NumeracyQuestion(
         id: 'test_1',
         skillId: 'test_skill',
@@ -64,7 +65,8 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 1));
     });
 
-    testWidgets('shows feedback and completion callback after a correct answer', (WidgetTester tester) async {
+    testWidgets('shows feedback and completion callback after a correct answer',
+        (WidgetTester tester) async {
       final question = NumeracyQuestion(
         id: 'test_2',
         skillId: 'test_skill',
@@ -103,7 +105,7 @@ void main() {
       await tester.tap(find.text('5').first);
       await tester.pump();
 
-      expect(find.textContaining('+10'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('pts'), findsAtLeastNWidgets(1));
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
 
       await tester.pump(const Duration(milliseconds: 1600));
@@ -114,7 +116,8 @@ void main() {
       expect(total, 1);
     });
 
-    testWidgets('pause button toggles back to play icon', (WidgetTester tester) async {
+    testWidgets('pause button toggles back to play icon',
+        (WidgetTester tester) async {
       final question = NumeracyQuestion(
         id: 'test_3',
         skillId: 'test_skill',

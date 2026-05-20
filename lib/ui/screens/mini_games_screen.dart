@@ -12,7 +12,6 @@ import 'package:brightbound_adventures/ui/widgets/visual_effects/screen_shaker.d
 class MiniGamesScreen extends StatefulWidget {
   const MiniGamesScreen({super.key});
 
-
   @override
   State<MiniGamesScreen> createState() => _MiniGamesScreenState();
 }
@@ -47,9 +46,11 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
     return Scaffold(
-      body: Stack(
-        children: [
+      body: TickerMode(
+        enabled: !reduceMotion,
+        child: Stack(children: [
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -72,162 +73,164 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
             child: Column(
               children: [
                 // Header
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back,
-                          color: Colors.white, size: 28),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            '🎮 Mini Games',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Quick games to boost your skills!',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                    ),
-                  ),
-                  const SizedBox(width: 48), // Balance the back button
-                ],
-              ),
-            ),
-
-            // Difficulty selector
-            _buildDifficultySelector(),
-
-            // Games Grid - Responsive
-            Expanded(
-              child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    // Determine grid layout based on available space
-                    final width = constraints.maxWidth;
-                    final height = constraints.maxHeight;
-                    final isWide = width > 600;
-                    final crossAxisCount = isWide ? 2 : 1;
-
-                    // Calculate card size to fit without scrolling
-                    final padding = 20.0;
-                    final spacing = 20.0;
-                    final availableWidth =
-                        width - (padding * 2) - (isWide ? spacing : 0);
-                    final cardWidth = availableWidth / crossAxisCount;
-                    final availableHeight = height - (padding * 2);
-                    final rowCount =
-                        (6 / crossAxisCount).ceil(); // Updated for 6 games
-                    final cardHeight =
-                        (availableHeight - (spacing * (rowCount - 1))) /
-                            rowCount;
-
-                    // Use the smaller dimension to maintain aspect ratio
-                    final cardSize = math.min(cardWidth * 0.9, cardHeight);
-
-                    return AnimatedBuilder(
-                      animation: _entranceController,
-                      builder: (context, child) {
-                        return GridView.count(
-                          crossAxisCount: crossAxisCount,
-                          padding: EdgeInsets.all(padding),
-                          mainAxisSpacing: spacing,
-                          crossAxisSpacing: spacing,
-                          childAspectRatio: cardWidth / cardSize,
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back,
+                            color: Colors.white, size: 28),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            _buildGameCard(
-                              index: 0,
-                              emoji: '🎯',
-                              title: 'Target\nPractice',
-                              description:
-                                  'Tap the targets\nbefore time runs out!',
-                              color: Colors.red,
-                              game: () =>
-                                  _launchGame(context, 'target_practice'),
-                            ),
-                            _buildGameCard(
-                              index: 1,
-                              emoji: '🧠',
-                              title: 'Memory\nMatch',
-                              description: 'Find matching\npairs quickly!',
-                              color: Colors.deepPurple,
-                              game: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      MemoryMatchGame(difficulty: _selectedDifficulty),
-                                ),
+                            Text(
+                              '🎮 Mini Games',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            _buildGameCard(
-                              index: 2,
-                              emoji: '⏱️',
-                              title: 'Speed\nMath',
-                              description:
-                                  'Solve problems\nas fast as you can!',
-                              color: Colors.orange,
-                              game: () => _launchGame(context, 'speed_round'),
-                            ),
-                            _buildGameCard(
-                              index: 3,
-                              emoji: '🎨',
-                              title: 'Color\nMatch',
-                              description: 'Match word color\nwith the name!',
-                              color: Colors.cyan,
-                              game: () => _launchGame(context, 'color_splash'),
-                            ),
-                            _buildGameCard(
-                              index: 4,
-                              emoji: '🧩',
-                              title: 'Pattern\nPuzzle',
-                              description: 'Complete the\nsequence!',
-                              color: Colors.indigo,
-                              game: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PatternPuzzleGame(
-                                      difficulty: _selectedDifficulty),
-                                ),
-                              ),
-                            ),
-                            _buildGameCard(
-                              index: 5,
-                              emoji: '🔤',
-                              title: 'Word\nSearch',
-                              description: 'Find hidden\nwords in the grid!',
-                              color: Colors.teal,
-                              game: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      WordSearchGame(difficulty: _selectedDifficulty),
-                                ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Quick games to boost your skills!',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 15,
                               ),
                             ),
                           ],
-                        );
-                      },
-                    );
-                  },
+                        ),
+                      ),
+                      const SizedBox(width: 48), // Balance the back button
+                    ],
+                  ),
                 ),
-              ),
-            ],
+
+                // Difficulty selector
+                _buildDifficultySelector(),
+
+                // Games Grid - Responsive
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Determine grid layout based on available space
+                      final width = constraints.maxWidth;
+                      final height = constraints.maxHeight;
+                      final isWide = width > 600;
+                      final crossAxisCount = isWide ? 2 : 1;
+
+                      // Calculate card size to fit without scrolling
+                      final padding = 20.0;
+                      final spacing = 20.0;
+                      final availableWidth =
+                          width - (padding * 2) - (isWide ? spacing : 0);
+                      final cardWidth = availableWidth / crossAxisCount;
+                      final availableHeight = height - (padding * 2);
+                      final rowCount =
+                          (6 / crossAxisCount).ceil(); // Updated for 6 games
+                      final cardHeight =
+                          (availableHeight - (spacing * (rowCount - 1))) /
+                              rowCount;
+
+                      // Use the smaller dimension to maintain aspect ratio
+                      final cardSize = math.min(cardWidth * 0.9, cardHeight);
+
+                      return AnimatedBuilder(
+                        animation: _entranceController,
+                        builder: (context, child) {
+                          return GridView.count(
+                            crossAxisCount: crossAxisCount,
+                            padding: EdgeInsets.all(padding),
+                            mainAxisSpacing: spacing,
+                            crossAxisSpacing: spacing,
+                            childAspectRatio: cardWidth / cardSize,
+                            children: [
+                              _buildGameCard(
+                                index: 0,
+                                emoji: '🎯',
+                                title: 'Target\nPractice',
+                                description:
+                                    'Tap the targets\nbefore time runs out!',
+                                color: Colors.red,
+                                game: () =>
+                                    _launchGame(context, 'target_practice'),
+                              ),
+                              _buildGameCard(
+                                index: 1,
+                                emoji: '🧠',
+                                title: 'Memory\nMatch',
+                                description: 'Find matching\npairs quickly!',
+                                color: Colors.deepPurple,
+                                game: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MemoryMatchGame(
+                                        difficulty: _selectedDifficulty),
+                                  ),
+                                ),
+                              ),
+                              _buildGameCard(
+                                index: 2,
+                                emoji: '⏱️',
+                                title: 'Speed\nMath',
+                                description:
+                                    'Solve problems\nas fast as you can!',
+                                color: Colors.orange,
+                                game: () => _launchGame(context, 'speed_round'),
+                              ),
+                              _buildGameCard(
+                                index: 3,
+                                emoji: '🎨',
+                                title: 'Color\nMatch',
+                                description: 'Match word color\nwith the name!',
+                                color: Colors.cyan,
+                                game: () =>
+                                    _launchGame(context, 'color_splash'),
+                              ),
+                              _buildGameCard(
+                                index: 4,
+                                emoji: '🧩',
+                                title: 'Pattern\nPuzzle',
+                                description: 'Complete the\nsequence!',
+                                color: Colors.indigo,
+                                game: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PatternPuzzleGame(
+                                        difficulty: _selectedDifficulty),
+                                  ),
+                                ),
+                              ),
+                              _buildGameCard(
+                                index: 5,
+                                emoji: '🔤',
+                                title: 'Word\nSearch',
+                                description: 'Find hidden\nwords in the grid!',
+                                color: Colors.teal,
+                                game: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => WordSearchGame(
+                                        difficulty: _selectedDifficulty),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ]),
+        ]),
+      ),
     );
   }
 
@@ -294,9 +297,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                     labels[d]!,
                     style: TextStyle(
                       color: isSelected ? Colors.white : Colors.white60,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                       fontSize: 13,
                     ),
                   ),
@@ -326,10 +328,13 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
     return AnimatedBuilder(
       animation: Listenable.merge([animation, _floatController]),
       builder: (context, child) {
-        final float =
-            math.sin(_floatController.value * math.pi + index * 0.5) * 4;
-        final scale = animation.value;
-        final opacity = animation.value;
+        final reduceMotion = MediaQuery.of(context).disableAnimations;
+        final float = reduceMotion
+            ? 0.0
+            : math.sin(_floatController.value * math.pi + index * 0.5) * 4;
+        final scale = reduceMotion ? 1.0 : animation.value;
+        final opacity = reduceMotion ? 1.0 : animation.value;
+        final titleText = title.replaceAll('\n', ' ');
 
         return Transform.scale(
           scale: scale,
@@ -337,122 +342,128 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
             opacity: opacity,
             child: Transform.translate(
               offset: Offset(0, float),
-              child: GestureDetector(
-                onTap: game,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        color.withValues(alpha: 0.95),
-                        color.withValues(alpha: 0.75),
+              child: Tooltip(
+                message: 'Play $titleText',
+                child: Semantics(
+                  button: true,
+                  label: 'Play $titleText. $description',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          color.withValues(alpha: 0.95),
+                          color.withValues(alpha: 0.75),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.6),
+                          blurRadius: 24,
+                          offset: const Offset(0, 10),
+                        ),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.6),
-                        blurRadius: 24,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: game,
-                      borderRadius: BorderRadius.circular(28),
-                      splashColor: Colors.white.withValues(alpha: 0.3),
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Emoji with enhanced glow effect
-                            Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.25),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.white.withValues(alpha: 0.4),
-                                    blurRadius: 20,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                emoji,
-                                style: const TextStyle(fontSize: 64),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              title,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                height: 1.2,
-                                letterSpacing: 0.5,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black38,
-                                    blurRadius: 6,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              description,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.95),
-                                fontSize: 13,
-                                height: 1.4,
-                              ),
-                            ),
-                            const Spacer(),
-                            // Enhanced play button
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.3),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.play_arrow_rounded,
-                                      color: color, size: 24),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'PLAY',
-                                    style: TextStyle(
-                                      color: color,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      letterSpacing: 1.0,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: game,
+                        borderRadius: BorderRadius.circular(28),
+                        splashColor: Colors.white.withValues(alpha: 0.3),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Emoji with enhanced glow effect
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.25),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.4),
+                                      blurRadius: 20,
+                                      spreadRadius: 2,
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
+                                child: Text(
+                                  emoji,
+                                  style: const TextStyle(fontSize: 64),
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 20),
+                              Text(
+                                title,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  height: 1.2,
+                                  letterSpacing: 0.5,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black38,
+                                      blurRadius: 6,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                description,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.95),
+                                  fontSize: 13,
+                                  height: 1.4,
+                                ),
+                              ),
+                              const Spacer(),
+                              // Enhanced play button
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.3),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.play_arrow_rounded,
+                                        color: color, size: 24),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'PLAY',
+                                      style: TextStyle(
+                                        color: color,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -702,106 +713,107 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           children: [
             // Header with timer and score
             Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_getGameColor, _getGameColor.withValues(alpha: 0.8)],
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [_getGameColor, _getGameColor.withValues(alpha: 0.8)],
+                ),
               ),
-            ),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () => _showExitDialog(),
-                  ),
-                  Expanded(
-                    child: Text(
-                      _gameTitle,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+              child: SafeArea(
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => _showExitDialog(),
+                    ),
+                    Expanded(
+                      child: Text(
+                        _gameTitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  // Timer
-                  AnimatedBuilder(
-                    animation: _pulseController,
-                    builder: (context, child) {
-                      final scale = timeRemaining < 10
-                          ? 1.0 + (_pulseController.value * 0.1)
-                          : 1.0;
-                      return Transform.scale(
-                        scale: scale,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                timeRemaining < 10 ? Colors.red : Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 8,
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            '$timeRemaining"',
-                            style: TextStyle(
+                    // Timer
+                    AnimatedBuilder(
+                      animation: _pulseController,
+                      builder: (context, child) {
+                        final scale = timeRemaining < 10
+                            ? 1.0 + (_pulseController.value * 0.1)
+                            : 1.0;
+                        return Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
                               color: timeRemaining < 10
-                                  ? Colors.white
-                                  : _getGameColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                                  ? Colors.red
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 8,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              '$timeRemaining"',
+                              style: TextStyle(
+                                color: timeRemaining < 10
+                                    ? Colors.white
+                                    : _getGameColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Score display
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              color: Colors.white,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Score: ',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Text(
+                    '$score',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: _getGameColor,
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
 
-          // Score display
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            color: Colors.white,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Score: ',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.grey,
-                  ),
-                ),
-                Text(
-                  '$score',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: _getGameColor,
-                  ),
-                ),
-              ],
+            // Game content
+            Expanded(
+              child: gameOver ? _buildGameOver() : _buildGameContent(),
             ),
-          ),
-
-          // Game content
-          Expanded(
-            child: gameOver ? _buildGameOver() : _buildGameContent(),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

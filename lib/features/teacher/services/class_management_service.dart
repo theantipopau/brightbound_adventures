@@ -13,7 +13,8 @@ class ClassManagementService {
     String? apiBase,
     required this.authToken,
     http.Client? httpClient,
-  })  : apiBase = apiBase ?? 'https://brightbound-api.matt-hurley91.workers.dev',
+  })  : apiBase =
+            apiBase ?? 'https://brightbound-api.matt-hurley91.workers.dev',
         httpClient = httpClient ?? http.Client();
 
   /// Create a new class for a teacher
@@ -24,29 +25,31 @@ class ClassManagementService {
     String? description,
   }) async {
     try {
-      final response = await httpClient.post(
-        Uri.parse('$apiBase/api/classes'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $authToken',
-        },
-        body: jsonEncode({
-          'teacherId': teacherId,
-          'name': name,
-          'gradeLevel': gradeLevel,
-          'description': description,
-        }),
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      final response = await httpClient
+          .post(
+            Uri.parse('$apiBase/api/classes'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $authToken',
+            },
+            body: jsonEncode({
+              'teacherId': teacherId,
+              'name': name,
+              'gradeLevel': gradeLevel,
+              'description': description,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception('Request timeout'),
+          );
 
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         return StudentClass.fromJson(data['class']);
-      } else if (response.statusCode == 402) {
+      } else if (response.statusCode == 402 || response.statusCode == 409) {
         throw Exception('Maximum classes reached for your license tier');
-      } else if (response.statusCode == 401) {
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
         throw Exception('Unauthorized');
       }
       return null;
@@ -75,7 +78,7 @@ class ClassManagementService {
             .map((c) => StudentClass.fromJson(c as Map<String, dynamic>))
             .toList();
         return classes;
-      } else if (response.statusCode == 401) {
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
         throw Exception('Unauthorized');
       }
       return [];
@@ -124,22 +127,24 @@ class ClassManagementService {
       if (description != null) body['description'] = description;
       if (gradeLevel != null) body['gradeLevel'] = gradeLevel;
 
-      final response = await httpClient.patch(
-        Uri.parse('$apiBase/api/classes/$classId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $authToken',
-        },
-        body: jsonEncode(body),
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      final response = await httpClient
+          .patch(
+            Uri.parse('$apiBase/api/classes/$classId'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $authToken',
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception('Request timeout'),
+          );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         return StudentClass.fromJson(data['class']);
-      } else if (response.statusCode == 401) {
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
         throw Exception('Unauthorized');
       }
       return null;
@@ -177,19 +182,21 @@ class ClassManagementService {
     required String studentId,
   }) async {
     try {
-      final response = await httpClient.post(
-        Uri.parse('$apiBase/api/classes/$classId/students'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $authToken',
-        },
-        body: jsonEncode({
-          'studentId': studentId,
-        }),
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      final response = await httpClient
+          .post(
+            Uri.parse('$apiBase/api/classes/$classId/students'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $authToken',
+            },
+            body: jsonEncode({
+              'studentId': studentId,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception('Request timeout'),
+          );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -198,7 +205,7 @@ class ClassManagementService {
         throw Exception('Student already in class');
       } else if (response.statusCode == 402) {
         throw Exception('Class at maximum capacity');
-      } else if (response.statusCode == 401) {
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
         throw Exception('Unauthorized');
       }
       return null;
@@ -243,19 +250,21 @@ class ClassManagementService {
     required List<String> studentIds,
   }) async {
     try {
-      final response = await httpClient.post(
-        Uri.parse('$apiBase/api/classes/$classId/students/bulk'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $authToken',
-        },
-        body: jsonEncode({
-          'studentIds': studentIds,
-        }),
-      ).timeout(
-        const Duration(seconds: 15),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      final response = await httpClient
+          .post(
+            Uri.parse('$apiBase/api/classes/$classId/students/bulk'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $authToken',
+            },
+            body: jsonEncode({
+              'studentIds': studentIds,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 15),
+            onTimeout: () => throw Exception('Request timeout'),
+          );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;

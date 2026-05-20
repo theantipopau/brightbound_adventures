@@ -53,7 +53,8 @@ class _AdventurePatternPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     for (double x = 0; x <= size.width + tileSize; x += tileSize) {
-      canvas.drawLine(Offset(x, 0), Offset(x - size.height, size.height), linePaint);
+      canvas.drawLine(
+          Offset(x, 0), Offset(x - size.height, size.height), linePaint);
     }
 
     for (double y = 0; y <= size.height + tileSize; y += tileSize) {

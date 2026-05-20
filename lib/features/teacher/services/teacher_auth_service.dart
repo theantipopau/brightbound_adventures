@@ -6,13 +6,15 @@ import '../models/teacher_account.dart';
 /// Service for teacher authentication via Cloudflare Workers API
 /// All teacher data stored in D1 (SQLite) database
 class TeacherAuthService {
-  final String apiBase; // Live: https://brightbound-api.matt-hurley91.workers.dev
+  final String
+      apiBase; // Live: https://brightbound-api.matt-hurley91.workers.dev
   final http.Client httpClient;
 
   TeacherAuthService({
     String? apiBase,
     http.Client? httpClient,
-  })  : apiBase = apiBase ?? 'https://brightbound-api.matt-hurley91.workers.dev',
+  })  : apiBase =
+            apiBase ?? 'https://brightbound-api.matt-hurley91.workers.dev',
         httpClient = httpClient ?? http.Client();
 
   /// Current teacher ID (stored locally after login)
@@ -34,22 +36,24 @@ class TeacherAuthService {
     String? gradeSpecialty,
   }) async {
     try {
-      final response = await httpClient.post(
-        Uri.parse('$apiBase/api/teachers/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-          'fullName': fullName,
-          'schoolName': schoolName,
-          'phoneNumber': phoneNumber,
-          'schoolDistrict': schoolDistrict,
-          'gradeSpecialty': gradeSpecialty,
-        }),
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      final response = await httpClient
+          .post(
+            Uri.parse('$apiBase/api/teachers/register'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'email': email,
+              'password': password,
+              'fullName': fullName,
+              'schoolName': schoolName,
+              'phoneNumber': phoneNumber,
+              'schoolDistrict': schoolDistrict,
+              'gradeSpecialty': gradeSpecialty,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => throw Exception('Request timeout'),
+          );
 
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -75,17 +79,19 @@ class TeacherAuthService {
     required String password,
   }) async {
     try {
-      final response = await httpClient.post(
-        Uri.parse('$apiBase/api/teachers/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      final response = await httpClient
+          .post(
+            Uri.parse('$apiBase/api/teachers/login'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'email': email,
+              'password': password,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => throw Exception('Request timeout'),
+          );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -125,7 +131,7 @@ class TeacherAuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         return TeacherAccount.fromJson(data['teacher']);
-      } else if (response.statusCode == 401) {
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
         _currentTeacherId = null;
         _authToken = null;
         throw Exception('Unauthorized - please login again');
@@ -154,17 +160,19 @@ class TeacherAuthService {
       if (schoolDistrict != null) body['schoolDistrict'] = schoolDistrict;
       if (gradeSpecialty != null) body['gradeSpecialty'] = gradeSpecialty;
 
-      final response = await httpClient.patch(
-        Uri.parse('$apiBase/api/teachers/$teacherId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
-        body: jsonEncode(body),
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      final response = await httpClient
+          .patch(
+            Uri.parse('$apiBase/api/teachers/$teacherId'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $_authToken',
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception('Request timeout'),
+          );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -188,20 +196,22 @@ class TeacherAuthService {
     try {
       if (_authToken == null) throw Exception('Not authenticated');
 
-      final response = await httpClient.post(
-        Uri.parse('$apiBase/api/teachers/$teacherId/change-password'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
-        body: jsonEncode({
-          'currentPassword': currentPassword,
-          'newPassword': newPassword,
-        }),
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      final response = await httpClient
+          .post(
+            Uri.parse('$apiBase/api/teachers/$teacherId/change-password'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $_authToken',
+            },
+            body: jsonEncode({
+              'currentPassword': currentPassword,
+              'newPassword': newPassword,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception('Request timeout'),
+          );
 
       if (response.statusCode != 200) {
         throw Exception('Failed to change password');
@@ -215,14 +225,16 @@ class TeacherAuthService {
   /// Request password reset email
   Future<void> resetPasswordRequest(String email) async {
     try {
-      final response = await httpClient.post(
-        Uri.parse('$apiBase/api/teachers/reset-password-request'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      final response = await httpClient
+          .post(
+            Uri.parse('$apiBase/api/teachers/reset-password-request'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'email': email}),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception('Request timeout'),
+          );
 
       if (response.statusCode != 200) {
         throw Exception('Failed to send reset email');
@@ -242,20 +254,22 @@ class TeacherAuthService {
     try {
       if (_authToken == null) throw Exception('Not authenticated');
 
-      final response = await httpClient.post(
-        Uri.parse('$apiBase/api/teachers/$teacherId/upgrade-license'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
-        body: jsonEncode({
-          'licenseType': newLicenseType,
-          'stripePaymentIntentId': stripePaymentIntentId,
-        }),
-      ).timeout(
-        const Duration(seconds: 15),
-        onTimeout: () => throw Exception('Request timeout'),
-      );
+      final response = await httpClient
+          .post(
+            Uri.parse('$apiBase/api/teachers/$teacherId/upgrade-license'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $_authToken',
+            },
+            body: jsonEncode({
+              'licenseType': newLicenseType,
+              'stripePaymentIntentId': stripePaymentIntentId,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 15),
+            onTimeout: () => throw Exception('Request timeout'),
+          );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;

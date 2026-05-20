@@ -133,7 +133,8 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: worldTokens.primaryColor.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(14),
@@ -147,10 +148,12 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                         SizedBox(
                           width: 28,
                           height: 28,
-                          child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
+                          child: Image.asset('assets/images/logo.png',
+                              fit: BoxFit.contain),
                         ),
                         const SizedBox(width: 6),
-                        const Icon(Icons.chevron_right, size: 16, color: Colors.black38),
+                        const Icon(Icons.chevron_right,
+                            size: 16, color: Colors.black38),
                         const SizedBox(width: 4),
                         Text(
                           widget.zoneName,
@@ -170,10 +173,23 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                         SizedBox(
                           width: 22,
                           height: 22,
-                          child: Image.asset('assets/images/questsandtasks.PNG', fit: BoxFit.contain),
+                          child: Image.asset('assets/images/questsandtasks.PNG',
+                              fit: BoxFit.contain),
                         ),
                       ],
                     ),
+                  ),
+                ),
+              ),
+
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: _buildZoneHeroCard(
+                    context,
+                    worldTokens,
+                    zoneStats,
+                    filteredSkills.length,
                   ),
                 ),
               ),
@@ -182,8 +198,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
               if (widget.zoneId == 'adventure_arena')
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding:
-                        const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                     child: GestureDetector(
                       onTap: () => Navigator.push(
                         context,
@@ -213,13 +228,11 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Text('⚔️',
-                                style: TextStyle(fontSize: 40)),
+                            const Text('⚔️', style: TextStyle(fontSize: 40)),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
                                     'BOSS BATTLE',
@@ -234,18 +247,16 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                                   const Text(
                                     '10-question mixed gauntlet\nDefeat the Shadow Champion!',
                                     style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 13),
+                                        color: Colors.white70, fontSize: 13),
                                   ),
                                   const SizedBox(height: 8),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Colors.amber
-                                          .withValues(alpha: 0.2),
-                                      borderRadius:
-                                          BorderRadius.circular(12),
+                                      color:
+                                          Colors.amber.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                           color: Colors.amber
                                               .withValues(alpha: 0.4)),
@@ -522,6 +533,167 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
     );
   }
 
+  Widget _buildZoneHeroCard(
+    BuildContext context,
+    WorldTokens worldTokens,
+    dynamic zoneStats,
+    int totalSkills,
+  ) {
+    final mastered = zoneStats.masteredSkills as int;
+    final averageAccuracy = zoneStats.averageAccuracy as double;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white,
+            worldTokens.primaryColor.withValues(alpha: 0.06),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: worldTokens.primaryColor.withValues(alpha: 0.18),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: worldTokens.primaryColor.withValues(alpha: 0.14),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      worldTokens.primaryColor,
+                      worldTokens.secondaryColor,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    worldTokens.emoji,
+                    style: const TextStyle(fontSize: 26),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.zoneName,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: worldTokens.primaryColor,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.zoneDescription,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                            height: 1.3,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildZoneBadge(
+                icon: Icons.auto_graph_rounded,
+                label: '$totalSkills skills',
+                color: worldTokens.primaryColor,
+              ),
+              _buildZoneBadge(
+                icon: Icons.emoji_events_rounded,
+                label: '$mastered mastered',
+                color: AppColors.reward,
+              ),
+              _buildZoneBadge(
+                icon: Icons.insights_rounded,
+                label:
+                    '${(averageAccuracy * 100).toStringAsFixed(0)}% accuracy',
+                color: AppColors.info,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              minHeight: 10,
+              value: totalSkills > 0 ? mastered / totalSkills : 0,
+              backgroundColor: worldTokens.primaryColor.withValues(alpha: 0.10),
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(worldTokens.primaryColor),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Progress is saved locally and your next challenge gets smarter as you improve.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.35,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildZoneBadge({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMasteryGuideline(BuildContext context, Skill skill) {
     final nextState = skill.getNextState();
     final nextStateText = switch (nextState) {
@@ -559,7 +731,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
     // Choose the appropriate practice screen based on zone
     Widget practiceScreen;
 
-    if (widget.zoneId == 'number_nebula') {
+    if (widget.zoneId == 'number_nebula' || widget.zoneId == 'math_facts') {
       practiceScreen = NumeracyPracticeScreen(
         skill: skill,
         themeColor: widget.zoneColor,

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
+import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
 import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 import '../models/question.dart';
 
@@ -39,7 +39,6 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
   bool _autoReadQuestions = false;
   bool _aiHintsEnabled = false;
   bool _aiExplanationsEnabled = false;
-  bool _aiCloudMode = false;
   String? _aiExplanationText;
   late FocusNode _focusNode;
   final AudioManager _audioManager = AudioManager();
@@ -81,8 +80,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
     );
 
     _slideController.forward();
-    _loadAutoReadPreference();
-    _loadAiPreferences();
+    _loadQuizPreferences();
 
     _focusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -101,12 +99,16 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
 
   LogicQuestion get _currentQuestion => widget.questions[_currentIndex];
 
-  Future<void> _loadAutoReadPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final autoRead = prefs.getBool('autoReadQuestions') ?? false;
+  Future<void> _loadQuizPreferences() async {
+    final preferences = await QuizPreferencesService.load();
     if (!mounted) return;
-    setState(() => _autoReadQuestions = autoRead);
-    if (autoRead) {
+    setState(() {
+      _autoReadQuestions = preferences.autoReadQuestions;
+      _aiHintsEnabled = preferences.aiHintsEnabled;
+      _aiExplanationsEnabled = preferences.aiExplanationsEnabled;
+    });
+    QuizPreferencesService.applyToAssistant(_aiAssistant, preferences);
+    if (preferences.autoReadQuestions) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _readCurrentQuestionAloud();
       });
@@ -120,21 +122,6 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
     await TtsService().speak(questionText);
   }
 
-  Future<void> _loadAiPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    final hintsEnabled = prefs.getBool('aiHintsEnabled') ?? false;
-    final explanationsEnabled = prefs.getBool('aiExplanationsEnabled') ?? false;
-    final cloudMode = prefs.getBool('aiCloudMode') ?? false;
-    if (!mounted) return;
-    setState(() {
-      _aiHintsEnabled = hintsEnabled;
-      _aiExplanationsEnabled = explanationsEnabled;
-      _aiCloudMode = cloudMode;
-    });
-    _aiAssistant.setEnabled(_aiHintsEnabled || _aiExplanationsEnabled);
-    _aiAssistant.setCloudMode(_aiCloudMode);
-  }
-
   Future<void> _prepareAiExplanation() async {
     if (!_aiExplanationsEnabled || _currentIndex >= widget.questions.length) {
       return;
@@ -143,7 +130,9 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
       final explanation = await _aiAssistant.explainAnswer(
         question: _currentQuestion.question,
         correctAnswer: _currentQuestion.options[_currentQuestion.correctIndex],
-        selectedAnswer: _selectedAnswer != null ? _currentQuestion.options[_selectedAnswer!] : '',
+        selectedAnswer: _selectedAnswer != null
+            ? _currentQuestion.options[_selectedAnswer!]
+            : '',
       );
       if (mounted) {
         setState(() => _aiExplanationText = explanation);
@@ -169,7 +158,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
         _correctAnswers++;
         _currentStreak++;
         _celebrationController.forward(from: 0);
-        
+
         hapticService.onCorrectAnswer();
 
         if (_currentStreak >= 3) {
@@ -286,7 +275,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Row(
         children: [
           IconButton(
@@ -314,6 +303,11 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                 Text(
                   'Puzzle ${_currentIndex + 1} of ${widget.questions.length}',
                   style: const TextStyle(color: Colors.white60, fontSize: 14),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Think through each clue before choosing',
+                  style: TextStyle(color: Colors.white54, fontSize: 11),
                 ),
               ],
             ),
@@ -381,13 +375,39 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: [
+                  _buildQuizChip(
+                    icon: Icons.auto_awesome_rounded,
+                    label: 'Focus mode',
+                    color: Colors.tealAccent,
+                  ),
+                  _buildQuizChip(
+                    icon: Icons.extension_rounded,
+                    label: 'Q${_currentIndex + 1}/${widget.questions.length}',
+                    color: Colors.cyanAccent,
+                  ),
+                  if (_autoReadQuestions)
+                    _buildQuizChip(
+                      icon: Icons.record_voice_over,
+                      label: 'Read aloud',
+                      color: Colors.lightBlueAccent,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 18),
               // Question emoji - animated
               if (_currentQuestion.imageEmoji != null) ...[
                 AnimatedBuilder(
                   animation: _pulseAnimation,
                   builder: (context, child) {
-                    final bounce = math.sin(_pulseAnimation.value * 3.14159 * 2) * 10;
-                    final scale = 0.94 + math.sin(_pulseAnimation.value * 3.14159) * 0.08;
+                    final bounce =
+                        math.sin(_pulseAnimation.value * 3.14159 * 2) * 10;
+                    final scale =
+                        0.94 + math.sin(_pulseAnimation.value * 3.14159) * 0.08;
                     return Transform.translate(
                       offset: Offset(0, bounce),
                       child: Transform.scale(
@@ -440,7 +460,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: MediaQuery.of(context).size.width < 600 ? 18 : 22,
+                        fontSize:
+                            MediaQuery.of(context).size.width < 600 ? 18 : 22,
                         fontWeight: FontWeight.w700,
                         height: 1.6,
                         letterSpacing: 0.3,
@@ -451,7 +472,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                     const SizedBox(height: 12),
                     // Question counter
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.teal.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(16),
@@ -540,61 +562,77 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
             onTap: _showFeedback ? null : () => _selectAnswer(index),
             borderRadius: BorderRadius.circular(16),
             child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: borderColor, width: 2),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: borderColor.withValues(alpha: 0.3),
-                    border: Border.all(color: borderColor),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        color: textColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderColor, width: 2),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: borderColor.withValues(alpha: 0.3),
+                      border: Border.all(color: borderColor),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    text,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize:
-                          MediaQuery.of(context).size.width < 600 ? 13 : 15,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                      height: 1.3,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize:
+                            MediaQuery.of(context).size.width < 600 ? 13 : 15,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
+                        height: 1.3,
+                      ),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                if (icon != null) Icon(icon, color: textColor, size: 24),
-              ],
+                  if (icon != null) Icon(icon, color: textColor, size: 24),
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildFeedback() {
+    final correctMessages = [
+      'Brilliant! 🎯',
+      'Sharp logic! 🧠',
+      'Great deduction! 🏔️',
+      'Perfect reasoning! ✅',
+    ];
+    final retryMessages = [
+      'Good thinking!',
+      'Nice attempt, keep climbing!',
+      'Close one, try the next puzzle!',
+      'You are learning fast!',
+    ];
+    final message = _isCorrect
+        ? correctMessages[_currentIndex % correctMessages.length]
+        : retryMessages[_currentIndex % retryMessages.length];
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.all(16),
@@ -620,7 +658,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
               ),
               const SizedBox(width: 8),
               Text(
-                _isCorrect ? 'Brilliant! 🎯' : 'Good thinking!',
+                message,
                 style: TextStyle(
                   color: _isCorrect ? Colors.greenAccent : Colors.orange,
                   fontSize: 20,
@@ -629,6 +667,17 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
               ),
             ],
           ),
+          if (_isCorrect) ...[
+            const SizedBox(height: 6),
+            Text(
+              '+18 pts',
+              style: TextStyle(
+                color: Colors.yellow.shade200,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
           if (_aiExplanationText != null) ...[
             const SizedBox(height: 12),
             Text(
@@ -647,6 +696,36 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuizChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ],
       ),
     );
@@ -783,7 +862,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
           ),
           backgroundColor: Colors.teal.shade700,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           duration: const Duration(seconds: 4),
         ),
       );

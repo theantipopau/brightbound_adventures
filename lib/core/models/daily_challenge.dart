@@ -5,12 +5,16 @@ import 'package:flutter/material.dart';
 enum ChallengeType {
   /// Standard: answer N questions correctly (existing behaviour).
   normal,
+
   /// Speed: complete N questions within a tight time limit bonus.
   timed,
+
   /// Combo: get N correct in a row without a wrong answer.
   combo,
+
   /// No-hints: complete N questions without using any hints.
   noHints,
+
   /// Mixed: questions drawn from two different zones.
   mixed,
 }
@@ -61,6 +65,7 @@ class DailyChallenge {
   final bool isCompleted;
   final int currentProgress;
   final ChallengeType challengeType;
+
   /// Optional secondary zone for mixed challenges
   final String? secondaryZoneId;
 
@@ -116,20 +121,20 @@ class DailyChallenge {
 
   /// Serialize to JSON
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'description': description,
-    'zoneId': zoneId,
-    'skillId': skillId,
-    'targetScore': targetScore,
-    'xpReward': xpReward,
-    'emoji': emoji,
-    'date': date.toIso8601String(),
-    'isCompleted': isCompleted,
-    'currentProgress': currentProgress,
-    'challengeType': challengeType.name,
-    'secondaryZoneId': secondaryZoneId,
-  };
+        'id': id,
+        'title': title,
+        'description': description,
+        'zoneId': zoneId,
+        'skillId': skillId,
+        'targetScore': targetScore,
+        'xpReward': xpReward,
+        'emoji': emoji,
+        'date': date.toIso8601String(),
+        'isCompleted': isCompleted,
+        'currentProgress': currentProgress,
+        'challengeType': challengeType.name,
+        'secondaryZoneId': secondaryZoneId,
+      };
 
   /// Deserialize from JSON
   static DailyChallenge fromJson(Map<String, dynamic> json) {
@@ -155,6 +160,7 @@ class DailyChallenge {
     );
   }
 }
+
 class DailyChallengeGenerator {
   /// Challenge templates for each zone
   static const List<Map<String, dynamic>> _challengeTemplates = [
@@ -295,8 +301,7 @@ class DailyChallengeGenerator {
     // Derive challenge types: easy is always normal, medium/hard rotate
     final dayIndex = date.difference(DateTime(2026, 1, 1)).inDays;
     final mediumType = _typeRotation[dayIndex % _typeRotation.length];
-    final hardType =
-        _typeRotation[(dayIndex + 2) % _typeRotation.length];
+    final hardType = _typeRotation[(dayIndex + 2) % _typeRotation.length];
 
     final types = [ChallengeType.normal, mediumType, hardType];
 
@@ -336,13 +341,15 @@ class DailyChallengeGenerator {
       if (challengeType == ChallengeType.mixed &&
           shuffledTemplates.length > 3) {
         secondaryZoneId =
-            shuffledTemplates[3 + i % (shuffledTemplates.length - 3)]
-                ['zone'] as String;
+            shuffledTemplates[3 + i % (shuffledTemplates.length - 3)]['zone']
+                as String;
       }
 
       challenges.add(DailyChallenge(
         id: 'daily_${date.toIso8601String()}_$i',
-        title: '${challengeType == ChallengeType.normal ? '' : '${challengeType.label} '}${titles[random.nextInt(titles.length)]}'.trim(),
+        title:
+            '${challengeType == ChallengeType.normal ? '' : '${challengeType.label} '}${titles[random.nextInt(titles.length)]}'
+                .trim(),
         description: description,
         zoneId: template['zone'] as String,
         skillId: skillIds[random.nextInt(skillIds.length)] as String,

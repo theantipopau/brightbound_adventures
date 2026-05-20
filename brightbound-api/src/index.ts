@@ -87,7 +87,16 @@ async function verifyPassword(password: string, stored: string): Promise<boolean
     256,
   );
   const computedHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return computedHex === hashHex;
+  return timingSafeEqual(computedHex, hashHex);
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
 }
 
 function generateToken(): string {
@@ -97,6 +106,31 @@ function generateToken(): string {
 
 function generateUUID(): string {
   return crypto.randomUUID();
+}
+
+async function getAuthorizedTeacherId(env: Env, token?: string | null): Promise<string | null> {
+  if (!token) return null;
+  const authToken = await env.DB.prepare(
+    'SELECT teacherId FROM auth_tokens WHERE token = ? AND expiresAt > ?'
+  ).bind(token, new Date().toISOString()).first() as any;
+  return authToken?.teacherId ?? null;
+}
+
+async function getClassWithStudentCount(
+  env: Env,
+  classId: string,
+  teacherId: string,
+): Promise<any | null> {
+  const classData = await env.DB.prepare(
+    `SELECT c.id, c.teacherId, c.name, c.gradeLevel, c.subject, c.description, c.isArchived, c.createdAt, c.updatedAt,
+            COUNT(ce.studentId) as studentCount
+     FROM classes c
+     LEFT JOIN class_enrollments ce ON c.id = ce.classId
+     WHERE c.id = ? AND c.teacherId = ?
+     GROUP BY c.id`
+  ).bind(classId, teacherId).first();
+
+  return classData ?? null;
 }
 
 // ============================================================================
@@ -195,6 +229,9 @@ router.post('/api/teachers/register', async (req: any, env: Env) => {
     // Validation
     if (!email || !password || !fullName || !schoolName) {
       return errorResponse('Missing required fields', 400);
+    }
+    if (String(password).length < 10) {
+      return errorResponse('Password must be at least 10 characters', 400);
     }
 
     await initializeDatabase(env.DB);
@@ -335,6 +372,182 @@ router.get('/api/teachers/:teacherId', async (req: any, env: Env) => {
   }
 });
 
+router.patch('/api/teachers/:teacherId', async (req: any, env: Env) => {
+  try {
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return errorResponse('Authorization required', 401);
+    }
+
+    await initializeDatabase(env.DB);
+
+    const teacherId = await getAuthorizedTeacherId(env, token);
+    if (!teacherId || teacherId !== req.params.teacherId) {
+      return errorResponse('Unauthorized', 403);
+    }
+
+    const { fullName, phoneNumber, schoolDistrict, gradeSpecialty } = await req.json();
+
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (fullName !== undefined) {
+      updates.push('fullName = ?');
+      values.push(fullName);
+    }
+    if (phoneNumber !== undefined) {
+      updates.push('phoneNumber = ?');
+      values.push(phoneNumber || null);
+    }
+    if (schoolDistrict !== undefined) {
+      updates.push('schoolDistrict = ?');
+      values.push(schoolDistrict || null);
+    }
+    if (gradeSpecialty !== undefined) {
+      updates.push('gradeSpecialty = ?');
+      values.push(gradeSpecialty || null);
+    }
+
+    if (updates.length === 0) {
+      return errorResponse('No fields to update', 400);
+    }
+
+    updates.push('updatedAt = ?');
+    values.push(new Date().toISOString());
+    values.push(req.params.teacherId);
+
+    await env.DB.prepare(
+      `UPDATE teachers SET ${updates.join(', ')} WHERE id = ?`
+    ).bind(...values).run();
+
+    const teacher = await env.DB.prepare(
+      'SELECT id, email, fullName, schoolName, schoolDistrict, gradeSpecialty, phoneNumber, licenseType, maxStudents, createdAt, licenseExpiresAt FROM teachers WHERE id = ?'
+    ).bind(req.params.teacherId).first();
+
+    if (!teacher) {
+      return errorResponse('Teacher not found', 404);
+    }
+
+    return jsonResponse({ teacher });
+  } catch (error: any) {
+    console.error('Update teacher profile error:', error);
+    return errorResponse(error.message || 'Failed to update teacher profile', 500);
+  }
+});
+
+router.post('/api/teachers/:teacherId/change-password', async (req: any, env: Env) => {
+  try {
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return errorResponse('Authorization required', 401);
+    }
+
+    await initializeDatabase(env.DB);
+
+    const teacherId = await getAuthorizedTeacherId(env, token);
+    if (!teacherId || teacherId !== req.params.teacherId) {
+      return errorResponse('Unauthorized', 403);
+    }
+
+    const { currentPassword, newPassword } = await req.json();
+    if (!currentPassword || !newPassword) {
+      return errorResponse('Current password and new password are required', 400);
+    }
+    if (String(newPassword).length < 10) {
+      return errorResponse('New password must be at least 10 characters', 400);
+    }
+
+    const teacher = await env.DB.prepare(
+      'SELECT password FROM teachers WHERE id = ? AND isActive = true'
+    ).bind(req.params.teacherId).first() as any;
+
+    if (!teacher) {
+      return errorResponse('Teacher not found', 404);
+    }
+
+    if (!(await verifyPassword(currentPassword, teacher.password as string))) {
+      return errorResponse('Current password is incorrect', 401);
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+    await env.DB.prepare(
+      'UPDATE teachers SET password = ?, updatedAt = ? WHERE id = ?'
+    ).bind(hashedPassword, new Date().toISOString(), req.params.teacherId).run();
+
+    return jsonResponse({ success: true });
+  } catch (error: any) {
+    console.error('Change password error:', error);
+    return errorResponse(error.message || 'Failed to change password', 500);
+  }
+});
+
+router.post('/api/teachers/reset-password-request', async (req: any) => {
+  try {
+    const { email } = await req.json();
+    if (!email) {
+      return errorResponse('Email is required', 400);
+    }
+
+    return jsonResponse({
+      success: true,
+      message: 'If an account exists for that email, a reset email has been sent.',
+    });
+  } catch (error: any) {
+    console.error('Reset password request error:', error);
+    return errorResponse(error.message || 'Failed to process reset password request', 500);
+  }
+});
+
+router.post('/api/teachers/:teacherId/upgrade-license', async (req: any, env: Env) => {
+  try {
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return errorResponse('Authorization required', 401);
+    }
+
+    await initializeDatabase(env.DB);
+
+    const teacherId = await getAuthorizedTeacherId(env, token);
+    if (!teacherId || teacherId !== req.params.teacherId) {
+      return errorResponse('Unauthorized', 403);
+    }
+
+    const { licenseType } = await req.json();
+    const normalized = String(licenseType ?? '').toLowerCase();
+    if (!['free', 'premium', 'enterprise'].includes(normalized)) {
+      return errorResponse('Invalid license type', 400);
+    }
+
+    const maxStudentsByLicense: Record<string, number> = {
+      free: 5,
+      premium: 30,
+      enterprise: 200,
+    };
+
+    await env.DB.prepare(
+      'UPDATE teachers SET licenseType = ?, maxStudents = ?, updatedAt = ? WHERE id = ?'
+    ).bind(
+      normalized,
+      maxStudentsByLicense[normalized],
+      new Date().toISOString(),
+      req.params.teacherId,
+    ).run();
+
+    const teacher = await env.DB.prepare(
+      'SELECT id, email, fullName, schoolName, schoolDistrict, gradeSpecialty, phoneNumber, licenseType, maxStudents, createdAt, licenseExpiresAt FROM teachers WHERE id = ?'
+    ).bind(req.params.teacherId).first();
+
+    if (!teacher) {
+      return errorResponse('Teacher not found', 404);
+    }
+
+    return jsonResponse({ teacher });
+  } catch (error: any) {
+    console.error('Upgrade license error:', error);
+    return errorResponse(error.message || 'Failed to upgrade license', 500);
+  }
+});
+
 // ============================================================================
 // Class Routes
 // ============================================================================
@@ -377,7 +590,7 @@ router.post('/api/classes', async (req: any, env: Env) => {
     const maxClasses = (teacher as any)?.licenseType === 'free' ? 1 : (teacher as any)?.licenseType === 'premium' ? 10 : 999;
 
     if (classCount >= maxClasses) {
-      return errorResponse(`Maximum ${maxClasses} classes reached for your license type`, 409);
+      return errorResponse(`Maximum ${maxClasses} classes reached for your license type`, 402);
     }
 
     const classId = generateUUID();
@@ -452,8 +665,8 @@ router.get('/api/classes/:classId', async (req: any, env: Env) => {
     await initializeDatabase(env.DB);
 
     const authToken = await env.DB.prepare(
-      'SELECT teacherId FROM auth_tokens WHERE token = ?'
-    ).bind(token).first();
+      'SELECT teacherId FROM auth_tokens WHERE token = ? AND expiresAt > ?'
+    ).bind(token, new Date().toISOString()).first();
 
     if (!authToken) {
       return errorResponse('Unauthorized', 403);
@@ -491,8 +704,8 @@ router.patch('/api/classes/:classId', async (req: any, env: Env) => {
     await initializeDatabase(env.DB);
 
     const authToken = await env.DB.prepare(
-      'SELECT teacherId FROM auth_tokens WHERE token = ?'
-    ).bind(token).first();
+      'SELECT teacherId FROM auth_tokens WHERE token = ? AND expiresAt > ?'
+    ).bind(token, new Date().toISOString()).first();
 
     if (!authToken) {
       return errorResponse('Unauthorized', 403);
@@ -539,7 +752,12 @@ router.patch('/api/classes/:classId', async (req: any, env: Env) => {
       `UPDATE classes SET ${updates.join(', ')} WHERE id = ?`
     ).bind(...values).run();
 
-    return jsonResponse({ success: true });
+    const updatedClass = await getClassWithStudentCount(env, req.params.classId, authToken.teacherId);
+    if (!updatedClass) {
+      return errorResponse('Class not found', 404);
+    }
+
+    return jsonResponse({ class: updatedClass });
   } catch (error: any) {
     console.error('Update class error:', error);
     return errorResponse(error.message || 'Failed to update class', 500);
@@ -563,8 +781,8 @@ router.post('/api/classes/:classId/students', async (req: any, env: Env) => {
     await initializeDatabase(env.DB);
 
     const authToken = await env.DB.prepare(
-      'SELECT teacherId FROM auth_tokens WHERE token = ?'
-    ).bind(token).first();
+      'SELECT teacherId FROM auth_tokens WHERE token = ? AND expiresAt > ?'
+    ).bind(token, new Date().toISOString()).first();
 
     if (!authToken) {
       return errorResponse('Unauthorized', 403);
@@ -588,7 +806,7 @@ router.post('/api/classes/:classId/students', async (req: any, env: Env) => {
 
     const studentCount = (students as any)?.count || 0;
     if (studentCount >= (teacher as any)?.maxStudents) {
-      return errorResponse(`Maximum ${(teacher as any)?.maxStudents} students reached for this class`, 409);
+      return errorResponse(`Maximum ${(teacher as any)?.maxStudents} students reached for this class`, 402);
     }
 
     const enrollmentId = generateUUID();
@@ -606,7 +824,12 @@ router.post('/api/classes/:classId/students', async (req: any, env: Env) => {
       throw e;
     }
 
-    return jsonResponse({ success: true }, 201);
+    const updatedClass = await getClassWithStudentCount(env, req.params.classId, authToken.teacherId);
+    if (!updatedClass) {
+      return errorResponse('Class not found', 404);
+    }
+
+    return jsonResponse({ class: updatedClass });
   } catch (error: any) {
     console.error('Add student error:', error);
     return errorResponse(error.message || 'Failed to add student', 500);
@@ -624,8 +847,8 @@ router.delete('/api/classes/:classId/students/:studentId', async (req: any, env:
     await initializeDatabase(env.DB);
 
     const authToken = await env.DB.prepare(
-      'SELECT teacherId FROM auth_tokens WHERE token = ?'
-    ).bind(token).first();
+      'SELECT teacherId FROM auth_tokens WHERE token = ? AND expiresAt > ?'
+    ).bind(token, new Date().toISOString()).first();
 
     if (!authToken) {
       return errorResponse('Unauthorized', 403);
@@ -643,10 +866,141 @@ router.delete('/api/classes/:classId/students/:studentId', async (req: any, env:
       'DELETE FROM class_enrollments WHERE classId = ? AND studentId = ?'
     ).bind(req.params.classId, req.params.studentId).run();
 
-    return jsonResponse({ success: true });
+    const updatedClass = await getClassWithStudentCount(env, req.params.classId, authToken.teacherId);
+    if (!updatedClass) {
+      return errorResponse('Class not found', 404);
+    }
+
+    return jsonResponse({ class: updatedClass });
   } catch (error: any) {
     console.error('Remove student error:', error);
     return errorResponse(error.message || 'Failed to remove student', 500);
+  }
+});
+
+router.post('/api/classes/:classId/archive', async (req: any, env: Env) => {
+  try {
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return errorResponse('Authorization required', 401);
+    }
+
+    await initializeDatabase(env.DB);
+
+    const teacherId = await getAuthorizedTeacherId(env, token);
+    if (!teacherId) {
+      return errorResponse('Unauthorized', 403);
+    }
+
+    const classData = await env.DB.prepare(
+      'SELECT id FROM classes WHERE id = ? AND teacherId = ?'
+    ).bind(req.params.classId, teacherId).first();
+
+    if (!classData) {
+      return errorResponse('Class not found', 404);
+    }
+
+    await env.DB.prepare(
+      'UPDATE classes SET isArchived = true, updatedAt = ? WHERE id = ?'
+    ).bind(new Date().toISOString(), req.params.classId).run();
+
+    return jsonResponse({ success: true });
+  } catch (error: any) {
+    console.error('Archive class error:', error);
+    return errorResponse(error.message || 'Failed to archive class', 500);
+  }
+});
+
+router.post('/api/classes/:classId/students/bulk', async (req: any, env: Env) => {
+  try {
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return errorResponse('Authorization required', 401);
+    }
+
+    await initializeDatabase(env.DB);
+
+    const teacherId = await getAuthorizedTeacherId(env, token);
+    if (!teacherId) {
+      return errorResponse('Unauthorized', 403);
+    }
+
+    const { studentIds } = await req.json();
+    if (!Array.isArray(studentIds) || studentIds.length === 0) {
+      return errorResponse('studentIds must be a non-empty array', 400);
+    }
+
+    const classData = await env.DB.prepare(
+      'SELECT id FROM classes WHERE id = ? AND teacherId = ?'
+    ).bind(req.params.classId, teacherId).first();
+
+    if (!classData) {
+      return errorResponse('Class not found', 404);
+    }
+
+    const teacher = await env.DB.prepare(
+      'SELECT maxStudents FROM teachers WHERE id = ?'
+    ).bind(teacherId).first() as any;
+
+    const students = await env.DB.prepare(
+      'SELECT COUNT(*) as count FROM class_enrollments WHERE classId = ?'
+    ).bind(req.params.classId).first() as any;
+
+    const maxStudents = Number((teacher as any)?.maxStudents ?? 0);
+    const currentCount = Number((students as any)?.count ?? 0);
+    const uniqueIncoming = Array.from(new Set(studentIds.map((id: any) => String(id))));
+
+    if (currentCount + uniqueIncoming.length > maxStudents) {
+      return errorResponse('Cannot add all students - would exceed capacity', 402);
+    }
+
+    const now = new Date().toISOString();
+    for (const studentId of uniqueIncoming) {
+      await env.DB.prepare(
+        'INSERT OR IGNORE INTO class_enrollments (id, classId, studentId, enrolledAt) VALUES (?, ?, ?, ?)'
+      ).bind(generateUUID(), req.params.classId, studentId, now).run();
+    }
+
+    const updatedClass = await getClassWithStudentCount(env, req.params.classId, teacherId);
+    if (!updatedClass) {
+      return errorResponse('Class not found', 404);
+    }
+
+    return jsonResponse({ class: updatedClass });
+  } catch (error: any) {
+    console.error('Bulk add students error:', error);
+    return errorResponse(error.message || 'Failed to bulk add students', 500);
+  }
+});
+
+router.get('/api/teachers/:teacherId/classes/archived', async (req: any, env: Env) => {
+  try {
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return errorResponse('Authorization required', 401);
+    }
+
+    await initializeDatabase(env.DB);
+
+    const teacherId = await getAuthorizedTeacherId(env, token);
+    if (!teacherId || teacherId !== req.params.teacherId) {
+      return errorResponse('Unauthorized', 403);
+    }
+
+    const classes = await env.DB.prepare(
+      `SELECT c.id, c.teacherId, c.name, c.gradeLevel, c.subject, c.description, c.createdAt, c.updatedAt,
+              COUNT(ce.studentId) as studentCount
+       FROM classes c
+       LEFT JOIN class_enrollments ce ON c.id = ce.classId
+       WHERE c.teacherId = ? AND c.isArchived = true
+       GROUP BY c.id
+       ORDER BY c.updatedAt DESC`
+    ).bind(req.params.teacherId).all() as any;
+
+    return jsonResponse({ classes: classes?.results || [] });
+  } catch (error: any) {
+    console.error('Get archived classes error:', error);
+    return errorResponse(error.message || 'Failed to get archived classes', 500);
   }
 });
 

@@ -1,4 +1,3 @@
-
 /// Helper class for generating question metadata templates
 class QuestionMetadataGenerator {
   /// Map of skill IDs to their ACARA standards (from acara_curriculum_mapping.json)
@@ -145,13 +144,14 @@ class QuestionMetadataGenerator {
   ) {
     // Map string to numeric value
     final cognitiveValue = {
-      'remember': 1.0,
-      'understand': 2.0,
-      'apply': 3.0,
-      'analyze': 4.0,
-      'evaluate': 5.0,
-      'create': 6.0,
-    }[cognitiveLevelStr] ?? 2.0;
+          'remember': 1.0,
+          'understand': 2.0,
+          'apply': 3.0,
+          'analyze': 4.0,
+          'evaluate': 5.0,
+          'create': 6.0,
+        }[cognitiveLevelStr] ??
+        2.0;
 
     // Base difficulty from cognitive level
     double difficulty = cognitiveValue / 6.0;
@@ -160,7 +160,7 @@ class QuestionMetadataGenerator {
     final lowerText = questionText.toLowerCase();
 
     // Complexity indicators
-    if (lowerText.contains('multiple')  || 
+    if (lowerText.contains('multiple') ||
         lowerText.contains('choose') ||
         lowerText.contains('which') ||
         lowerText.contains('select')) {
@@ -240,8 +240,7 @@ class QuestionMetadataGenerator {
     }
 
     // Email context
-    if (lowerText.contains('email') ||
-        lowerText.contains('letter')) {
+    if (lowerText.contains('email') || lowerText.contains('letter')) {
       return 'emails';
     }
 
@@ -266,7 +265,8 @@ class QuestionMetadataGenerator {
   }) {
     final standardInfo = skillToStandard[skillId];
     final suggestedCognitiveLevelStr = getSuggestedCognitiveLevelStr(skillId);
-    estimateDifficulty(questionText, suggestedCognitiveLevelStr); // Validate complexity
+    estimateDifficulty(
+        questionText, suggestedCognitiveLevelStr); // Validate complexity
     final detectedContext = extractContext(questionText);
 
     return {
@@ -385,9 +385,11 @@ class QuestionMetadataGenerator {
     return {
       'totalQuestions': totalQuestions,
       'questionsWithMetadata': questionsWithMetadata,
-      'metadataCompleteness': (questionsWithMetadata / totalQuestions * 100).toStringAsFixed(1),
+      'metadataCompleteness':
+          (questionsWithMetadata / totalQuestions * 100).toStringAsFixed(1),
       'questionsValid': questionsValid,
-      'validityRate': (questionsValid / totalQuestions * 100).toStringAsFixed(1),
+      'validityRate':
+          (questionsValid / totalQuestions * 100).toStringAsFixed(1),
       'skillDistribution': skillCounts,
       'cognitiveLevelDistribution': cognitiveLevelCounts,
       'issues': issuesList,

@@ -13,15 +13,16 @@ class StorySpringsQuestionGenerator {
     int count = 10,
   }) {
     final questions = <StoryQuestion>[];
-    
+
     // 1. Get curated questions from the bank
-    final curatedBank = StorySpringsSkillQuestions.getQuestionsForSkill(skill, difficulty);
-    
+    final curatedBank =
+        StorySpringsSkillQuestions.getQuestionsForSkill(skill, difficulty);
+
     // 2. Mix in some questions from the model bank if available
     final modelBank = _getModelBankForSkill(skill);
-    
+
     final fullPool = [...curatedBank, ...modelBank];
-    
+
     if (fullPool.isNotEmpty) {
       final pool = List<StoryQuestion>.from(fullPool)..shuffle(_random);
       final uniqueCount = min(count, pool.length);
@@ -43,14 +44,17 @@ class StorySpringsQuestionGenerator {
     final s = skill.toLowerCase();
     if (s.contains('sequencing')) return StorySequencingQuestions.questions;
     if (s.contains('emotion')) return EmotionRecognitionQuestions.questions;
-    if (s.contains('description')) return DescriptiveLanguageQuestions.questions;
+    if (s.contains('description')) {
+      return DescriptiveLanguageQuestions.questions;
+    }
     if (s.contains('dialogue')) return DialogueCreationQuestions.questions;
     if (s.contains('plot')) return PlotStructureQuestions.questions;
     if (s.contains('character')) return CharacterDevelopmentQuestions.questions;
     return [];
   }
 
-  static StoryQuestion _generateProceduralQuestion(String skill, int difficulty, int index) {
+  static StoryQuestion _generateProceduralQuestion(
+      String skill, int difficulty, int index) {
     if (difficulty <= 2) {
       return _generateEasyQuestion(index);
     } else if (difficulty <= 4) {

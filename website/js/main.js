@@ -44,6 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initParallaxScroll();
     initLazyLoading();
     initProgressIndicator();
+
+    // Security hardening for external links
+    initExternalLinkSafety();
 });
 
 /**
@@ -54,9 +57,16 @@ function initMobileNav() {
     const navMenu = document.querySelector('.nav-menu');
     
     if (navToggle && navMenu) {
+        if (!navMenu.id) {
+            navMenu.id = 'site-nav-menu';
+        }
+        navToggle.setAttribute('aria-controls', navMenu.id);
+        navToggle.setAttribute('aria-expanded', 'false');
+
         navToggle.addEventListener('click', function() {
             navToggle.classList.toggle('active');
             navMenu.classList.toggle('active');
+            navToggle.setAttribute('aria-expanded', navMenu.classList.contains('active') ? 'true' : 'false');
         });
         
         // Close menu when clicking a link
@@ -65,6 +75,7 @@ function initMobileNav() {
             link.addEventListener('click', function() {
                 navToggle.classList.remove('active');
                 navMenu.classList.remove('active');
+                navToggle.setAttribute('aria-expanded', 'false');
             });
         });
         
@@ -73,6 +84,7 @@ function initMobileNav() {
             if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
                 navToggle.classList.remove('active');
                 navMenu.classList.remove('active');
+                navToggle.setAttribute('aria-expanded', 'false');
             }
         });
     }
@@ -84,20 +96,31 @@ function initMobileNav() {
 function initFAQ() {
     const faqItems = document.querySelectorAll('.faq-item');
     
-    faqItems.forEach(item => {
+    faqItems.forEach((item, index) => {
         const question = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
         
-        if (question) {
+        if (question && answer) {
+            const answerId = answer.id || `faq-answer-${index + 1}`;
+            answer.id = answerId;
+            question.setAttribute('aria-controls', answerId);
+            question.setAttribute('aria-expanded', item.classList.contains('active') ? 'true' : 'false');
+
             question.addEventListener('click', function() {
                 // Close other items
                 faqItems.forEach(otherItem => {
                     if (otherItem !== item && otherItem.classList.contains('active')) {
                         otherItem.classList.remove('active');
+                        const otherQuestion = otherItem.querySelector('.faq-question');
+                        if (otherQuestion) {
+                            otherQuestion.setAttribute('aria-expanded', 'false');
+                        }
                     }
                 });
                 
                 // Toggle current item
                 item.classList.toggle('active');
+                question.setAttribute('aria-expanded', item.classList.contains('active') ? 'true' : 'false');
             });
         }
     });
@@ -506,35 +529,66 @@ function showSuccessMessage(form, message) {
  * Dark Mode Toggle
  */
 function initDarkMode() {
-    // Check for saved dark mode preference  
-    const isDarkMode = localStorage.getItem('darkMode') === 'true' ||
-                       window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (isDarkMode) {
-        document.documentElement.style.colorScheme = 'dark';
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const legacyPreference = localStorage.getItem('darkMode');
+    let preference = localStorage.getItem('themePreference');
+
+    // Migrate legacy boolean preference if present.
+    if (!preference && (legacyPreference === 'true' || legacyPreference === 'false')) {
+        preference = legacyPreference === 'true' ? 'dark' : 'light';
     }
+
+    function getResolvedTheme() {
+        if (preference === 'dark' || preference === 'light') {
+            return preference;
+        }
+        return prefersDark.matches ? 'dark' : 'light';
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.style.colorScheme = theme;
+    }
+
+    applyTheme(getResolvedTheme());
     
     // Create toggle button
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'dark-mode-toggle';
     toggleBtn.setAttribute('aria-label', 'Toggle dark mode');
-    toggleBtn.innerHTML = isDarkMode ? '☀️' : '🌙';
+    toggleBtn.innerHTML = getResolvedTheme() === 'dark' ? '☀️' : '🌙';
     document.body.appendChild(toggleBtn);
     
     toggleBtn.addEventListener('click', function() {
-        const isDark = document.documentElement.style.colorScheme === 'dark';
-        document.documentElement.style.colorScheme = isDark ? 'light' : 'dark';
-        localStorage.setItem('darkMode', !isDark);
-        this.innerHTML = isDark ? '🌙' : '☀️';
+        const resolved = getResolvedTheme();
+        preference = resolved === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('themePreference', preference);
+        localStorage.setItem('darkMode', String(preference === 'dark'));
+        applyTheme(preference);
+        this.innerHTML = preference === 'dark' ? '☀️' : '🌙';
         this.style.animation = 'fadeInScale 0.4s ease';
     });
     
     // Listen for system color scheme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (localStorage.getItem('darkMode') !== 'true' && localStorage.getItem('darkMode') !== 'false') {
-            document.documentElement.style.colorScheme = e.matches ? 'dark' : 'light';
-            toggleBtn.innerHTML = e.matches ? '☀️' : '🌙';
+    prefersDark.addEventListener('change', (e) => {
+        if (!preference || preference === 'system') {
+            const nextTheme = e.matches ? 'dark' : 'light';
+            applyTheme(nextTheme);
+            toggleBtn.innerHTML = nextTheme === 'dark' ? '☀️' : '🌙';
         }
+    });
+}
+
+/**
+ * Add security attributes to outbound links opened in a new tab.
+ */
+function initExternalLinkSafety() {
+    const outboundLinks = document.querySelectorAll('a[target="_blank"]');
+    outboundLinks.forEach(link => {
+        const relParts = new Set((link.getAttribute('rel') || '').split(/\s+/).filter(Boolean));
+        relParts.add('noopener');
+        relParts.add('noreferrer');
+        link.setAttribute('rel', Array.from(relParts).join(' '));
     });
 }
 

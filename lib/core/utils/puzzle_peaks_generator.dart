@@ -22,17 +22,19 @@ class PuzzlePeaksQuestionGenerator {
       difficulty: difficulty,
       count: count * 2 ~/ 5,
     );
-    final aiConverted = aiRaw.map((aq) => LogicQuestion(
-          id: 'ai_logic_${aq.question.hashCode.abs()}',
-          skillId: skill,
-          question: aq.question,
-          options: aq.options,
-          correctIndex: aq.correctIndex,
-          hint: aq.hint,
-          explanation: aq.explanation,
-          difficulty: difficulty,
-          type: LogicQuestionType.logicPuzzle,
-        )).toList();
+    final aiConverted = aiRaw
+        .map((aq) => LogicQuestion(
+              id: 'ai_logic_${aq.question.hashCode.abs()}',
+              skillId: skill,
+              question: aq.question,
+              options: aq.options,
+              correctIndex: aq.correctIndex,
+              hint: aq.hint,
+              explanation: aq.explanation,
+              difficulty: difficulty,
+              type: LogicQuestionType.logicPuzzle,
+            ))
+        .toList();
 
     // 2. Static bank questions
     final needed = count - aiConverted.length;
@@ -46,10 +48,12 @@ class PuzzlePeaksQuestionGenerator {
     final staticPool = List<LogicQuestion>.from(bankQuestions);
     int proceduralIndex = 0;
     while (staticPool.length < needed) {
-      staticPool.add(_generateSingleQuestion(skill, difficulty, proceduralIndex++));
+      staticPool
+          .add(_generateSingleQuestion(skill, difficulty, proceduralIndex++));
     }
 
-    final combined = [...aiConverted, ...staticPool.take(needed)]..shuffle(_random);
+    final combined = [...aiConverted, ...staticPool.take(needed)]
+      ..shuffle(_random);
     return combined.take(count).toList();
   }
 

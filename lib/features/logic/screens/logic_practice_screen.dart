@@ -133,8 +133,7 @@ class _LogicPracticeScreenState extends State<LogicPracticeScreen> {
 
     // Check if this session completed the whole zone
     if (widget.zoneId != null) {
-      final themeColor =
-          WorldTokens.fromZoneId(widget.zoneId!).primaryColor;
+      final themeColor = WorldTokens.fromZoneId(widget.zoneId!).primaryColor;
       checkAndShowZoneMastered(
         context,
         skillProvider,

@@ -45,41 +45,47 @@ class _SciencePracticeScreenState extends State<SciencePracticeScreen> {
     // Get adaptive difficulty level
     final adaptiveDifficulty = context.read<AdaptiveDifficultyService>();
     final difficulty = adaptiveDifficulty.getDifficultyForSkill(widget.skillId);
-    
+
     NaplanQuestionSet loadedSet;
     try {
       // Try loading the static JSON file
-      loadedSet = await _loader.loadQuestions('science_explorers_questions.json');
+      loadedSet =
+          await _loader.loadQuestions('science_explorers_questions.json');
     } catch (e) {
       // If fails, create a dummy empty set
       loadedSet = NaplanQuestionSet(
-        meta: Meta(subject: 'Science', yearLevel: 1, source: 'Generated', version: '1.0'),
+        meta: Meta(
+            subject: 'Science',
+            yearLevel: 1,
+            source: 'Generated',
+            version: '1.0'),
         questions: [],
       );
     }
 
     // Generate 10 procedural questions to expand the library
-    final procedural = ScienceQuestGenerator.generate(theme: 'mixed', difficulty: difficulty, count: 10);
-    
+    final procedural = ScienceQuestGenerator.generate(
+        theme: 'mixed', difficulty: difficulty, count: 10);
+
     // Map ScienceQuestion to NaplanQuestionSet's Question model
-    final converted = procedural.map((pq) => Question(
-       id: pq.id,
-       question: pq.question,
-       options: pq.options,
-       correctIndex: pq.correctIndex,
-       difficulty: pq.difficulty,
-       topic: pq.topic,
-       hint: pq.hint ?? pq.explanation // Use explanation as hint fallback
-    )).toList();
+    final converted = procedural
+        .map((pq) => Question(
+            id: pq.id,
+            question: pq.question,
+            options: pq.options,
+            correctIndex: pq.correctIndex,
+            difficulty: pq.difficulty,
+            topic: pq.topic,
+            hint: pq.hint ?? pq.explanation // Use explanation as hint fallback
+            ))
+        .toList();
 
     // Combine loaded and generated questions
     final combinedQuestions = [...loadedSet.questions, ...converted];
     combinedQuestions.shuffle();
 
     return NaplanQuestionSet(
-       meta: loadedSet.meta,
-       questions: combinedQuestions
-    );
+        meta: loadedSet.meta, questions: combinedQuestions);
   }
 
   @override
@@ -93,7 +99,7 @@ class _SciencePracticeScreenState extends State<SciencePracticeScreen> {
           }
 
           if (snapshot.hasError) {
-             // If completely failed, try to just retry or show error
+            // If completely failed, try to just retry or show error
             return Center(
               child: Text(
                 'Error loading activity: ${snapshot.error}',
@@ -109,8 +115,8 @@ class _SciencePracticeScreenState extends State<SciencePracticeScreen> {
           return ScienceGame(
             questions: snapshot.data!.questions,
             onComplete: (accuracy, correct, total) {
-               _checkStreak(context);
-               Navigator.pop(context);
+              _checkStreak(context);
+              Navigator.pop(context);
             },
           );
         },

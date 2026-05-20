@@ -184,7 +184,8 @@ class MasteryCertificateScreen extends StatelessWidget {
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Share/export coming in next update.'),
+                              content:
+                                  Text('Share/export coming in next update.'),
                             ),
                           );
                         },

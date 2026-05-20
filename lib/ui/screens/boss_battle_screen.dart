@@ -435,8 +435,7 @@ class _BossBattleScreenState extends State<BossBattleScreen>
                   decoration: BoxDecoration(
                     color: Colors.white10,
                     borderRadius: BorderRadius.circular(20),
-                    border:
-                        Border.all(color: Colors.white24, width: 1),
+                    border: Border.all(color: Colors.white24, width: 1),
                   ),
                   child: Text(
                     question.zone,
@@ -455,8 +454,7 @@ class _BossBattleScreenState extends State<BossBattleScreen>
                 child: AnimatedBuilder(
                   animation: _shakeAnimation,
                   builder: (context, child) {
-                    final offset =
-                        sin(_shakeAnimation.value * pi * 6) * 12;
+                    final offset = sin(_shakeAnimation.value * pi * 6) * 12;
                     return Transform.translate(
                       offset: Offset(offset, 0),
                       child: child,
@@ -475,8 +473,8 @@ class _BossBattleScreenState extends State<BossBattleScreen>
                             color: Colors.white.withValues(alpha: 0.07),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: Colors.purpleAccent
-                                    .withValues(alpha: 0.3),
+                                color:
+                                    Colors.purpleAccent.withValues(alpha: 0.3),
                                 width: 1.5),
                           ),
                           child: Text(
@@ -507,15 +505,15 @@ class _BossBattleScreenState extends State<BossBattleScreen>
                               borderColor = Colors.red;
                             }
                           } else if (_selectedIndex == i) {
-                            bgColor = Colors.purpleAccent.withValues(alpha: 0.2);
+                            bgColor =
+                                Colors.purpleAccent.withValues(alpha: 0.2);
                             borderColor = Colors.purpleAccent;
                           }
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 10),
                             child: GestureDetector(
-                              onTap:
-                                  _answered ? null : () => _selectAnswer(i),
+                              onTap: _answered ? null : () => _selectAnswer(i),
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 200),
                                 width: double.infinity,
@@ -536,8 +534,8 @@ class _BossBattleScreenState extends State<BossBattleScreen>
                                       height: 28,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
-                                        color: borderColor.withValues(
-                                            alpha: 0.2),
+                                        color:
+                                            borderColor.withValues(alpha: 0.2),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Text(
@@ -558,8 +556,7 @@ class _BossBattleScreenState extends State<BossBattleScreen>
                                         ),
                                       ),
                                     ),
-                                    if (_answered &&
-                                        i == question.correctIndex)
+                                    if (_answered && i == question.correctIndex)
                                       const Icon(Icons.check_circle,
                                           color: Colors.green, size: 22),
                                     if (_answered &&

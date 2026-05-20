@@ -20,6 +20,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _aiHintsEnabled = false;
   bool _aiExplanationsEnabled = false;
   bool _aiCloudMode = false;
+  bool _reduceMotion = false;
+  bool _highContrast = false;
+  bool _largeText = false;
   double _difficulty = 1.0; // 0 = Easy, 1 = Normal, 2 = Hard
 
   @override
@@ -32,6 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final audio = context.read<AudioManager>();
       final themeMode = context.read<ThemeModeService>();
+      final visualAccessibility = context.read<VisualAccessibilityService>();
       final prefs = await SharedPreferences.getInstance();
       if (!mounted) return;
       setState(() {
@@ -39,10 +43,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _musicEnabled = prefs.getBool('musicEnabled') ?? audio.isMusicEnabled;
         _hapticEnabled = prefs.getBool('hapticEnabled') ?? true;
         _darkModeEnabled = themeMode.isDarkMode;
-        _autoReadQuestions = prefs.getBool('autoReadQuestions') ?? false;
-        _aiHintsEnabled = prefs.getBool('aiHintsEnabled') ?? false;
-        _aiExplanationsEnabled = prefs.getBool('aiExplanationsEnabled') ?? false;
-        _aiCloudMode = prefs.getBool('aiCloudMode') ?? false;
+        _autoReadQuestions =
+            prefs.getBool(QuizPreferencesService.autoReadQuestionsKey) ?? false;
+        _aiHintsEnabled =
+            prefs.getBool(QuizPreferencesService.aiHintsEnabledKey) ?? false;
+        _aiExplanationsEnabled =
+            prefs.getBool(QuizPreferencesService.aiExplanationsEnabledKey) ??
+                false;
+        _aiCloudMode =
+            prefs.getBool(QuizPreferencesService.aiCloudModeKey) ?? false;
+        _reduceMotion = visualAccessibility.reduceMotion;
+        _highContrast = visualAccessibility.highContrast;
+        _largeText = visualAccessibility.largeText;
         _difficulty = prefs.getDouble('difficulty') ?? 1.0;
       });
     } catch (e) {
@@ -62,7 +74,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       } else if (value is String) {
         await prefs.setString(key, value);
       }
-      debugPrint('Saved setting: $key = $value');
     } catch (e) {
       debugPrint('Error saving setting: $e');
     }
@@ -168,6 +179,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   context.read<ThemeModeService>().setDarkMode(value);
                 },
               ),
+              _buildSwitchTile(
+                title: 'High Contrast',
+                subtitle: 'Sharper surfaces and stronger readable edges',
+                value: _highContrast,
+                onChanged: (value) {
+                  setState(() => _highContrast = value);
+                  context
+                      .read<VisualAccessibilityService>()
+                      .setHighContrast(value);
+                },
+              ),
+              _buildSwitchTile(
+                title: 'Larger Text',
+                subtitle: 'Gently increases app text without breaking layouts',
+                value: _largeText,
+                onChanged: (value) {
+                  setState(() => _largeText = value);
+                  context
+                      .read<VisualAccessibilityService>()
+                      .setLargeText(value);
+                },
+              ),
             ],
           ),
 
@@ -186,11 +219,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
               _buildSwitchTile(
+                title: 'Reduce Motion',
+                subtitle: 'Softens looping effects and respects motion comfort',
+                value: _reduceMotion,
+                onChanged: (value) {
+                  setState(() => _reduceMotion = value);
+                  context
+                      .read<VisualAccessibilityService>()
+                      .setReduceMotion(value);
+                },
+              ),
+              _buildSwitchTile(
                 title: 'Auto-read Questions Aloud',
                 value: _autoReadQuestions,
                 onChanged: (value) {
                   setState(() => _autoReadQuestions = value);
-                  _saveSetting('autoReadQuestions', value);
+                  _saveSetting(
+                      QuizPreferencesService.autoReadQuestionsKey, value);
                 },
               ),
               _buildDifficultySlider(),
@@ -208,7 +253,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: _aiHintsEnabled,
                 onChanged: (value) {
                   setState(() => _aiHintsEnabled = value);
-                  _saveSetting('aiHintsEnabled', value);
+                  _saveSetting(QuizPreferencesService.aiHintsEnabledKey, value);
                 },
               ),
               _buildSwitchTile(
@@ -216,7 +261,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: _aiExplanationsEnabled,
                 onChanged: (value) {
                   setState(() => _aiExplanationsEnabled = value);
-                  _saveSetting('aiExplanationsEnabled', value);
+                  _saveSetting(
+                      QuizPreferencesService.aiExplanationsEnabledKey, value);
                 },
               ),
               _buildSwitchTile(
@@ -224,7 +270,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: _aiCloudMode,
                 onChanged: (value) {
                   setState(() => _aiCloudMode = value);
-                  _saveSetting('aiCloudMode', value);
+                  _saveSetting(QuizPreferencesService.aiCloudModeKey, value);
                 },
               ),
             ],
@@ -291,11 +337,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSwitchTile({
     required String title,
+    String? subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
     return ListTile(
       title: Text(title),
+      subtitle: subtitle == null ? null : Text(subtitle),
       trailing: Switch(
         value: value,
         onChanged: onChanged,

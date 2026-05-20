@@ -4,10 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/core/models/question_history.dart';
 
 /// Service to prevent question repetition and track question freshness
-/// 
+///
 /// Ensures users see fresh questions through intelligent rotation while
 /// maintaining spaced repetition at the skill level.
-/// 
+///
 /// Key responsibilities:
 /// - Track which questions have been shown
 /// - Calculate "freshness score" (lower = fresher)
@@ -30,7 +30,7 @@ class QuestionFreshnessService extends ChangeNotifier {
 
   /// Get freshness score for a question (0 = fresh, 1+ = not fresh)
   /// Lower scores = fresher questions
-  /// 
+  ///
   /// Scoring:
   /// - Never shown: 0.0
   /// - Shown but outside freshness window: 0.5
@@ -39,10 +39,10 @@ class QuestionFreshnessService extends ChangeNotifier {
   double getQuestionFreshnessScore(String questionHash) {
     final stats = _stats[questionHash];
     if (stats == null) return 0.0; // Never shown, very fresh
-    
+
     final daysSinceSeen = stats.daysSinceLastShown;
     if (daysSinceSeen == null) return 0.0;
-    
+
     if (daysSinceSeen < 7) {
       return 2.0; // Very recently shown
     } else if (daysSinceSeen < _defaultFreshnessDays) {
@@ -53,21 +53,20 @@ class QuestionFreshnessService extends ChangeNotifier {
   }
 
   /// Check if a question should be shown (outside freshness window)
-  bool isQuestionFresh(String questionHash, {int freshnessWindowDays = _defaultFreshnessDays}) {
+  bool isQuestionFresh(String questionHash,
+      {int freshnessWindowDays = _defaultFreshnessDays}) {
     final stats = _stats[questionHash];
     if (stats == null) return true; // Never shown
-    
+
     final daysSinceSeen = stats.daysSinceLastShown;
     if (daysSinceSeen == null) return true;
-    
+
     return daysSinceSeen >= freshnessWindowDays;
   }
 
   /// Get all questions that have NOT been shown yet (freshest possible)
   List<String> getUnseenQuestionHashes(List<String> candidateHashes) {
-    return candidateHashes
-        .where((hash) => _stats[hash] == null)
-        .toList();
+    return candidateHashes.where((hash) => _stats[hash] == null).toList();
   }
 
   /// Get questions sorted by freshness (freshest first)
@@ -113,12 +112,13 @@ class QuestionFreshnessService extends ChangeNotifier {
     }
 
     // Update stats
-    final existing = _stats[questionHash] ?? QuestionStatistics(
-      questionHash: questionHash,
-      timesShown: 0,
-      correctCount: 0,
-      avgTimeMs: 0,
-    );
+    final existing = _stats[questionHash] ??
+        QuestionStatistics(
+          questionHash: questionHash,
+          timesShown: 0,
+          correctCount: 0,
+          avgTimeMs: 0,
+        );
 
     _stats[questionHash] = existing.recordAttempt(
       isCorrect: instance.isCorrect,
@@ -140,16 +140,16 @@ class QuestionFreshnessService extends ChangeNotifier {
     int? lastDays,
   }) {
     var filtered = [..._history];
-    
+
     if (forSkillId != null) {
       filtered = filtered.where((q) => q.skillId == forSkillId).toList();
     }
-    
+
     if (lastDays != null) {
       final cutoff = DateTime.now().subtract(Duration(days: lastDays));
       filtered = filtered.where((q) => q.askedAt.isAfter(cutoff)).toList();
     }
-    
+
     return filtered;
   }
 
@@ -157,13 +157,13 @@ class QuestionFreshnessService extends ChangeNotifier {
   Map<String, dynamic> getSummaryStats() {
     int totalQuestionsAsked = _history.length;
     int correctAnswers = _history.where((q) => q.isCorrect).length;
-    double overallAccuracy = totalQuestionsAsked > 0
-        ? correctAnswers / totalQuestionsAsked
-        : 0.0;
+    double overallAccuracy =
+        totalQuestionsAsked > 0 ? correctAnswers / totalQuestionsAsked : 0.0;
 
     int avgTimeMs = 0;
     if (_history.isNotEmpty) {
-      avgTimeMs = _history.fold<int>(0, (sum, q) => sum + q.timeSpentMs) ~/ _history.length;
+      avgTimeMs = _history.fold<int>(0, (sum, q) => sum + q.timeSpentMs) ~/
+          _history.length;
     }
 
     return {
@@ -212,7 +212,8 @@ class QuestionFreshnessService extends ChangeNotifier {
         try {
           final list = jsonDecode(historyJson) as List;
           for (final item in list) {
-            _history.add(QuestionInstance.fromJson(item as Map<String, dynamic>));
+            _history
+                .add(QuestionInstance.fromJson(item as Map<String, dynamic>));
           }
         } catch (e) {
           debugPrint('Failed to load question history: $e');
@@ -251,7 +252,7 @@ class QuestionFreshnessService extends ChangeNotifier {
 
   /// Generate a fingerprint/hash for a question
   /// Used to detect if same question is being asked
-  /// 
+  ///
   /// Override this if you need custom hash logic
   static String generateQuestionHash(
     String questionText, {
@@ -266,12 +267,14 @@ class QuestionFreshnessService extends ChangeNotifier {
   Map<String, dynamic> exportAnalytics() {
     return {
       'summary': getSummaryStats(),
-      'questionStats': _stats.entries.map((e) => {
-        'questionHash': e.key,
-        'timesShown': e.value.timesShown,
-        'successRate': e.value.successRate,
-        'lastShownAt': e.value.lastShownAt?.toIso8601String(),
-      }).toList(),
+      'questionStats': _stats.entries
+          .map((e) => {
+                'questionHash': e.key,
+                'timesShown': e.value.timesShown,
+                'successRate': e.value.successRate,
+                'lastShownAt': e.value.lastShownAt?.toIso8601String(),
+              })
+          .toList(),
     };
   }
 }

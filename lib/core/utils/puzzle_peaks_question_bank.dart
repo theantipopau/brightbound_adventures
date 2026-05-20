@@ -22,7 +22,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.logicPuzzle,
       hint: 'When do we see the Moon in the sky?',
-      explanation: 'The Sun is associated with day; the Moon is associated with night.',
+      explanation:
+          'The Sun is associated with day; the Moon is associated with night.',
     ),
     LogicQuestion(
       id: 'bank_ana_002',
@@ -44,7 +45,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.logicPuzzle,
       hint: 'What do you create WITH a brush?',
-      explanation: 'A pencil is used for drawing; a brush is used for painting.',
+      explanation:
+          'A pencil is used for drawing; a brush is used for painting.',
     ),
     LogicQuestion(
       id: 'bank_ana_004',
@@ -55,7 +57,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.logicPuzzle,
       hint: 'A museum is full of items on display.',
-      explanation: 'A library holds books; a museum holds exhibits (artefacts, artworks, specimens).',
+      explanation:
+          'A library holds books; a museum holds exhibits (artefacts, artworks, specimens).',
     ),
     LogicQuestion(
       id: 'bank_ana_005',
@@ -77,7 +80,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.logicPuzzle,
       hint: 'Both creatures live and move in their natural environment.',
-      explanation: 'Fish live and move through water; birds live and move through the air (sky).',
+      explanation:
+          'Fish live and move through water; birds live and move through the air (sky).',
     ),
     LogicQuestion(
       id: 'bank_ana_007',
@@ -110,7 +114,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.logicPuzzle,
       hint: 'Both undergo metamorphosis — transforming into their adult form.',
-      explanation: 'A caterpillar transforms into a butterfly; a tadpole transforms into a frog.',
+      explanation:
+          'A caterpillar transforms into a butterfly; a tadpole transforms into a frog.',
     ),
 
     // ── ANALOGIES: difficulty 3 ───────────────────────────────────────────────
@@ -124,7 +129,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 3,
       type: LogicQuestionType.logicPuzzle,
       hint: 'A composer creates a symphony; an author creates a…',
-      explanation: 'A composer writes a symphony (musical work); an author writes a novel (literary work).',
+      explanation:
+          'A composer writes a symphony (musical work); an author writes a novel (literary work).',
     ),
     LogicQuestion(
       id: 'bank_ana_011',
@@ -135,7 +141,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 3,
       type: LogicQuestionType.logicPuzzle,
       hint: 'Scientists are named after what they study.',
-      explanation: 'An astronomer studies stars (and space); a geologist studies rocks (and Earth\'s structure).',
+      explanation:
+          'An astronomer studies stars (and space); a geologist studies rocks (and Earth\'s structure).',
     ),
     LogicQuestion(
       id: 'bank_ana_012',
@@ -146,7 +153,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 3,
       type: LogicQuestionType.logicPuzzle,
       hint: '100 centimetres = 1 metre; 100 cents = 1 ___.',
-      explanation: 'Both relationships involve 100 small units making 1 larger unit: 100 cm = 1 m; 100 cents = \$1.',
+      explanation:
+          'Both relationships involve 100 small units making 1 larger unit: 100 cm = 1 m; 100 cents = \$1.',
     ),
     LogicQuestion(
       id: 'bank_ana_013',
@@ -157,7 +165,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 3,
       type: LogicQuestionType.logicPuzzle,
       hint: 'Both are protective outer coverings for the creature.',
-      explanation: 'A scale covers a fish\'s body; a shell protects a turtle\'s body.',
+      explanation:
+          'A scale covers a fish\'s body; a shell protects a turtle\'s body.',
     ),
 
     // ── ODD ONE OUT: difficulty 1–2 ───────────────────────────────────────────
@@ -171,7 +180,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 1,
       type: LogicQuestionType.multipleChoice,
       hint: 'Three of these are animals.',
-      explanation: 'A flower 🌸 is a plant, not an animal. The dog, cat, and fish are all animals.',
+      explanation:
+          'A flower 🌸 is a plant, not an animal. The dog, cat, and fish are all animals.',
     ),
     LogicQuestion(
       id: 'bank_odd_002',
@@ -182,7 +192,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 1,
       type: LogicQuestionType.multipleChoice,
       hint: 'Three are fruits; one is a vegetable.',
-      explanation: 'A carrot 🥕 is a vegetable. Apple, orange, and lemon are all fruits.',
+      explanation:
+          'A carrot 🥕 is a vegetable. Apple, orange, and lemon are all fruits.',
     ),
     LogicQuestion(
       id: 'bank_odd_003',
@@ -193,7 +204,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 1,
       type: LogicQuestionType.multipleChoice,
       hint: 'Three are used in team sports played on courts or fields.',
-      explanation: 'All four are balls! This one tests careful reading — all belong to sports.',
+      explanation:
+          'All four are balls! This one tests careful reading — all belong to sports.',
     ),
     LogicQuestion(
       id: 'bank_odd_004',
@@ -204,7 +216,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.multipleChoice,
       hint: 'Look for even numbers.',
-      explanation: '2, 4, 6, and 10 are all even. 9 is odd, so it doesn\'t belong.',
+      explanation:
+          '2, 4, 6, and 10 are all even. 9 is odd, so it doesn\'t belong.',
     ),
     LogicQuestion(
       id: 'bank_odd_005',
@@ -215,7 +228,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.multipleChoice,
       hint: 'The others are all planets that orbit something.',
-      explanation: 'Mercury, Venus, Earth, and Mars are planets. The Sun is a star — it is the centre of our solar system.',
+      explanation:
+          'Mercury, Venus, Earth, and Mars are planets. The Sun is a star — it is the centre of our solar system.',
     ),
     LogicQuestion(
       id: 'bank_odd_006',
@@ -226,7 +240,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.multipleChoice,
       hint: 'Three words have a positive (happy) feeling.',
-      explanation: 'Happy, joyful, and cheerful all mean the same thing (synonyms for happy). Gloomy means sad.',
+      explanation:
+          'Happy, joyful, and cheerful all mean the same thing (synonyms for happy). Gloomy means sad.',
     ),
     LogicQuestion(
       id: 'bank_odd_007',
@@ -237,7 +252,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.multipleChoice,
       hint: 'Three are flat 2D shapes; one is a 3D solid.',
-      explanation: 'Square, circle, and triangle are 2D (flat) shapes. A cube is a 3D solid.',
+      explanation:
+          'Square, circle, and triangle are 2D (flat) shapes. A cube is a 3D solid.',
     ),
     LogicQuestion(
       id: 'bank_odd_008',
@@ -248,18 +264,21 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.multipleChoice,
       hint: 'Three are wind or string instruments; one is struck.',
-      explanation: 'Flute and clarinet are wind instruments; guitar is a string instrument. A drum is a percussion (struck) instrument.',
+      explanation:
+          'Flute and clarinet are wind instruments; guitar is a string instrument. A drum is a percussion (struck) instrument.',
     ),
     LogicQuestion(
       id: 'bank_odd_009',
       skillId: 'skill_critical_thinking',
-      question: 'Which does NOT belong?\nSydney, Melbourne, Brisbane, Wellington',
+      question:
+          'Which does NOT belong?\nSydney, Melbourne, Brisbane, Wellington',
       options: ['Wellington', 'Sydney', 'Melbourne', 'Brisbane'],
       correctIndex: 0,
       difficulty: 3,
       type: LogicQuestionType.multipleChoice,
       hint: 'One of these cities is NOT in Australia.',
-      explanation: 'Sydney, Melbourne, and Brisbane are Australian cities. Wellington is the capital of New Zealand.',
+      explanation:
+          'Sydney, Melbourne, and Brisbane are Australian cities. Wellington is the capital of New Zealand.',
     ),
 
     // ── NUMBER SEQUENCES: difficulty 2–4 ──────────────────────────────────────
@@ -273,7 +292,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.patternCompletion,
       hint: 'Each number increases by 3.',
-      explanation: 'The pattern adds 3 each time: 3, 6, 9, 12, 15. These are the 3-times table!',
+      explanation:
+          'The pattern adds 3 each time: 3, 6, 9, 12, 15. These are the 3-times table!',
     ),
     LogicQuestion(
       id: 'bank_seq_002',
@@ -284,7 +304,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 3,
       type: LogicQuestionType.patternCompletion,
       hint: 'Each number is doubled.',
-      explanation: 'The pattern doubles each time: 1×2=2, 2×2=4, 4×2=8, 8×2=16.',
+      explanation:
+          'The pattern doubles each time: 1×2=2, 2×2=4, 4×2=8, 8×2=16.',
     ),
     LogicQuestion(
       id: 'bank_seq_003',
@@ -306,7 +327,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 3,
       type: LogicQuestionType.patternCompletion,
       hint: 'The differences between terms are: 2, 3, 4, 5…',
-      explanation: 'The pattern adds increasing amounts: +2, +3, +4, +5. So 10 + 5 = 15. These are triangle numbers!',
+      explanation:
+          'The pattern adds increasing amounts: +2, +3, +4, +5. So 10 + 5 = 15. These are triangle numbers!',
     ),
     LogicQuestion(
       id: 'bank_seq_005',
@@ -328,7 +350,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.patternCompletion,
       hint: 'Every second letter of the alphabet.',
-      explanation: 'A, C, E, G are every other letter (skip B, D, F). The next is I (skip H).',
+      explanation:
+          'A, C, E, G are every other letter (skip B, D, F). The next is I (skip H).',
     ),
     LogicQuestion(
       id: 'bank_seq_007',
@@ -339,7 +362,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.patternCompletion,
       hint: 'The alphabet is going backwards.',
-      explanation: 'Z, Y, X, W is the alphabet in reverse. The next letter backwards from W is V.',
+      explanation:
+          'Z, Y, X, W is the alphabet in reverse. The next letter backwards from W is V.',
     ),
     LogicQuestion(
       id: 'bank_seq_008',
@@ -350,7 +374,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 4,
       type: LogicQuestionType.patternCompletion,
       hint: 'Each number is the SUM of the two numbers before it.',
-      explanation: 'This is the Fibonacci sequence: 1+1=2, 1+2=3, 2+3=5, 3+5=8, 5+8=13.',
+      explanation:
+          'This is the Fibonacci sequence: 1+1=2, 1+2=3, 2+3=5, 3+5=8, 5+8=13.',
     ),
 
     // ── LOGICAL DEDUCTION: difficulty 2–4 ─────────────────────────────────────
@@ -358,24 +383,28 @@ class PuzzlePeaksQuestionBank {
     LogicQuestion(
       id: 'bank_log_001',
       skillId: 'skill_logical_thinking',
-      question: 'All birds have wings. A penguin is a bird. Does a penguin have wings?',
+      question:
+          'All birds have wings. A penguin is a bird. Does a penguin have wings?',
       options: ['Yes', 'No', 'Only sometimes', 'Only adult penguins'],
       correctIndex: 0,
       difficulty: 2,
       type: LogicQuestionType.logicPuzzle,
       hint: 'Apply the first rule: ALL birds have wings.',
-      explanation: 'Logic: All birds have wings + penguin is a bird → therefore a penguin has wings. (Even though penguins can\'t fly, they do have wings.)',
+      explanation:
+          'Logic: All birds have wings + penguin is a bird → therefore a penguin has wings. (Even though penguins can\'t fly, they do have wings.)',
     ),
     LogicQuestion(
       id: 'bank_log_002',
       skillId: 'skill_logical_thinking',
-      question: 'Maya is taller than Sam. Sam is taller than Lee. Who is the shortest?',
+      question:
+          'Maya is taller than Sam. Sam is taller than Lee. Who is the shortest?',
       options: ['Maya', 'Sam', 'Lee', 'They are all the same'],
       correctIndex: 2,
       difficulty: 2,
       type: LogicQuestionType.logicPuzzle,
       hint: 'Order them from tallest to shortest.',
-      explanation: 'Maya > Sam > Lee. Lee is at the bottom of the chain, so Lee is the shortest.',
+      explanation:
+          'Maya > Sam > Lee. Lee is at the bottom of the chain, so Lee is the shortest.',
     ),
     LogicQuestion(
       id: 'bank_log_003',
@@ -386,29 +415,39 @@ class PuzzlePeaksQuestionBank {
       difficulty: 2,
       type: LogicQuestionType.logicPuzzle,
       hint: 'Count back: Wed → Tue → Mon → Sun.',
-      explanation: 'Go back 3 days from Wednesday: Tuesday (1), Monday (2), Sunday (3). The answer is Sunday.',
+      explanation:
+          'Go back 3 days from Wednesday: Tuesday (1), Monday (2), Sunday (3). The answer is Sunday.',
     ),
     LogicQuestion(
       id: 'bank_log_004',
       skillId: 'skill_logical_thinking',
-      question: 'There are 5 apples in a bowl. You take 3. How many do YOU have?',
+      question:
+          'There are 5 apples in a bowl. You take 3. How many do YOU have?',
       options: ['2', '3', '5', '1'],
       correctIndex: 1,
       difficulty: 2,
       type: LogicQuestionType.logicPuzzle,
       hint: 'The question asks how many YOU have, not how many are left.',
-      explanation: 'You took 3 apples, so you have 3. There are 2 left in the bowl but the question is about you!',
+      explanation:
+          'You took 3 apples, so you have 3. There are 2 left in the bowl but the question is about you!',
     ),
     LogicQuestion(
       id: 'bank_log_005',
       skillId: 'skill_logical_thinking',
-      question: 'Some cats are black. Felix is a cat. Is Felix definitely black?',
-      options: ['Yes, definitely', 'No — not necessarily', 'Only at night', 'Yes, all cats are black'],
+      question:
+          'Some cats are black. Felix is a cat. Is Felix definitely black?',
+      options: [
+        'Yes, definitely',
+        'No — not necessarily',
+        'Only at night',
+        'Yes, all cats are black'
+      ],
       correctIndex: 1,
       difficulty: 3,
       type: LogicQuestionType.logicPuzzle,
       hint: '"Some" does not mean "all".',
-      explanation: '"Some cats are black" means not all. Felix might be black, or might not be. We cannot conclude Felix is definitely black.',
+      explanation:
+          '"Some cats are black" means not all. Felix might be black, or might not be. We cannot conclude Felix is definitely black.',
     ),
     LogicQuestion(
       id: 'bank_log_006',
@@ -419,51 +458,62 @@ class PuzzlePeaksQuestionBank {
       difficulty: 3,
       type: LogicQuestionType.logicPuzzle,
       hint: '"All squares are rectangles" — what does this directly tell us?',
-      explanation: 'If the rule says "all squares are rectangles," then we can conclude any square IS a rectangle.',
+      explanation:
+          'If the rule says "all squares are rectangles," then we can conclude any square IS a rectangle.',
     ),
     LogicQuestion(
       id: 'bank_log_007',
       skillId: 'skill_logical_thinking',
-      question: 'A bag has 3 red marbles and 2 blue marbles. You pick one without looking. Which colour are you MORE LIKELY to pick?',
+      question:
+          'A bag has 3 red marbles and 2 blue marbles. You pick one without looking. Which colour are you MORE LIKELY to pick?',
       options: ['Blue', 'Red', 'Both equally likely', 'Cannot know'],
       correctIndex: 1,
       difficulty: 3,
       type: LogicQuestionType.logicPuzzle,
-      hint: 'More marbles of one colour = greater chance of picking that colour.',
-      explanation: 'There are 3 red and 2 blue. Red has a 3/5 chance; blue has a 2/5 chance. Red is more likely.',
+      hint:
+          'More marbles of one colour = greater chance of picking that colour.',
+      explanation:
+          'There are 3 red and 2 blue. Red has a 3/5 chance; blue has a 2/5 chance. Red is more likely.',
     ),
     LogicQuestion(
       id: 'bank_log_008',
       skillId: 'skill_logical_thinking',
-      question: 'Jordan has more stickers than Alex. Alex has more stickers than Riley. Whose collection is in the MIDDLE (not the most, not the least)?',
+      question:
+          'Jordan has more stickers than Alex. Alex has more stickers than Riley. Whose collection is in the MIDDLE (not the most, not the least)?',
       options: ['Jordan', 'Alex', 'Riley', 'Cannot tell'],
       correctIndex: 1,
       difficulty: 3,
       type: LogicQuestionType.logicPuzzle,
       hint: 'Order them: Jordan > Alex > Riley.',
-      explanation: 'Jordan has the most, Riley has the least, and Alex is in the middle.',
+      explanation:
+          'Jordan has the most, Riley has the least, and Alex is in the middle.',
     ),
     LogicQuestion(
       id: 'bank_log_009',
       skillId: 'skill_logical_thinking',
-      question: 'A farmer has chickens and cows. He counts 20 legs and 7 heads. How many chickens does he have?',
+      question:
+          'A farmer has chickens and cows. He counts 20 legs and 7 heads. How many chickens does he have?',
       options: ['3', '4', '6', '8'],
       correctIndex: 2,
       difficulty: 4,
       type: LogicQuestionType.logicPuzzle,
       hint: 'Chickens have 2 legs, cows have 4. There are 7 animals total.',
-      explanation: 'Let c = chickens, w = cows. c + w = 7 and 2c + 4w = 20. From first: w = 7−c → 2c + 4(7−c) = 20 → −2c = −8 → c = 6.',
+      explanation:
+          'Let c = chickens, w = cows. c + w = 7 and 2c + 4w = 20. From first: w = 7−c → 2c + 4(7−c) = 20 → −2c = −8 → c = 6.',
     ),
     LogicQuestion(
       id: 'bank_log_010',
       skillId: 'skill_logical_thinking',
-      question: 'If it is NOT raining, the footpath is dry. The footpath is wet. Is it raining?',
+      question:
+          'If it is NOT raining, the footpath is dry. The footpath is wet. Is it raining?',
       options: ['Yes', 'No', 'Maybe', 'Cannot tell'],
       correctIndex: 0,
       difficulty: 4,
       type: LogicQuestionType.logicPuzzle,
-      hint: 'Use the contrapositive: if the footpath is NOT dry, it must be raining.',
-      explanation: 'Rule: not raining → dry. If the footpath is wet (not dry), the rule is broken — so it must be raining.',
+      hint:
+          'Use the contrapositive: if the footpath is NOT dry, it must be raining.',
+      explanation:
+          'Rule: not raining → dry. If the footpath is wet (not dry), the rule is broken — so it must be raining.',
     ),
 
     // ── SPATIAL REASONING: difficulty 2–4 ────────────────────────────────────
@@ -471,7 +521,8 @@ class PuzzlePeaksQuestionBank {
     LogicQuestion(
       id: 'bank_spat_001',
       skillId: 'skill_spatial_reasoning',
-      question: 'You are facing North. You turn right. Which direction are you facing?',
+      question:
+          'You are facing North. You turn right. Which direction are you facing?',
       options: ['South', 'West', 'East', 'North-East'],
       correctIndex: 2,
       difficulty: 2,
@@ -482,46 +533,54 @@ class PuzzlePeaksQuestionBank {
     LogicQuestion(
       id: 'bank_spat_002',
       skillId: 'skill_spatial_reasoning',
-      question: 'A cube has 6 faces. How many corners (vertices) does a cube have?',
+      question:
+          'A cube has 6 faces. How many corners (vertices) does a cube have?',
       options: ['6', '8', '10', '12'],
       correctIndex: 1,
       difficulty: 2,
       type: LogicQuestionType.spatialReasoning,
       hint: 'Picture a dice — count the pointy corners.',
-      explanation: 'A cube has 8 corners (vertices): the 4 on the top face and 4 on the bottom.',
+      explanation:
+          'A cube has 8 corners (vertices): the 4 on the top face and 4 on the bottom.',
     ),
     LogicQuestion(
       id: 'bank_spat_003',
       skillId: 'skill_spatial_reasoning',
-      question: 'A square piece of paper is folded in half. Then folded in half again. How many equal sections are there when unfolded?',
+      question:
+          'A square piece of paper is folded in half. Then folded in half again. How many equal sections are there when unfolded?',
       options: ['2', '3', '4', '8'],
       correctIndex: 2,
       difficulty: 3,
       type: LogicQuestionType.spatialReasoning,
       hint: 'Each fold doubles the number of sections.',
-      explanation: '1st fold → 2 sections. 2nd fold → 4 sections. Unfolding reveals 4 equal squares.',
+      explanation:
+          '1st fold → 2 sections. 2nd fold → 4 sections. Unfolding reveals 4 equal squares.',
     ),
     LogicQuestion(
       id: 'bank_spat_004',
       skillId: 'skill_spatial_reasoning',
-      question: 'You face East and make a 180° turn. Which direction are you facing?',
+      question:
+          'You face East and make a 180° turn. Which direction are you facing?',
       options: ['North', 'South', 'East', 'West'],
       correctIndex: 3,
       difficulty: 3,
       type: LogicQuestionType.spatialReasoning,
       hint: '180° is a half turn — you face the opposite direction.',
-      explanation: 'A 180° turn from East faces you West — the opposite direction on the compass.',
+      explanation:
+          'A 180° turn from East faces you West — the opposite direction on the compass.',
     ),
     LogicQuestion(
       id: 'bank_spat_005',
       skillId: 'skill_spatial_reasoning',
-      question: 'A rectangular room is 8 metres long and 5 metres wide. What is its perimeter?',
+      question:
+          'A rectangular room is 8 metres long and 5 metres wide. What is its perimeter?',
       options: ['13 m', '26 m', '40 m', '20 m'],
       correctIndex: 1,
       difficulty: 3,
       type: LogicQuestionType.spatialReasoning,
       hint: 'Perimeter = add all 4 sides.',
-      explanation: 'Perimeter = 2 × (length + width) = 2 × (8+5) = 2 × 13 = 26 metres.',
+      explanation:
+          'Perimeter = 2 × (length + width) = 2 × (8+5) = 2 × 13 = 26 metres.',
     ),
     LogicQuestion(
       id: 'bank_spat_006',
@@ -532,7 +591,8 @@ class PuzzlePeaksQuestionBank {
       difficulty: 3,
       type: LogicQuestionType.spatialReasoning,
       hint: 'Two triangular ends + three rectangular sides.',
-      explanation: 'A triangular prism has 2 triangular faces (ends) + 3 rectangular faces (sides) = 5 faces total.',
+      explanation:
+          'A triangular prism has 2 triangular faces (ends) + 3 rectangular faces (sides) = 5 faces total.',
     ),
 
     // ── COMPLEX PATTERNS: difficulty 3–5 ──────────────────────────────────────
@@ -541,17 +601,24 @@ class PuzzlePeaksQuestionBank {
       id: 'bank_cpat_001',
       skillId: 'skill_pattern_recognition',
       question: 'Which rule describes the sequence: 4, 8, 16, 32, 64?',
-      options: ['Add 4 each time', 'Multiply by 2 each time', 'Add 8 each time', 'Multiply by 4 each time'],
+      options: [
+        'Add 4 each time',
+        'Multiply by 2 each time',
+        'Add 8 each time',
+        'Multiply by 4 each time'
+      ],
       correctIndex: 1,
       difficulty: 3,
       type: LogicQuestionType.patternCompletion,
       hint: '4 × 2 = 8, 8 × 2 = 16…',
-      explanation: 'Each term is multiplied by 2 (doubling). This is a geometric sequence.',
+      explanation:
+          'Each term is multiplied by 2 (doubling). This is a geometric sequence.',
     ),
     LogicQuestion(
       id: 'bank_cpat_002',
       skillId: 'skill_pattern_recognition',
-      question: 'The pattern rule is: start at 50, subtract 7 each time. What is the 4th term?',
+      question:
+          'The pattern rule is: start at 50, subtract 7 each time. What is the 4th term?',
       options: ['34', '29', '22', '27'],
       correctIndex: 1,
       difficulty: 3,
@@ -562,18 +629,21 @@ class PuzzlePeaksQuestionBank {
     LogicQuestion(
       id: 'bank_cpat_003',
       skillId: 'skill_pattern_recognition',
-      question: 'In a grid of shapes: Row 1 has ▲▲▲, Row 2 has ■■■■, Row 3 would have how many ●●● if the pattern is +1 shape each row?',
+      question:
+          'In a grid of shapes: Row 1 has ▲▲▲, Row 2 has ■■■■, Row 3 would have how many ●●● if the pattern is +1 shape each row?',
       options: ['3', '4', '5', '6'],
       correctIndex: 2,
       difficulty: 3,
       type: LogicQuestionType.patternCompletion,
       hint: 'Row 1 = 3, Row 2 = 4, Row 3 = ?',
-      explanation: 'Each row adds one more shape: 3, 4, 5. Row 3 has 5 circles.',
+      explanation:
+          'Each row adds one more shape: 3, 4, 5. Row 3 has 5 circles.',
     ),
     LogicQuestion(
       id: 'bank_cpat_004',
       skillId: 'skill_pattern_recognition',
-      question: 'A rule machine: Input → ×3 → −1 → Output. Input is 5. What is the output?',
+      question:
+          'A rule machine: Input → ×3 → −1 → Output. Input is 5. What is the output?',
       options: ['12', '13', '14', '16'],
       correctIndex: 2,
       difficulty: 4,
@@ -590,18 +660,21 @@ class PuzzlePeaksQuestionBank {
       difficulty: 4,
       type: LogicQuestionType.patternCompletion,
       hint: 'The pattern adds 14 each time — work backwards.',
-      explanation: 'The sequence increases by 14: 14−14=0? No — 14, 28, 42, 56 are the 14-times table. The term before 14 is 7.',
+      explanation:
+          'The sequence increases by 14: 14−14=0? No — 14, 28, 42, 56 are the 14-times table. The term before 14 is 7.',
     ),
     LogicQuestion(
       id: 'bank_cpat_006',
       skillId: 'skill_pattern_recognition',
-      question: 'In 4 years, Aisha will be twice as old as she is now. How old is she now?',
+      question:
+          'In 4 years, Aisha will be twice as old as she is now. How old is she now?',
       options: ['2', '4', '6', '8'],
       correctIndex: 1,
       difficulty: 5,
       type: LogicQuestionType.logicPuzzle,
       hint: 'Let her current age = x. Then x + 4 = 2x.',
-      explanation: 'x + 4 = 2x → 4 = x. Aisha is currently 4 years old. In 4 years she will be 8, which is twice 4.',
+      explanation:
+          'x + 4 = 2x → 4 = x. Aisha is currently 4 years old. In 4 years she will be 8, which is twice 4.',
     ),
   ];
 

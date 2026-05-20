@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 /// Results screen for Story Springs with a magical book theme
@@ -470,7 +470,8 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
             icon: SizedBox(
               width: 22,
               height: 22,
-              child: Image.asset('assets/images/potion.PNG', fit: BoxFit.contain),
+              child:
+                  Image.asset('assets/images/potion.PNG', fit: BoxFit.contain),
             ),
             label: const Text(
               'Try Again',
