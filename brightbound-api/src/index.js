@@ -437,11 +437,10 @@ router.post('/api/classes', async (req, env) => {
             return errorResponse('Class name required', 400);
         }
         await initializeDatabase(env.DB);
-        const authToken = await env.DB.prepare('SELECT teacherId FROM auth_tokens WHERE token = ? AND expiresAt > ?').bind(token, new Date().toISOString()).first();
-        if (!authToken) {
+        const teacherId = await getAuthorizedTeacherId(env, token);
+        if (!teacherId) {
             return errorResponse('Unauthorized', 403);
         }
-        const teacherId = authToken.teacherId;
         const teacher = await env.DB.prepare('SELECT licenseType, maxStudents FROM teachers WHERE id = ?').bind(teacherId).first();
         const existingClasses = await env.DB.prepare('SELECT COUNT(*) as count FROM classes WHERE teacherId = ? AND isArchived = false').bind(teacherId).first();
         const classCount = existingClasses?.count || 0;
@@ -507,15 +506,15 @@ router.get('/api/classes/:classId', async (req, env) => {
             return errorResponse('Authorization required', 401);
         }
         await initializeDatabase(env.DB);
-        const authToken = await env.DB.prepare('SELECT teacherId FROM auth_tokens WHERE token = ? AND expiresAt > ?').bind(token, new Date().toISOString()).first();
-        if (!authToken) {
+        const teacherId = await getAuthorizedTeacherId(env, token);
+        if (!teacherId) {
             return errorResponse('Unauthorized', 403);
         }
         const classData = await env.DB.prepare(`SELECT c.*, COUNT(ce.studentId) as studentCount
        FROM classes c
        LEFT JOIN class_enrollments ce ON c.id = ce.classId
        WHERE c.id = ? AND c.teacherId = ?
-       GROUP BY c.id`).bind(req.params.classId, authToken.teacherId).first();
+       GROUP BY c.id`).bind(req.params.classId, teacherId).first();
         if (!classData) {
             return errorResponse('Class not found', 404);
         }
@@ -535,12 +534,12 @@ router.patch('/api/classes/:classId', async (req, env) => {
         }
         const { name, gradeLevel, subject, description } = await req.json();
         await initializeDatabase(env.DB);
-        const authToken = await env.DB.prepare('SELECT teacherId FROM auth_tokens WHERE token = ? AND expiresAt > ?').bind(token, new Date().toISOString()).first();
-        if (!authToken) {
+        const teacherId = await getAuthorizedTeacherId(env, token);
+        if (!teacherId) {
             return errorResponse('Unauthorized', 403);
         }
         const classData = await env.DB.prepare('SELECT teacherId FROM classes WHERE id = ?').bind(req.params.classId).first();
-        if (!classData || classData.teacherId !== authToken.teacherId) {
+        if (!classData || classData.teacherId !== teacherId) {
             return errorResponse('Unauthorized', 403);
         }
         const now = new Date().toISOString();
@@ -569,7 +568,7 @@ router.patch('/api/classes/:classId', async (req, env) => {
         values.push(now);
         values.push(req.params.classId);
         await env.DB.prepare(`UPDATE classes SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
-        const updatedClass = await getClassWithStudentCount(env, req.params.classId, authToken.teacherId);
+        const updatedClass = await getClassWithStudentCount(env, req.params.classId, teacherId);
         if (!updatedClass) {
             return errorResponse('Class not found', 404);
         }
@@ -592,15 +591,15 @@ router.post('/api/classes/:classId/students', async (req, env) => {
             return errorResponse('Student ID required', 400);
         }
         await initializeDatabase(env.DB);
-        const authToken = await env.DB.prepare('SELECT teacherId FROM auth_tokens WHERE token = ? AND expiresAt > ?').bind(token, new Date().toISOString()).first();
-        if (!authToken) {
+        const teacherId = await getAuthorizedTeacherId(env, token);
+        if (!teacherId) {
             return errorResponse('Unauthorized', 403);
         }
         const classData = await env.DB.prepare('SELECT teacherId FROM classes WHERE id = ?').bind(req.params.classId).first();
-        if (!classData || classData.teacherId !== authToken.teacherId) {
+        if (!classData || classData.teacherId !== teacherId) {
             return errorResponse('Unauthorized', 403);
         }
-        const teacher = await env.DB.prepare('SELECT maxStudents FROM teachers WHERE id = ?').bind(authToken.teacherId).first();
+        const teacher = await env.DB.prepare('SELECT maxStudents FROM teachers WHERE id = ?').bind(teacherId).first();
         const students = await env.DB.prepare('SELECT COUNT(*) as count FROM class_enrollments WHERE classId = ?').bind(req.params.classId).first();
         const studentCount = students?.count || 0;
         if (studentCount >= teacher?.maxStudents) {
@@ -620,7 +619,7 @@ router.post('/api/classes/:classId/students', async (req, env) => {
             }
             throw e;
         }
-        const updatedClass = await getClassWithStudentCount(env, req.params.classId, authToken.teacherId);
+        const updatedClass = await getClassWithStudentCount(env, req.params.classId, teacherId);
         if (!updatedClass) {
             return errorResponse('Class not found', 404);
         }
@@ -639,16 +638,16 @@ router.delete('/api/classes/:classId/students/:studentId', async (req, env) => {
             return errorResponse('Authorization required', 401);
         }
         await initializeDatabase(env.DB);
-        const authToken = await env.DB.prepare('SELECT teacherId FROM auth_tokens WHERE token = ? AND expiresAt > ?').bind(token, new Date().toISOString()).first();
-        if (!authToken) {
+        const teacherId = await getAuthorizedTeacherId(env, token);
+        if (!teacherId) {
             return errorResponse('Unauthorized', 403);
         }
         const classData = await env.DB.prepare('SELECT teacherId FROM classes WHERE id = ?').bind(req.params.classId).first();
-        if (!classData || classData.teacherId !== authToken.teacherId) {
+        if (!classData || classData.teacherId !== teacherId) {
             return errorResponse('Unauthorized', 403);
         }
         await env.DB.prepare('DELETE FROM class_enrollments WHERE classId = ? AND studentId = ?').bind(req.params.classId, req.params.studentId).run();
-        const updatedClass = await getClassWithStudentCount(env, req.params.classId, authToken.teacherId);
+        const updatedClass = await getClassWithStudentCount(env, req.params.classId, teacherId);
         if (!updatedClass) {
             return errorResponse('Class not found', 404);
         }
