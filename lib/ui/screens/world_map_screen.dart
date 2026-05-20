@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -53,6 +54,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   double _mapZoom = 1.0;
   late AudioManager _audioManager;
   bool _audioSetupDone = false;
+  final bool _preferStaticAmbientEffects = kIsWeb;
 
   // Avatar state
   int _currentZoneIndex = 0;
@@ -180,7 +182,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     _detectDevice();
     if (!_audioSetupDone) {
       _audioManager = Provider.of<AudioManager>(context, listen: false);
-      _audioManager.playMenuMusic();
+      if (!kIsWeb) {
+        _audioManager.playMenuMusic();
+      }
       _audioSetupDone = true;
     }
   }
@@ -218,12 +222,18 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     _floatController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
-    )..repeat(reverse: true);
+    );
+    if (!_preferStaticAmbientEffects) {
+      _floatController.repeat(reverse: true);
+    }
 
     _pathController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
-    )..repeat();
+    );
+    if (!_preferStaticAmbientEffects) {
+      _pathController.repeat();
+    }
 
     _avatarMoveController = AnimationController(
       duration: const Duration(milliseconds: 1200),
@@ -379,13 +389,18 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
     // If already at this zone, navigate directly without animation
     if (targetIndex == _currentZoneIndex) {
-      debugPrint('Already at zone $targetIndex - navigating directly');
+      if (kDebugMode) {
+        debugPrint('Already at zone $targetIndex - navigating directly');
+      }
       Navigator.pushNamed(context, '/${_zones[targetIndex].id}');
       return;
     }
 
-    debugPrint(
-        'Moving avatar from zone $_currentZoneIndex to zone $targetIndex');
+    if (kDebugMode) {
+      debugPrint(
+        'Moving avatar from zone $_currentZoneIndex to zone $targetIndex',
+      );
+    }
     setState(() {
       _targetZoneIndex = targetIndex;
       _isMoving = true;
@@ -480,6 +495,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         }
 
                         return Stack(
+                          clipBehavior: Clip.none,
                           children: [
                             // Premium raised board base under the world islands.
                             RepaintBoundary(
@@ -568,6 +584,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                               alignment: Alignment.center,
                               scale: _mapZoom,
                               child: Stack(
+                                clipBehavior: Clip.none,
                                 children: _build3DMapLayer(
                                   constraints,
                                   totalStars,
@@ -683,7 +700,43 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   Widget _buildAnimatedBackground() {
     final activeZoneColor = _resolveActiveZoneColor();
 
+    if (_preferStaticAmbientEffects) {
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          CustomPaint(
+            painter: _EnhancedBackgroundPainter(animation: 0),
+            size: Size.infinite,
+          ),
+          Positioned.fill(
+            child: AdventurePatternOverlay(
+              color: activeZoneColor,
+              opacity: 0.06,
+              tileSize: _isCompactLayout ? 56 : 68,
+            ),
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(0.2, -0.2),
+                    radius: 1.1,
+                    colors: [
+                      activeZoneColor.withValues(alpha: 0.1),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         // 1. Dynamic Animated Sky (New)
         const AnimatedCloudBackground(),
@@ -1018,15 +1071,20 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                     setState(() {
                       _selectedZoneIndex = index;
                     });
-                    debugPrint(
-                        'Tapped zone ${zone.name} - moving to index $index');
+                    if (kDebugMode) {
+                      debugPrint(
+                        'Tapped zone ${zone.name} - moving to index $index',
+                      );
+                    }
                     _moveToZone(index);
                   }
                 : () {
                     setState(() {
                       _selectedZoneIndex = index;
                     });
-                    debugPrint('Tapped locked zone ${zone.name}');
+                    if (kDebugMode) {
+                      debugPrint('Tapped locked zone ${zone.name}');
+                    }
                     _showLockedDialog(zone, totalStars);
                   },
           ),

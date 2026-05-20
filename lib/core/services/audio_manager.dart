@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -67,25 +66,29 @@ class AudioManager extends ChangeNotifier {
 
   Future<void> _loadBundledAudioManifest() async {
     try {
-      final manifestString = await rootBundle.loadString('AssetManifest.json');
-      final decoded = jsonDecode(manifestString);
-      if (decoded is Map<String, dynamic>) {
-        for (final key in decoded.keys) {
-          if (key.startsWith('assets/sounds/')) {
-            _bundledAssetKeys.add(key);
-          }
+      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      for (final key in manifest.listAssets()) {
+        if (key.startsWith('assets/sounds/')) {
+          _bundledAssetKeys.add(key);
         }
       }
       _assetManifestLoaded = true;
       _logExpectedAssetCoverage();
-      debugPrint(
-        'AudioManager: discovered ${_bundledAssetKeys.length} bundled audio assets.',
-      );
+      if (kDebugMode) {
+        debugPrint(
+          'AudioManager: discovered ${_bundledAssetKeys.length} bundled audio assets.',
+        );
+      }
     } catch (e) {
-      // If manifest parsing fails (rare), fall back to runtime try/catch checks.
-      _assetManifestLoaded = false;
-      debugPrint(
-          'AudioManager: failed to read AssetManifest, using runtime checks only.');
+      // On web, prefer fail-closed so missing audio assets do not trigger
+      // repeated exception-driven probing in the browser.
+      _assetManifestLoaded = kIsWeb;
+      if (kDebugMode) {
+        debugPrint(
+          'AudioManager: failed to read AssetManifest, '
+          '${kIsWeb ? 'disabling bundled web audio checks.' : 'using runtime checks only.'}',
+        );
+      }
     }
   }
 
@@ -96,11 +99,12 @@ class AudioManager extends ChangeNotifier {
   }
 
   bool _isBundledAssetAvailable(String assetPath) {
-    if (!_assetManifestLoaded) return true;
+    if (!_assetManifestLoaded) return !kIsWeb;
     return _bundledAssetKeys.contains(_manifestKeyFor(assetPath));
   }
 
   void _logExpectedAssetCoverage() {
+    if (!kDebugMode) return;
     final missing = _expectedAudioAssets
         .where((path) => !_isBundledAssetAvailable(path))
         .toList(growable: false);
@@ -120,8 +124,11 @@ class AudioManager extends ChangeNotifier {
   void _markMissingAsset(String assetPath, String category) {
     if (_failedAssets.contains(assetPath)) return;
     _failedAssets.add(assetPath);
-    debugPrint(
-        'Note: $category asset $assetPath is not bundled. Using fallback behavior.');
+    if (kDebugMode) {
+      debugPrint(
+        'Note: $category asset $assetPath is not bundled. Using fallback behavior.',
+      );
+    }
   }
 
   void toggleMusic() {

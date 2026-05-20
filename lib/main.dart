@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
@@ -344,6 +345,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _startSplashAudio() async {
+    if (kIsWeb) return;
     if (_startedSplashMusic) return;
     _startedSplashMusic = true;
     await context.read<AudioManager>().playSplashMusic();
