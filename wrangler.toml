@@ -4,6 +4,7 @@ account_id = ""
 workers_dev = true
 route = ""
 zone_id = ""
+pages_build_output_dir = "build/web"
 
 [env.production]
 name = "playbrightbound"
