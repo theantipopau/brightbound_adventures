@@ -7,6 +7,7 @@ This document tracks the production improvements made during the Codex audit and
 - Added a root `README.md` for GitHub with app overview, current product direction, local development commands, Cloudflare deployment notes, and links to current planning docs.
 - Prepared the remaining local worktree changes for an intentional broad GitHub sync after the RPG map/shop branch work.
 - Added a Star Shop gear summary strip using existing inventory/chest/gold visual assets to surface owned rewards, current outfit, and star balance.
+- Upgraded the world-map quest reward card with cosmetic reward progress, tappable reward previews, and direct Avatar/Star Shop actions.
 
 ## 2026-06-14 - RPG Loop Stabilization Start
 

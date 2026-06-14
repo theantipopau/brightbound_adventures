@@ -2051,6 +2051,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         nextUnlockables.isNotEmpty ? nextUnlockables.first : null;
     final nextSkill = stats.nextSkill;
     final rewardXp = 25 + (stats.masteredSkills * 10);
+    final rewardProgress =
+        nextReward == null ? 0.0 : unlockService.getUnlockProgress(nextReward);
+    final rewardRequirement = nextReward == null
+        ? null
+        : unlockService.getUnlockDescription(nextReward);
     final panelWidth = compact ? 252.0 : 304.0;
 
     return Positioned(
@@ -2261,73 +2266,13 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppColors.reward.withValues(alpha: 0.13),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.reward.withValues(alpha: 0.28),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.card_giftcard_rounded,
-                                color: AppColors.reward, size: 16),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Quest reward',
-                              style: TextStyle(
-                                color: Colors.amber.shade900,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              '+$rewardXp XP',
-                              style: TextStyle(
-                                color: Colors.amber.shade900,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          nextReward == null
-                              ? 'Build your streak to discover new character items.'
-                              : 'Next item: ${nextReward.name}',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.blueGrey.shade800,
-                            fontSize: 11,
-                            height: 1.3,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        if (nextSkill != null) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            'Next skill: ${nextSkill.name}',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: selected.color,
-                              fontSize: 11,
-                              height: 1.3,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                  _buildQuestRewardCard(
+                    rewardXp: rewardXp,
+                    nextReward: nextReward,
+                    rewardProgress: rewardProgress,
+                    rewardRequirement: rewardRequirement,
+                    nextSkillName: nextSkill?.name,
+                    selectedColor: selected.color,
                   ),
                   const SizedBox(height: 10),
                   Wrap(
@@ -2455,6 +2400,284 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestRewardCard({
+    required int rewardXp,
+    required CosmeticItem? nextReward,
+    required double rewardProgress,
+    required String? rewardRequirement,
+    required String? nextSkillName,
+    required Color selectedColor,
+  }) {
+    final hasReward = nextReward != null;
+
+    return Semantics(
+      button: hasReward,
+      label: hasReward
+          ? 'Next reward ${nextReward.name}. ${rewardRequirement ?? ''}'
+          : 'Quest reward. Earn experience and discover new character items.',
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: hasReward
+              ? () => _showRewardPreview(
+                    nextReward,
+                    requirement: rewardRequirement,
+                    progress: rewardProgress,
+                  )
+              : null,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.reward.withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: AppColors.reward.withValues(alpha: 0.28),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.card_giftcard_rounded,
+                        color: AppColors.reward, size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Quest reward',
+                      style: TextStyle(
+                        color: Colors.amber.shade900,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '+$rewardXp XP',
+                      style: TextStyle(
+                        color: Colors.amber.shade900,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (hasReward) ...[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.72),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.reward.withValues(alpha: 0.28),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            nextReward.emoji,
+                            style: const TextStyle(fontSize: 18),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              nextReward.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.blueGrey.shade900,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              rewardRequirement ?? nextReward.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.blueGrey.shade700,
+                                fontSize: 10.5,
+                                height: 1.25,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.touch_app_rounded,
+                        color: AppColors.reward,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: LinearProgressIndicator(
+                      minHeight: 6,
+                      value: rewardProgress.clamp(0.0, 1.0),
+                      backgroundColor: Colors.white.withValues(alpha: 0.65),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.reward),
+                    ),
+                  ),
+                ] else
+                  Text(
+                    'Build your streak to discover new character items.',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.blueGrey.shade800,
+                      fontSize: 11,
+                      height: 1.3,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                if (nextSkillName != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.school_rounded,
+                          size: 14, color: selectedColor),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          'Next skill: $nextSkillName',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: selectedColor,
+                            fontSize: 11,
+                            height: 1.3,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showRewardPreview(
+    CosmeticItem reward, {
+    required String? requirement,
+    required double progress,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        padding: const EdgeInsets.all(22),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.reward.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.reward.withValues(alpha: 0.35),
+                  width: 2,
+                ),
+              ),
+              child: Center(
+                child: Text(reward.emoji, style: const TextStyle(fontSize: 38)),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              reward.name,
+              textAlign: TextAlign.center,
+              style: AppTypography.titleMedium.copyWith(
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              reward.description,
+              textAlign: TextAlign.center,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                minHeight: 9,
+                value: progress.clamp(0.0, 1.0),
+                backgroundColor: Colors.blueGrey.shade100,
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.reward),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              requirement ?? 'Keep completing quests to unlock this reward.',
+              textAlign: TextAlign.center,
+              style: AppTypography.bodySmall.copyWith(
+                color: Colors.blueGrey.shade700,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      Navigator.pushNamed(context, '/avatar-creator');
+                    },
+                    icon: const Icon(Icons.checkroom_rounded),
+                    label: const Text('Avatar'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      _showShop();
+                    },
+                    icon: const Icon(Icons.shopping_bag_rounded),
+                    label: const Text('Star Shop'),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
