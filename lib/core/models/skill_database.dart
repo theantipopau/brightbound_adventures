@@ -4,6 +4,14 @@ import 'package:brightbound_adventures/core/utils/constants.dart';
 /// ACARA v9.0 & NAPLAN-aligned skill database
 /// Organized by zone and curriculum strand
 class SkillDatabase {
+  static String _normalizeZoneId(String zoneId) {
+    return zoneId
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'^[^\w]+'), '')
+        .replaceAll(RegExp(r'[\s-]+'), '_');
+  }
+
   // WORD WOODS - Literacy & Communication
   static final List<Skill> wordWoodsSkills = [
     // Introduction to reading
@@ -436,7 +444,7 @@ class SkillDatabase {
 
   /// Get all skills for a given zone
   static List<Skill> getZoneSkills(String zoneId) {
-    switch (zoneId) {
+    switch (_normalizeZoneId(zoneId)) {
       case 'word_woods':
         return wordWoodsSkills;
       case 'number_nebula':
@@ -576,13 +584,19 @@ class SkillDatabase {
 
   /// Get zone name from ID
   static String getZoneName(String zoneId) {
-    switch (zoneId) {
+    switch (_normalizeZoneId(zoneId)) {
       case 'word_woods':
         return '🌲 Word Woods';
       case 'number_nebula':
         return '🌌 Number Nebula';
+      case 'math_facts':
+        return '⚡ Math Facts';
       case 'story_springs':
         return '📖 Story Springs';
+      case 'science_explorers':
+        return '🔬 Science Explorers';
+      case 'creative_corner':
+        return '🎨 Creative Corner';
       case 'puzzle_peaks':
         return '🧠 Puzzle Peaks';
       case 'adventure_arena':
@@ -594,13 +608,19 @@ class SkillDatabase {
 
   /// Get zone description
   static String getZoneDescription(String zoneId) {
-    switch (zoneId) {
+    switch (_normalizeZoneId(zoneId)) {
       case 'word_woods':
         return 'Explore literacy, reading, and communication skills';
       case 'number_nebula':
         return 'Master numeracy, math, and problem solving';
+      case 'math_facts':
+        return 'Speed rounds, combos, and fact mastery';
       case 'story_springs':
         return 'Create stories, express emotions, develop characters';
+      case 'science_explorers':
+        return 'Discover the world around you';
+      case 'creative_corner':
+        return 'Express yourself with art and music';
       case 'puzzle_peaks':
         return 'Challenge your logic, patterns, and reasoning';
       case 'adventure_arena':

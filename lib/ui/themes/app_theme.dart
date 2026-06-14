@@ -66,7 +66,7 @@ class AppTypography {
     fontFamily: fontPrimary,
     fontSize: 32,
     fontWeight: FontWeight.bold,
-    letterSpacing: -0.5,
+    letterSpacing: 0,
     color: AppColors.textPrimary,
   );
 
@@ -116,7 +116,7 @@ class AppTypography {
     fontFamily: fontPrimary,
     fontSize: 16,
     fontWeight: FontWeight.bold,
-    letterSpacing: 0.5,
+    letterSpacing: 0,
     color: AppColors.textPrimary,
   );
 
@@ -124,7 +124,7 @@ class AppTypography {
     fontFamily: fontPrimary,
     fontSize: 18,
     fontWeight: FontWeight.bold,
-    letterSpacing: 0.5,
+    letterSpacing: 0,
     color: Colors.white,
   );
 
@@ -444,13 +444,25 @@ class WorldTokens {
     adventureArena,
   ];
 
-  /// Resolve from a zone ID or subject string (fallback gracefully)
+  /// Resolve from a route ID, token ID, display name, or subject string.
   static WorldTokens fromZoneId(String zoneId) {
+    final normalized = _normalizeZoneKey(zoneId);
     for (final w in all) {
-      if (w.zoneId == zoneId) return w;
+      if (w.zoneId == normalized ||
+          _normalizeZoneKey(w.displayName) == normalized ||
+          w.subject == normalized) {
+        return w;
+      }
     }
-    // Subject fallback
     return wordWoods;
+  }
+
+  static String _normalizeZoneKey(String value) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'^[^\w]+'), '')
+        .replaceAll(RegExp(r'[\s_]+'), '-');
   }
 
   static WorldTokens fromColor(Color color) {

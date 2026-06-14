@@ -2,6 +2,11 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-06-14 - Repository Sync and GitHub README
+
+- Added a root `README.md` for GitHub with app overview, current product direction, local development commands, Cloudflare deployment notes, and links to current planning docs.
+- Prepared the remaining local worktree changes for an intentional broad GitHub sync after the RPG map/shop branch work.
+
 ## 2026-06-14 - RPG Loop Stabilization Start
 
 - Added `/shop` as a first-class app route and surfaced the Star Shop from the world-map action dock.

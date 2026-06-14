@@ -38,6 +38,8 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
   late Animation<double> _trophyAnimation;
   late Animation<double> _statsAnimation;
   late Animation<double> _medalRotation;
+  bool _reduceMotion = false;
+  bool _motionSynced = false;
 
   @override
   void initState() {
@@ -71,8 +73,33 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
 
     _trophyController.forward();
     Future.delayed(const Duration(milliseconds: 500), () {
-      _statsController.forward();
+      if (mounted && !_reduceMotion) _statsController.forward();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_motionSynced && _reduceMotion == reduceMotion) return;
+    _motionSynced = true;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _trophyController.value = 1;
+      _statsController.value = 1;
+      _medalController.stop();
+      _medalController.value = 0;
+    } else {
+      _medalController.repeat();
+      if (_trophyController.value == 0) {
+        _trophyController.forward();
+      }
+      if (_statsController.value == 0) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted && !_reduceMotion) _statsController.forward();
+        });
+      }
+    }
   }
 
   @override

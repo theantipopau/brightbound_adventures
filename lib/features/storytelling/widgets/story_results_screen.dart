@@ -31,6 +31,8 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
   late AnimationController _confettiController;
   late Animation<double> _bookAnimation;
   late Animation<double> _starsAnimation;
+  bool _reduceMotion = false;
+  bool _motionSynced = false;
 
   @override
   void initState() {
@@ -62,11 +64,37 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
     // Start animations
     _bookController.forward();
     Future.delayed(const Duration(milliseconds: 500), () {
-      _starsController.forward();
+      if (mounted && !_reduceMotion) _starsController.forward();
     });
 
     if (_isPerfect) {
       _confettiController.forward();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_motionSynced && _reduceMotion == reduceMotion) return;
+    _motionSynced = true;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _bookController.value = 1;
+      _starsController.value = 1;
+      _confettiController.value = _isPerfect ? 1 : 0;
+    } else {
+      if (_bookController.value == 0) {
+        _bookController.forward();
+      }
+      if (_starsController.value == 0) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted && !_reduceMotion) _starsController.forward();
+        });
+      }
+      if (_isPerfect && _confettiController.value == 0) {
+        _confettiController.forward();
+      }
     }
   }
 
@@ -234,8 +262,7 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
         animation: _starsController,
         builder: (context, child) {
           final offset =
-              math.sin(DateTime.now().millisecondsSinceEpoch / 1000 + index) *
-                  10;
+              math.sin((_starsController.value * math.pi * 2) + index) * 10;
           return Positioned(
             left: MediaQuery.of(context).size.width * x,
             top: MediaQuery.of(context).size.height * y + offset,

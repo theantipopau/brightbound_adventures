@@ -64,11 +64,12 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
               ),
             ),
           ),
-          const ParticleBackground(
-            particles: ['🎮', '👾', '✨', '🎲', '🧩'],
-            particleCount: 15,
-            speedMultiplier: 0.5,
-          ),
+          if (!reduceMotion)
+            const ParticleBackground(
+              particles: ['🎮', '👾', '✨', '🎲', '🧩'],
+              particleCount: 8,
+              speedMultiplier: 0.35,
+            ),
           SafeArea(
             child: Column(
               children: [
@@ -119,35 +120,26 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                     builder: (context, constraints) {
                       // Determine grid layout based on available space
                       final width = constraints.maxWidth;
-                      final height = constraints.maxHeight;
-                      final isWide = width > 600;
-                      final crossAxisCount = isWide ? 2 : 1;
-
-                      // Calculate card size to fit without scrolling
-                      final padding = 20.0;
-                      final spacing = 20.0;
-                      final availableWidth =
-                          width - (padding * 2) - (isWide ? spacing : 0);
+                      final crossAxisCount =
+                          width >= 980 ? 3 : (width >= 560 ? 2 : 1);
+                      final padding = width < 420 ? 12.0 : 20.0;
+                      final spacing = width < 420 ? 12.0 : 18.0;
+                      final availableWidth = width -
+                          (padding * 2) -
+                          (spacing * (crossAxisCount - 1));
                       final cardWidth = availableWidth / crossAxisCount;
-                      final availableHeight = height - (padding * 2);
-                      final rowCount =
-                          (6 / crossAxisCount).ceil(); // Updated for 6 games
-                      final cardHeight =
-                          (availableHeight - (spacing * (rowCount - 1))) /
-                              rowCount;
-
-                      // Use the smaller dimension to maintain aspect ratio
-                      final cardSize = math.min(cardWidth * 0.9, cardHeight);
+                      final cardHeight = width < 420 ? 190.0 : 220.0;
 
                       return AnimatedBuilder(
                         animation: _entranceController,
                         builder: (context, child) {
                           return GridView.count(
                             crossAxisCount: crossAxisCount,
+                            physics: const BouncingScrollPhysics(),
                             padding: EdgeInsets.all(padding),
                             mainAxisSpacing: spacing,
                             crossAxisSpacing: spacing,
-                            childAspectRatio: cardWidth / cardSize,
+                            childAspectRatio: cardWidth / cardHeight,
                             children: [
                               _buildGameCard(
                                 index: 0,
@@ -372,98 +364,119 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                         onTap: game,
                         borderRadius: BorderRadius.circular(28),
                         splashColor: Colors.white.withValues(alpha: 0.3),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Emoji with enhanced glow effect
-                              Container(
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.25),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
+                        child: LayoutBuilder(
+                          builder: (context, cardConstraints) {
+                            final compact = cardConstraints.maxHeight < 205 ||
+                                cardConstraints.maxWidth < 220;
+                            final iconSize = compact ? 42.0 : 56.0;
+                            final iconPadding = compact ? 12.0 : 16.0;
+                            final titleSize = compact ? 18.0 : 21.0;
+                            final bodySize = compact ? 11.0 : 13.0;
+
+                            return Padding(
+                              padding: EdgeInsets.all(compact ? 14 : 20),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(iconPadding),
+                                    decoration: BoxDecoration(
                                       color:
-                                          Colors.white.withValues(alpha: 0.4),
-                                      blurRadius: 20,
-                                      spreadRadius: 2,
+                                          Colors.white.withValues(alpha: 0.25),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.32),
+                                          blurRadius: 16,
+                                          spreadRadius: 1,
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                child: Text(
-                                  emoji,
-                                  style: const TextStyle(fontSize: 64),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                title,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1.2,
-                                  letterSpacing: 0.5,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black38,
-                                      blurRadius: 6,
+                                    child: Text(
+                                      emoji,
+                                      style: TextStyle(fontSize: iconSize),
                                     ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                description,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.95),
-                                  fontSize: 13,
-                                  height: 1.4,
-                                ),
-                              ),
-                              const Spacer(),
-                              // Enhanced play button
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.3),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.play_arrow_rounded,
-                                        color: color, size: 24),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'PLAY',
-                                      style: TextStyle(
-                                        color: color,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                        letterSpacing: 1.0,
+                                  ),
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        title,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: titleSize,
+                                          fontWeight: FontWeight.bold,
+                                          height: 1.12,
+                                          letterSpacing: 0.2,
+                                          shadows: const [
+                                            Shadow(
+                                              color: Colors.black38,
+                                              blurRadius: 6,
+                                            ),
+                                          ],
+                                        ),
                                       ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        description,
+                                        textAlign: TextAlign.center,
+                                        maxLines: compact ? 2 : 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.95),
+                                          fontSize: bodySize,
+                                          height: 1.25,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    constraints:
+                                        const BoxConstraints(minHeight: 42),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: compact ? 16 : 22,
+                                      vertical: compact ? 8 : 10,
                                     ),
-                                  ],
-                                ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(24),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black
+                                              .withValues(alpha: 0.25),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.play_arrow_rounded,
+                                            color: color, size: 22),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'PLAY',
+                                          style: TextStyle(
+                                            color: color,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: compact ? 14 : 16,
+                                            letterSpacing: 0.8,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ),
                     ),

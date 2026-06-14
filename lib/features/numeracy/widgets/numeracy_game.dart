@@ -185,6 +185,7 @@ class _NumeracyGameState extends State<NumeracyGame>
 
   void _selectAnswer(int index) {
     if (_answered || _gameController.state != GameState.playing) return;
+    if (index < 0 || index >= _currentQuestion.options.length) return;
 
     final hapticService = context.read<HapticService>();
 
@@ -658,7 +659,7 @@ class _NumeracyGameState extends State<NumeracyGame>
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: widget.themeColor,
-                  letterSpacing: 0.5,
+                  fontFamily: AppTheme.fontPrimary,
                 ),
               ),
             ),
@@ -671,8 +672,10 @@ class _NumeracyGameState extends State<NumeracyGame>
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: isCompact ? 22 : 26,
-              fontWeight: FontWeight.bold,
-              height: 1.3,
+              fontWeight: FontWeight.w800,
+              height: 1.26,
+              color: AppColors.textPrimary,
+              fontFamily: AppTheme.fontPrimary,
             ),
           ),
           if (_showHint) ...[

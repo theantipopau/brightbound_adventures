@@ -170,7 +170,7 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
       case AnswerState.selected:
         return widget.accentColor;
       case AnswerState.idle:
-        return AppColors.surfaceDisabled;
+        return widget.accentColor.withValues(alpha: _hovered ? 0.18 : 0.10);
     }
   }
 
@@ -182,8 +182,34 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
       case AnswerState.selected:
         return Colors.white;
       case AnswerState.idle:
-        return AppColors.textSecondary;
+        return widget.accentColor;
     }
+  }
+
+  List<BoxShadow> _getOptionShadow(bool canTap) {
+    if (widget.state == AnswerState.correct) {
+      return [
+        ...AppShadows.glow(AppColors.correctFeedbackBorder, intensity: 0.24),
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.06),
+          blurRadius: 12,
+          offset: const Offset(0, 5),
+        ),
+      ];
+    }
+    if (widget.state == AnswerState.incorrect && widget.isSelected) {
+      return AppShadows.sm(AppColors.incorrectFeedbackBorder);
+    }
+    if ((_hovered || _focused || widget.isSelected) && canTap) {
+      return AppShadows.md(widget.accentColor);
+    }
+    return [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: 0.055),
+        blurRadius: 11,
+        offset: const Offset(0, 4),
+      ),
+    ];
   }
 
   Gradient? _getFillGradient() {
@@ -323,14 +349,14 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
             child: AnimatedContainer(
               duration: AppMotion.standard,
               curve: AppMotion.enter,
-              margin: const EdgeInsets.symmetric(vertical: 5),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
               constraints: const BoxConstraints(
                   minHeight: AppInput.preferredTouchTarget),
               decoration: BoxDecoration(
                 color: _getFillGradient() == null ? _getFillColor() : null,
                 gradient: _getFillGradient(),
-                borderRadius: BorderRadius.circular(AppBorders.lg),
+                borderRadius: BorderRadius.circular(18),
                 border: Border.all(
                   color: _focused ? widget.accentColor : _getBorderColor(),
                   width: _focused
@@ -339,33 +365,38 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
                           ? 2.0
                           : (_hovered ? 1.8 : 1.2)),
                 ),
-                boxShadow: widget.state == AnswerState.correct
-                    ? AppShadows.glow(AppColors.correctFeedbackBorder,
-                        intensity: 0.3)
-                    : (widget.state == AnswerState.incorrect &&
-                            widget.isSelected
-                        ? AppShadows.sm(AppColors.incorrectFeedbackBorder)
-                        : ((_hovered || _focused) && canTap
-                            ? AppShadows.md(widget.accentColor)
-                            : AppShadows.neutral)),
+                boxShadow: _getOptionShadow(canTap),
               ),
               child: Row(
                 children: [
                   // Option letter badge
                   AnimatedContainer(
                     duration: AppMotion.standard,
-                    width: 34,
-                    height: 34,
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
-                      color: _getBadgeColor(),
-                      borderRadius: BorderRadius.circular(8),
+                      color: widget.state == AnswerState.idle
+                          ? Colors.white
+                          : _getBadgeColor(),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: _getBadgeColor(),
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _getBadgeColor().withValues(alpha: 0.20),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Text(
                         widget.optionLetter,
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
                           color: _getBadgeTextColor(),
                           fontFamily: AppTheme.fontPrimary,
                         ),
@@ -378,10 +409,11 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
                   Expanded(
                     child: Text(
                       widget.label,
-                      maxLines: 2,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 16,
+                        height: 1.22,
                         fontWeight: widget.isSelected
                             ? FontWeight.w700
                             : FontWeight.w500,
@@ -477,17 +509,19 @@ class _QuestionCardState extends State<QuestionCard>
           position: _slideIn,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
                   Colors.white,
-                  widget.accentColor.withValues(alpha: 0.09),
+                  widget.accentColor.withValues(alpha: 0.075),
+                  widget.accentColor.withValues(alpha: 0.035),
                 ],
+                stops: const [0, 0.62, 1],
               ),
-              borderRadius: BorderRadius.circular(AppBorders.xl),
+              borderRadius: BorderRadius.circular(28),
               border: Border.all(
                 color: widget.accentColor.withValues(alpha: 0.28),
                 width: 1.5,
@@ -497,12 +531,23 @@ class _QuestionCardState extends State<QuestionCard>
             child: Stack(
               children: [
                 Positioned(
-                  right: -18,
-                  top: -18,
-                  child: Icon(
-                    Icons.auto_stories_rounded,
-                    size: 96,
-                    color: widget.accentColor.withValues(alpha: 0.06),
+                  right: -8,
+                  top: -10,
+                  child: Opacity(
+                    opacity: 0.10,
+                    child: SizedBox(
+                      width: 86,
+                      height: 86,
+                      child: Image.asset(
+                        'assets/images/scroll.PNG',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.auto_stories_rounded,
+                          size: 78,
+                          color: widget.accentColor,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 Column(
@@ -515,23 +560,31 @@ class _QuestionCardState extends State<QuestionCard>
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
+                              horizontal: 11, vertical: 6),
                           decoration: BoxDecoration(
-                            color: widget.accentColor.withValues(alpha: 0.15),
+                            color: widget.accentColor.withValues(alpha: 0.12),
                             borderRadius:
                                 BorderRadius.circular(AppBorders.pill),
                             border: Border.all(
-                              color: widget.accentColor.withValues(alpha: 0.20),
+                              color: widget.accentColor.withValues(alpha: 0.25),
                             ),
                           ),
-                          child: Text(
-                            'Q${widget.questionNumber} of ${widget.totalQuestions}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              color: widget.accentColor,
-                              letterSpacing: 0.5,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.flag_rounded,
+                                  size: 13, color: widget.accentColor),
+                              const SizedBox(width: 5),
+                              Text(
+                                'Question ${widget.questionNumber}/${widget.totalQuestions}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: widget.accentColor,
+                                  fontFamily: AppTheme.fontPrimary,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Container(
@@ -566,11 +619,13 @@ class _QuestionCardState extends State<QuestionCard>
                       widget.question,
                       maxLines: 7,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A2E),
-                        height: 1.42,
+                      style: TextStyle(
+                        fontSize:
+                            MediaQuery.of(context).size.width < 560 ? 18 : 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        height: 1.34,
+                        fontFamily: AppTheme.fontPrimary,
                       ),
                     ),
                   ],

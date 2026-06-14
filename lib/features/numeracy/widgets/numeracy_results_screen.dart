@@ -48,6 +48,8 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
   late AnimationController _celebrationController;
   late AnimationController _scoreController;
   late Animation<double> _scoreAnimation;
+  bool _reduceMotion = false;
+  bool _motionSynced = false;
 
   @override
   void initState() {
@@ -72,6 +74,25 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
 
     // Record progress
     _recordProgress();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_motionSynced && _reduceMotion == reduceMotion) return;
+    _motionSynced = true;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _celebrationController.stop();
+      _celebrationController.value = 0;
+      _scoreController.value = 1;
+    } else {
+      _celebrationController.repeat();
+      if (_scoreController.value == 0) {
+        _scoreController.forward();
+      }
+    }
   }
 
   void _recordProgress() async {

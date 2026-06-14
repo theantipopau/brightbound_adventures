@@ -6,6 +6,7 @@ import 'package:brightbound_adventures/core/utils/word_woods_generator.dart';
 import 'package:brightbound_adventures/core/utils/creative_corner_generator.dart';
 import 'package:brightbound_adventures/core/services/achievement_service.dart';
 import 'package:brightbound_adventures/core/services/daily_challenge_service.dart';
+import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/core/services/streak_service.dart';
 import 'package:brightbound_adventures/ui/widgets/streak_milestone_modal.dart';
 import 'package:brightbound_adventures/features/literacy/models/question.dart';
@@ -45,7 +46,7 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
   void initState() {
     super.initState();
     AiQuestionService.instance.prefetch(
-      zone: 'word_woods',
+      zone: SkillProvider.normalizeZoneId(widget.zoneId ?? 'word_woods'),
       skill: widget.skill.id,
       difficulty: widget.skill.difficulty,
       fetchCount: 10,

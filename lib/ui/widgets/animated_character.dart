@@ -46,11 +46,27 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
   late Animation<double> _bounce;
   late Animation<double> _walkSway;
   late Animation<double> _legAnimation;
+  bool _reduceMotion = false;
+  bool _motionSynced = false;
 
   @override
   void initState() {
     super.initState();
     _initAnimations();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_motionSynced && _reduceMotion == reduceMotion) return;
+    _motionSynced = true;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _stopAllAnimations();
+    } else {
+      _startAnimation();
+    }
   }
 
   void _initAnimations() {
@@ -91,6 +107,11 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
   }
 
   void _startAnimation() {
+    if (_reduceMotion) {
+      _stopAllAnimations();
+      return;
+    }
+    _stopAllAnimations();
     switch (widget.animation) {
       case CharacterAnimation.idle:
         _bounceController.repeat(reverse: true);
@@ -121,9 +142,12 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
   }
 
   void _startBlinking() {
+    if (_reduceMotion) return;
     Future.delayed(Duration(milliseconds: 2000 + math.Random().nextInt(3000)),
         () {
-      if (mounted && widget.animation == CharacterAnimation.idle) {
+      if (mounted &&
+          !_reduceMotion &&
+          widget.animation == CharacterAnimation.idle) {
         _blinkController.forward().then((_) {
           _blinkController.reverse().then((_) {
             _startBlinking();
@@ -133,13 +157,21 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
     });
   }
 
+  void _stopAllAnimations() {
+    _bounceController.stop();
+    _walkController.stop();
+    _particleController.stop();
+    _blinkController.stop();
+    _bounceController.value = 0;
+    _walkController.value = 0;
+    _particleController.value = 0;
+    _blinkController.value = 0;
+  }
+
   @override
   void didUpdateWidget(AnimatedCharacter oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.animation != widget.animation) {
-      _bounceController.stop();
-      _walkController.stop();
-      _particleController.stop();
       _bounceController.duration = const Duration(milliseconds: 1200);
       _startAnimation();
     }
@@ -165,7 +197,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
           alignment: Alignment.center,
           children: [
             // Particles (if enabled)
-            if (widget.showParticles)
+            if (widget.showParticles && !_reduceMotion)
               AnimatedBuilder(
                 animation: _particleController,
                 builder: (context, child) {
@@ -256,14 +288,19 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                   color: skinColor,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: skinColor.withValues(alpha: 0.7),
-                    width: 2,
+                    color: Colors.white.withValues(alpha: 0.85),
+                    width: 3,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: skinColor.withValues(alpha: 0.3),
-                      blurRadius: 6,
+                      blurRadius: 8,
                       spreadRadius: 1,
+                    ),
+                    BoxShadow(
+                      color: _getCharacterColor().withValues(alpha: 0.18),
+                      blurRadius: 14,
+                      spreadRadius: 2,
                     ),
                   ],
                 ),
@@ -278,11 +315,59 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
 
           // Body
           Container(
-            width: widget.size * 0.35,
-            height: widget.size * 0.25,
+            width: widget.size * 0.38,
+            height: widget.size * 0.28,
             decoration: BoxDecoration(
-              color: _getCharacterColor(),
-              borderRadius: BorderRadius.circular(widget.size * 0.1),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  _getCharacterColor().withValues(alpha: 0.95),
+                  _getCharacterColor(),
+                  Color.lerp(_getCharacterColor(), Colors.black, 0.20)!,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(widget.size * 0.11),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.55),
+                width: 1.4,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _getCharacterColor().withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  left: widget.size * 0.06,
+                  top: widget.size * 0.045,
+                  child: Container(
+                    width: widget.size * 0.08,
+                    height: widget.size * 0.19,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.22),
+                      borderRadius: BorderRadius.circular(widget.size * 0.04),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    width: widget.size * 0.09,
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.horizontal(
+                        right: Radius.circular(widget.size * 0.11),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -302,7 +387,11 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                         decoration: BoxDecoration(
                           color: _getCharacterColor().withValues(alpha: 0.8),
                           borderRadius:
-                              BorderRadius.circular(widget.size * 0.03),
+                              BorderRadius.circular(widget.size * 0.04),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.35),
+                            width: 1,
+                          ),
                         ),
                       ),
                     ),
@@ -315,7 +404,11 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                         decoration: BoxDecoration(
                           color: _getCharacterColor().withValues(alpha: 0.8),
                           borderRadius:
-                              BorderRadius.circular(widget.size * 0.03),
+                              BorderRadius.circular(widget.size * 0.04),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.35),
+                            width: 1,
+                          ),
                         ),
                       ),
                     ),
@@ -332,7 +425,11 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                   height: widget.size * 0.12,
                   decoration: BoxDecoration(
                     color: _getCharacterColor().withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(widget.size * 0.03),
+                    borderRadius: BorderRadius.circular(widget.size * 0.04),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.35),
+                      width: 1,
+                    ),
                   ),
                 ),
                 SizedBox(width: widget.size * 0.06),
@@ -341,7 +438,11 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                   height: widget.size * 0.12,
                   decoration: BoxDecoration(
                     color: _getCharacterColor().withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(widget.size * 0.03),
+                    borderRadius: BorderRadius.circular(widget.size * 0.04),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.35),
+                      width: 1,
+                    ),
                   ),
                 ),
               ],

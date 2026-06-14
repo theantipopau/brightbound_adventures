@@ -8,6 +8,7 @@ import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
 import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
+import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
 import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
 import 'package:brightbound_adventures/ui/widgets/difficulty_indicator.dart';
@@ -353,9 +354,8 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       return AnimatedBuilder(
         animation: _characterController,
         builder: (context, child) {
-          final offset = math.sin(DateTime.now().millisecondsSinceEpoch /
-                  1000 *
-                  element.speed) *
+          final offset = math.sin(
+                  _characterController.value * math.pi * 2 * element.speed) *
               20;
           return Positioned(
             left: MediaQuery.of(context).size.width * element.x,
@@ -604,9 +604,9 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                           color: Colors.white,
                           fontSize:
                               MediaQuery.of(context).size.width < 600 ? 20 : 24,
-                          fontWeight: FontWeight.w700,
-                          height: 1.6,
-                          letterSpacing: 0.3,
+                          fontWeight: FontWeight.w800,
+                          height: 1.38,
+                          fontFamily: AppTheme.fontPrimary,
                         ),
                         maxLines: 12,
                         overflow: TextOverflow.ellipsis,
@@ -626,7 +626,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                             color: Colors.purpleAccent,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 0.4,
+                            fontFamily: AppTheme.fontPrimary,
                           ),
                         ),
                       ),

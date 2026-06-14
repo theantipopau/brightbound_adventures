@@ -25,6 +25,7 @@ class _ParticleBackgroundState extends State<ParticleBackground>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late List<_Particle> _generatedParticles;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -35,6 +36,19 @@ class _ParticleBackgroundState extends State<ParticleBackground>
     )..repeat();
 
     _initParticles();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_reduceMotion == reduceMotion) return;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _controller.stop();
+    } else {
+      _controller.repeat();
+    }
   }
 
   void _initParticles() {
@@ -61,20 +75,29 @@ class _ParticleBackgroundState extends State<ParticleBackground>
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
     return Container(
       color: widget.baseColor ?? Colors.transparent,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: _ParticlePainter(
-              particles: _generatedParticles,
-              progress: _controller.value,
+      child: reduceMotion
+          ? CustomPaint(
+              painter: _ParticlePainter(
+                particles: _generatedParticles.take(4).toList(),
+                progress: 0,
+              ),
+              size: Size.infinite,
+            )
+          : AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: _ParticlePainter(
+                    particles: _generatedParticles,
+                    progress: _controller.value,
+                  ),
+                  size: Size.infinite,
+                );
+              },
             ),
-            size: Size.infinite,
-          );
-        },
-      ),
     );
   }
 }
@@ -127,7 +150,7 @@ class _ParticlePainter extends CustomPainter {
     // if we tracked previous time. But simpler: just position = (start + time * speed) % 1.
     // Wait, the controller duration is 10s.
 
-    final time = DateTime.now().millisecondsSinceEpoch / 1000.0;
+    final time = progress * 10.0;
 
     for (var particle in particles) {
       // Calculate position
@@ -165,6 +188,8 @@ class _ParticlePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _ParticlePainter oldDelegate) =>
-      true; // Always repaint for animation
+  bool shouldRepaint(covariant _ParticlePainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.particles != particles;
+  }
 }

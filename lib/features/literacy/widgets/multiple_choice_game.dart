@@ -167,6 +167,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
 
   void _selectAnswer(int index) {
     if (_answered || _gameController.state != GameState.playing) return;
+    if (index < 0 || index >= _currentQuestion.options.length) return;
 
     final hapticService = context.read<HapticService>();
 

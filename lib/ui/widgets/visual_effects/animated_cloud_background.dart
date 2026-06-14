@@ -21,6 +21,7 @@ class AnimatedCloudBackground extends StatefulWidget {
 class _AnimatedCloudBackgroundState extends State<AnimatedCloudBackground>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -32,6 +33,19 @@ class _AnimatedCloudBackgroundState extends State<AnimatedCloudBackground>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_reduceMotion == reduceMotion) return;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _controller.stop();
+    } else {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -39,34 +53,37 @@ class _AnimatedCloudBackgroundState extends State<AnimatedCloudBackground>
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    Widget buildClouds(double value) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              widget.primaryColor,
+              widget.secondaryColor,
+              widget.primaryColor.withValues(alpha: 0.8),
+            ],
+            stops: [
+              0.0,
+              0.5 + math.sin(value * math.pi) * 0.2, // Move the center stop
+              1.0,
+            ],
+          ),
+        ),
+        child: CustomPaint(
+          painter: _CloudPainter(time: value),
+          size: Size.infinite,
+        ),
+      );
+    }
+
+    if (reduceMotion) return buildClouds(0);
+
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                widget.primaryColor,
-                widget.secondaryColor,
-                widget.primaryColor.withValues(alpha: 0.8),
-              ],
-              stops: [
-                0.0,
-                0.5 +
-                    math.sin(_controller.value * math.pi) *
-                        0.2, // Move the center stop
-                1.0,
-              ],
-            ),
-          ),
-          child: CustomPaint(
-            painter: _CloudPainter(time: _controller.value),
-            size: Size.infinite,
-          ),
-        );
-      },
+      builder: (context, child) => buildClouds(_controller.value),
     );
   }
 }
@@ -110,5 +127,7 @@ class _CloudPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _CloudPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _CloudPainter oldDelegate) {
+    return oldDelegate.time != time;
+  }
 }

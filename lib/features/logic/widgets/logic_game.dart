@@ -7,6 +7,7 @@ import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
+import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 import '../models/question.dart';
 
@@ -462,9 +463,9 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                         color: Colors.white,
                         fontSize:
                             MediaQuery.of(context).size.width < 600 ? 18 : 22,
-                        fontWeight: FontWeight.w700,
-                        height: 1.6,
-                        letterSpacing: 0.3,
+                        fontWeight: FontWeight.w800,
+                        height: 1.42,
+                        fontFamily: AppTheme.fontPrimary,
                       ),
                       maxLines: 10,
                       overflow: TextOverflow.ellipsis,
@@ -484,7 +485,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                           color: Colors.tealAccent,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 0.4,
+                          fontFamily: AppTheme.fontPrimary,
                         ),
                       ),
                     ),

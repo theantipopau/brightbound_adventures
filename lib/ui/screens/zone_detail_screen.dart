@@ -33,6 +33,7 @@ class ZoneDetailScreen extends StatefulWidget {
 
 class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   String _selectedFilter = 'all';
+  String _selectedSort = 'recommended';
 
   @override
   void initState() {
@@ -71,6 +72,8 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
           final zoneSkills = skillProvider.getZoneSkills(widget.zoneId);
           final zoneStats = skillProvider.getZoneStats(widget.zoneId);
           final filteredSkills = _applySkillFilter(zoneSkills);
+          final sortedSkills = _sortSkills(filteredSkills);
+          final recommendedSkill = _findRecommendedSkill(zoneSkills);
 
           if (zoneSkills.isEmpty) {
             return Center(
@@ -120,6 +123,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: ZoneProgressCard(
+                    zoneId: widget.zoneId,
                     zoneName: widget.zoneName,
                     masteredSkills: zoneStats.masteredSkills,
                     totalSkills: zoneStats.totalSkills,
@@ -189,13 +193,26 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                     context,
                     worldTokens,
                     zoneStats,
-                    filteredSkills.length,
+                    zoneSkills.length,
                   ),
                 ),
               ),
 
+              if (recommendedSkill != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                    child: _buildRecommendedSkillCard(
+                      context,
+                      worldTokens,
+                      recommendedSkill,
+                    ),
+                  ),
+                ),
+
               // ── Boss Battle banner (Adventure Arena only) ──
-              if (widget.zoneId == 'adventure_arena')
+              if (SkillProvider.normalizeZoneId(widget.zoneId) ==
+                  'adventure_arena')
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -311,6 +328,8 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                             _selectedFilter = value;
                           });
                         },
+                        tooltip: 'Filter skills',
+                        icon: const Icon(Icons.filter_list_rounded),
                         itemBuilder: (context) => [
                           const PopupMenuItem(
                             value: 'all',
@@ -330,6 +349,34 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                           ),
                         ],
                       ),
+                      PopupMenuButton<String>(
+                        initialValue: _selectedSort,
+                        onSelected: (value) {
+                          setState(() {
+                            _selectedSort = value;
+                          });
+                        },
+                        tooltip: 'Sort skills',
+                        icon: const Icon(Icons.sort_rounded),
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'recommended',
+                            child: Text('Recommended'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'progress',
+                            child: Text('Progress'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'difficulty',
+                            child: Text('Difficulty'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'attempts',
+                            child: Text('Fewest Attempts'),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -338,28 +385,32 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
               // Skills list
               SliverPadding(
                 padding: const EdgeInsets.all(16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final skill = filteredSkills[index];
-                      final isLocked = skill.state == SkillState.locked;
+                sliver: sortedSkills.isEmpty
+                    ? SliverToBoxAdapter(
+                        child: _buildEmptyFilterCard(context, worldTokens),
+                      )
+                    : SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final skill = sortedSkills[index];
+                            final isLocked = skill.state == SkillState.locked;
 
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: SkillCard(
-                          skill: skill,
-                          onTap: isLocked
-                              ? null
-                              : () {
-                                  _showSkillDetail(context, skill);
-                                },
-                          showLockOverlay: isLocked,
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: SkillCard(
+                                skill: skill,
+                                onTap: isLocked
+                                    ? null
+                                    : () {
+                                        _showSkillDetail(context, skill);
+                                      },
+                                showLockOverlay: isLocked,
+                              ),
+                            );
+                          },
+                          childCount: sortedSkills.length,
                         ),
-                      );
-                    },
-                    childCount: filteredSkills.length,
-                  ),
-                ),
+                      ),
               ),
 
               // Bottom padding
@@ -388,6 +439,94 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
       case 'all':
       default:
         return skills;
+    }
+  }
+
+  List<Skill> _sortSkills(List<Skill> skills) {
+    final sorted = List<Skill>.of(skills);
+    sorted.sort((a, b) {
+      final lockedCompare = _lockedSortRank(a).compareTo(_lockedSortRank(b));
+      if (lockedCompare != 0) return lockedCompare;
+
+      switch (_selectedSort) {
+        case 'progress':
+          final accuracyCompare = b.accuracy.compareTo(a.accuracy);
+          if (accuracyCompare != 0) return accuracyCompare;
+          return b.attempts.compareTo(a.attempts);
+        case 'difficulty':
+          final difficultyCompare = a.difficulty.compareTo(b.difficulty);
+          if (difficultyCompare != 0) return difficultyCompare;
+          return a.name.compareTo(b.name);
+        case 'attempts':
+          final attemptsCompare = a.attempts.compareTo(b.attempts);
+          if (attemptsCompare != 0) return attemptsCompare;
+          return a.accuracy.compareTo(b.accuracy);
+        case 'recommended':
+        default:
+          final stateCompare = _learningSortRank(a).compareTo(
+            _learningSortRank(b),
+          );
+          if (stateCompare != 0) return stateCompare;
+
+          final attemptsCompare = a.attempts.compareTo(b.attempts);
+          if (attemptsCompare != 0) return attemptsCompare;
+
+          final accuracyCompare = a.accuracy.compareTo(b.accuracy);
+          if (accuracyCompare != 0) return accuracyCompare;
+
+          return a.difficulty.compareTo(b.difficulty);
+      }
+    });
+    return sorted;
+  }
+
+  Skill? _findRecommendedSkill(List<Skill> skills) {
+    final candidates = skills
+        .where(
+          (skill) =>
+              skill.state != SkillState.locked &&
+              skill.state != SkillState.mastered,
+        )
+        .toList();
+
+    if (candidates.isEmpty) {
+      final unlocked =
+          skills.where((skill) => skill.state != SkillState.locked).toList();
+      if (unlocked.isEmpty) return null;
+      unlocked.sort((a, b) => a.name.compareTo(b.name));
+      return unlocked.first;
+    }
+
+    candidates.sort((a, b) {
+      final stateCompare = _learningSortRank(a).compareTo(_learningSortRank(b));
+      if (stateCompare != 0) return stateCompare;
+
+      final attemptsCompare = a.attempts.compareTo(b.attempts);
+      if (attemptsCompare != 0) return attemptsCompare;
+
+      final accuracyCompare = a.accuracy.compareTo(b.accuracy);
+      if (accuracyCompare != 0) return accuracyCompare;
+
+      return a.difficulty.compareTo(b.difficulty);
+    });
+
+    return candidates.first;
+  }
+
+  int _lockedSortRank(Skill skill) {
+    return skill.state == SkillState.locked ? 1 : 0;
+  }
+
+  int _learningSortRank(Skill skill) {
+    switch (skill.state) {
+      case SkillState.introduced:
+        return 0;
+      case SkillState.practising:
+        return 1;
+      case SkillState.mastered:
+        return 2;
+      case SkillState.locked:
+        return 3;
     }
   }
 
@@ -527,6 +666,238 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                   color: color,
                 ),
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendedSkillCard(
+    BuildContext context,
+    WorldTokens worldTokens,
+    Skill skill,
+  ) {
+    final progressText = skill.attempts == 0
+        ? 'New challenge'
+        : '${(skill.accuracy * 100).toStringAsFixed(0)}% accuracy';
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 560;
+        final art = Container(
+          width: isWide ? 118 : 88,
+          height: isWide ? 118 : 88,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.18),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.32),
+              width: 1.5,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Image.asset(
+              skill.state == SkillState.mastered
+                  ? 'assets/images/goldkey.PNG'
+                  : 'assets/images/potion.PNG',
+              fit: BoxFit.contain,
+            ),
+          ),
+        );
+
+        final content = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Recommended Next',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.86),
+                    fontWeight: FontWeight.w900,
+                  ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              skill.name,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    height: 1.05,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              skill.description,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.86),
+                    height: 1.35,
+                  ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildRecommendedBadge(
+                  Icons.insights_rounded,
+                  progressText,
+                ),
+                _buildRecommendedBadge(
+                  Icons.repeat_rounded,
+                  '${skill.attempts} attempts',
+                ),
+                _buildRecommendedBadge(
+                  Icons.star_rounded,
+                  'Level ${skill.difficulty}',
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => _launchSkillPractice(context, skill),
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  label: const Text('Start Skill'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: worldTokens.primaryColor,
+                  ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _showSkillDetail(context, skill),
+                  icon: const Icon(Icons.info_outline_rounded),
+                  label: const Text('Details'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.72),
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                worldTokens.primaryColor,
+                worldTokens.secondaryColor,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: worldTokens.primaryColor.withValues(alpha: 0.28),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: isWide
+              ? Row(
+                  children: [
+                    Expanded(child: content),
+                    const SizedBox(width: 18),
+                    art,
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    art,
+                    const SizedBox(height: 14),
+                    content,
+                  ],
+                ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRecommendedBadge(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyFilterCard(
+    BuildContext context,
+    WorldTokens worldTokens,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: worldTokens.primaryColor.withValues(alpha: 0.16),
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.filter_alt_off_rounded,
+            size: 42,
+            color: worldTokens.primaryColor,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'No skills match this filter',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Try another view to keep exploring this zone.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.35,
+                ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 14),
+          TextButton.icon(
+            onPressed: () {
+              setState(() {
+                _selectedFilter = 'all';
+              });
+            },
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Show All Skills'),
           ),
         ],
       ),
@@ -730,47 +1101,50 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   void _launchSkillPractice(BuildContext context, Skill skill) {
     // Choose the appropriate practice screen based on zone
     Widget practiceScreen;
+    final zoneId = SkillProvider.normalizeZoneId(widget.zoneId);
+    final zoneColor = WorldTokens.fromZoneId(zoneId).primaryColor;
 
-    if (widget.zoneId == 'number_nebula' || widget.zoneId == 'math_facts') {
+    if (zoneId == 'number_nebula' || zoneId == 'math_facts') {
       practiceScreen = NumeracyPracticeScreen(
         skill: skill,
-        themeColor: widget.zoneColor,
-        zoneId: widget.zoneId,
+        themeColor: zoneColor,
+        zoneId: zoneId,
         zoneName: widget.zoneName,
       );
-    } else if (widget.zoneId == 'story_springs') {
+    } else if (zoneId == 'story_springs') {
       practiceScreen = StoryPracticeScreen(
         skillId: skill.id,
         skillName: skill.name,
-        zoneId: widget.zoneId,
+        zoneId: zoneId,
         zoneName: widget.zoneName,
       );
-    } else if (widget.zoneId == 'puzzle_peaks') {
+    } else if (zoneId == 'puzzle_peaks') {
       practiceScreen = LogicPracticeScreen(
         skillId: skill.id,
         skillName: skill.name,
-        zoneId: widget.zoneId,
+        zoneId: zoneId,
         zoneName: widget.zoneName,
       );
-    } else if (widget.zoneId == 'adventure_arena') {
+    } else if (zoneId == 'adventure_arena') {
       practiceScreen = MotorPracticeScreen(
         skillId: skill.id,
         skillName: skill.name,
-        zoneId: widget.zoneId,
+        zoneId: zoneId,
         zoneName: widget.zoneName,
       );
-    } else if (widget.zoneId == 'science_explorers') {
+    } else if (zoneId == 'science_explorers') {
       practiceScreen = SciencePracticeScreen(
         skillId: skill.id,
-        zoneId: widget.zoneId,
+        skillName: skill.name,
+        zoneId: zoneId,
         zoneName: widget.zoneName,
       );
     } else {
-      // Default to literacy practice screen for other zones (Word Woods)
+      // Word Woods and Creative Corner both use the literacy-style quiz shell.
       practiceScreen = SkillPracticeScreen(
         skill: skill,
-        themeColor: widget.zoneColor,
-        zoneId: widget.zoneId,
+        themeColor: zoneColor,
+        zoneId: zoneId,
         zoneName: widget.zoneName,
       );
     }

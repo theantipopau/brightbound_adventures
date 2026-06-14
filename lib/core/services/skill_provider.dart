@@ -3,7 +3,6 @@ import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/models/skill_database.dart';
 import 'package:brightbound_adventures/core/services/local_storage_service.dart';
 import 'package:brightbound_adventures/core/services/learning_engine.dart';
-import 'package:brightbound_adventures/core/utils/constants.dart';
 
 class SkillProvider extends ChangeNotifier {
   final LocalStorageService _storageService;
@@ -18,6 +17,14 @@ class SkillProvider extends ChangeNotifier {
   bool get isInitializing => _isInitializing;
 
   Map<String, Skill> get skills => _skills;
+
+  static String normalizeZoneId(String zoneId) {
+    return zoneId
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'^[^\w]+'), '')
+        .replaceAll(RegExp(r'[\s-]+'), '_');
+  }
 
   /// Initialize skills from storage or create new ones
   ///
@@ -64,31 +71,16 @@ class SkillProvider extends ChangeNotifier {
 
   /// Get skills for a specific zone
   List<Skill> getZoneSkills(String zoneId) {
-    return _skills.values.where((skill) {
-      if (zoneId == 'word_woods') {
-        return skill.strand == Constants.strandLiteracy ||
-            skill.strand == Constants.strandCommunication;
-      } else if (zoneId == 'number_nebula') {
-        return skill.strand == Constants.strandNumeracy;
-      } else if (zoneId == 'math_facts') {
-        return skill.strand == Constants.strandNumeracy &&
-            (skill.id.contains('multiplication') ||
-                skill.id.contains('addition') ||
-                skill.id.contains('subtraction'));
-      } else if (zoneId == 'story_springs') {
-        return skill.strand == Constants.strandCommunication;
-      } else if (zoneId == 'science_explorers') {
-        return skill.strand == 'science';
-      } else if (zoneId == 'creative_corner') {
-        return skill.strand == 'arts';
-      } else if (zoneId == 'puzzle_peaks') {
-        return skill.strand == Constants.strandLogic;
-      } else if (zoneId == 'adventure_arena') {
-        return skill.strand == Constants.strandMotor ||
-            skill.strand == Constants.strandNumeracy;
-      }
-      return false;
-    }).toList();
+    final normalizedZoneId = normalizeZoneId(zoneId);
+    final zoneSkillIds = SkillDatabase.getZoneSkills(normalizedZoneId)
+        .map((skill) => skill.id)
+        .toSet();
+
+    if (zoneSkillIds.isEmpty) return [];
+
+    return _skills.values
+        .where((skill) => zoneSkillIds.contains(skill.id))
+        .toList();
   }
 
   /// Get all skills for a strand
@@ -158,10 +150,11 @@ class SkillProvider extends ChangeNotifier {
 
   /// Get zone-specific stats
   ZoneStats getZoneStats(String zoneId) {
-    final zoneSkills = getZoneSkills(zoneId);
+    final normalizedZoneId = normalizeZoneId(zoneId);
+    final zoneSkills = getZoneSkills(normalizedZoneId);
 
     return ZoneStats(
-      zoneId: zoneId,
+      zoneId: normalizedZoneId,
       totalSkills: zoneSkills.length,
       masteredSkills:
           zoneSkills.where((s) => s.state == SkillState.mastered).length,

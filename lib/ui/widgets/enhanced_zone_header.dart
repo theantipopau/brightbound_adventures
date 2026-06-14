@@ -261,17 +261,32 @@ class _EnhancedZoneHeaderState extends State<EnhancedZoneHeader>
         children: [
           // Character body
           Container(
-            width: 70,
-            height: 70,
+            width: 82,
+            height: 82,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: skinColor,
-              border: Border.all(color: Colors.white, width: 3),
+              gradient: RadialGradient(
+                center: const Alignment(-0.35, -0.45),
+                colors: [
+                  Colors.white.withValues(alpha: 0.96),
+                  skinColor,
+                  widget.zoneColor.withValues(alpha: 0.28),
+                ],
+              ),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.78),
+                width: 3,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  blurRadius: 14,
+                  offset: const Offset(0, 7),
+                ),
+                BoxShadow(
+                  color: widget.zoneColor.withValues(alpha: 0.34),
+                  blurRadius: 22,
+                  spreadRadius: 1,
                 ),
               ],
             ),
@@ -347,17 +362,24 @@ class _EnhancedZoneHeaderState extends State<EnhancedZoneHeader>
           const SizedBox(height: 4),
           // Name badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            constraints: const BoxConstraints(maxWidth: 122),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: widget.zoneColor.withValues(alpha: 0.24),
+              ),
             ),
             child: Text(
               avatar.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: widget.zoneColor,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w900,
                 fontSize: 12,
+                fontFamily: AppTheme.fontPrimary,
               ),
             ),
           ),

@@ -183,6 +183,8 @@ class _ScienceGameState extends State<ScienceGame>
 
   void _selectAnswer(int index) {
     if (_answered || _gameController.state != GameState.playing) return;
+    final options = _currentQuestion.options as List;
+    if (index < 0 || index >= options.length) return;
 
     final hapticService = context.read<HapticService>();
 
@@ -733,7 +735,7 @@ class _ScienceGameState extends State<ScienceGame>
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: widget.themeColor,
-                  letterSpacing: 0.5,
+                  fontFamily: AppTheme.fontPrimary,
                 ),
               ),
             ),
@@ -755,8 +757,10 @@ class _ScienceGameState extends State<ScienceGame>
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: isCompact ? 22 : 26,
-              fontWeight: FontWeight.bold,
-              height: 1.3,
+              fontWeight: FontWeight.w800,
+              height: 1.26,
+              color: AppColors.textPrimary,
+              fontFamily: AppTheme.fontPrimary,
             ),
           ),
           const SizedBox(height: 14),

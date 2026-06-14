@@ -33,6 +33,8 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
   late Animation<double> _mountainClimbAnimation;
   late Animation<double> _flagWaveAnimation;
   late Animation<double> _scoreAnimation;
+  bool _reduceMotion = false;
+  bool _motionSynced = false;
 
   @override
   void initState() {
@@ -71,8 +73,37 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
 
     _mountainController.forward();
     Future.delayed(const Duration(milliseconds: 800), () {
-      _scoreController.forward();
+      if (mounted && !_reduceMotion) _scoreController.forward();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_motionSynced && _reduceMotion == reduceMotion) return;
+    _motionSynced = true;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _celebrationController.stop();
+      _mountainController.value = 1;
+      _flagController.stop();
+      _flagController.value = 0.5;
+      _scoreController.value = 1;
+    } else {
+      if (_celebrationController.value == 0) {
+        _celebrationController.forward();
+      }
+      _flagController.repeat(reverse: true);
+      if (_mountainController.value == 0) {
+        _mountainController.forward();
+      }
+      if (_scoreController.value == 0) {
+        Future.delayed(const Duration(milliseconds: 800), () {
+          if (mounted && !_reduceMotion) _scoreController.forward();
+        });
+      }
+    }
   }
 
   @override
