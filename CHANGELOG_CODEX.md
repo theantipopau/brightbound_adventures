@@ -11,6 +11,8 @@ This document tracks the production improvements made during the Codex audit and
 - Reworked the world-map safe field so zones and the avatar avoid the right quest board and bottom action dock.
 - Replaced the sparse top-left HUD badge with a compact character card showing avatar, level, and XP.
 - Aligned the map control rail to the quest board dimensions and spread the world positions across the playable map area.
+- Updated Star Shop item details with reward-impact previews and direct outfit equip actions.
+- Made purchased shop outfits auto-equip so the reward is immediately visible on the map character.
 - Replaced the stale Phase 6 `docs/NEXT_STEPS.md` with a current RPG-loop stabilization plan.
 - Added `test/shop_rpg_loop_test.dart` coverage for shop purchase behavior and shop outfit/avatar visual ID consistency.
 

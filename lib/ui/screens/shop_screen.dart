@@ -237,117 +237,215 @@ class _ShopScreenState extends State<ShopScreen>
   void _showItemDetails(ShopItem item, ShopService shop) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        contentPadding: const EdgeInsets.all(24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              item.emoji,
-              style: const TextStyle(fontSize: 80),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              item.name,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              item.description,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            if (!item.isPurchased) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('⭐', style: TextStyle(fontSize: 24)),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${item.starCost} stars',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+      builder: (dialogContext) {
+        final avatarProvider = dialogContext.watch<AvatarProvider>();
+        final isEquippableOutfit = item.category == ShopCategory.outfits;
+        final isEquipped =
+            isEquippableOutfit && avatarProvider.avatar?.outfitId == item.id;
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          contentPadding: const EdgeInsets.all(24),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 380),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  item.emoji,
+                  style: const TextStyle(fontSize: 80),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  item.name,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  item.description,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[700],
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: shop.canAfford(item)
-                          ? () => _purchaseItem(item, shop)
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.white,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                _buildRewardPreview(item, isEquipped: isEquipped),
+                const SizedBox(height: 24),
+                if (!item.isPurchased) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('⭐', style: TextStyle(fontSize: 24)),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${item.starCost} stars',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      child: const Text('Buy'),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: shop.canAfford(item)
+                              ? () => _purchaseItem(item, shop)
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Buy'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (!shop.canAfford(item))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        'Not enough stars! Need ${item.starCost - shop.starBalance} more.',
+                        style: TextStyle(
+                          color: Colors.red[700],
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                ] else ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isEquipped ? Colors.indigo : Colors.green,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isEquipped
+                              ? Icons.checkroom_rounded
+                              : Icons.check_circle_rounded,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isEquipped ? 'Equipped' : 'Already Owned',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-              if (!shop.canAfford(item))
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Text(
-                    'Not enough stars! Need ${item.starCost - shop.starBalance} more.',
-                    style: TextStyle(
-                      color: Colors.red[700],
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-            ] else
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text(
-                      'Already Owned',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                  if (isEquippableOutfit) ...[
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: isEquipped
+                            ? null
+                            : () => _equipOutfit(item, dialogContext),
+                        icon: const Icon(Icons.checkroom_rounded),
+                        label: Text(isEquipped ? 'Wearing Now' : 'Wear Outfit'),
                       ),
                     ),
                   ],
-                ),
+                  const SizedBox(height: 10),
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    child: const Text('Close'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRewardPreview(ShopItem item, {required bool isEquipped}) {
+    final color = ShopHelper.getCategoryColor(item.category);
+    final icon = isEquipped
+        ? Icons.check_circle_rounded
+        : ShopHelper.getCategoryIcon(item.category);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.16),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _rewardImpactText(item, isEquipped: isEquipped),
+              style: TextStyle(
+                color: Colors.grey.shade800,
+                fontWeight: FontWeight.w700,
+                height: 1.25,
               ),
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  String _rewardImpactText(ShopItem item, {required bool isEquipped}) {
+    if (isEquipped) {
+      return 'Your character is wearing this outfit on the world map.';
+    }
+
+    switch (item.category) {
+      case ShopCategory.outfits:
+        return item.isPurchased
+            ? 'Owned outfit. Wear it to update your character on the map.'
+            : 'Unlocks a wearable outfit and equips it right away.';
+      case ShopCategory.avatarAccessories:
+        return 'Unlocks a character accessory for the avatar collection.';
+      case ShopCategory.backgrounds:
+        return 'Adds a collectible backdrop for future profile and map scenes.';
+      case ShopCategory.effects:
+        return 'Adds a collectible visual effect for future celebrations.';
+      case ShopCategory.specialItems:
+        return 'Adds a special boost item for the adventure inventory.';
+    }
   }
 
   void _purchaseItem(ShopItem item, ShopService shop) async {
@@ -372,6 +470,7 @@ class _ShopScreenState extends State<ShopScreen>
     switch (item.category) {
       case ShopCategory.outfits:
         await avatarProvider.unlockOutfit(item.id);
+        await avatarProvider.changeOutfit(item.id);
         break;
       case ShopCategory.avatarAccessories:
         await avatarProvider.unlockAccessory(item.id);
@@ -383,6 +482,13 @@ class _ShopScreenState extends State<ShopScreen>
     }
   }
 
+  Future<void> _equipOutfit(ShopItem item, BuildContext dialogContext) async {
+    await context.read<AvatarProvider>().changeOutfit(item.id);
+    if (!dialogContext.mounted) return;
+    Navigator.pop(dialogContext);
+    _showEquippedSuccess(item);
+  }
+
   void _showPurchaseSuccess(ShopItem item) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -392,13 +498,39 @@ class _ShopScreenState extends State<ShopScreen>
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'You bought ${item.name}!',
+                item.category == ShopCategory.outfits
+                    ? 'You bought and equipped ${item.name}!'
+                    : 'You bought ${item.name}!',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ],
         ),
         backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+
+  void _showEquippedSuccess(ShopItem item) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Text(item.emoji, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '${item.name} equipped!',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.indigo,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
