@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-06-14 - Responsiveness and Animation Optimisation
+
+- Stopped Star Shop item cards from running continuous idle pulse animations while the grid is static.
+- Reduced Mini Games idle animation work by disabling always-on card floating and only pulsing the game timer during the final 10 seconds.
+- Capped web particle counts and wrapped particle/cloud painters in repaint boundaries to limit background repaint cost.
+- Disabled world-map ambient float/path animations on compact layouts while preserving travel and interaction animations.
+
 ## 2026-06-14 - Repository Sync and GitHub README
 
 - Added a root `README.md` for GitHub with app overview, current product direction, local development commands, Cloudflare deployment notes, and links to current planning docs.

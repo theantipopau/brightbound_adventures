@@ -55,26 +55,30 @@ class _AnimatedCloudBackgroundState extends State<AnimatedCloudBackground>
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.of(context).disableAnimations;
     Widget buildClouds(double value) {
-      return Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              widget.primaryColor,
-              widget.secondaryColor,
-              widget.primaryColor.withValues(alpha: 0.8),
-            ],
-            stops: [
-              0.0,
-              0.5 + math.sin(value * math.pi) * 0.2, // Move the center stop
-              1.0,
-            ],
+      return RepaintBoundary(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                widget.primaryColor,
+                widget.secondaryColor,
+                widget.primaryColor.withValues(alpha: 0.8),
+              ],
+              stops: [
+                0.0,
+                0.5 + math.sin(value * math.pi) * 0.2, // Move the center stop
+                1.0,
+              ],
+            ),
           ),
-        ),
-        child: CustomPaint(
-          painter: _CloudPainter(time: value),
-          size: Size.infinite,
+          child: CustomPaint(
+            painter: _CloudPainter(time: value),
+            size: Size.infinite,
+            isComplex: true,
+            willChange: !reduceMotion,
+          ),
         ),
       );
     }

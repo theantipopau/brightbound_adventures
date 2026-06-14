@@ -30,7 +30,7 @@ class _ModernShopItemCardState extends State<ModernShopItemCard>
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
+    );
   }
 
   @override

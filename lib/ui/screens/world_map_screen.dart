@@ -243,6 +243,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   void _syncAmbientAnimationState(BuildContext context) {
     final shouldAnimate = !_preferStaticAmbientEffects &&
+        !_isCompactLayout &&
         !_isShortViewport &&
         !MediaQuery.of(context).disableAnimations;
     if (_ambientAnimationsRunning == shouldAnimate) return;

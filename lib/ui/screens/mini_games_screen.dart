@@ -34,7 +34,7 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
     _floatController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
-    )..repeat(reverse: true);
+    );
   }
 
   @override
@@ -566,7 +566,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
-    )..repeat(reverse: true);
+    );
 
     _gameController.addListener(_updateTimer);
     _initializeGame();
@@ -594,14 +594,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       gameStarted = true;
     });
     _gameController.forward().then((_) {
+      if (!mounted) return;
+      _pulseController.stop();
+      _pulseController.value = 0;
       setState(() => gameOver = true);
     });
   }
 
   void _updateTimer() {
     if (mounted) {
+      final nextTimeRemaining = (30 * (1 - _gameController.value)).ceil();
+      if (nextTimeRemaining <= 10 && !_pulseController.isAnimating) {
+        _pulseController.repeat(reverse: true);
+      } else if (nextTimeRemaining > 10 && _pulseController.isAnimating) {
+        _pulseController.stop();
+        _pulseController.value = 0;
+      }
       setState(() {
-        timeRemaining = (30 * (1 - _gameController.value)).ceil();
+        timeRemaining = nextTimeRemaining;
       });
     }
   }

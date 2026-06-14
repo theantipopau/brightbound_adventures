@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// A reusable widget that renders floating emoji particles in the background.
@@ -53,7 +54,9 @@ class _ParticleBackgroundState extends State<ParticleBackground>
 
   void _initParticles() {
     final random = math.Random();
-    _generatedParticles = List.generate(widget.particleCount, (index) {
+    final effectiveCount =
+        kIsWeb ? math.min(widget.particleCount, 10) : widget.particleCount;
+    _generatedParticles = List.generate(effectiveCount, (index) {
       return _Particle(
         emoji: widget.particles[random.nextInt(widget.particles.length)],
         x: random.nextDouble(),
@@ -76,28 +79,34 @@ class _ParticleBackgroundState extends State<ParticleBackground>
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.of(context).disableAnimations;
-    return Container(
-      color: widget.baseColor ?? Colors.transparent,
-      child: reduceMotion
-          ? CustomPaint(
-              painter: _ParticlePainter(
-                particles: _generatedParticles.take(4).toList(),
-                progress: 0,
+    return RepaintBoundary(
+      child: Container(
+        color: widget.baseColor ?? Colors.transparent,
+        child: reduceMotion
+            ? CustomPaint(
+                painter: _ParticlePainter(
+                  particles: _generatedParticles.take(4).toList(),
+                  progress: 0,
+                ),
+                size: Size.infinite,
+                isComplex: true,
+                willChange: false,
+              )
+            : AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return CustomPaint(
+                    painter: _ParticlePainter(
+                      particles: _generatedParticles,
+                      progress: _controller.value,
+                    ),
+                    size: Size.infinite,
+                    isComplex: true,
+                    willChange: true,
+                  );
+                },
               ),
-              size: Size.infinite,
-            )
-          : AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return CustomPaint(
-                  painter: _ParticlePainter(
-                    particles: _generatedParticles,
-                    progress: _controller.value,
-                  ),
-                  size: Size.infinite,
-                );
-              },
-            ),
+      ),
     );
   }
 }
