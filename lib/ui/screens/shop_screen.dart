@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/shop_service.dart';
+import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/models/shop_item.dart';
 import 'package:brightbound_adventures/ui/widgets/modern_shop_item_card.dart';
 
@@ -356,10 +357,29 @@ class _ShopScreenState extends State<ShopScreen>
       Navigator.pop(context);
 
       if (success) {
+        await _unlockAvatarReward(item);
         _showPurchaseSuccess(item);
       } else {
         _showPurchaseError();
       }
+    }
+  }
+
+  Future<void> _unlockAvatarReward(ShopItem item) async {
+    final avatarProvider = context.read<AvatarProvider>();
+    if (!avatarProvider.hasAvatar) return;
+
+    switch (item.category) {
+      case ShopCategory.outfits:
+        await avatarProvider.unlockOutfit(item.id);
+        break;
+      case ShopCategory.avatarAccessories:
+        await avatarProvider.unlockAccessory(item.id);
+        break;
+      case ShopCategory.backgrounds:
+      case ShopCategory.effects:
+      case ShopCategory.specialItems:
+        break;
     }
   }
 

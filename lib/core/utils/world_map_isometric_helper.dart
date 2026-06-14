@@ -60,25 +60,30 @@ class WorldMapIsometricHelper {
   ///
   /// • `bottomUIReserve` matches the actual footprint of the quick-zone rail
   ///   + action buttons in world_map_screen.dart:
-  ///     – Non-compact (≥ 980 px wide): rail at bottom=120, height=56 → 176 px.
-  ///       Use 190 px for a comfortable buffer.
-  ///     – Compact (< 980 px wide): rail at bottom=178, height=56 → 234 px.
-  ///       Use 250 px for a comfortable buffer.
+  ///     – Non-compact (≥ 980 px wide): rail/action stack occupies roughly the
+  ///       lower 152 px, and islands extend below their anchor. Use 236 px.
+  ///     – Compact (< 980 px wide): stacked controls need a larger gutter.
+  ///       Use 292 px for a comfortable buffer.
   static Offset gridToScreen(
     IsometricPosition pos,
     Size screenSize,
   ) {
-    // Horizontal padding — consistent fraction of screen width.
-    final hPad = (screenSize.width * 0.06).clamp(20.0, 80.0);
+    // Horizontal safe field. Wide layouts carry the quest board and map
+    // controls on the right, so the playable map needs to end before them.
+    final hasSidePanel = screenSize.width >= 980;
+    final leftReserve = (screenSize.width * 0.04).clamp(18.0, 68.0);
+    final rightReserve = hasSidePanel
+        ? (screenSize.width * 0.18).clamp(300.0, 380.0)
+        : leftReserve;
 
-    // Top reserve: clears HUD + island upward protrusion.
-    final topReserve = (screenSize.height * 0.24).clamp(170.0, 230.0);
+    // Top reserve: clears the compact HUD + island upward protrusion.
+    final topReserve = (screenSize.height * 0.19).clamp(128.0, 178.0);
 
     // Bottom reserve: clears the quick-zone rail + action buttons.
     final isCompact = screenSize.width < 980;
-    final bottomUIReserve = isCompact ? 250.0 : 190.0;
+    final bottomUIReserve = isCompact ? 292.0 : 236.0;
 
-    final usableWidth = screenSize.width - (hPad * 2);
+    final usableWidth = screenSize.width - leftReserve - rightReserve;
     final usableHeight = (screenSize.height - topReserve - bottomUIReserve)
         .clamp(60.0, screenSize.height);
 
@@ -87,7 +92,7 @@ class WorldMapIsometricHelper {
     final normalizedY = pos.y / (gridHeight - 1);
 
     return Offset(
-      hPad + (normalizedX * usableWidth),
+      leftReserve + (normalizedX * usableWidth),
       topReserve + (normalizedY * usableHeight),
     );
   }

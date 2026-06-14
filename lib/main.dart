@@ -112,6 +112,7 @@ class BrightBoundApp extends StatelessWidget {
               '/world-map': (_) => const WorldMapScreen(),
               '/world-entry': (_) => const WorldEntryScreen(),
               '/settings': (_) => const SettingsScreen(),
+              '/shop': (_) => const ShopScreen(),
               '/profile-stats': (_) => const ProfileStatsScreen(),
               '/parent-dashboard': (_) => const ParentDashboardScreen(),
               '/word-woods': (_) => const ZoneDetailScreen(
@@ -122,14 +123,14 @@ class BrightBoundApp extends StatelessWidget {
                     zoneColor: AppColors.wordWoodsColor,
                   ),
               '/number-nebula': (_) => const ZoneDetailScreen(
-                    zoneId: 'math_facts',
+                    zoneId: 'number_nebula',
                     zoneName: '🌌 Number Nebula',
                     zoneDescription:
                         'Master numeracy, math, and problem solving',
                     zoneColor: AppColors.numberNebulaColor,
                   ),
               '/math-facts': (_) => const ZoneDetailScreen(
-                    zoneId: 'number_nebula',
+                    zoneId: 'math_facts',
                     zoneName: '⚡ Math Facts',
                     zoneDescription: 'Speed rounds, combos, and fact mastery',
                     zoneColor: AppColors.numberNebulaColor,

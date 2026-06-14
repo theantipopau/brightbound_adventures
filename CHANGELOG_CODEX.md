@@ -2,6 +2,80 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-06-14 - RPG Loop Stabilization Start
+
+- Added `/shop` as a first-class app route and surfaced the Star Shop from the world-map action dock.
+- Added a Star Shop shortcut to the world-map avatar info sheet so character progression and item rewards are easier to discover.
+- Connected successful shop outfit/accessory purchases to `AvatarProvider` unlocks.
+- Added shop outfit IDs to `CosmeticsLibrary.defaultOutfits` so purchased shop outfits can resolve to visible avatar/map-pawn styling.
+- Reworked the world-map safe field so zones and the avatar avoid the right quest board and bottom action dock.
+- Replaced the sparse top-left HUD badge with a compact character card showing avatar, level, and XP.
+- Aligned the map control rail to the quest board dimensions and spread the world positions across the playable map area.
+- Replaced the stale Phase 6 `docs/NEXT_STEPS.md` with a current RPG-loop stabilization plan.
+- Added `test/shop_rpg_loop_test.dart` coverage for shop purchase behavior and shop outfit/avatar visual ID consistency.
+
+## 2026-05-21 - Zone Routing and Progression Consistency Pass
+
+- Fixed the `/number-nebula` and `/math-facts` routes so each opens the correct zone skill set.
+- Added canonical zone ID normalization to `SkillProvider`, accepting route-style kebab IDs, curriculum snake IDs, display names, and emoji-prefixed names.
+- Changed zone skill lookup to use `SkillDatabase` skill IDs rather than broad strand filters, preventing unrelated communication skills from leaking between Word Woods and Story Springs.
+- Normalized zone IDs when launching skill practice screens so progress metadata and guardian/result flows receive consistent IDs.
+- Updated literacy/creative practice AI prefetching to use the active zone instead of always prefetching Word Woods.
+- Hardened `SkillDatabase` zone lookups, names, and descriptions for kebab-case route IDs, Math Facts, Science Explorers, and Creative Corner.
+- Added regression coverage for zone ID normalization and the Math Facts subset.
+- Verification: `dart format` successful, `flutter analyze` clean, `flutter test` passing, and `flutter build web --release` successful. Remaining Wasm dry-run warnings are from third-party `flutter_tts_web.dart`.
+
+## 2026-05-21 - Zone Detail Flow and World Token Functionality Pass
+
+- Fixed `WorldTokens.fromZoneId` so snake_case route IDs, kebab-case token IDs, display names, and subject strings resolve to the correct zone identity instead of falling back to Word Woods.
+- Passed canonical zone IDs into `ZoneProgressCard` so each zone progress panel now uses the right themed colors and progress styling.
+- Added a zone-detail `Recommended Next` card that chooses an unlocked, not-yet-mastered skill and offers direct start/details actions.
+- Added skill sorting controls for recommended order, progress, difficulty, and fewest attempts.
+- Added a proper empty-filter state with a reset action when a selected filter has no matching skills.
+- Verification: `dart format` successful, `flutter analyze` clean, `flutter test` passing, and `flutter build web --release` successful. Remaining Wasm dry-run warnings are from third-party `flutter_tts_web.dart`.
+
+## 2026-05-21 - Zone Detail and Skill Progression Visual Step
+
+- Upgraded skill cards with richer layered surfaces, asset-backed state watermarks, clearer status pills, stronger progress bars, improved mini stats, and more premium play/lock actions.
+- Refreshed the zone progress card with quest artwork, stronger percentage typography, themed progress coloring, and a cleaner summary layout.
+- Enhanced the zone header avatar presentation with a larger dimensional character frame and more polished name badge styling.
+- Verification: covered by the follow-up `dart format`, `flutter analyze`, `flutter test`, and `flutter build web --release` run. Remaining Wasm dry-run warnings are from third-party `flutter_tts_web.dart`.
+
+## 2026-05-21 - Visual System, Map, Player, and Quiz GUI Pass
+
+- Tightened global typography tokens by removing stray letter spacing from core display, label, and button styles for cleaner Fredoka/Comfortaa rendering.
+- Upgraded shared answer options with stronger card depth, rounder option badges, clearer selected/correct/incorrect surfaces, larger answer text, and smoother visual hierarchy.
+- Reworked the shared `QuestionCard` with richer gradients, a scroll asset motif, improved question metadata chips, and larger Fredoka question text.
+- Polished Numeracy, Science, Puzzle Peaks, and Story Springs question panels with consistent Fredoka question typography and cleaner compact labels.
+- Improved the shared `AnimatedCharacter` renderer with brighter head rings, dimensional body gradients, outfit highlights, and more finished leg styling.
+- Enhanced the world map static backdrop with a sun glow, soft clouds, and meadow contour lines for reduced-motion/static layouts.
+- Refined the board-game world-map avatar pawn with a stronger base, dimensional body, brighter character frame, and consistent nameplate typography.
+- Verification: `flutter analyze` clean, `flutter test` passing, and `flutter build web --release` successful. Remaining Wasm dry-run warnings are from third-party `flutter_tts_web.dart`.
+
+## 2026-05-21 - Reduced-Motion and Animation Stability Sweep
+
+- Added reduced-motion handling to Numeracy, Puzzle Peaks, Adventure Arena, and Story Springs result screens so celebratory animations render immediately and stop looping when calmer motion is requested.
+- Hardened delayed result-screen animation callbacks so they do not resume after disposal or after reduced-motion mode has been enabled.
+- Removed wall-clock sampling from Story Game floating background elements, using controller progress instead for deterministic repaint behavior.
+- Updated shared `AnimatedCharacter` to stop bounce, walk, blink, and particle loops in reduced-motion mode, giving avatar and guide visuals a static presentation across the app.
+- Verification: `flutter analyze` clean and `flutter test` passing.
+
+## 2026-05-20 - Science Lab Visual Polish and Motion Cleanup
+
+- Replaced plain Science Explorers loading, error, and empty-question states with branded lab cards, themed progress, retry/back actions, and clearer child-facing copy.
+- Updated the new Science Explorers results screen to respect reduced-motion mode by stopping the looping pulse and rendering the score summary immediately.
+- Made Story Springs floating result decorations deterministic from their animation controller instead of sampling wall-clock time during paint.
+- Verification: `flutter analyze` clean and `flutter test` passing.
+
+## 2026-05-20 - End-to-End Gameplay Completion Sweep
+
+- Added a dedicated Science Explorers results screen so science sessions now finish with accuracy, stars, XP, retry, and back-to-zone actions instead of immediately popping out of the activity.
+- Connected Science Explorers completion to skill progress, spaced repetition, avatar XP, star rewards, achievements, daily challenges, streak milestones, and zone mastery checks.
+- Passed the selected science skill name through from the zone detail route into the science game and results flow.
+- Hardened literacy, numeracy, and science answer selection so keyboard Enter cannot submit an invalid answer index before a choice is selected.
+- Fixed the app-side web Wasm dry-run warning in Settings by removing explicit `double`/`int` runtime checks from setting persistence.
+- Verification: `flutter analyze` clean, `flutter test` passing, and `flutter build web --release` successful. The remaining Wasm dry-run warnings are in the third-party `flutter_tts_web.dart` package code.
+
 ## 2026-05-20 - Avatar Creator, Unlocks, and Touch Scaling Pass
 
 - Expanded avatar creation with four additional companions: Quinn Quokka, Perry Platypus, Tara Turtle, and Nova Dragon.
@@ -21,6 +95,18 @@ This document tracks the production improvements made during the Codex audit and
 - Tied the pawn visual identity to the avatar's selected outfit color so avatar creation choices carry into the world map.
 - Kept the implementation in Flutter's existing isometric map stack rather than introducing a full 3D engine, preserving performance and maintainability for mobile/web/tablet.
 - Verification: `flutter analyze` clean.
+
+## 2026-05-20 - Clipping and UI Lag Stabilization Pass
+
+- Preserved Copilot/user edits in `world_map_screen.dart` and built on the existing short-viewport/static-effects direction.
+- Added world-map ambient animation gating so floating/path animations stop on web, short viewports, and reduced-motion mode.
+- Replaced expensive static world-map background fallback with a lightweight non-repainting painter.
+- Reduced world-map particle load on animated layouts and removed it from static/performance layouts.
+- Updated shared `AnimatedCloudBackground` to stop its ticker when animations are disabled and to repaint only when time changes.
+- Updated shared `ParticleBackground` to stop its ticker in reduced-motion mode, use deterministic animation progress instead of wall-clock time in paint, and repaint only when input/progress changes.
+- Reworked the mini-games hub grid so cards use stable scrollable sizing instead of being squeezed into short viewports.
+- Made mini-game cards internally responsive so icon, text, and play button scale down instead of clipping.
+- Verification: `flutter analyze` clean and `flutter test` passing.
 
 ## 2026-05-19 - Technical, Gameplay, UI, UX, and Safety Upgrade Pass
 

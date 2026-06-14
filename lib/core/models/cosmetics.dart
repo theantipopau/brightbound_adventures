@@ -135,6 +135,34 @@ class CosmeticsLibrary {
       isUnlocked: false,
       unlockedAtLevel: 10,
     ),
+    const Outfit(
+      id: 'outfit_superhero',
+      name: 'Superhero Cape',
+      description: 'A bold cape for brave learning missions',
+      color: '#E53935',
+      isUnlocked: false,
+    ),
+    const Outfit(
+      id: 'outfit_scientist',
+      name: 'Lab Coat',
+      description: 'A crisp coat for careful experiments',
+      color: '#26A69A',
+      isUnlocked: false,
+    ),
+    const Outfit(
+      id: 'outfit_astronaut',
+      name: 'Space Suit',
+      description: 'Ready for cosmic number quests',
+      color: '#5C6BC0',
+      isUnlocked: false,
+    ),
+    const Outfit(
+      id: 'outfit_detective',
+      name: 'Detective Outfit',
+      description: 'Follow the clues and solve the mystery',
+      color: '#6D4C41',
+      isUnlocked: false,
+    ),
   ];
 
   static final List<Accessory> defaultAccessories = [

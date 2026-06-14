@@ -14,7 +14,6 @@ import 'package:brightbound_adventures/ui/widgets/visual_effects/particle_backgr
 import 'package:brightbound_adventures/ui/widgets/visual_effects/adventure_pattern_overlay.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
-import 'package:brightbound_adventures/ui/widgets/glowing_card.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_score_counter.dart';
 import 'package:brightbound_adventures/ui/widgets/transitions.dart';
 import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
@@ -56,6 +55,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   late AudioManager _audioManager;
   bool _audioSetupDone = false;
   final bool _preferStaticAmbientEffects = kIsWeb;
+  bool _ambientAnimationsRunning = false;
 
   // Avatar state
   int _currentZoneIndex = 0;
@@ -72,8 +72,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Word Woods',
       emoji: '🌲',
       color: AppColors.wordWoodsColor,
-      // Bottom left - starter zone
-      position: Offset(0.15, 0.85),
+      // Lower-left starter zone.
+      position: Offset(0.06, 0.86),
       description: 'Master letters & reading!',
       order: 0,
       requiredStars: 0,
@@ -83,8 +83,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Number Nebula',
       emoji: '🌌',
       color: AppColors.numberNebulaColor,
-      // Bottom right
-      position: Offset(0.85, 0.80),
+      // Lower-right anchor.
+      position: Offset(0.94, 0.84),
       description: 'Explore math & numbers!',
       order: 1,
       requiredStars: 3,
@@ -94,8 +94,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Math Facts',
       emoji: '🔢',
       color: Color(0xFFFF6B6B),
-      // Middle left
-      position: Offset(0.20, 0.50),
+      // Mid-left, clear of the starter zone.
+      position: Offset(0.18, 0.62),
       description: 'Master multiplication & addition!',
       order: 2,
       requiredStars: 6,
@@ -105,8 +105,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Story Springs',
       emoji: '📖',
       color: AppColors.storyspringsColor,
-      // Middle right
-      position: Offset(0.80, 0.45),
+      // Mid-right, pulled away from the quest panel.
+      position: Offset(0.72, 0.60),
       description: 'Create amazing stories!',
       order: 3,
       requiredStars: 10,
@@ -116,8 +116,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Science Explorers',
       emoji: '🔬',
       color: Color(0xFF4DB6AC), // Teal
-      // Upper left
-      position: Offset(0.18, 0.32),
+      // Upper-left anchor.
+      position: Offset(0.08, 0.36),
       description: 'Discover the world!',
       order: 4,
       requiredStars: 15,
@@ -127,8 +127,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Creative Corner',
       emoji: '🎨',
       color: Color(0xFFFFB74D), // Orange
-      // Upper right
-      position: Offset(0.78, 0.28),
+      // Upper-right, with room for the side panel.
+      position: Offset(0.82, 0.34),
       description: 'Draw and make music!',
       order: 5,
       requiredStars: 20,
@@ -138,9 +138,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Puzzle Peaks',
       emoji: '🧩',
       color: AppColors.puzzlePeaksColor,
-      // Top centre-left — dy raised from 0.12 to 0.22 so the island stays
-      // below the HUD after gridToScreen topReserve + island upward protrusion.
-      position: Offset(0.38, 0.22),
+      // Upper centre-left, spaced away from Science Explorers.
+      position: Offset(0.34, 0.18),
       description: 'Solve tricky puzzles!',
       order: 6,
       requiredStars: 22,
@@ -150,8 +149,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       name: 'Adventure Arena',
       emoji: '🏆',
       color: AppColors.adventureArenaColor,
-      // Top centre-right — dy raised from 0.10 to 0.18.
-      position: Offset(0.62, 0.18),
+      // Upper centre-right, spaced away from Creative Corner.
+      position: Offset(0.60, 0.16),
       description: 'Ultimate challenges!',
       order: 7,
       requiredStars: 28,
@@ -224,17 +223,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    if (!_preferStaticAmbientEffects) {
-      _floatController.repeat(reverse: true);
-    }
 
     _pathController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
     );
-    if (!_preferStaticAmbientEffects) {
-      _pathController.repeat();
-    }
 
     _avatarMoveController = AnimationController(
       duration: const Duration(milliseconds: 1200),
@@ -246,6 +239,21 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         _onAvatarArrived();
       }
     });
+  }
+
+  void _syncAmbientAnimationState(BuildContext context) {
+    final shouldAnimate = !_preferStaticAmbientEffects &&
+        !_isShortViewport &&
+        !MediaQuery.of(context).disableAnimations;
+    if (_ambientAnimationsRunning == shouldAnimate) return;
+    _ambientAnimationsRunning = shouldAnimate;
+    if (shouldAnimate) {
+      _floatController.repeat(reverse: true);
+      _pathController.repeat();
+    } else {
+      _floatController.stop();
+      _pathController.stop();
+    }
   }
 
   @override
@@ -463,7 +471,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                             constraints.maxHeight > constraints.maxWidth;
                         _isShortViewport = constraints.maxHeight < 720;
                         _isCompactLayout =
-                          constraints.maxWidth < 980 || _isShortViewport;
+                            constraints.maxWidth < 980 || _isShortViewport;
+                        _syncAmbientAnimationState(context);
 
                         // Scale based on the smaller dimension so islands
                         // never exceed 1× their design size, which prevents
@@ -519,7 +528,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                                     },
                                     selectedZoneId:
                                         _zones[_selectedZoneIndex].id,
-                                    animationValue: _floatController.value,
+                                    animationValue: _ambientAnimationsRunning
+                                        ? _floatController.value
+                                        : 0,
                                   ),
                                   size: Size(constraints.maxWidth,
                                       constraints.maxHeight),
@@ -704,13 +715,16 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   Widget _buildAnimatedBackground() {
     final activeZoneColor = _resolveActiveZoneColor();
+    final useStaticEffects = _preferStaticAmbientEffects ||
+        _isShortViewport ||
+        MediaQuery.of(context).disableAnimations;
 
-    if (_preferStaticAmbientEffects) {
+    if (useStaticEffects) {
       return Stack(
         clipBehavior: Clip.none,
         children: [
           CustomPaint(
-            painter: _EnhancedBackgroundPainter(animation: 0),
+            painter: const _StaticMapBackdropPainter(),
             size: Size.infinite,
           ),
           Positioned.fill(
@@ -769,8 +783,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             if (activeZoneColor == AppColors.wordWoodsColor) '🌿',
             if (activeZoneColor == AppColors.adventureArenaColor) '🏆',
           ],
-          particleCount: _isCompactLayout ? 10 : 15,
-          speedMultiplier: 0.3,
+          particleCount: _isCompactLayout ? 6 : 10,
+          speedMultiplier: 0.22,
         ),
 
         // 4. Decorative map pattern overlay
@@ -1044,7 +1058,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     final vMin = 4.0;
     final vMax = math.max(
       vMin,
-      constraints.maxHeight - baseHeight - (_isCompactLayout ? 250.0 : 190.0),
+      constraints.maxHeight - baseHeight - (_isCompactLayout ? 300.0 : 246.0),
     );
     final left = (screenPos.dx - (baseWidth / 2)).clamp(hMin, hMax).toDouble();
     final top = (screenPos.dy - (baseHeight * 0.55) + (1 - progress) * 50)
@@ -1112,9 +1126,22 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       arcHeight = -40 * math.sin(t * math.pi);
     }
 
+    final left = (screenPos.dx - 46)
+        .clamp(6.0, math.max(6.0, constraints.maxWidth - 98.0))
+        .toDouble();
+    final top = (screenPos.dy - 96 + arcHeight)
+        .clamp(
+          4.0,
+          math.max(
+            4.0,
+            constraints.maxHeight - 128.0 - (_isCompactLayout ? 300.0 : 246.0),
+          ),
+        )
+        .toDouble();
+
     return Positioned(
-      left: screenPos.dx - 44,
-      top: screenPos.dy - 96 + arcHeight,
+      left: left,
+      top: top,
       child: IgnorePointer(
         ignoring: false,
         child: _build3DAvatar(avatar, _isMoving),
@@ -1177,62 +1204,106 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         scale: uiScale,
         child: Row(
           children: [
-            // Logo & Title
-            GlowingCard(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              color: AppColors.primaryDark,
-              onTap: () => _showAppInfoDialog(context),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            Semantics(
+              button: true,
+              label:
+                  '${avatar.name}, level ${avatar.level}, ${avatar.experiencePoints} experience points',
+              child: GestureDetector(
+                onTap: () => _showAvatarInfo(context, avatar),
+                child: Container(
+                  width: compact ? 58 : 248,
+                  height: compact ? 48 : 58,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: compact ? 5 : 8,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0.96),
+                        AppColors.primary.withValues(alpha: 0.10),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(compact ? 999 : 20),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.24),
+                      width: 1.5,
+                    ),
+                    boxShadow: AppShadows.md(AppColors.primary),
+                  ),
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Hero(
                         tag: 'app_logo',
                         child: Container(
-                          padding: const EdgeInsets.all(5),
+                          width: compact ? 38 : 44,
+                          height: compact ? 38 : 44,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
+                            color: Color(int.parse(
+                                avatar.skinColor.replaceAll('#', '0xFF'))),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.25),
+                              color: Colors.white.withValues(alpha: 0.82),
+                              width: 2,
                             ),
                           ),
-                          child: const Icon(Icons.star,
-                              color: Colors.white, size: 22),
+                          child: Center(
+                            child: Text(
+                              _getCharacterEmoji(avatar.baseCharacter),
+                              style: TextStyle(fontSize: compact ? 18 : 22),
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'BrightBound',
-                        style: AppTypography.displaySmall.copyWith(
-                          fontSize: 18,
-                          letterSpacing: 0.5,
-                          color: Colors.white,
+                      if (!compact) ...[
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                avatar.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.bodyLarge.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              Text(
+                                'Lv ${avatar.level} • ${avatar.experiencePoints} XP',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                        Tooltip(
+                          message: 'About BrightBound',
+                          child: GestureDetector(
+                            onTap: () => _showAppInfoDialog(context),
+                            child: Padding(
+                              padding: const EdgeInsets.all(6),
+                              child: Icon(
+                                Icons.auto_awesome_rounded,
+                                color: AppColors.primary,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      'Learn • Play • Explore',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.95),
-                        fontSize: 11,
-                        letterSpacing: 0.4,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
 
@@ -1651,7 +1722,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   Widget _buildBottomActions(int totalStars, SkillProvider skillProvider,
       {required bool compact, required double uiScale}) {
-    final isNarrow = MediaQuery.of(context).size.width < 760;
+    final isNarrow = MediaQuery.of(context).size.width < 900;
     final recommendedIndex = _recommendedZoneIndex(totalStars, skillProvider);
     final recommendedZone = _zones[recommendedIndex];
 
@@ -1661,8 +1732,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         JuicyButton(
           label: 'Next\nQuest',
           emoji: recommendedZone.emoji,
-          width: 150,
-          height: 72,
+          width: 138,
+          height: 64,
           color: recommendedZone.color,
           onPressed: () {
             setState(() => _selectedZoneIndex = recommendedIndex);
@@ -1674,8 +1745,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         JuicyButton(
           label: 'Daily\nChallenge',
           emoji: '🎯',
-          width: 160,
-          height: 72,
+          width: 148,
+          height: 64,
           color: Colors.orange,
           onPressed: () => _showDailyChallenges(),
           shimmer: true,
@@ -1684,17 +1755,26 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         JuicyButton(
           label: 'Mini\nGames',
           emoji: '🎮',
-          width: 160,
-          height: 72,
+          width: 148,
+          height: 64,
           color: AppColors.secondary,
           onPressed: () => _showMiniGamesMenu(),
         ),
         const SizedBox(width: 16),
         JuicyButton(
+          label: 'Star\nShop',
+          emoji: '🛍️',
+          width: 136,
+          height: 64,
+          color: Colors.teal,
+          onPressed: () => _showShop(),
+        ),
+        const SizedBox(width: 16),
+        JuicyButton(
           label: 'My\nAchievements',
           emoji: '🏆',
-          width: 180,
-          height: 72,
+          width: 164,
+          height: 64,
           color: AppColors.reward,
           onPressed: () => _showAchievements(),
         ),
@@ -1702,14 +1782,14 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
 
     return Positioned(
-      bottom: compact ? 24 : 32,
+      bottom: compact ? 16 : 20,
       left: 16,
       right: 16,
       child: Transform.scale(
         alignment: Alignment.bottomCenter,
         scale: uiScale,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -1719,7 +1799,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: AppColors.primary.withValues(alpha: 0.16),
             ),
@@ -1757,10 +1837,13 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
     final recommendedIndex = _recommendedZoneIndex(totalStars, skillProvider);
     final recommendedZone = _zones[recommendedIndex];
+    const panelRight = 18.0;
+    const panelWidth = 304.0;
+    const railGap = 12.0;
 
     return Positioned(
-      right: 18,
-      top: 220,
+      right: panelRight + panelWidth + railGap,
+      top: 112,
       child: Transform.scale(
         alignment: Alignment.topRight,
         scale: uiScale,
@@ -1833,7 +1916,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   Widget _buildQuickZoneRail(int totalStars,
       {required bool compact, required double uiScale}) {
     return Positioned(
-      bottom: compact ? 178 : 120,
+      bottom: compact ? 152 : 96,
       left: 16,
       right: 16,
       height: 56,
@@ -1962,19 +2045,25 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     final stats = skillProvider.getZoneStats(selected.skillZoneId);
     final progress =
         _zoneProgressFraction(stats.masteredSkills, stats.totalSkills);
+    final unlockService = context.watch<CosmeticUnlockService>();
+    final nextUnlockables = unlockService.getNextUnlockables();
+    final nextReward =
+        nextUnlockables.isNotEmpty ? nextUnlockables.first : null;
+    final nextSkill = stats.nextSkill;
+    final rewardXp = 25 + (stats.masteredSkills * 10);
+    final panelWidth = compact ? 252.0 : 304.0;
 
-    // Position the card on the OPPOSITE side from the selected zone so it never
-    // covers the zone whose info it is showing, nor the nearby zones on that side.
-    final isRightSideZone = selected.position.dx >= 0.5;
     return Positioned(
-      top: compact ? 82 : 96,
-      left: isRightSideZone ? 16 : null,
-      right: isRightSideZone ? null : 16,
+      top: compact ? 92 : 112,
+      right: compact ? 12 : 18,
       child: Transform.scale(
-        alignment: isRightSideZone ? Alignment.topLeft : Alignment.topRight,
+        alignment: Alignment.topRight,
         scale: uiScale,
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: compact ? 220 : 270),
+          constraints: BoxConstraints(
+            maxWidth: panelWidth,
+            maxHeight: compact ? 392 : 610,
+          ),
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -1997,300 +2086,373 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                 ),
               ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.explore_rounded,
-                        color: selected.color, size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Zone Spotlight',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.7,
-                        color: selected.color.withValues(alpha: 0.9),
-                      ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isUnlocked
-                            ? Colors.green.withValues(alpha: 0.16)
-                            : Colors.red.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        isUnlocked ? 'Open' : 'Locked',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: isUnlocked
-                              ? Colors.green.shade800
-                              : Colors.red.shade700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Zone header with coloured gradient banner
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        selected.color,
-                        selected.color.withValues(alpha: 0.75),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: Row(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      // Emoji in circle
+                      Icon(Icons.assignment_rounded,
+                          color: selected.color, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Quest Board',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.7,
+                          color: selected.color.withValues(alpha: 0.9),
+                        ),
+                      ),
+                      const Spacer(),
                       Container(
-                        width: compact ? 36 : 44,
-                        height: compact ? 36 : 44,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          shape: BoxShape.circle,
+                          color: isUnlocked
+                              ? Colors.green.withValues(alpha: 0.16)
+                              : Colors.red.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(999),
                         ),
-                        child: Center(
-                          child: Text(
-                            selected.emoji,
-                            style: TextStyle(fontSize: compact ? 20 : 26),
+                        child: Text(
+                          isUnlocked ? 'Open' : 'Locked',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: isUnlocked
+                                ? Colors.green.shade800
+                                : Colors.red.shade700,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              selected.name,
-                              style: TextStyle(
-                                fontSize: compact ? 13 : 15,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                              ),
-                            ),
-                            if (isUnlocked)
-                              Row(
-                                children: List.generate(3, (i) {
-                                  final maxPer = stats.totalSkills > 0
-                                      ? stats.totalSkills / 3
-                                      : 1;
-                                  final filled = i <
-                                      (stats.masteredSkills / maxPer).ceil();
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 2),
-                                    child: Icon(
-                                      filled ? Icons.star : Icons.star_border,
-                                      size: 12,
-                                      color: Colors.amber.shade200,
-                                    ),
-                                  );
-                                }),
-                              ),
-                          ],
-                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Zone header with coloured gradient banner
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          selected.color,
+                          selected.color.withValues(alpha: 0.75),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      if (!isUnlocked)
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    child: Row(
+                      children: [
+                        // Emoji in circle
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 3),
+                          width: compact ? 36 : 44,
+                          height: compact ? 36 : 44,
                           decoration: BoxDecoration(
-                            color: Colors.red.shade400,
-                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white.withValues(alpha: 0.25),
+                            shape: BoxShape.circle,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                          child: Center(
+                            child: Text(
+                              selected.emoji,
+                              style: TextStyle(fontSize: compact ? 20 : 26),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.lock,
-                                  size: 10, color: Colors.white),
-                              const SizedBox(width: 3),
                               Text(
-                                '${selected.requiredStars}⭐',
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                selected.name,
+                                style: TextStyle(
+                                  fontSize: compact ? 13 : 15,
+                                  fontWeight: FontWeight.w900,
                                   color: Colors.white,
                                 ),
                               ),
+                              if (isUnlocked)
+                                Row(
+                                  children: List.generate(3, (i) {
+                                    final maxPer = stats.totalSkills > 0
+                                        ? stats.totalSkills / 3
+                                        : 1;
+                                    final filled = i <
+                                        (stats.masteredSkills / maxPer).ceil();
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 2),
+                                      child: Icon(
+                                        filled ? Icons.star : Icons.star_border,
+                                        size: 12,
+                                        color: Colors.amber.shade200,
+                                      ),
+                                    );
+                                  }),
+                                ),
                             ],
                           ),
                         ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _zoneMoodText(selected),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.blueGrey.shade700,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  selected.description,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.blueGrey.shade800,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    minHeight: 8,
-                    value: progress,
-                    backgroundColor: Colors.blueGrey.shade100,
-                    valueColor: AlwaysStoppedAnimation<Color>(selected.color),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Mastered ${stats.masteredSkills}/${stats.totalSkills} skills',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.blueGrey.shade700,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    _buildZoneChip(
-                      icon: isUnlocked ? Icons.lock_open : Icons.lock,
-                      label: isUnlocked
-                          ? 'Ready to play'
-                          : '${selected.requiredStars}⭐ required',
-                      color: isUnlocked ? Colors.green : Colors.redAccent,
-                    ),
-                    _buildZoneChip(
-                      icon: Icons.auto_graph_rounded,
-                      label: '${(progress * 100).round()}% complete',
-                      color: selected.color,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: List.generate(_zoneFeatureIcons(selected).length,
-                      (index) {
-                    final icon = _zoneFeatureIcons(selected)[index];
-                    return AnimatedBuilder(
-                      animation: _floatController,
-                      builder: (context, _) {
-                        final bob = math.sin(
-                                (_floatController.value * math.pi * 2) +
-                                    index) *
-                            2;
-                        return Transform.translate(
-                          offset: Offset(0, bob),
-                          child: Container(
-                            width: 34,
-                            height: 34,
+                        if (!isUnlocked)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 3),
                             decoration: BoxDecoration(
-                              color: selected.color.withValues(alpha: 0.14),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: selected.color.withValues(alpha: 0.30),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: selected.color.withValues(alpha: 0.18),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
+                              color: Colors.red.shade400,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.lock,
+                                    size: 10, color: Colors.white),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '${selected.requiredStars}⭐',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ],
                             ),
-                            child: Center(
-                              child: Text(icon,
-                                  style: const TextStyle(fontSize: 16)),
-                            ),
                           ),
-                        );
-                      },
-                    );
-                  }),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: _zoneFeatureTags(selected)
-                      .map(
-                        (tag) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: selected.color.withValues(alpha: 0.10),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: selected.color.withValues(alpha: 0.16),
-                            ),
-                          ),
-                          child: Text(
-                            tag,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: selected.color,
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _isMoving
-                        ? null
-                        : () {
-                            if (isUnlocked) {
-                              _moveToZone(_selectedZoneIndex);
-                            } else {
-                              _showLockedDialog(selected, totalStars);
-                            }
-                          },
-                    icon: Icon(isUnlocked ? Icons.rocket_launch : Icons.lock),
-                    label: Text(
-                      isUnlocked
-                          ? (_currentZoneIndex == _selectedZoneIndex
-                              ? 'Enter Zone'
-                              : 'Travel Here')
-                          : 'Need ${selected.requiredStars}⭐',
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: selected.color,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      minimumSize: const Size.fromHeight(48),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    _zoneMoodText(selected),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.blueGrey.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    selected.description,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.blueGrey.shade800,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: LinearProgressIndicator(
+                      minHeight: 8,
+                      value: progress,
+                      backgroundColor: Colors.blueGrey.shade100,
+                      valueColor: AlwaysStoppedAnimation<Color>(selected.color),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Mastered ${stats.masteredSkills}/${stats.totalSkills} skills',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.blueGrey.shade700,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.reward.withValues(alpha: 0.13),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppColors.reward.withValues(alpha: 0.28),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.card_giftcard_rounded,
+                                color: AppColors.reward, size: 16),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Quest reward',
+                              style: TextStyle(
+                                color: Colors.amber.shade900,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '+$rewardXp XP',
+                              style: TextStyle(
+                                color: Colors.amber.shade900,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          nextReward == null
+                              ? 'Build your streak to discover new character items.'
+                              : 'Next item: ${nextReward.name}',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.blueGrey.shade800,
+                            fontSize: 11,
+                            height: 1.3,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (nextSkill != null) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            'Next skill: ${nextSkill.name}',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: selected.color,
+                              fontSize: 11,
+                              height: 1.3,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      _buildZoneChip(
+                        icon: isUnlocked ? Icons.lock_open : Icons.lock,
+                        label: isUnlocked
+                            ? 'Ready to play'
+                            : '${selected.requiredStars}⭐ required',
+                        color: isUnlocked ? Colors.green : Colors.redAccent,
+                      ),
+                      _buildZoneChip(
+                        icon: Icons.auto_graph_rounded,
+                        label: '${(progress * 100).round()}% complete',
+                        color: selected.color,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: List.generate(_zoneFeatureIcons(selected).length,
+                        (index) {
+                      final icon = _zoneFeatureIcons(selected)[index];
+                      return AnimatedBuilder(
+                        animation: _floatController,
+                        builder: (context, _) {
+                          final bob = math.sin(
+                                  (_floatController.value * math.pi * 2) +
+                                      index) *
+                              2;
+                          return Transform.translate(
+                            offset: Offset(0, bob),
+                            child: Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: selected.color.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: selected.color.withValues(alpha: 0.30),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        selected.color.withValues(alpha: 0.18),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(icon,
+                                    style: const TextStyle(fontSize: 16)),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _zoneFeatureTags(selected)
+                        .map(
+                          (tag) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: selected.color.withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: selected.color.withValues(alpha: 0.16),
+                              ),
+                            ),
+                            child: Text(
+                              tag,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: selected.color,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _isMoving
+                          ? null
+                          : () {
+                              if (isUnlocked) {
+                                _moveToZone(_selectedZoneIndex);
+                              } else {
+                                _showLockedDialog(selected, totalStars);
+                              }
+                            },
+                      icon: Icon(isUnlocked ? Icons.rocket_launch : Icons.lock),
+                      label: Text(
+                        isUnlocked
+                            ? (_currentZoneIndex == _selectedZoneIndex
+                                ? 'Enter Zone'
+                                : 'Travel Here')
+                            : 'Need ${selected.requiredStars}⭐',
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selected.color,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -2651,6 +2813,18 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               ],
             ),
             const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showShop();
+                },
+                icon: const Icon(Icons.shopping_bag_rounded),
+                label: const Text('Open Star Shop'),
+              ),
+            ),
+            const SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.explore),
@@ -2703,6 +2877,10 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         page: const TrophyRoomScreen(),
       ),
     );
+  }
+
+  void _showShop() {
+    Navigator.pushNamed(context, '/shop');
   }
 
   String _getCharacterEmoji(String character) {
@@ -3009,8 +3187,8 @@ class _BoardGameAvatarPawn extends StatelessWidget {
             Positioned(
               bottom: 8,
               child: Container(
-                width: 64,
-                height: 22,
+                width: 68,
+                height: 24,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -3018,6 +3196,7 @@ class _BoardGameAvatarPawn extends StatelessWidget {
                     colors: [
                       outfitColor.withValues(alpha: 0.95),
                       outfitColor.withValues(alpha: 0.62),
+                      Color.lerp(outfitColor, Colors.black, 0.22)!,
                     ],
                   ),
                   borderRadius: const BorderRadius.vertical(
@@ -3041,8 +3220,8 @@ class _BoardGameAvatarPawn extends StatelessWidget {
             Positioned(
               bottom: 20,
               child: Container(
-                width: 52,
-                height: 48,
+                width: 56,
+                height: 50,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -3057,14 +3236,34 @@ class _BoardGameAvatarPawn extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.62),
                     width: 2,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: outfitColor.withValues(alpha: 0.24),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Container(
+                    width: 18,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.16),
+                      borderRadius: const BorderRadius.horizontal(
+                        left: Radius.circular(20),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
             Positioned(
               bottom: 48,
               child: Container(
-                width: 70,
-                height: 70,
+                width: 74,
+                height: 74,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
@@ -3085,6 +3284,12 @@ class _BoardGameAvatarPawn extends StatelessWidget {
                       blurRadius: 18,
                       spreadRadius: 1,
                       offset: const Offset(0, 8),
+                    ),
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.58),
+                      blurRadius: 8,
+                      spreadRadius: -3,
+                      offset: const Offset(-4, -5),
                     ),
                   ],
                 ),
@@ -3122,6 +3327,7 @@ class _BoardGameAvatarPawn extends StatelessWidget {
                     color: Colors.white,
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
+                    fontFamily: AppTheme.fontPrimary,
                   ),
                 ),
               ),
@@ -3975,6 +4181,116 @@ class _PulseRingPainter extends CustomPainter {
   @override
   bool shouldRepaint(_PulseRingPainter old) =>
       old.progress != progress || old.color != color;
+}
+
+class _StaticMapBackdropPainter extends CustomPainter {
+  const _StaticMapBackdropPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final sky = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFFBDEBFF),
+          Color(0xFFEAF8FF),
+          Color(0xFFF8FFF1),
+        ],
+      ).createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, sky);
+
+    final sunCenter = Offset(size.width * 0.16, size.height * 0.16);
+    final sunGlow = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFFFF59D).withValues(alpha: 0.80),
+          const Color(0xFFFFF59D).withValues(alpha: 0.22),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(
+        center: sunCenter,
+        radius: size.shortestSide * 0.22,
+      ));
+    canvas.drawCircle(sunCenter, size.shortestSide * 0.22, sunGlow);
+    canvas.drawCircle(
+      sunCenter,
+      size.shortestSide * 0.055,
+      Paint()..color = const Color(0xFFFFD54F).withValues(alpha: 0.86),
+    );
+
+    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.48);
+    void drawCloud(double x, double y, double scale) {
+      final center = Offset(size.width * x, size.height * y);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: center,
+          width: 96 * scale,
+          height: 26 * scale,
+        ),
+        cloudPaint,
+      );
+      canvas.drawCircle(
+          center + Offset(-28 * scale, -4 * scale), 18 * scale, cloudPaint);
+      canvas.drawCircle(
+          center + Offset(4 * scale, -12 * scale), 26 * scale, cloudPaint);
+      canvas.drawCircle(
+          center + Offset(35 * scale, -3 * scale), 16 * scale, cloudPaint);
+    }
+
+    drawCloud(0.70, 0.16, 0.88);
+    drawCloud(0.36, 0.25, 0.56);
+
+    final hillPaint = Paint()..color = const Color(0xFFBFE6A5);
+    final backHill = Path()
+      ..moveTo(0, size.height * 0.58)
+      ..quadraticBezierTo(size.width * 0.25, size.height * 0.46,
+          size.width * 0.5, size.height * 0.57)
+      ..quadraticBezierTo(
+          size.width * 0.75, size.height * 0.68, size.width, size.height * 0.52)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(backHill, hillPaint);
+
+    final frontPaint = Paint()..color = const Color(0xFF8FD37C);
+    final frontHill = Path()
+      ..moveTo(0, size.height * 0.72)
+      ..quadraticBezierTo(size.width * 0.3, size.height * 0.63,
+          size.width * 0.55, size.height * 0.74)
+      ..quadraticBezierTo(
+          size.width * 0.78, size.height * 0.84, size.width, size.height * 0.68)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(frontHill, frontPaint);
+
+    final meadowPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.22)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    for (var i = 0; i < 5; i++) {
+      final y = size.height * (0.78 + i * 0.035);
+      final path = Path()
+        ..moveTo(0, y)
+        ..quadraticBezierTo(
+          size.width * 0.25,
+          y - 10 + i * 2,
+          size.width * 0.5,
+          y,
+        )
+        ..quadraticBezierTo(
+          size.width * 0.74,
+          y + 10 - i,
+          size.width,
+          y - 4,
+        );
+      canvas.drawPath(path, meadowPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _StaticMapBackdropPainter oldDelegate) => false;
 }
 
 /// Enhanced 3D background painter with parallax layers
