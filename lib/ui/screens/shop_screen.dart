@@ -60,6 +60,8 @@ class _ShopScreenState extends State<ShopScreen>
               // Header with star balance
               _buildHeader(),
 
+              _buildInventoryStrip(),
+
               // Category tabs
               _buildCategoryTabs(),
 
@@ -186,6 +188,170 @@ class _ShopScreenState extends State<ShopScreen>
         }).toList(),
       ),
     );
+  }
+
+  Widget _buildInventoryStrip() {
+    return Consumer2<ShopService, AvatarProvider>(
+      builder: (context, shop, avatarProvider, _) {
+        final avatar = avatarProvider.avatar;
+        final owned = shop.purchasedItems.length;
+        final total = shop.items.length;
+        final outfitName = _readableOutfitName(avatar?.outfitId);
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 720;
+              final tiles = [
+                _buildGearTile(
+                  asset: 'assets/images/inventory.PNG',
+                  label: 'Inventory',
+                  value: '$owned/$total owned',
+                  color: Colors.amber,
+                  onTap: () => _tabController.animateTo(0),
+                ),
+                _buildGearTile(
+                  asset: 'assets/images/chest_open.PNG',
+                  label: 'Current Outfit',
+                  value: outfitName,
+                  color: Colors.purpleAccent,
+                  onTap: () => Navigator.pushNamed(context, '/avatar-creator'),
+                ),
+                _buildGearTile(
+                  asset: 'assets/images/goldpile.PNG',
+                  label: 'Star Balance',
+                  value: '${shop.starBalance} ready',
+                  color: Colors.orange,
+                ),
+              ];
+
+              if (compact) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: tiles
+                        .map(
+                          (tile) => Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: SizedBox(width: 210, child: tile),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                );
+              }
+
+              return Row(
+                children: [
+                  for (var i = 0; i < tiles.length; i++) ...[
+                    Expanded(child: tiles[i]),
+                    if (i < tiles.length - 1) const SizedBox(width: 12),
+                  ],
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGearTile({
+    required String asset,
+    required String label,
+    required String value,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return Semantics(
+      button: onTap != null,
+      label: '$label: $value',
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: onTap,
+          child: Container(
+            height: 72,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.20),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.24),
+                    ),
+                  ),
+                  child: Image.asset(
+                    asset,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.medium,
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.inventory_2_rounded,
+                      color: color,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.76),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _readableOutfitName(String? outfitId) {
+    if (outfitId == null || outfitId.isEmpty) return 'Choose outfit';
+    return outfitId
+        .replaceFirst('outfit_', '')
+        .split('_')
+        .map((word) => word.isEmpty
+            ? word
+            : '${word[0].toUpperCase()}${word.substring(1)}')
+        .join(' ');
   }
 
   Widget _buildItemsGrid() {
