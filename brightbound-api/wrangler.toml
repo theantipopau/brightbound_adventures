@@ -18,7 +18,7 @@ binding = "DB"
 database_name = "brightbound_db"
 database_id = "3b34c767-4ba7-484a-81dd-acc1944c3c75"
 
-[env.production.d1_databases]
+[[env.production.d1_databases]]
 binding = "DB"
 database_name = "brightbound_db"
 database_id = "3b34c767-4ba7-484a-81dd-acc1944c3c75"
