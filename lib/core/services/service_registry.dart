@@ -21,6 +21,7 @@ class ServiceRegistry {
   late SpacedRepetitionService _srs;
   late AiQuestionService _aiQuestions;
   late QuestionFreshnessService _questionFreshness;
+  late QuestSessionHistoryService _questSessionHistory;
   late ThemeModeService _themeMode;
   late VisualAccessibilityService _visualAccessibility;
 
@@ -37,6 +38,7 @@ class ServiceRegistry {
   SpacedRepetitionService get srs => _srs;
   AiQuestionService get aiQuestions => _aiQuestions;
   QuestionFreshnessService get questionFreshness => _questionFreshness;
+  QuestSessionHistoryService get questSessionHistory => _questSessionHistory;
   ThemeModeService get themeMode => _themeMode;
   VisualAccessibilityService get visualAccessibility => _visualAccessibility;
 
@@ -77,6 +79,9 @@ class ServiceRegistry {
 
     _questionFreshness = QuestionFreshnessService();
     await _questionFreshness.initialize();
+
+    _questSessionHistory = QuestSessionHistoryService();
+    await _questSessionHistory.initialize();
 
     _themeMode = ThemeModeService();
     await _themeMode.initialize();

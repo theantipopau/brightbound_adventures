@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:brightbound_adventures/core/services/ai_learning_assistant_servi
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
+import 'package:brightbound_adventures/core/services/quest_session_history_service.dart';
 import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/controllers/game_session_controller.dart';
@@ -47,6 +49,7 @@ class _ScienceGameState extends State<ScienceGame>
   late GameSessionController _gameController;
   late List<dynamic> _shuffledQuestions;
   late FocusNode _focusNode;
+  late DateTime _sessionStartedAt;
 
   int _currentIndex = 0;
   int? _selectedIndex;
@@ -62,6 +65,10 @@ class _ScienceGameState extends State<ScienceGame>
   int _hintsRemaining = 3;
   bool _hintUsedThisQuestion = false;
   String? _revealedHint;
+  int _hintsUsedInSession = 0;
+  int _freshQuestionCount = 0;
+  int _repeatedQuestionCount = 0;
+  bool _sessionRecorded = false;
 
   final AudioManager _audioManager = AudioManager();
   final AiLearningAssistantService _aiAssistant = AiLearningAssistantService();
@@ -76,8 +83,8 @@ class _ScienceGameState extends State<ScienceGame>
   @override
   void initState() {
     super.initState();
-    _shuffledQuestions =
-        QuestionVariationHelper.buildSessionQuestionSet<dynamic>(
+    final questionSet =
+        QuestionVariationHelper.buildSessionQuestionSetWithStats<dynamic>(
       sessionKey:
           'science_${widget.skillName.toLowerCase().replaceAll(' ', '_')}',
       source: widget.questions,
@@ -87,6 +94,10 @@ class _ScienceGameState extends State<ScienceGame>
       desiredCount: widget.questions.length.clamp(1, 12),
       random: Random(),
     );
+    _shuffledQuestions = questionSet.questions;
+    _freshQuestionCount = questionSet.freshQuestionCount;
+    _repeatedQuestionCount = questionSet.repeatedQuestionCount;
+    _sessionStartedAt = DateTime.now();
 
     _gameController = GameSessionController(
       maxLives: 3,
@@ -319,6 +330,27 @@ class _ScienceGameState extends State<ScienceGame>
     return topic.isEmpty ? 'general science' : topic;
   }
 
+  String _questionId(dynamic question) {
+    try {
+      final value = question.id;
+      final id = '$value'.trim();
+      return id.isEmpty ? '${question.question}'.hashCode.toString() : id;
+    } catch (_) {
+      return '$question'.hashCode.toString();
+    }
+  }
+
+  String _questionSkillId(dynamic question) {
+    try {
+      final value = question.skillId;
+      final skillId = '$value'.trim();
+      if (skillId.isNotEmpty) return skillId;
+    } catch (_) {
+      // Some science question sources do not expose a skillId.
+    }
+    return widget.skillName.toLowerCase().replaceAll(RegExp(r'\s+'), '_');
+  }
+
   int _questionDifficulty(dynamic question) {
     final value = question.difficulty;
     if (value is int) return value;
@@ -382,6 +414,7 @@ class _ScienceGameState extends State<ScienceGame>
     setState(() {
       _hintsRemaining--;
       _hintUsedThisQuestion = true;
+      _hintsUsedInSession++;
       _revealedHint = hintText;
       _coachMessage = 'Hint deployed. Test your best hypothesis now.';
     });
@@ -392,8 +425,41 @@ class _ScienceGameState extends State<ScienceGame>
     if (accuracy == 1.0) {
       _audioManager.playPerfectScore();
     }
+    _recordSessionSummary(forced: forced);
     widget.onComplete?.call(
         accuracy, _gameController.correctAnswers, _shuffledQuestions.length);
+  }
+
+  void _recordSessionSummary({required bool forced}) {
+    if (_sessionRecorded || _shuffledQuestions.isEmpty) return;
+    _sessionRecorded = true;
+
+    try {
+      final history = context.read<QuestSessionHistoryService>();
+      final skillId = _questionSkillId(_shuffledQuestions.first);
+      final difficulty = _shuffledQuestions
+              .map(_questionDifficulty)
+              .fold<int>(0, (sum, value) => sum + value) ~/
+          _shuffledQuestions.length;
+
+      unawaited(history.recordQuizSession(
+        zoneId: 'science-explorers',
+        skillId: skillId,
+        skillName: widget.skillName,
+        startedAt: _sessionStartedAt,
+        totalQuestions: _shuffledQuestions.length,
+        correctAnswers: _gameController.correctAnswers,
+        score: _gameController.score,
+        hintsUsed: _hintsUsedInSession,
+        difficulty: difficulty,
+        questionIds: _shuffledQuestions.map(_questionId).toList(),
+        freshQuestionCount: _freshQuestionCount,
+        repeatedQuestionCount: _repeatedQuestionCount,
+        forced: forced,
+      ));
+    } on ProviderNotFoundException {
+      // Widget tests and embedded demos may not provide the app-level service.
+    }
   }
 
   void _togglePause() {

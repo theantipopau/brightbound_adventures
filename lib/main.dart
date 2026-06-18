@@ -47,6 +47,8 @@ void main() async {
             value: registry.srs),
         ChangeNotifierProvider<AiQuestionService>.value(
             value: registry.aiQuestions),
+        ChangeNotifierProvider<QuestSessionHistoryService>.value(
+            value: registry.questSessionHistory),
         ChangeNotifierProvider<ThemeModeService>.value(
             value: registry.themeMode),
         ChangeNotifierProvider<VisualAccessibilityService>.value(
@@ -360,6 +362,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final viewport = MediaQuery.sizeOf(context);
+    final compactViewport = viewport.height < 660 || viewport.width < 420;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -388,261 +393,299 @@ class _SplashScreenState extends State<SplashScreen>
 
             // Main content
             SafeArea(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Animated logo
-                    AnimatedBuilder(
-                      animation: _logoController,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _logoScale.value,
-                          child: Transform.rotate(
-                            angle: _logoRotation.value,
-                            child: Container(
-                              width: 160,
-                              height: 160,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color(0xFFFF6B9D), // Pink
-                                    Color(0xFFFF9A5C), // Orange
-                                    Color(0xFFFFD93D), // Gold
-                                  ],
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFFF6B9D)
-                                        .withValues(alpha: 0.5),
-                                    blurRadius: 30,
-                                    spreadRadius: 5,
-                                  ),
-                                ],
-                              ),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  // Outer ring
-                                  Container(
-                                    width: 140,
-                                    height: 140,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color:
-                                            Colors.white.withValues(alpha: 0.3),
-                                        width: 3,
-                                      ),
-                                    ),
-                                  ),
-                                  // Actual logo image
-                                  ClipOval(
-                                    child: Image.asset(
-                                      'assets/images/logo.png',
-                                      width: 128,
-                                      height: 128,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  // Shimmer sweep overlay
-                                  AnimatedBuilder(
-                                    animation: _shimmerController,
-                                    builder: (context, child) {
-                                      final t = _shimmerController.value;
-                                      return ClipOval(
-                                        child: SizedBox(
-                                          width: 128,
-                                          height: 128,
-                                          child: IgnorePointer(
-                                            child: Transform.translate(
-                                              offset: Offset(192 * t - 48, 0),
-                                              child: Container(
-                                                width: 48,
-                                                height: 128,
-                                                decoration: BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    colors: [
-                                                      Colors.white
-                                                          .withValues(alpha: 0),
-                                                      Colors.white.withValues(
-                                                          alpha: 0.5),
-                                                      Colors.white
-                                                          .withValues(alpha: 0),
-                                                    ],
-                                                  ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: compactViewport ? 20 : 28,
+                      vertical: compactViewport ? 22 : 34,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight:
+                            constraints.maxHeight - (compactViewport ? 44 : 68),
+                      ),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 620),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Animated logo
+                              AnimatedBuilder(
+                                animation: _logoController,
+                                builder: (context, child) {
+                                  return Transform.scale(
+                                    scale: _logoScale.value,
+                                    child: Transform.rotate(
+                                      angle: _logoRotation.value,
+                                      child: Container(
+                                        width: 160,
+                                        height: 160,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: const LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Color(0xFFFF6B9D), // Pink
+                                              Color(0xFFFF9A5C), // Orange
+                                              Color(0xFFFFD93D), // Gold
+                                            ],
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFFFF6B9D)
+                                                  .withValues(alpha: 0.5),
+                                              blurRadius: 30,
+                                              spreadRadius: 5,
+                                            ),
+                                          ],
+                                        ),
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            // Outer ring
+                                            Container(
+                                              width: 140,
+                                              height: 140,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.3),
+                                                  width: 3,
                                                 ),
                                               ),
                                             ),
+                                            // Actual logo image
+                                            ClipOval(
+                                              child: Image.asset(
+                                                'assets/images/logo.png',
+                                                width: 128,
+                                                height: 128,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            // Shimmer sweep overlay
+                                            AnimatedBuilder(
+                                              animation: _shimmerController,
+                                              builder: (context, child) {
+                                                final t =
+                                                    _shimmerController.value;
+                                                return ClipOval(
+                                                  child: SizedBox(
+                                                    width: 128,
+                                                    height: 128,
+                                                    child: IgnorePointer(
+                                                      child:
+                                                          Transform.translate(
+                                                        offset: Offset(
+                                                            192 * t - 48, 0),
+                                                        child: Container(
+                                                          width: 48,
+                                                          height: 128,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            gradient:
+                                                                LinearGradient(
+                                                              colors: [
+                                                                Colors.white
+                                                                    .withValues(
+                                                                        alpha:
+                                                                            0),
+                                                                Colors.white
+                                                                    .withValues(
+                                                                        alpha:
+                                                                            0.5),
+                                                                Colors.white
+                                                                    .withValues(
+                                                                        alpha:
+                                                                            0),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 40),
+
+                              // Animated title
+                              SlideTransition(
+                                position: _textSlide,
+                                child: FadeTransition(
+                                  opacity: _textOpacity,
+                                  child: Column(
+                                    children: [
+                                      ShaderMask(
+                                        shaderCallback: (bounds) =>
+                                            const LinearGradient(
+                                          colors: [
+                                            Color(0xFFFFD93D),
+                                            Color(0xFFFF9A5C),
+                                            Color(0xFFFF6B9D),
+                                          ],
+                                        ).createShader(bounds),
+                                        child: const Text(
+                                          'BrightBound',
+                                          style: TextStyle(
+                                            fontSize: 42,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            letterSpacing: 2,
                                           ),
                                         ),
-                                      );
-                                    },
+                                      ),
+                                      const Text(
+                                        'Adventures',
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF4ECDC4),
+                                          letterSpacing: 4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'Learn • Play • Grow',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.white
+                                              .withValues(alpha: 0.7),
+                                          letterSpacing: 3,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Wrap(
+                                        alignment: WrapAlignment.center,
+                                        spacing: 10,
+                                        runSpacing: 10,
+                                        children: const [
+                                          _SplashFeatureChip(
+                                            icon: Icons.lock_outline,
+                                            label: 'Offline first',
+                                          ),
+                                          _SplashFeatureChip(
+                                            icon: Icons.school_outlined,
+                                            label: 'Curriculum aligned',
+                                          ),
+                                          _SplashFeatureChip(
+                                            icon: Icons.emoji_events_outlined,
+                                            label: 'Rewards and streaks',
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 40),
+                              const SizedBox(height: 30),
 
-                    // Animated title
-                    SlideTransition(
-                      position: _textSlide,
-                      child: FadeTransition(
-                        opacity: _textOpacity,
-                        child: Column(
-                          children: [
-                            ShaderMask(
-                              shaderCallback: (bounds) => const LinearGradient(
-                                colors: [
-                                  Color(0xFFFFD93D),
-                                  Color(0xFFFF9A5C),
-                                  Color(0xFFFF6B9D),
-                                ],
-                              ).createShader(bounds),
-                              child: const Text(
-                                'BrightBound',
-                                style: TextStyle(
-                                  fontSize: 42,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: 2,
+                              // Loading indicator
+                              FadeTransition(
+                                opacity: _textOpacity,
+                                child: Container(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 420),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 18, vertical: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.10),
+                                    borderRadius: BorderRadius.circular(22),
+                                    border: Border.all(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.12),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                        width: 220,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(999),
+                                          child: LinearProgressIndicator(
+                                            backgroundColor: Colors.white
+                                                .withValues(alpha: 0.16),
+                                            valueColor:
+                                                const AlwaysStoppedAnimation(
+                                              Color(0xFF4ECDC4),
+                                            ),
+                                            minHeight: 7,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        'Loading your adventure...',
+                                        style: TextStyle(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.72),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Text(
-                              'Adventures',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF4ECDC4),
-                                letterSpacing: 4,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Learn • Play • Grow',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white.withValues(alpha: 0.7),
-                                letterSpacing: 3,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: const [
-                                _SplashFeatureChip(
-                                  icon: Icons.lock_outline,
-                                  label: 'Offline first',
-                                ),
-                                _SplashFeatureChip(
-                                  icon: Icons.school_outlined,
-                                  label: 'Curriculum aligned',
-                                ),
-                                _SplashFeatureChip(
-                                  icon: Icons.emoji_events_outlined,
-                                  label: 'Rewards and streaks',
-                                ),
-                              ],
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 30),
-
-                    // Loading indicator
-                    FadeTransition(
-                      opacity: _textOpacity,
-                      child: Container(
-                        constraints: const BoxConstraints(maxWidth: 420),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.12),
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              width: 220,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(999),
-                                child: LinearProgressIndicator(
-                                  backgroundColor:
-                                      Colors.white.withValues(alpha: 0.16),
-                                  valueColor: const AlwaysStoppedAnimation(
-                                    Color(0xFF4ECDC4),
-                                  ),
-                                  minHeight: 7,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'Loading your adventure...',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.72),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
 
             // Bottom decorations
-            Positioned(
-              bottom: 14,
-              left: 0,
-              right: 0,
-              child: FadeTransition(
-                opacity: _textOpacity,
-                child: AnimatedBuilder(
-                  animation: _orbitController,
-                  builder: (context, child) {
-                    const zoneIcons = ['🌲', '🌌', '📖', '🧩', '🏟️'];
-                    const zoneLabels = [
-                      'Words',
-                      'Numbers',
-                      'Stories',
-                      'Puzzles',
-                      'Games'
-                    ];
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(zoneIcons.length, (i) {
-                        final yFloat = math.sin(
-                              _orbitController.value * math.pi * 2 + i * 1.2,
-                            ) *
-                            4.0;
-                        return Transform.translate(
-                          offset: Offset(0, yFloat),
-                          child: _buildZoneIcon(zoneIcons[i], zoneLabels[i]),
-                        );
-                      }),
-                    );
-                  },
+            if (!compactViewport)
+              Positioned(
+                bottom: 14,
+                left: 0,
+                right: 0,
+                child: FadeTransition(
+                  opacity: _textOpacity,
+                  child: AnimatedBuilder(
+                    animation: _orbitController,
+                    builder: (context, child) {
+                      const zoneIcons = ['🌲', '🌌', '📖', '🧩', '🏟️'];
+                      const zoneLabels = [
+                        'Words',
+                        'Numbers',
+                        'Stories',
+                        'Puzzles',
+                        'Games'
+                      ];
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(zoneIcons.length, (i) {
+                          final yFloat = math.sin(
+                                _orbitController.value * math.pi * 2 + i * 1.2,
+                              ) *
+                              4.0;
+                          return Transform.translate(
+                            offset: Offset(0, yFloat),
+                            child: _buildZoneIcon(zoneIcons[i], zoneLabels[i]),
+                          );
+                        }),
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),

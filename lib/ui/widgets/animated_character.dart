@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
@@ -42,6 +43,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
   late AnimationController _walkController;
   late AnimationController _particleController;
   late AnimationController _blinkController;
+  Timer? _blinkTimer;
 
   late Animation<double> _bounce;
   late Animation<double> _walkSway;
@@ -143,8 +145,9 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
 
   void _startBlinking() {
     if (_reduceMotion) return;
-    Future.delayed(Duration(milliseconds: 2000 + math.Random().nextInt(3000)),
-        () {
+    _blinkTimer?.cancel();
+    _blinkTimer =
+        Timer(Duration(milliseconds: 2000 + math.Random().nextInt(3000)), () {
       if (mounted &&
           !_reduceMotion &&
           widget.animation == CharacterAnimation.idle) {
@@ -158,6 +161,8 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
   }
 
   void _stopAllAnimations() {
+    _blinkTimer?.cancel();
+    _blinkTimer = null;
     _bounceController.stop();
     _walkController.stop();
     _particleController.stop();
@@ -179,6 +184,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
 
   @override
   void dispose() {
+    _blinkTimer?.cancel();
     _bounceController.dispose();
     _walkController.dispose();
     _particleController.dispose();

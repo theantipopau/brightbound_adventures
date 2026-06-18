@@ -164,32 +164,72 @@ class WordWoodsVariationEngine extends QuestionVariationEngine {
   static GeneratedQuestion generateHomophonesQuestion({
     required int difficulty,
   }) {
-    final pairs = [
-      ('their', 'there'),
-      ('to', 'too'),
-      ('write', 'right'),
-      ('break', 'brake'),
-      ('meet', 'meat'),
-      ('hear', 'here'),
-      ('be', 'bee'),
-      ('sea', 'see'),
-      ('knight', 'night'),
-      ('knows', 'nose'),
+    final prompts = [
+      {
+        'sentence': 'Please put your bag over ____ by the door.',
+        'correct': 'there',
+        'distractors': ['their', 'they\'re', 'then'],
+        'explanation': '"There" means a place.',
+      },
+      {
+        'sentence': 'The explorers checked ____ map before leaving.',
+        'correct': 'their',
+        'distractors': ['there', 'they\'re', 'then'],
+        'explanation': '"Their" shows something belongs to a group.',
+      },
+      {
+        'sentence': 'I want ____ read the next clue.',
+        'correct': 'to',
+        'distractors': ['too', 'two', 'toe'],
+        'explanation': '"To" shows direction or an action.',
+      },
+      {
+        'sentence': 'Maya packed ____ apples for the picnic.',
+        'correct': 'two',
+        'distractors': ['to', 'too', 'tow'],
+        'explanation': '"Two" is the number 2.',
+      },
+      {
+        'sentence': 'Can you ____ the answer in your workbook?',
+        'correct': 'write',
+        'distractors': ['right', 'rite', 'bright'],
+        'explanation': '"Write" means to form words with a pen or keyboard.',
+      },
+      {
+        'sentence': 'The class sat ____ to listen to the story.',
+        'correct': 'here',
+        'distractors': ['hear', 'hair', 'hare'],
+        'explanation': '"Here" means this place.',
+      },
+      {
+        'sentence': 'The sailor looked across the blue ____.',
+        'correct': 'sea',
+        'distractors': ['see', 'she', 'seat'],
+        'explanation': '"Sea" means the ocean.',
+      },
+      {
+        'sentence': 'The brave ____ guarded the castle gate.',
+        'correct': 'knight',
+        'distractors': ['night', 'kite', 'light'],
+        'explanation': '"Knight" means a person trained to fight in armour.',
+      },
     ];
 
-    final pair = pairs[_random.nextInt(pairs.length)];
-    final correct = pair.$1;
-    final homophone = pair.$2;
+    final prompt = prompts[_random.nextInt(prompts.length)];
+    final sentence = prompt['sentence'] as String;
+    final correct = prompt['correct'] as String;
+    final options = [
+      correct,
+      ...((prompt['distractors'] as List).cast<String>()),
+    ]..shuffle(_random);
 
     return GeneratedQuestion(
       id: 'homophone_${DateTime.now().millisecondsSinceEpoch}',
       skillId: 'skill_homophones',
-      questionText:
-          'Which word is correct? "I can $homophone / $correct the answer."',
-      options: [correct, homophone, 'nither', 'none of these'],
-      correctIndex: 0,
-      explanation:
-          '$correct and $homophone sound the same but mean different things!',
+      questionText: 'Choose the correct word for the sentence:\n"$sentence"',
+      options: options,
+      correctIndex: options.indexOf(correct),
+      explanation: prompt['explanation'] as String,
       difficulty: difficulty,
       context: 'literacy',
       bloomLevel: CognitiveLevelBloom.understand.toString(),

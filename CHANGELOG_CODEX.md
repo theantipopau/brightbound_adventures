@@ -2,6 +2,52 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-06-18 - First-Run Interaction and Viewport Smoke Tests
+
+- Added a `Surprise me` avatar creator action that randomizes character, color, starter outfit, and preview animation.
+- Added a visible onboarding Back control to match the existing keyboard back navigation.
+- Added an `Enter now` world-entry action so users can skip the timed intro handoff.
+- Fixed world-entry badge/loading row constraints found by viewport smoke testing.
+- Reworked `AnimatedCharacter` blink scheduling from uncancelable `Future.delayed` calls to a cancelable `Timer`, preventing pending animation timers after disposal.
+- Added `test/startup_responsive_smoke_test.dart` covering splash, onboarding, avatar creator, and world-entry at phone portrait, tablet portrait, and laptop sizes.
+- Updated `README.md` with the current first-run/replayability state and the focused viewport smoke-test command.
+
+## 2026-06-18 - Startup, Onboarding, and Avatar GUI Polish
+
+- Turned `ResponsiveWrapper` into a real app-level interaction wrapper with reading-order focus traversal and mouse/touch/stylus/trackpad drag support.
+- Made the splash screen scroll-safe, centered, max-width constrained, and less cluttered on cramped portrait/short viewports.
+- Added keyboard navigation to onboarding, centered the onboarding frame, and made static/interactive onboarding pages scroll and scale for phones, portrait tablets, and laptop windows.
+- Smoothed avatar creation with a centered max-width wizard frame, trimmed two-letter name validation, reduced-motion-aware page changes, and reduced particle work.
+- Changed avatar character selection to use a vertical grid on narrow portrait devices while preserving the wider paged selector.
+- Shortened and centered the world-entry handoff, added reduced-motion handling for its looping animations, and constrained the intro stage for tablet/desktop readability.
+- Verification: `dart format lib test`, `flutter analyze`, `flutter test`, and `flutter build web --release` pass. The release build still reports known third-party `flutter_tts_web.dart` Wasm dry-run warnings.
+
+## 2026-06-18 - Replayability Data Spine
+
+- Completed the Phase 0 verification loop: `dart format lib test`, `flutter analyze`, `flutter test`, and `flutter build web --release` all pass.
+- Added `QuestSessionSummary` and `QuestSessionHistoryService` for local, privacy-first session history.
+- Registered quest session history through `ServiceRegistry` and the app provider tree.
+- Wired Numeracy, Literacy, and Science quiz completions to record session summaries with zone, skill, score, accuracy, hints used, difficulty, question IDs, and fresh/repeated question counts.
+- Added `QuestionVariationHelper.buildSessionQuestionSetWithStats` so replayability systems can track novelty during question selection without breaking existing callers.
+- Added tests for quest session history and question freshness stats.
+- Verification: release web build successful. Remaining Wasm dry-run warnings are from third-party `flutter_tts_web.dart`.
+
+## 2026-06-18 - Replayable RPG Roadmap
+
+- Added `docs/REPLAYABLE_RPG_POLISH_ROADMAP.md` as the current product/engineering roadmap for replayability, RPG progression, customization, interaction variety, visual polish, parent insight, and performance hardening.
+- Updated `docs/NEXT_STEPS.md` to point at the new roadmap and align the next product layer around quest replayability, reward visibility, interaction variety, and cosmetic collection loops.
+
+## 2026-06-18 - Quiz Responsiveness, Motion, and Question Quality Pass
+
+- Made the shared quiz layout choose side-by-side mode only when both width and height can support it, with scrollable columns to avoid clipped question/answer content.
+- Reduced hover/card shadow work in shared responsive quiz controls and made those transitions respect reduced-motion preferences.
+- Lightened shared answer-option shadows, skipped decorative entrance/shake effects in reduced-motion mode, and allowed longer answer labels.
+- Updated the shared question card so longer prompts are no longer truncated and the card is cheaper to paint.
+- Changed adaptive difficulty to start new skills at level 3 and adjust more steadily based on recent performance.
+- Hardened enhanced question helpers so shuffled options are unique, correct answers are always included, and plausible wrong-answer generation cannot stall in tight ranges.
+- Reworked generated homophone questions into sentence-completion prompts with meaningful distractors and explanations.
+- Added focused tests for adaptive difficulty and enhanced question helper behavior.
+
 ## 2026-06-14 - Responsiveness and Animation Optimisation
 
 - Stopped Star Shop item cards from running continuous idle pulse animations while the grid is static.

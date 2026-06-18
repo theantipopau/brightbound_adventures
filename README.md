@@ -5,9 +5,11 @@ BrightBound Adventures is an offline-first Flutter learning game for children ag
 ## What Is In The App
 
 - Avatar-driven onboarding and character customisation.
+- Premium first-run flow with responsive splash, onboarding, avatar creation, and world-entry screens.
 - World map hub with unlockable learning zones.
 - Literacy, numeracy, logic, storytelling, motor, science, and mixed challenge flows.
 - Daily challenges, streaks, achievements, XP, stars, and shop rewards.
+- Local replayability history for completed quest sessions, including freshness/repeat tracking for question sets.
 - Parent dashboard and profile/stat screens.
 - Accessibility settings for high contrast, larger text, and reduced motion.
 - Cloudflare Worker API project in `brightbound-api`.
@@ -38,6 +40,12 @@ Useful checks:
 & 'F:\Flutter\flutter\bin\flutter.bat' analyze
 & 'F:\Flutter\flutter\bin\flutter.bat' test
 & 'F:\Flutter\flutter\bin\flutter.bat' build web --release
+```
+
+Focused first-run viewport smoke test:
+
+```powershell
+& 'F:\Flutter\flutter\bin\flutter.bat' test test/startup_responsive_smoke_test.dart
 ```
 
 ## Cloudflare

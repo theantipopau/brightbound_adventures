@@ -8,4 +8,5 @@ export 'player_stats.dart';
 export 'daily_challenge.dart';
 export 'question_history.dart';
 export 'question_metadata.dart';
+export 'quest_session_summary.dart';
 export 'zone_data.dart';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../themes/index.dart';
 
@@ -17,6 +18,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen>
     with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();
+  final FocusNode _screenFocusNode = FocusNode(debugLabel: 'onboarding');
   int _currentPage = 0;
 
   // Interactive Page 6: selected hero
@@ -75,18 +77,50 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   void dispose() {
     _pageController.dispose();
     _heroEntranceCtrl.dispose();
+    _screenFocusNode.dispose();
     super.dispose();
   }
 
   void _nextPage() {
     if (_currentPage < _pages.length - 1) {
       _heroEntranceCtrl.forward(from: 0);
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      if (MediaQuery.of(context).disableAnimations) {
+        _pageController.jumpToPage(_currentPage + 1);
+      } else {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+        );
+      }
     } else {
       _finish();
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPage <= 0) return;
+    _heroEntranceCtrl.forward(from: 0);
+    if (MediaQuery.of(context).disableAnimations) {
+      _pageController.jumpToPage(_currentPage - 1);
+    } else {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent) return;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.escape) {
+      _skipToEnd();
+    } else if (key == LogicalKeyboardKey.arrowLeft) {
+      _previousPage();
+    } else if (key == LogicalKeyboardKey.arrowRight ||
+        key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
+      if (_canAdvance) _nextPage();
     }
   }
 
@@ -109,107 +143,138 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.primary, AppColors.secondary],
+    return KeyboardListener(
+      focusNode: _screenFocusNode,
+      autofocus: true,
+      onKeyEvent: _handleKeyEvent,
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [AppColors.primary, AppColors.secondary],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Skip button
-              Align(
-                alignment: Alignment.topRight,
-                child: TextButton(
-                  onPressed: _skipToEnd,
-                  child: const Text(
-                    'Skip',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-
-              // Pages
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentPage = index;
-                      _heroEntranceCtrl.forward(from: 0);
-                    });
-                  },
-                  itemCount: _pages.length,
-                  itemBuilder: (context, index) {
-                    if (index == 5) return _buildHeroSelectPage();
-                    if (index == 6) return _buildDailyChallengePage();
-                    return _StaticOnboardingPage(page: _pages[index]);
-                  },
-                ),
-              ),
-
-              // Page indicator
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _pages.length,
-                  (index) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _currentPage == index ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Next/Get Started button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: _canAdvance ? 1.0 : 0.4,
-                  child: ElevatedButton(
-                    onPressed: _canAdvance ? _nextPage : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppColors.primary,
-                      minimumSize: const Size(double.infinity, 56),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
+          child: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 760),
+                child: Column(
+                  children: [
+                    // Skip button
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: TextButton(
+                        onPressed: _skipToEnd,
+                        child: const Text(
+                          'Skip',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      _currentPage == _pages.length - 1
-                          ? 'Start Adventure! 🚀'
-                          : (_currentPage == 5
-                              ? (_selectedHero != null
-                                  ? 'Great choice! Next →'
-                                  : 'Choose your hero first')
-                              : 'Next'),
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+
+                    // Pages
+                    Expanded(
+                      child: PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _currentPage = index;
+                            _heroEntranceCtrl.forward(from: 0);
+                          });
+                        },
+                        itemCount: _pages.length,
+                        itemBuilder: (context, index) {
+                          if (index == 5) return _buildHeroSelectPage();
+                          if (index == 6) return _buildDailyChallengePage();
+                          return _StaticOnboardingPage(page: _pages[index]);
+                        },
+                      ),
                     ),
-                  ),
+
+                    // Page indicator
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        _pages.length,
+                        (index) => AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: _currentPage == index ? 24 : 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: _currentPage == index
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Back and Next/Get Started buttons
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Row(
+                        children: [
+                          if (_currentPage > 0) ...[
+                            IconButton(
+                              tooltip: 'Back',
+                              onPressed: _previousPage,
+                              icon: const Icon(Icons.arrow_back_rounded),
+                              style: IconButton.styleFrom(
+                                backgroundColor:
+                                    Colors.white.withValues(alpha: 0.16),
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size(56, 56),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          Expanded(
+                            child: AnimatedOpacity(
+                              duration: const Duration(milliseconds: 200),
+                              opacity: _canAdvance ? 1.0 : 0.4,
+                              child: ElevatedButton(
+                                onPressed: _canAdvance ? _nextPage : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: AppColors.primary,
+                                  minimumSize: const Size(double.infinity, 56),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                  ),
+                                ),
+                                child: Text(
+                                  _currentPage == _pages.length - 1
+                                      ? 'Start Adventure! 🚀'
+                                      : (_currentPage == 5
+                                          ? (_selectedHero != null
+                                              ? 'Great choice! Next →'
+                                              : 'Choose your hero first')
+                                          : 'Next'),
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 32),
-            ],
+            ),
           ),
         ),
       ),
@@ -228,8 +293,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
     return FadeTransition(
       opacity: _heroEntranceCtrl,
-      child: Padding(
-        padding: const EdgeInsets.all(32),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -316,8 +381,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget _buildDailyChallengePage() {
     return FadeTransition(
       opacity: _heroEntranceCtrl,
-      child: Padding(
-        padding: const EdgeInsets.all(32),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -449,33 +514,48 @@ class _StaticOnboardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(page.emoji, style: const TextStyle(fontSize: 110)),
-          const SizedBox(height: 40),
-          Text(
-            page.title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                height: 1.2),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact =
+            constraints.maxHeight < 560 || constraints.maxWidth < 420;
+        final emojiSize = compact ? 72.0 : 104.0;
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 24 : 40,
+            vertical: compact ? 18 : 36,
           ),
-          const SizedBox(height: 20),
-          Text(
-            page.description,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 17,
-                color: Colors.white.withValues(alpha: 0.9),
-                height: 1.5),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(page.emoji, style: TextStyle(fontSize: emojiSize)),
+                SizedBox(height: compact ? 22 : 36),
+                Text(
+                  page.title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: compact ? 22 : 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  page.description,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: compact ? 15 : 17,
+                    color: Colors.white.withValues(alpha: 0.9),
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

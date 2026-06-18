@@ -22,6 +22,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   late AnimationController _sparkleController;
   late AnimationController _characterShowcaseController;
   final FocusNode _screenFocusNode = FocusNode(debugLabel: 'avatar_creator');
+  bool _reduceMotion = false;
 
   String _selectedCharacter = 'bear';
   String _selectedColor = '#E8C4A0';
@@ -192,6 +193,29 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_reduceMotion == reduceMotion) return;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _backgroundController
+        ..stop()
+        ..value = 0;
+      _sparkleController
+        ..stop()
+        ..value = 0;
+      _characterShowcaseController
+        ..stop()
+        ..value = 0;
+    } else {
+      _backgroundController.repeat();
+      _sparkleController.repeat();
+      _characterShowcaseController.repeat();
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _pageController.dispose();
@@ -204,6 +228,10 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
 
   int get _selectedCharacterIndex =>
       _characters.indexWhere((c) => c['id'] == _selectedCharacter);
+
+  String get _trimmedName => _nameController.text.trim();
+
+  bool get _hasValidName => _trimmedName.length >= 2;
 
   void _selectCharacterAt(int index) {
     final wrappedIndex = (index + _characters.length) % _characters.length;
@@ -264,14 +292,14 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   }
 
   Future<void> _createAvatar() async {
-    if (_nameController.text.isEmpty) {
+    if (!_hasValidName) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(
             children: [
               Icon(Icons.warning, color: Colors.white),
               SizedBox(width: 8),
-              Text('Please enter your name!'),
+              Text('Please enter at least 2 letters.'),
             ],
           ),
           backgroundColor: AppColors.tertiary,
@@ -285,7 +313,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
 
     try {
       await context.read<AvatarProvider>().createAvatar(
-            name: _nameController.text,
+            name: _trimmedName,
             baseCharacter: _selectedCharacter,
             skinColor: _selectedColor,
             outfitId: _selectedOutfit,
@@ -310,7 +338,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       builder: (context) => _CelebrationDialog(
         character: _selectedCharacter,
         skinColor: _selectedColor,
-        name: _nameController.text,
+        name: _trimmedName,
         onComplete: () {
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed('/world-entry');
@@ -320,10 +348,10 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   }
 
   void _nextStep() {
-    if (_currentStep == 0 && _nameController.text.isEmpty) {
+    if (_currentStep == 0 && !_hasValidName) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter your name first! ✏️'),
+          content: Text('Please enter at least 2 letters first.'),
           backgroundColor: AppColors.tertiary,
           behavior: SnackBarBehavior.floating,
         ),
@@ -334,11 +362,15 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     if (_currentStep < 3) {
       setState(() => _currentStep++);
       _screenFocusNode.requestFocus();
-      _pageController.animateToPage(
-        _currentStep,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeOutCubic,
-      );
+      if (_reduceMotion) {
+        _pageController.jumpToPage(_currentStep);
+      } else {
+        _pageController.animateToPage(
+          _currentStep,
+          duration: const Duration(milliseconds: 360),
+          curve: Curves.easeOutCubic,
+        );
+      }
     }
   }
 
@@ -346,11 +378,15 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     if (_currentStep > 0) {
       setState(() => _currentStep--);
       _screenFocusNode.requestFocus();
-      _pageController.animateToPage(
-        _currentStep,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeOutCubic,
-      );
+      if (_reduceMotion) {
+        _pageController.jumpToPage(_currentStep);
+      } else {
+        _pageController.animateToPage(
+          _currentStep,
+          duration: const Duration(milliseconds: 360),
+          curve: Curves.easeOutCubic,
+        );
+      }
     }
   }
 
@@ -368,11 +404,34 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     HapticFeedback.selectionClick();
   }
 
+  void _randomizeLook() {
+    final random = math.Random();
+    final character = _characters[random.nextInt(_characters.length)];
+    final characterId = character['id'] as String;
+    final colors = CosmeticsLibrary.getSkinColorsForCharacter(characterId);
+    final starterOutfits =
+        CosmeticsLibrary.defaultOutfits.where((outfit) => outfit.isUnlocked);
+    final outfitPool = starterOutfits.isEmpty
+        ? CosmeticsLibrary.defaultOutfits
+        : starterOutfits.toList();
+
+    setState(() {
+      _selectedCharacter = characterId;
+      _selectedColor = colors[random.nextInt(colors.length)];
+      _selectedOutfit = outfitPool[random.nextInt(outfitPool.length)].id;
+      _previewAnimation = CharacterAnimation.celebrating;
+    });
+    HapticFeedback.selectionClick();
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final screenHeight = mediaQuery.size.height;
-    final isSmallScreen = screenHeight < 700;
+    final screenWidth = mediaQuery.size.width;
+    final isSmallScreen = screenHeight < 700 || screenWidth < 560;
+    final horizontalInset = screenWidth < 680 ? 0.0 : 24.0;
+    final verticalInset = screenHeight < 760 ? 0.0 : 18.0;
 
     return KeyboardListener(
       focusNode: _screenFocusNode,
@@ -385,6 +444,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             AnimatedBuilder(
               animation: _backgroundController,
               builder: (context, child) {
+                final gradientTurn =
+                    _reduceMotion ? 0.0 : _backgroundController.value;
                 return Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -395,8 +456,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                         _getStepColor(_currentStep).withValues(alpha: 0.1),
                         Colors.white,
                       ],
-                      transform: GradientRotation(
-                          _backgroundController.value * 2 * math.pi),
+                      transform: GradientRotation(gradientTurn * 2 * math.pi),
                     ),
                   ),
                 );
@@ -409,7 +469,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               builder: (context, child) {
                 return CustomPaint(
                   painter: _FloatingParticlesPainter(
-                    _sparkleController.value,
+                    _reduceMotion ? 0 : _sparkleController.value,
                     _getStepColor(_currentStep),
                   ),
                   size: Size.infinite,
@@ -419,26 +479,37 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
 
             // Main content
             SafeArea(
-              child: Column(
-                children: [
-                  _buildAppBar(isSmallScreen: isSmallScreen),
-                  _buildProgressBar(),
-                  if (!isSmallScreen) _buildLivePreviewBanner(scale: 1.0),
-                  if (isSmallScreen) _buildLivePreviewBanner(scale: 0.75),
-                  Expanded(
-                    child: PageView(
-                      controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalInset,
+                    vertical: verticalInset,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1120),
+                    child: Column(
                       children: [
-                        _buildWelcomeStep(),
-                        _buildCharacterStep(),
-                        _buildColorStep(),
-                        _buildReviewStep(),
+                        _buildAppBar(isSmallScreen: isSmallScreen),
+                        _buildProgressBar(),
+                        if (!isSmallScreen) _buildLivePreviewBanner(scale: 1.0),
+                        if (isSmallScreen) _buildLivePreviewBanner(scale: 0.75),
+                        Expanded(
+                          child: PageView(
+                            controller: _pageController,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
+                              _buildWelcomeStep(),
+                              _buildCharacterStep(),
+                              _buildColorStep(),
+                              _buildReviewStep(),
+                            ],
+                          ),
+                        ),
+                        _buildNavigationButtons(isCompact: isSmallScreen),
                       ],
                     ),
                   ),
-                  _buildNavigationButtons(isCompact: isSmallScreen),
-                ],
+                ),
               ),
             ),
           ],
@@ -694,7 +765,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     skinColor: _selectedColor,
                     size: charSize,
                     animation: _previewAnimation,
-                    showParticles:
+                    showParticles: !_reduceMotion &&
                         _previewAnimation == CharacterAnimation.celebrating,
                   ),
                 ),
@@ -733,19 +804,20 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: (selectedCharacter['color'] as Color)
-                        .withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Text(
-                    '${_characters.length} heroes',
-                    style: TextStyle(
-                      color: selectedCharacter['color'] as Color,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 12,
+                  decoration: const BoxDecoration(shape: BoxShape.circle),
+                  child: Tooltip(
+                    message: 'Surprise me',
+                    child: IconButton(
+                      onPressed: _randomizeLook,
+                      icon: Icon(
+                        Icons.casino_rounded,
+                        color: selectedCharacter['color'] as Color,
+                      ),
+                      style: IconButton.styleFrom(
+                        backgroundColor: (selectedCharacter['color'] as Color)
+                            .withValues(alpha: 0.12),
+                        minimumSize: Size(44 * scale, 44 * scale),
+                      ),
                     ),
                   ),
                 ),
@@ -787,13 +859,15 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                         _characters.length;
                     final char = _characters[index];
                     return AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 500),
+                      duration: _reduceMotion
+                          ? Duration.zero
+                          : const Duration(milliseconds: 500),
                       child: AnimatedCharacter(
                         key: ValueKey(char['id']),
                         character: char['id'],
                         size: showcaseSize,
                         animation: CharacterAnimation.celebrating,
-                        showParticles: true,
+                        showParticles: !_reduceMotion,
                       ),
                     );
                   },
@@ -979,10 +1053,25 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       builder: (context, constraints) {
         final isCompact = constraints.maxHeight < 600;
         final isTiny = constraints.maxHeight < 500;
+        final useVerticalGrid = constraints.maxWidth < 620;
         final selectorRows = isTiny ? 1 : 2;
+        final selectorColumns = constraints.maxWidth < 390 ? 2 : 3;
         final cardExtent = constraints.maxWidth < 420
             ? 132.0
             : (constraints.maxWidth < 760 ? 156.0 : 176.0);
+        final gridDelegate = useVerticalGrid
+            ? SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: selectorColumns,
+                crossAxisSpacing: isCompact ? 10 : 14,
+                mainAxisSpacing: isCompact ? 10 : 14,
+                childAspectRatio: isTiny ? 0.94 : 0.84,
+              )
+            : SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: selectorRows,
+                crossAxisSpacing: isCompact ? 12 : 16,
+                mainAxisSpacing: isCompact ? 12 : 16,
+                mainAxisExtent: cardExtent,
+              );
 
         return Column(
           children: [
@@ -1034,15 +1123,13 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             // Character grid - fits available space
             Expanded(
               child: GridView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const PageScrollPhysics(),
+                scrollDirection:
+                    useVerticalGrid ? Axis.vertical : Axis.horizontal,
+                physics: useVerticalGrid
+                    ? const BouncingScrollPhysics()
+                    : const PageScrollPhysics(),
                 padding: EdgeInsets.symmetric(horizontal: isCompact ? 12 : 24),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: selectorRows,
-                  crossAxisSpacing: isCompact ? 12 : 16,
-                  mainAxisSpacing: isCompact ? 12 : 16,
-                  mainAxisExtent: cardExtent,
-                ),
+                gridDelegate: gridDelegate,
                 itemCount: _characters.length,
                 itemBuilder: (context, index) {
                   final character = _characters[index];
@@ -1189,7 +1276,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                                             animation: isSelected
                                                 ? _previewAnimation
                                                 : CharacterAnimation.idle,
-                                            showParticles: isSelected &&
+                                            showParticles: !_reduceMotion &&
+                                                isSelected &&
                                                 _previewAnimation ==
                                                     CharacterAnimation
                                                         .celebrating,
@@ -1399,7 +1487,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                     skinColor: _selectedColor,
                     size: isTiny ? 100 : (isCompact ? 120 : 140),
                     animation: CharacterAnimation.celebrating,
-                    showParticles: true,
+                    showParticles: !_reduceMotion,
                   ),
                 ],
               ),
@@ -1767,7 +1855,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                   skinColor: _selectedColor,
                   size: isCompact ? 100 : 140, // Reduced from 120:180
                   animation: CharacterAnimation.celebrating,
-                  showParticles: true,
+                  showParticles: !_reduceMotion,
                 ),
               ),
               SizedBox(height: isCompact ? 8 : 12), // Reduced spacing
@@ -2051,6 +2139,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
   late AnimationController _scaleController;
   late AnimationController _confettiController;
   late Animation<double> _scale;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -2076,6 +2165,18 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_reduceMotion == reduceMotion) return;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _scaleController.value = 1;
+      _confettiController.stop();
+    }
+  }
+
+  @override
   void dispose() {
     _scaleController.dispose();
     _confettiController.dispose();
@@ -2084,6 +2185,8 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final dialogWidth = (size.width - 32).clamp(280.0, 420.0).toDouble();
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Stack(
@@ -2093,14 +2196,17 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
             animation: _confettiController,
             builder: (context, child) {
               return CustomPaint(
-                painter: _ConfettiPainter(_confettiController.value),
-                size: const Size(300, 400),
+                painter: _ConfettiPainter(
+                  _reduceMotion ? 0 : _confettiController.value,
+                ),
+                size: Size(dialogWidth, 400),
               );
             },
           ),
           ScaleTransition(
             scale: _scale,
             child: Container(
+              width: dialogWidth,
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -2123,7 +2229,7 @@ class _CelebrationDialogState extends State<_CelebrationDialog>
                     skinColor: widget.skinColor,
                     size: 80,
                     animation: CharacterAnimation.celebrating,
-                    showParticles: true,
+                    showParticles: !_reduceMotion,
                   ),
                   const SizedBox(height: 16),
                   ShaderMask(

@@ -5,9 +5,10 @@ import 'dart:convert';
 /// Service to manage adaptive difficulty based on player performance
 class AdaptiveDifficultyService extends ChangeNotifier {
   static const String _performanceKey = 'adaptive_difficulty_performance';
-  static const int _historyLength = 5; // Track last 5 answers per skill
+  static const int _historyLength = 8; // Track recent answers per skill
   static const int _minDifficulty = 1; // Level 1 = simplest support
   static const int _maxDifficulty = 5; // Level 5 = hardest
+  static const int _startingDifficulty = 3; // Level 3 = balanced first run
 
   // Map of skillId -> list of recent correct/incorrect (true/false)
   final Map<String, List<bool>> _performanceHistory = {};
@@ -52,7 +53,7 @@ class AdaptiveDifficultyService extends ChangeNotifier {
 
   /// Get the current difficulty level for a skill (1-5)
   int getDifficultyForSkill(String skillId) {
-    return _skillDifficulty[skillId] ?? _minDifficulty; // Default to level 3
+    return _skillDifficulty[skillId] ?? _startingDifficulty;
   }
 
   /// Record an answer and potentially adjust difficulty
@@ -83,30 +84,31 @@ class AdaptiveDifficultyService extends ChangeNotifier {
   /// Adjust difficulty based on recent performance
   Future<void> _adjustDifficulty(String skillId) async {
     final history = _performanceHistory[skillId];
-    if (history == null || history.length < 3) {
-      return; // Need at least 3 answers to adjust
+    if (history == null || history.length < 4) {
+      return; // Need enough evidence to avoid jumpy adjustments
     }
 
-    final currentDifficulty = _skillDifficulty[skillId] ?? _minDifficulty;
+    final currentDifficulty = getDifficultyForSkill(skillId);
     final recentCorrect = history.where((correct) => correct).length;
     final totalRecent = history.length;
     final accuracy = recentCorrect / totalRecent;
 
-    // Check last 3 answers for consecutive patterns
+    final lastFour =
+        history.length >= 4 ? history.sublist(history.length - 4) : history;
+    final fourInARow = lastFour.length == 4 && lastFour.every((c) => c);
     final lastThree =
         history.length >= 3 ? history.sublist(history.length - 3) : history;
-    final threeInARow = lastThree.length == 3 && lastThree.every((c) => c);
-    final twoWrongInRow = history.length >= 2 &&
-        !history[history.length - 1] &&
-        !history[history.length - 2];
+    final threeWrongInRow = lastThree.length == 3 && lastThree.every((c) => !c);
 
     int newDifficulty = currentDifficulty;
 
     // Increase difficulty if:
-    // - 3 correct in a row, OR
-    // - Accuracy >= 90% and not at max difficulty
-    if (threeInARow ||
-        (accuracy >= 0.9 && currentDifficulty < _maxDifficulty)) {
+    // - 4 correct in a row, OR
+    // - Accuracy >= 85% over a fuller recent window
+    if (fourInARow ||
+        (totalRecent >= 6 &&
+            accuracy >= 0.85 &&
+            currentDifficulty < _maxDifficulty)) {
       newDifficulty =
           (currentDifficulty + 1).clamp(_minDifficulty, _maxDifficulty);
       if (newDifficulty != currentDifficulty) {
@@ -115,10 +117,12 @@ class AdaptiveDifficultyService extends ChangeNotifier {
       }
     }
     // Decrease difficulty if:
-    // - 2 wrong in a row, OR
-    // - Accuracy < 40% and not at min difficulty
-    else if (twoWrongInRow ||
-        (accuracy < 0.4 && currentDifficulty > _minDifficulty)) {
+    // - 3 wrong in a row, OR
+    // - Accuracy < 45% over a fuller recent window
+    else if (threeWrongInRow ||
+        (totalRecent >= 5 &&
+            accuracy < 0.45 &&
+            currentDifficulty > _minDifficulty)) {
       newDifficulty =
           (currentDifficulty - 1).clamp(_minDifficulty, _maxDifficulty);
       if (newDifficulty != currentDifficulty) {
@@ -165,7 +169,7 @@ class AdaptiveDifficultyService extends ChangeNotifier {
 
   /// Reset difficulty for a skill (useful for retry)
   Future<void> resetSkillDifficulty(String skillId) async {
-    _skillDifficulty[skillId] = 1;
+    _skillDifficulty[skillId] = _startingDifficulty;
     _performanceHistory[skillId]?.clear();
     await _saveToStorage();
     notifyListeners();

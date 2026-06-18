@@ -1,5 +1,31 @@
 import 'dart:math';
 
+class SessionQuestionSet<T> {
+  final List<T> questions;
+  final int freshQuestionCount;
+  final int repeatedQuestionCount;
+  final int dedupedSourceCount;
+
+  const SessionQuestionSet({
+    required this.questions,
+    required this.freshQuestionCount,
+    required this.repeatedQuestionCount,
+    required this.dedupedSourceCount,
+  });
+
+  factory SessionQuestionSet.empty() => const SessionQuestionSet(
+        questions: [],
+        freshQuestionCount: 0,
+        repeatedQuestionCount: 0,
+        dedupedSourceCount: 0,
+      );
+
+  double get noveltyPercentage {
+    if (questions.isEmpty) return 0.0;
+    return freshQuestionCount / questions.length * 100;
+  }
+}
+
 /// Builds varied question sets by removing duplicates and rotating recently seen items.
 class QuestionVariationHelper {
   static final Map<String, List<String>> _recentQuestionIdsBySession = {};
@@ -16,19 +42,42 @@ class QuestionVariationHelper {
     int memorySize = 80,
     Random? random,
   }) {
+    return buildSessionQuestionSetWithStats(
+      sessionKey: sessionKey,
+      source: source,
+      idOf: idOf,
+      promptOf: promptOf,
+      groupKeyOf: groupKeyOf,
+      desiredCount: desiredCount,
+      memorySize: memorySize,
+      random: random,
+    ).questions;
+  }
+
+  static SessionQuestionSet<T> buildSessionQuestionSetWithStats<T>({
+    required String sessionKey,
+    required List<T> source,
+    required String Function(T item) idOf,
+    required String Function(T item) promptOf,
+    String Function(T item)? groupKeyOf,
+    int desiredCount = 10,
+    int memorySize = 80,
+    Random? random,
+  }) {
     if (source.isEmpty) {
-      return const [];
+      return SessionQuestionSet<T>.empty();
     }
 
     final rng = random ?? Random();
     final deduped = _dedupeByPrompt(source, promptOf);
 
     if (deduped.isEmpty) {
-      return const [];
+      return SessionQuestionSet<T>.empty();
     }
 
     final recentIds =
         _recentQuestionIdsBySession.putIfAbsent(sessionKey, () => <String>[]);
+    final previousRecentIds = recentIds.toSet();
     final pool = List<T>.from(deduped)..shuffle(rng);
 
     final unseen = <T>[];
@@ -92,6 +141,10 @@ class QuestionVariationHelper {
         : spreadSelected;
 
     final selectedIds = balancedSelected.map(idOf).toList();
+    final freshQuestionCount =
+        selectedIds.where((id) => !previousRecentIds.contains(id)).length;
+    final repeatedQuestionCount = selectedIds.length - freshQuestionCount;
+
     recentIds
       ..addAll(selectedIds)
       ..removeRange(
@@ -99,7 +152,12 @@ class QuestionVariationHelper {
         recentIds.length > memorySize ? recentIds.length - memorySize : 0,
       );
 
-    return balancedSelected;
+    return SessionQuestionSet<T>(
+      questions: balancedSelected,
+      freshQuestionCount: freshQuestionCount,
+      repeatedQuestionCount: repeatedQuestionCount,
+      dedupedSourceCount: deduped.length,
+    );
   }
 
   static List<T> _dedupeByPrompt<T>(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
+import 'package:brightbound_adventures/core/services/quest_session_history_service.dart';
 import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/controllers/game_session_controller.dart';
@@ -49,6 +51,7 @@ class _NumeracyGameState extends State<NumeracyGame>
   late GameSessionController _gameController;
   late List<NumeracyQuestion> _shuffledQuestions;
   late FocusNode _focusNode;
+  late DateTime _sessionStartedAt;
 
   int _currentIndex = 0;
   int? _selectedIndex;
@@ -60,6 +63,10 @@ class _NumeracyGameState extends State<NumeracyGame>
   bool _aiExplanationsEnabled = false;
   String? _activeHintText;
   String? _aiExplanationText;
+  int _hintsUsedInSession = 0;
+  int _freshQuestionCount = 0;
+  int _repeatedQuestionCount = 0;
+  bool _sessionRecorded = false;
 
   final AudioManager _audioManager = AudioManager();
   final AiLearningAssistantService _aiAssistant = AiLearningAssistantService();
@@ -76,8 +83,8 @@ class _NumeracyGameState extends State<NumeracyGame>
   @override
   void initState() {
     super.initState();
-    _shuffledQuestions =
-        QuestionVariationHelper.buildSessionQuestionSet<NumeracyQuestion>(
+    final questionSet = QuestionVariationHelper
+        .buildSessionQuestionSetWithStats<NumeracyQuestion>(
       sessionKey:
           'numeracy_${widget.skillName.toLowerCase().replaceAll(' ', '_')}',
       source: widget.questions,
@@ -87,6 +94,10 @@ class _NumeracyGameState extends State<NumeracyGame>
       desiredCount: widget.questions.length.clamp(1, 12),
       random: Random(),
     );
+    _shuffledQuestions = questionSet.questions;
+    _freshQuestionCount = questionSet.freshQuestionCount;
+    _repeatedQuestionCount = questionSet.repeatedQuestionCount;
+    _sessionStartedAt = DateTime.now();
 
     _gameController = GameSessionController(
       maxLives: 3,
@@ -267,8 +278,41 @@ class _NumeracyGameState extends State<NumeracyGame>
     if (accuracy == 1.0) {
       _audioManager.playPerfectScore();
     }
+    _recordSessionSummary(forced: forced);
     widget.onComplete?.call(
         accuracy, _gameController.correctAnswers, _shuffledQuestions.length);
+  }
+
+  void _recordSessionSummary({required bool forced}) {
+    if (_sessionRecorded || _shuffledQuestions.isEmpty) return;
+    _sessionRecorded = true;
+
+    try {
+      final history = context.read<QuestSessionHistoryService>();
+      final skillId = _shuffledQuestions.first.skillId;
+      final difficulty = _shuffledQuestions
+              .map((question) => question.difficulty)
+              .fold<int>(0, (sum, value) => sum + value) ~/
+          _shuffledQuestions.length;
+
+      unawaited(history.recordQuizSession(
+        zoneId: 'number-nebula',
+        skillId: skillId,
+        skillName: widget.skillName,
+        startedAt: _sessionStartedAt,
+        totalQuestions: _shuffledQuestions.length,
+        correctAnswers: _gameController.correctAnswers,
+        score: _gameController.score,
+        hintsUsed: _hintsUsedInSession,
+        difficulty: difficulty,
+        questionIds: _shuffledQuestions.map((question) => question.id).toList(),
+        freshQuestionCount: _freshQuestionCount,
+        repeatedQuestionCount: _repeatedQuestionCount,
+        forced: forced,
+      ));
+    } on ProviderNotFoundException {
+      // Widget tests and embedded demos may not provide the app-level service.
+    }
   }
 
   Future<void> _showHintDialog() async {
@@ -288,6 +332,7 @@ class _NumeracyGameState extends State<NumeracyGame>
       _activeHintText = hintText ?? _currentQuestion.hint;
       _showHint = true;
       _hintUsed = true;
+      _hintsUsedInSession++;
     });
   }
 

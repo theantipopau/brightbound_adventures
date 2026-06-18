@@ -19,6 +19,7 @@ export 'haptic_service.dart';
 export 'animation_service.dart';
 export 'ai_learning_assistant_service.dart';
 export 'question_freshness_service.dart';
+export 'quest_session_history_service.dart';
 export 'spaced_repetition_service.dart';
 export 'ai_question_service.dart';
 export 'theme_mode_service.dart';

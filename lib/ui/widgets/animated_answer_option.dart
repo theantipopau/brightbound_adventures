@@ -60,6 +60,7 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
 
   bool _hovered = false;
   bool _focused = false;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -108,13 +109,35 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_reduceMotion == reduceMotion) return;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _entranceCtrl.value = 1.0;
+      if (widget.state == AnswerState.correct ||
+          widget.state == AnswerState.incorrect) {
+        _stateCtrl.value = 1.0;
+      }
+      _shakeCtrl.stop();
+    }
+  }
+
+  @override
   void didUpdateWidget(AnimatedAnswerOption old) {
     super.didUpdateWidget(old);
     if (old.state != widget.state) {
       if (widget.state == AnswerState.correct ||
           widget.state == AnswerState.incorrect) {
-        _stateCtrl.forward(from: 0);
-        if (widget.state == AnswerState.incorrect && widget.isSelected) {
+        if (_reduceMotion) {
+          _stateCtrl.value = 1.0;
+        } else {
+          _stateCtrl.forward(from: 0);
+        }
+        if (!_reduceMotion &&
+            widget.state == AnswerState.incorrect &&
+            widget.isSelected) {
           _shakeCtrl.forward(from: 0);
         }
       }
@@ -189,11 +212,10 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
   List<BoxShadow> _getOptionShadow(bool canTap) {
     if (widget.state == AnswerState.correct) {
       return [
-        ...AppShadows.glow(AppColors.correctFeedbackBorder, intensity: 0.24),
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.06),
-          blurRadius: 12,
-          offset: const Offset(0, 5),
+          color: AppColors.correctFeedbackBorder.withValues(alpha: 0.18),
+          blurRadius: _reduceMotion ? 8 : 12,
+          offset: const Offset(0, 4),
         ),
       ];
     }
@@ -201,13 +223,19 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
       return AppShadows.sm(AppColors.incorrectFeedbackBorder);
     }
     if ((_hovered || _focused || widget.isSelected) && canTap) {
-      return AppShadows.md(widget.accentColor);
+      return [
+        BoxShadow(
+          color: widget.accentColor.withValues(alpha: 0.16),
+          blurRadius: _reduceMotion ? 8 : 12,
+          offset: const Offset(0, 4),
+        ),
+      ];
     }
     return [
       BoxShadow(
         color: Colors.black.withValues(alpha: 0.055),
-        blurRadius: 11,
-        offset: const Offset(0, 4),
+        blurRadius: 8,
+        offset: const Offset(0, 3),
       ),
     ];
   }
@@ -296,15 +324,21 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
   @override
   Widget build(BuildContext context) {
     final canTap = widget.state == AnswerState.idle && widget.onTap != null;
+    final trailingIcon = _getTrailingIcon();
 
     return AnimatedBuilder(
       animation: Listenable.merge([_entranceCtrl, _stateCtrl, _shakeCtrl]),
       builder: (context, child) {
         // Shake offset for wrong answers
-        final shakeOffset = widget.state == AnswerState.incorrect &&
+        final shakeOffset = !_reduceMotion &&
+                widget.state == AnswerState.incorrect &&
                 widget.isSelected
             ? math.sin(_shakeX.value * math.pi * 5) * (1 - _shakeX.value) * 10
             : 0.0;
+
+        if (_reduceMotion) {
+          return child!;
+        }
 
         return FadeTransition(
           opacity: _entranceFade,
@@ -347,7 +381,7 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
             selected: widget.isSelected,
             label: 'Answer ${widget.optionLetter}: ${widget.label}',
             child: AnimatedContainer(
-              duration: AppMotion.standard,
+              duration: _reduceMotion ? Duration.zero : AppMotion.fast,
               curve: AppMotion.enter,
               margin: const EdgeInsets.symmetric(vertical: 6),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
@@ -371,7 +405,7 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
                 children: [
                   // Option letter badge
                   AnimatedContainer(
-                    duration: AppMotion.standard,
+                    duration: _reduceMotion ? Duration.zero : AppMotion.fast,
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
@@ -409,7 +443,7 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
                   Expanded(
                     child: Text(
                       widget.label,
-                      maxLines: 3,
+                      maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 16,
@@ -429,9 +463,9 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
                   ),
 
                   // Trailing icon (check/x)
-                  if (_getTrailingIcon() != null) ...[
+                  if (trailingIcon != null) ...[
                     const SizedBox(width: 8),
-                    _getTrailingIcon()!,
+                    trailingIcon,
                   ],
                 ],
               ),
@@ -470,6 +504,7 @@ class _QuestionCardState extends State<QuestionCard>
   late AnimationController _ctrl;
   late Animation<double> _fadeIn;
   late Animation<Offset> _slideIn;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -487,7 +522,22 @@ class _QuestionCardState extends State<QuestionCard>
   void didUpdateWidget(QuestionCard old) {
     super.didUpdateWidget(old);
     if (old.question != widget.question) {
-      _ctrl.forward(from: 0);
+      if (_reduceMotion) {
+        _ctrl.value = 1.0;
+      } else {
+        _ctrl.forward(from: 0);
+      }
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (_reduceMotion == reduceMotion) return;
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _ctrl.value = 1.0;
     }
   }
 
@@ -503,136 +553,141 @@ class _QuestionCardState extends State<QuestionCard>
       container: true,
       label:
           'Question ${widget.questionNumber} of ${widget.totalQuestions}. ${widget.question}',
-      child: FadeTransition(
-        opacity: _fadeIn,
-        child: SlideTransition(
-          position: _slideIn,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white,
-                  widget.accentColor.withValues(alpha: 0.075),
-                  widget.accentColor.withValues(alpha: 0.035),
-                ],
-                stops: const [0, 0.62, 1],
+      child: _reduceMotion
+          ? _buildCard(context)
+          : FadeTransition(
+              opacity: _fadeIn,
+              child: SlideTransition(
+                position: _slideIn,
+                child: _buildCard(context),
               ),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: widget.accentColor.withValues(alpha: 0.28),
-                width: 1.5,
-              ),
-              boxShadow: AppShadows.md(widget.accentColor),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  right: -8,
-                  top: -10,
-                  child: Opacity(
-                    opacity: 0.10,
-                    child: SizedBox(
-                      width: 86,
-                      height: 86,
-                      child: Image.asset(
-                        'assets/images/scroll.PNG',
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => Icon(
-                          Icons.auto_stories_rounded,
-                          size: 78,
-                          color: widget.accentColor,
-                        ),
-                      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context) {
+    final isCompact = MediaQuery.of(context).size.width < 560;
+
+    return RepaintBoundary(
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(isCompact ? 18 : 22),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              widget.accentColor.withValues(alpha: 0.075),
+              widget.accentColor.withValues(alpha: 0.035),
+            ],
+            stops: const [0, 0.62, 1],
+          ),
+          borderRadius: BorderRadius.circular(AppBorders.lg),
+          border: Border.all(
+            color: widget.accentColor.withValues(alpha: 0.28),
+            width: 1.5,
+          ),
+          boxShadow: AppShadows.sm(widget.accentColor),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -8,
+              top: -10,
+              child: Opacity(
+                opacity: 0.10,
+                child: SizedBox(
+                  width: 86,
+                  height: 86,
+                  child: Image.asset(
+                    'assets/images/scroll.PNG',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.auto_stories_rounded,
+                      size: 78,
+                      color: widget.accentColor,
                     ),
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 11, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: widget.accentColor.withValues(alpha: 0.12),
-                            borderRadius:
-                                BorderRadius.circular(AppBorders.pill),
-                            border: Border.all(
-                              color: widget.accentColor.withValues(alpha: 0.25),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 11, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: widget.accentColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(AppBorders.pill),
+                        border: Border.all(
+                          color: widget.accentColor.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.flag_rounded,
+                              size: 13, color: widget.accentColor),
+                          const SizedBox(width: 5),
+                          Text(
+                            'Question ${widget.questionNumber}/${widget.totalQuestions}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: widget.accentColor,
+                              fontFamily: AppTheme.fontPrimary,
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.flag_rounded,
-                                  size: 13, color: widget.accentColor),
-                              const SizedBox(width: 5),
-                              Text(
-                                'Question ${widget.questionNumber}/${widget.totalQuestions}',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w900,
-                                  color: widget.accentColor,
-                                  fontFamily: AppTheme.fontPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.blueGrey.withValues(alpha: 0.08),
-                            borderRadius:
-                                BorderRadius.circular(AppBorders.pill),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.touch_app_rounded,
-                                  size: 13, color: AppColors.textSecondary),
-                              const SizedBox(width: 4),
-                              const Text(
-                                'Choose one answer',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 14),
-                    Text(
-                      widget.question,
-                      maxLines: 7,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize:
-                            MediaQuery.of(context).size.width < 560 ? 18 : 20,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                        height: 1.34,
-                        fontFamily: AppTheme.fontPrimary,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(AppBorders.pill),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.touch_app_rounded,
+                              size: 13, color: AppColors.textSecondary),
+                          SizedBox(width: 4),
+                          Text(
+                            'Choose one answer',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 14),
+                Text(
+                  widget.question,
+                  style: TextStyle(
+                    fontSize: isCompact ? 18 : 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                    height: 1.34,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );

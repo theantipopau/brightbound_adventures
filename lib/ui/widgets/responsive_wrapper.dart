@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class ResponsiveWrapper extends StatelessWidget {
@@ -16,8 +17,24 @@ class ResponsiveWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Simply return the child - let it fill the available space
-    // The app will be responsive to any screen size
-    return child;
+    return ScrollConfiguration(
+      behavior: const _BrightBoundScrollBehavior(),
+      child: FocusTraversalGroup(
+        policy: ReadingOrderTraversalPolicy(),
+        child: child,
+      ),
+    );
   }
+}
+
+class _BrightBoundScrollBehavior extends MaterialScrollBehavior {
+  const _BrightBoundScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.trackpad,
+      };
 }

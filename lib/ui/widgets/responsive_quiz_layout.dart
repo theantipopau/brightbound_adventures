@@ -88,17 +88,34 @@ class ResponsiveQuizLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = ScreenBreakpoints.isWideScreen(context);
     final padding = ScreenBreakpoints.getHorizontalPadding(context);
     final vSpacing = ScreenBreakpoints.getVerticalSpacing(context);
 
-    return Center(
-      child: Container(
-        constraints: BoxConstraints(maxWidth: maxWidth),
-        padding: EdgeInsets.symmetric(horizontal: padding, vertical: vSpacing),
-        child: isWide
-            ? _buildSideBySideLayout(vSpacing)
-            : _buildStackedLayout(vSpacing),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= ScreenBreakpoints.tablet &&
+            constraints.maxHeight >= 520;
+
+        return Center(
+          child: Container(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            padding:
+                EdgeInsets.symmetric(horizontal: padding, vertical: vSpacing),
+            child: isWide
+                ? _buildSideBySideLayout(vSpacing)
+                : _buildStackedLayout(vSpacing),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _scrollColumn(List<Widget> children) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
       ),
     );
   }
@@ -110,9 +127,8 @@ class ResponsiveQuizLayout extends StatelessWidget {
         // Left column: Question + Score (40% width)
         Expanded(
           flex: 4,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+          child: _scrollColumn(
+            [
               if (scoreCard != null) ...[
                 scoreCard!,
                 SizedBox(height: spacing),
@@ -129,7 +145,10 @@ class ResponsiveQuizLayout extends StatelessWidget {
         // Right column: Options (60% width)
         Expanded(
           flex: 6,
-          child: optionsArea,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: optionsArea,
+          ),
         ),
       ],
     );
@@ -195,6 +214,9 @@ class _HoverCardState extends State<HoverCard> {
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    final active = (_hovered || _focused) && widget.enabled;
+
     Widget card = MouseRegion(
       cursor: widget.enabled && widget.onTap != null
           ? SystemMouseCursors.click
@@ -217,40 +239,34 @@ class _HoverCardState extends State<HoverCard> {
           splashColor: widget.borderColor.withValues(alpha: 0.15),
           highlightColor: widget.borderColor.withValues(alpha: 0.05),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
+            duration: reduceMotion ? Duration.zero : AppMotion.fast,
             curve: Curves.easeInOut,
             decoration: BoxDecoration(
               color: widget.backgroundColor,
               borderRadius: BorderRadius.circular(widget.borderRadius),
               border: Border.all(
-                color: (_hovered || _focused) && widget.enabled
+                color: active
                     ? widget.borderColor.withValues(alpha: 0.7)
                     : widget.borderColor.withValues(alpha: 0.4),
-                width: (_hovered || _focused) && widget.enabled
-                    ? AppInput.focusRingWidth
-                    : 1.5,
+                width: active ? AppInput.focusRingWidth : 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: (_hovered || _focused) && widget.enabled
+                  color: active
                       ? Colors.black.withValues(alpha: 0.15)
                       : Colors.black.withValues(alpha: 0.08),
-                  blurRadius: (_hovered || _focused) && widget.enabled
-                      ? 24
-                      : 12,
-                  offset:
-                      Offset(0, (_hovered || _focused) && widget.enabled ? 10 : 4),
-                  spreadRadius:
-                      (_hovered || _focused) && widget.enabled ? 2 : 0,
+                  blurRadius: active ? 14 : 8,
+                  offset: Offset(0, active ? 5 : 3),
+                  spreadRadius: 0,
                 ),
               ],
             ),
-            transform: ((_hovered || _focused) && widget.enabled)
+            transform: active && !reduceMotion
                 ? Matrix4.translationValues(0, -5, 0)
                 : Matrix4.identity(),
             child: AnimatedOpacity(
               opacity: widget.enabled ? 1.0 : 0.6,
-              duration: const Duration(milliseconds: 200),
+              duration: reduceMotion ? Duration.zero : AppMotion.fast,
               child: widget.child,
             ),
           ),
@@ -358,6 +374,9 @@ class _HoverButtonState extends State<HoverButton>
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    final active = (_hovered || _focused) && widget.enabled;
+
     Widget button = MouseRegion(
       cursor: widget.enabled
           ? SystemMouseCursors.click
@@ -385,18 +404,18 @@ class _HoverButtonState extends State<HoverButton>
           child: AnimatedBuilder(
             animation: _scaleAnimation,
             builder: (context, child) => Transform.scale(
-              scale: _scaleAnimation.value,
+              scale: reduceMotion ? 1.0 : _scaleAnimation.value,
               child: child,
             ),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
+              duration: reduceMotion ? Duration.zero : AppMotion.fast,
               curve: Curves.easeOutCubic,
               height: widget.height,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: (_hovered || _focused) && widget.enabled
+                  colors: active
                       ? [
                           widget.hoverColor,
                           widget.hoverColor.withValues(alpha: 0.85),
@@ -408,39 +427,26 @@ class _HoverButtonState extends State<HoverButton>
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: Colors.white.withValues(
-                      alpha: (_hovered || _focused) && widget.enabled
-                          ? 0.5
-                          : 0.2),
-                  width: (_hovered || _focused) && widget.enabled
-                      ? AppInput.focusRingWidth
-                      : 1.5,
+                  color: Colors.white.withValues(alpha: active ? 0.5 : 0.2),
+                  width: active ? AppInput.focusRingWidth : 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: ((_hovered || _focused) && widget.enabled
-                            ? widget.hoverColor
-                            : widget.backgroundColor)
-                        .withValues(
-                            alpha: (_hovered || _focused) && widget.enabled
-                                ? 0.5
-                                : 0.2),
-                    blurRadius:
-                        (_hovered || _focused) && widget.enabled ? 24 : 12,
-                    offset: Offset(
-                        0, (_hovered || _focused) && widget.enabled ? 8 : 4),
-                    spreadRadius:
-                        (_hovered || _focused) && widget.enabled ? 2 : 0,
+                    color: (active ? widget.hoverColor : widget.backgroundColor)
+                        .withValues(alpha: active ? 0.30 : 0.16),
+                    blurRadius: active ? 14 : 8,
+                    offset: Offset(0, active ? 5 : 3),
+                    spreadRadius: 0,
                   ),
                 ],
               ),
-              transform: ((_hovered || _focused) && widget.enabled)
+              transform: active && !reduceMotion
                   ? Matrix4.translationValues(0, -3, 0)
                   : Matrix4.identity(),
               child: Center(
                 child: AnimatedOpacity(
                   opacity: widget.enabled ? 1.0 : 0.65,
-                  duration: const Duration(milliseconds: 200),
+                  duration: reduceMotion ? Duration.zero : AppMotion.fast,
                   child: widget.child,
                 ),
               ),
@@ -452,8 +458,9 @@ class _HoverButtonState extends State<HoverButton>
 
     button = FocusableActionDetector(
       enabled: widget.enabled,
-      mouseCursor:
-          widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
+      mouseCursor: widget.enabled
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.forbidden,
       onShowFocusHighlight: (focused) {
         if (mounted) setState(() => _focused = focused);
       },

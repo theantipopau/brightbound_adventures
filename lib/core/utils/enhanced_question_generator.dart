@@ -78,7 +78,17 @@ abstract class EnhancedQuestionGenerator {
 
   /// Shuffle a list and ensure first item isn't the answer (for better UX)
   static List<T> smartShuffle<T>(List<T> options, T correctAnswer) {
-    final shuffled = List<T>.from(options)..shuffle(_random);
+    final unique = <T>[];
+    for (final option in options) {
+      if (!unique.contains(option)) {
+        unique.add(option);
+      }
+    }
+    if (!unique.contains(correctAnswer)) {
+      unique.insert(0, correctAnswer);
+    }
+
+    final shuffled = List<T>.from(unique)..shuffle(_random);
     // If correct answer is first, swap with a random other position
     if (shuffled.first == correctAnswer && shuffled.length > 1) {
       final swapIdx = 1 + _random.nextInt(shuffled.length - 1);
@@ -93,12 +103,26 @@ abstract class EnhancedQuestionGenerator {
   static List<int> generatePlausibleWrongAnswers(int correct, int count,
       {int range = 5}) {
     final wrongs = <int>{};
-    while (wrongs.length < count) {
-      final offset = (_random.nextInt(range * 2 + 1) - range);
+    var effectiveRange = range;
+    var attempts = 0;
+    while (wrongs.length < count && attempts < count * 80) {
+      attempts++;
+      final offset = (_random.nextInt(effectiveRange * 2 + 1) - effectiveRange);
       final wrong = correct + offset;
       if (wrong != correct && wrong > 0) {
         wrongs.add(wrong);
       }
+      if (attempts % 20 == 0) {
+        effectiveRange += 2;
+      }
+    }
+
+    var fallback = 1;
+    while (wrongs.length < count) {
+      if (fallback != correct) {
+        wrongs.add(fallback);
+      }
+      fallback++;
     }
     return wrongs.toList();
   }

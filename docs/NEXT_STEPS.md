@@ -1,13 +1,17 @@
 # BrightBound Adventures - Current Next Steps
 
 **Updated:** June 2026
-**Current health:** `flutter analyze` and `flutter test` were clean before the latest map-layout pass. Re-run the verification commands below after the sandbox allows Flutter commands again.
+**Current health:** `dart format lib test`, `flutter analyze`, `flutter test`, `flutter build web --release`, and the focused startup viewport smoke test are passing after the quiz responsiveness, replayability data-spine, and startup/avatar GUI polish work. The release build still reports known third-party `flutter_tts_web.dart` Wasm dry-run warnings.
 
 ## Current Focus
 
 The app has most major systems in place: world map, zones, skills, daily challenges, streaks, achievements, parent dashboard, shop, cosmetics, accessibility settings, and spaced repetition. The next phase is not broad feature expansion. It is tightening the core loop so it feels like one polished mini RPG:
 
 `world map -> quest -> practice -> rewards -> character/item progress -> parent insight`
+
+For the current replayability, RPG progression, visual polish, and performance plan, use:
+
+- [Replayable RPG Polish Roadmap](REPLAYABLE_RPG_POLISH_ROADMAP.md)
 
 ## Immediate Sprint: RPG Loop Stabilization
 
@@ -33,6 +37,7 @@ The app has most major systems in place: world map, zones, skills, daily challen
    - Keep existing numeracy, tracing, and zone-ID tests.
    - Add tests for shop purchase behavior and avatar reward ID consistency.
    - Add widget smoke tests for map rendering, shop route access, avatar creator flow, and parent dashboard access.
+   - Extend the new viewport smoke-test pattern to world map, shop, profile, and parent dashboard once those layouts settle.
 
 5. Refresh documentation
    - Treat older `PHASE_*` and session docs as historical.
@@ -43,10 +48,12 @@ The app has most major systems in place: world map, zones, skills, daily challen
 
 After the RPG loop is stable:
 
+- Active replayability engine using freshness, weak-skill history, and quest goals.
+- Reward previews, post-quest loot reveal, and stronger cosmetic collection loops.
+- More interaction types beyond multiple choice for the skills that need them.
 - Parent weekly summaries, weak-skill recommendations, and goals.
-- Certificate export/share support.
 - Better shop inventory/equip UI.
-- More narrative quests per zone.
+- More narrative quests per zone and boss quest templates.
 - More manual accessibility checks: screen reader, high contrast, reduced motion, and keyboard-only navigation.
 
 ## Verification Commands
