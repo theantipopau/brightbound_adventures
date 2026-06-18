@@ -24,14 +24,30 @@ class _ProfileStatsScreenState extends State<ProfileStatsScreen> {
   }
 
   Future<void> _loadStats() async {
-    final localStorage =
-        Provider.of<LocalStorageService>(context, listen: false);
-    final avatar = await localStorage.getAvatar();
+    try {
+      final localStorage =
+          Provider.of<LocalStorageService>(context, listen: false);
+      final avatar = await localStorage.getAvatar();
+      if (!mounted) return;
 
-    if (avatar != null) {
+      if (avatar == null) {
+        setState(() {
+          _stats = null;
+          _loading = false;
+        });
+        return;
+      }
+
       final stats = await _statsService.getStats(avatar.id);
+      if (!mounted) return;
       setState(() {
         _stats = stats;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _stats = null;
         _loading = false;
       });
     }
@@ -62,7 +78,7 @@ class _ProfileStatsScreenState extends State<ProfileStatsScreen> {
                 child: _loading
                     ? const Center(child: CircularProgressIndicator())
                     : _stats == null
-                        ? const Center(child: Text('No stats available'))
+                        ? _buildEmptyState()
                         : _buildContent(),
               ),
             ],
@@ -81,15 +97,82 @@ class _ProfileStatsScreenState extends State<ProfileStatsScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          const Text(
-            'Your Progress',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          const Expanded(
+            child: Text(
+              'Your Progress',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.94),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.14),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.person_add_alt_1_rounded,
+                    color: AppColors.primary,
+                    size: 36,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'No progress yet',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Create an avatar and finish a quest to start building your progress story.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 15,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

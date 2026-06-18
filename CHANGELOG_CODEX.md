@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-06-19 - Profile Progress Empty-State Fix
+
+- Fixed `ProfileStatsScreen` so it clears loading when no avatar exists instead of showing a spinner indefinitely.
+- Added a centered empty state that explains how progress begins once an avatar and quest exist.
+- Made the profile header title ellipsize safely on narrow screens.
+- Added `test/profile_stats_screen_test.dart` to lock the no-avatar empty state without touching Hive storage.
+
 ## 2026-06-18 - First-Run Interaction and Viewport Smoke Tests
 
 - Added a `Surprise me` avatar creator action that randomizes character, color, starter outfit, and preview animation.
