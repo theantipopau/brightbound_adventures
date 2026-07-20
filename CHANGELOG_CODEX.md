@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-20 - CI: test gate and full-branch coverage (CO-4)
+
+- `build-deploy.yml`: format check now covers `test/` as well as `lib/`, matching the local verification commands.
+- Added a dedicated `test` job (`flutter test`) that gates the web build; `build-web` now depends on `test` passing, not just `analyze`.
+- Pull requests from any branch now trigger CI (previously only `main`/`develop` PRs did), so feature branches get the same signal before merge.
+- Regenerated `.dart_tool/package_config.json` via `flutter pub get`; it had stale absolute paths from a different machine/user (`Charlotte Hurley` profile) that broke `dart format`/`analyze` locally.
+
 ## 2026-07-20 - v2.1 Release Planning Suite
 
 - Added `docs/V2_1_RELEASE_EXECUTION_PLAN.md`: workstreams, task IDs, owners, and a 7-sprint roadmap for the v2.1 "Living World" release.
