@@ -2,6 +2,20 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-20 - v2.1 Release Planning Suite
+
+- Added `docs/V2_1_RELEASE_EXECUTION_PLAN.md`: workstreams, task IDs, owners, and a 7-sprint roadmap for the v2.1 "Living World" release.
+- Added `docs/V2_1_3D_VISUAL_DIRECTION.md`: a self-contained 3D/game-visual spec — pre-rendered 2.5D isometric art direction, asset pipeline, per-zone art bible, and 8 runtime rendering tasks (A3D-1..8) building on the existing `isometric_engine.dart`.
+- Added `docs/V2_1_ROADMAP_TRACKER.md`: the working checklist mapping every sprint task to exact files to create/modify/delete, plus the target end-state directory structure.
+- Repointed `docs/NEXT_STEPS.md` at the tracker as the day-to-day source of truth.
+
+## 2026-06-19 - GitHub README and v2.1 Premium Audit
+
+- Rebuilt the GitHub README with current positioning, colourful badges, live/documentation links, asset galleries, status tables, architecture, verification, deployment, and honest release status.
+- Added `docs/V2_1_PREMIUM_AUDIT_AND_ROADMAP.md`, covering unfinished functionality, a major world-map redesign, visual system, assets, motion, themes, accessibility, content, progression, parent trust, performance, architecture, delivery phases, and acceptance criteria.
+- Designated the audit as the current source of truth in `docs/NEXT_STEPS.md`.
+- Prioritised reachable placeholders, map test gaps, partial semantic-theme adoption, and the active map's monolithic structure as release risks.
+
 ## 2026-06-19 - Profile Progress Empty-State Fix
 
 - Fixed `ProfileStatsScreen` so it clears loading when no avatar exists instead of showing a spinner indefinitely.

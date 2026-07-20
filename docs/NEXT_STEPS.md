@@ -1,68 +1,38 @@
 # BrightBound Adventures - Current Next Steps
 
-**Updated:** June 2026
-**Current health:** `dart format lib test`, `flutter analyze`, `flutter test`, `flutter build web --release`, and the focused startup viewport smoke test are passing after the quiz responsiveness, replayability data-spine, and startup/avatar GUI polish work. The release build still reports known third-party `flutter_tts_web.dart` Wasm dry-run warnings.
+**Updated:** 20 July 2026
+**Source of truth:** [v2.1 Roadmap & File Tracker](V2_1_ROADMAP_TRACKER.md) — the working document with per-task file lists and checkboxes. It is backed by the [Release Execution Plan](V2_1_RELEASE_EXECUTION_PLAN.md) (task definitions, owners), the [3D & Game-Visual Direction Spec](V2_1_3D_VISUAL_DIRECTION.md) (art + rendering detail), and the [Premium Audit](V2_1_PREMIUM_AUDIT_AND_ROADMAP.md) (rationale, acceptance criteria).
 
-## Current Focus
+Start with the Sprint 1 tasks in the execution plan: MO-1 (motion tokens), VS-1 (semantic theme extensions), WM-1 (map safety-net tests), RE-1 (atomic rewards), CO-4 (CI pipeline). A3D-7 (procedural 3D extrusion of the map painters, per the [3D & Game-Visual Direction Spec](V2_1_3D_VISUAL_DIRECTION.md)) can also start immediately for a fast visual win.
 
-The app has most major systems in place: world map, zones, skills, daily challenges, streaks, achievements, parent dashboard, shop, cosmetics, accessibility settings, and spaced repetition. The next phase is not broad feature expansion. It is tightening the core loop so it feels like one polished mini RPG:
+## Immediate priority
 
-`world map -> quest -> practice -> rewards -> character/item progress -> parent insight`
+The next release is a cohesion and completion release:
 
-For the current replayability, RPG progression, visual polish, and performance plan, use:
+1. Establish fresh clean-checkout verification evidence.
+2. Add world-map viewport, theme, state, semantics, and golden coverage.
+3. Introduce semantic design/theme tokens and remove hard-coded UI colours from critical journeys.
+4. Refactor the monolithic map into testable state, layout, widgets, and painter layers.
+5. Turn session history into explainable daily, review, challenge, and boss recommendations.
+6. Unify reward application/reveal so completion visibly changes the character and world.
+7. Remove or intentionally gate every reachable coming-soon/placeholder path.
+8. Verify marketing, curriculum, privacy, accessibility, and platform claims.
 
-- [Replayable RPG Polish Roadmap](REPLAYABLE_RPG_POLISH_ROADMAP.md)
+The full audit defines the world-map v2 experience, light/dark requirements, asset and motion programmes, delivery phases, and release acceptance criteria.
 
-## Immediate Sprint: RPG Loop Stabilization
+## Current product loop
 
-1. Stabilize the dirty worktree
-   - Review the large pending `forum/` deletion separately.
-   - Keep app changes, API config changes, and documentation updates in separate commits.
-   - Do not mix product work with cleanup-only changes.
+`world map - quest - practice - rewards - character/world progress - parent insight`
 
-2. Make the world map the central hub
-   - Keep map controls, quest board, shop, achievements, daily challenges, and mini-games reachable from the map.
-   - Keep zone coordinates inside a safe field that avoids the right quest board and bottom action dock.
-   - Keep the top-left player HUD useful: character identity, level, XP, and a clear path to character rewards.
-   - Manually verify map layout at desktop, tablet landscape, tablet portrait, and phone sizes.
-   - Add a world-map smoke test once the visual layout settles.
+## Verification baseline
 
-3. Connect rewards to the character
-   - Practice completion should clearly award XP/stars.
-   - Stars should feed the Star Shop.
-   - Purchased outfits/accessories should unlock on the avatar and be visible where supported.
-   - Zone completion and level milestones should preview the next item reward.
-
-4. Strengthen test coverage
-   - Keep existing numeracy, tracing, and zone-ID tests.
-   - Add tests for shop purchase behavior and avatar reward ID consistency.
-   - Add widget smoke tests for map rendering, shop route access, avatar creator flow, and parent dashboard access.
-   - Extend the new viewport smoke-test pattern to world map, shop, profile, and parent dashboard once those layouts settle.
-
-5. Refresh documentation
-   - Treat older `PHASE_*` and session docs as historical.
-   - Keep this file and `CHANGELOG_CODEX.md` as the current operational guide.
-   - Update docs after each coherent sprint, not after every tiny edit.
-
-## Next Product Layer
-
-After the RPG loop is stable:
-
-- Active replayability engine using freshness, weak-skill history, and quest goals.
-- Reward previews, post-quest loot reveal, and stronger cosmetic collection loops.
-- More interaction types beyond multiple choice for the skills that need them.
-- Parent weekly summaries, weak-skill recommendations, and goals.
-- Better shop inventory/equip UI.
-- More narrative quests per zone and boss quest templates.
-- More manual accessibility checks: screen reader, high contrast, reduced motion, and keyboard-only navigation.
-
-## Verification Commands
-
-Use the explicit SDK path if Flutter is not on `PATH`:
+Recent work recorded passing format, analyzer, tests, and release web build, with a known third-party `flutter_tts_web` Wasm dry-run warning. Re-run from a clean checkout before treating that record as current evidence:
 
 ```powershell
-& 'F:\Flutter\flutter\bin\dart.bat' format lib test
+& 'F:\Flutter\flutter\bin\dart.bat' format --output=none --set-exit-if-changed lib test
 & 'F:\Flutter\flutter\bin\flutter.bat' analyze
 & 'F:\Flutter\flutter\bin\flutter.bat' test
 & 'F:\Flutter\flutter\bin\flutter.bat' build web --release
 ```
+
+Older `PHASE_*`, session, completion, and roadmap documents are historical context, not current product truth.
