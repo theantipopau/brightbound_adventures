@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'semantic_colors.dart';
+import 'shape_tokens.dart';
+import 'zone_palettes.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // APP COLORS — consistent palette for the whole app
 // ─────────────────────────────────────────────────────────────────────────────
+/// Fixed, light-mode-only colour constants. New code should prefer
+/// `Theme.of(context).extension<SemanticColors>()` (see semantic_colors.dart),
+/// which has values tuned for both light and dark. This class remains for
+/// existing call sites pending the VS-2 migration tracked in the v2.1
+/// roadmap tracker.
 class AppColors {
   // Brand - Vibrant & Playful
   static const Color primary = Color(0xFFFF4081); // Vibrant Pink
@@ -193,6 +201,11 @@ class AppInput {
 // ─────────────────────────────────────────────────────────────────────────────
 // APP MOTION — standard durations and curves for consistent animation feel
 // ─────────────────────────────────────────────────────────────────────────────
+/// Superseded by `MotionTokens` (see motion_tokens.dart), which resolves via
+/// `BuildContext` and collapses to instant/linear under reduced motion —
+/// something these static consts cannot do. Existing call sites migrate to
+/// `MotionTokens.of(context)` as part of the MO-2/MO-3 tasks in the v2.1
+/// roadmap tracker; do not add new call sites here.
 class AppMotion {
   // Durations
   static const Duration micro = Duration(milliseconds: 100);
@@ -282,6 +295,11 @@ class AppShadows {
 // ─────────────────────────────────────────────────────────────────────────────
 // WORLD TOKENS — design tokens per zone for consistent world identity
 // ─────────────────────────────────────────────────────────────────────────────
+/// Zone identity (display name, emoji, ambient particles, subject) plus a
+/// single light-only colour set. For brightness-aware zone colour, prefer
+/// `Theme.of(context).extension<ZonePalettes>().forZone(zoneId)` (see
+/// zone_palettes.dart), which has separately tuned light and dark variants
+/// for the same 8 zones.
 class WorldTokens {
   final String zoneId;
   final String displayName;
@@ -669,6 +687,11 @@ class AppTheme {
           borderRadius: BorderRadius.circular(6),
         ),
       ),
+      extensions: const [
+        SemanticColors.light,
+        ZonePalettes.light,
+        ShapeTokens.standard,
+      ],
     );
   }
 
@@ -802,6 +825,11 @@ class AppTheme {
           borderRadius: BorderRadius.circular(6),
         ),
       ),
+      extensions: const [
+        SemanticColors.dark,
+        ZonePalettes.dark,
+        ShapeTokens.standard,
+      ],
     );
   }
 }

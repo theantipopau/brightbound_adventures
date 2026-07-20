@@ -163,6 +163,7 @@ DELETED by end of release:
   - CREATE `lib/ui/components/pressable.dart` (press scale 0.96 + shadow drop + optional haptic/sound, tokens from MO-1).
   - MODIFY `lib/ui/widgets/juicy_button.dart` (rebuild on Pressable), `animated_answer_option.dart` (press-down, correct-bounce, wrong-shake via tokens).
   - Done when: buttons/answers across literacy+numeracy screens share one behaviour.
+  - Known debt from MO-1 (confirmed by grep, 2026-07-20): `AppMotion` (the static duration/curve consts in `app_theme.dart`, now doc-marked superseded) is still used in 10 files — `numeracy_game.dart`, `multiple_choice_game.dart`, `science_game.dart`, `responsive_quiz_layout.dart`, `animated_answer_option.dart`, `skill_widgets.dart`, `quiz_widgets.dart`, `juicy_button.dart`, `glowing_card.dart`, `animated_score_counter.dart`. Migrate these to `MotionTokens.of(context)` as part of this task.
 - [ ] **WM-2 · WorldMapViewModel extraction** — [plan §4B]
   - CREATE `lib/features/world_map/models/{world_map_view_model,zone_view_state,quest_lens_model}.dart`, `services/map_scene_builder.dart`, `test/world_map/world_map_view_model_test.dart`.
   - MODIFY `lib/ui/screens/world_map_screen.dart` — monolith now *reads* the view model; all provider reads move to the top.
@@ -170,6 +171,7 @@ DELETED by end of release:
 - [ ] **VS-2 (start) · Colour inventory** — [plan §4E]
   - CREATE `test/tools/color_inventory_test.dart` (counts `Color(0x`, `Colors.` per file; asserts per-file budget with a committed allowlist that only shrinks).
   - Done when: inventory report is in CI output; baseline recorded here: `_____ direct colours`.
+  - Known debt from VS-1 (confirmed by grep, 2026-07-20): 58 occurrences of `AppColors.textPrimary`/`textSecondary`/`surface` across 13 files bypass brightness entirely, incl. `avatar_creator_screen.dart` (15), `world_map_screen.dart` (5), `skill_widgets.dart` (5), `animated_answer_option.dart` (5), `zone_detail_screen.dart` (4). These are exactly the call sites `SemanticColors`/`ZonePalettes` (VS-1) exist to replace.
 - [ ] **WM-7 (start, art track) · Art bible + global asset set** — [3D spec §4–5]
   - CREATE `assets/art/PROMPTS.md`, first global assets under `assets/images/map/{islands,routes,sky}/`, `assets/map_manifest.json` (schema per 3D spec §4.4).
   - MODIFY `pubspec.yaml` (asset folders).

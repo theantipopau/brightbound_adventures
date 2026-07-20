@@ -2,6 +2,15 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-20 - Semantic theme extensions (VS-1)
+
+- Added `lib/ui/themes/semantic_colors.dart`: `SemanticColors` `ThemeExtension` with light/dark values for success/warning/info/reward, text tones, correct/incorrect feedback, and subtle/disabled surfaces. Dark values are tonally separated (own dark palette), not the light palette darkened by alpha.
+- Added `lib/ui/themes/zone_palettes.dart`: `ZonePalettes` `ThemeExtension` with light/dark primary/secondary/glow/route colours for all 8 zones, keyed by the snake_case zone ids already used by `skill_database.dart`/`player_stats.dart`/`daily_challenge.dart` (`word_woods`, `number_nebula`, ...). `forZone()` normalizes kebab-case input too.
+- Added `lib/ui/themes/shape_tokens.dart`: `ShapeTokens` extension mirroring the existing `AppBorders`/`AppSpacing` constants, so the future component kit (VS-3) can read radii/spacing/elevation the same way it reads colours.
+- Registered all three extensions on both `AppTheme.lightTheme()` and `darkTheme()`.
+- Marked `AppColors`, `AppMotion`, and `WorldTokens` in `app_theme.dart` with doc comments pointing at their replacements; a grep confirms 58 existing call sites still read `AppColors.textPrimary`/`textSecondary`/`surface` directly, bypassing brightness — that migration is scoped to VS-2 (Sprint 2+), not this task.
+- Discovered `AppMotion` was already in active use in 10 files; it cannot be reduced-motion-aware (static consts, no `BuildContext`), which is exactly why `MotionTokens` (MO-1) exists. Call-site migration is scoped to MO-2/MO-3.
+
 ## 2026-07-20 - Motion tokens (MO-1)
 
 - Added `lib/ui/themes/motion_tokens.dart`: named durations (instant/quick/standard/emphasised/celebration), named curves (standard/enter/exit/bounce/elastic), and press/hover distances, all resolved via `MotionTokens.of(context)`.
