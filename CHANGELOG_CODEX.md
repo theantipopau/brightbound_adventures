@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-20 - Motion tokens (MO-1)
+
+- Added `lib/ui/themes/motion_tokens.dart`: named durations (instant/quick/standard/emphasised/celebration), named curves (standard/enter/exit/bounce/elastic), and press/hover distances, all resolved via `MotionTokens.of(context)`.
+- Reduced motion is resolved through the existing `MediaQuery.disableAnimations` flag (already combines platform preference and the in-app accessibility toggle in `main.dart`) rather than re-reading `VisualAccessibilityService` directly, so there is exactly one source of truth.
+- Celebration timing intentionally collapses to `standard` (not zero) under reduced motion, since reward-reveal sequences carry information, not just decoration.
+- New animation code should consume these tokens instead of hard-coding `Duration`/`Curve` literals; this is the foundation the transition kit, juice pass, and reward reveal (MO-2..4) build on.
+
 ## 2026-07-20 - CI: test gate and full-branch coverage (CO-4)
 
 - `build-deploy.yml`: format check now covers `test/` as well as `lib/`, matching the local verification commands.
