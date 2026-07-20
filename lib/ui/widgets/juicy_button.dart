@@ -302,14 +302,22 @@ class _JuicyButtonState extends State<JuicyButton>
           Icon(widget.icon, color: textColor, size: widget.fontSize + 4),
           const SizedBox(width: 8),
         ],
-        Text(
-          widget.label,
-          style: TextStyle(
-            fontFamily: AppTheme.fontPrimary,
-            fontSize: widget.fontSize,
-            fontWeight: FontWeight.w700,
-            color: textColor,
-            letterSpacing: 0.4,
+        // Flexible + ellipsis so a narrow fixed-size button (icon-dock
+        // style usage) shrinks the label instead of overflowing its
+        // bounds — mainAxisSize.min alone does not let Row content
+        // shrink below its natural width.
+        Flexible(
+          child: Text(
+            widget.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: AppTheme.fontPrimary,
+              fontSize: widget.fontSize,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+              letterSpacing: 0.4,
+            ),
           ),
         ),
       ],

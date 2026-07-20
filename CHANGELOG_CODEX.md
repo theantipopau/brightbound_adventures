@@ -2,6 +2,18 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-20 - World map safety-net tests + real bug fixes found by them (WM-1)
+
+- Added `test/world_map/world_map_regression_test.dart`: 18 tests (3 viewports x 2 themes x 3 checks) covering `WorldMapScreen` renders without exceptions, shows HUD/zone/quest content, and exposes accessible zone semantics. Recorded *before* the WM-2..WM-6 map rebuild so that work has a regression net.
+- Scope note: does not use `matchesGoldenFile` pixel comparison — CI runs on ubuntu-latest while this suite was authored on Windows, and font/AA differences would likely fail a Windows-baselined golden on first CI run for reasons unrelated to real regressions. Pixel goldens should be baselined from the CI runner as a fast-follow.
+- Writing this test surfaced and fixed a real crash: `_ZoneIslandState`'s keyboard-navigation focus halo used `Container(margin: EdgeInsets.all(-(16 * pulse)))`, which is *always* negative and therefore always fails `Container`'s `margin.isNonNegative` assertion — the app would crash in debug mode any time a zone had keyboard focus (which happens on initial map load via autofocus). Fixed by replacing the negative margin with `Transform.scale` (`world_map_screen.dart`).
+- Fixed two real `RenderFlex` overflows: `JuicyButton`'s label wasn't `Flexible` (`juicy_button.dart`), and the "Quest reward" preview row's label wasn't `Flexible` (`world_map_screen.dart`) — both now ellipsize instead of overflowing when their container is narrow.
+- Shaved two small fixed gaps (6px→4px) in the zone-card icon column that were causing sub-2px `RenderFlex` bottom overflows at certain viewport/scale combinations.
+- Two pre-existing overflows remain, explicitly allowlisted in the test by exact size + message (so anything new or larger still fails):
+  1. A 1.00px hairline overflow at the 1366x768 desktop breakpoint (non-compact layout branch) — debug-assertion-only, invisible in release builds, not worth patching blindly without knowing which of many Columns is 1px too tall.
+  2. A ~176px overflow in the top HUD Row at the 360x640 phone breakpoint — the top HUD packs a player chip, 3 nav buttons, and 4 stat badges into one non-`Flexible` Row with no width budget. This is not a small patch; it is *exactly* the P0 acceptance criterion ("no overlap/clipping at 360x640") that task **WM-4** (three-region responsive shell) exists to fix properly. Redesigning the HUD ahead of that rebuild risks new bugs in a screen about to be replaced. This allowlist entry should be deleted the moment WM-4 lands.
+- Fixed an unrelated test-scaffolding bug found while building the harness: `CosmeticUnlockService` is a process-wide singleton (`factory` constructor); providing it via `ChangeNotifierProvider(create: ...)` instead of `.value(value: ...)` caused Provider to call `dispose()` on the shared singleton when the first test's tree unmounted, permanently poisoning it for every test that ran afterward in the same process. This is a trap any test touching `CosmeticUnlockService` or `AudioManager` (also a singleton) can hit.
+
 ## 2026-07-20 - Semantic theme extensions (VS-1)
 
 - Added `lib/ui/themes/semantic_colors.dart`: `SemanticColors` `ThemeExtension` with light/dark values for success/warning/info/reward, text tones, correct/incorrect feedback, and subtle/disabled surfaces. Dark values are tonally separated (own dark palette), not the light palette darkened by alpha.

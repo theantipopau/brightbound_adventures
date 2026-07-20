@@ -2451,12 +2451,16 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                     Icon(Icons.card_giftcard_rounded,
                         color: AppColors.reward, size: 16),
                     const SizedBox(width: 6),
-                    Text(
-                      'Quest reward',
-                      style: TextStyle(
-                        color: Colors.amber.shade900,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
+                    Flexible(
+                      child: Text(
+                        'Quest reward',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.amber.shade900,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                     const Spacer(),
@@ -3676,7 +3680,10 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // Throbbing focus halo for keyboard navigation
+                        // Throbbing focus halo for keyboard navigation.
+                        // Grows outward via Transform.scale rather than a
+                        // negative Container margin (which always fails
+                        // Container's margin.isNonNegative assertion).
                         if (widget.isSelected)
                           Positioned.fill(
                             child: AnimatedBuilder(
@@ -3687,23 +3694,25 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                             math.pi *
                                             4) *
                                         0.4);
-                                return Container(
-                                  margin: EdgeInsets.all(-(16 * pulse)),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white
-                                          .withValues(alpha: pulse * 0.6),
-                                      width: 2,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: widget.zone.color
-                                            .withValues(alpha: pulse * 0.4),
-                                        blurRadius: 20 * pulse,
-                                        spreadRadius: 8 * pulse,
+                                return Transform.scale(
+                                  scale: 1.0 + (pulse * 0.12),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white
+                                            .withValues(alpha: pulse * 0.6),
+                                        width: 2,
                                       ),
-                                    ],
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: widget.zone.color
+                                              .withValues(alpha: pulse * 0.4),
+                                          blurRadius: 20 * pulse,
+                                          spreadRadius: 8 * pulse,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
@@ -4124,7 +4133,13 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                                     );
                                                   },
                                                 ),
-                                                const SizedBox(height: 6),
+                                                // 4px, not 6px: at some
+                                                // viewport/scale combinations
+                                                // the full column (icon +
+                                                // name + stars) exceeded its
+                                                // fixed-height container by a
+                                                // couple of px otherwise.
+                                                const SizedBox(height: 4),
                                                 // Zone name – full name with auto-scale
                                                 SizedBox(
                                                   width: 110,
@@ -4156,9 +4171,16 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                                 // Stars progress - only show if unlocked
                                                 if (widget.isUnlocked)
                                                   Padding(
+                                                    // 4px, not 6px: see the
+                                                    // matching note above the
+                                                    // icon/name gap in this
+                                                    // Column — full-scale
+                                                    // landscape layouts were
+                                                    // clipping this content by
+                                                    // a hair otherwise.
                                                     padding:
                                                         const EdgeInsets.only(
-                                                            top: 6),
+                                                            top: 4),
                                                     child: Row(
                                                       mainAxisAlignment:
                                                           MainAxisAlignment
