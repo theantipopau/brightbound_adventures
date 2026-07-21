@@ -53,6 +53,8 @@ void main() async {
             value: registry.themeMode),
         ChangeNotifierProvider<VisualAccessibilityService>.value(
             value: registry.visualAccessibility),
+        ChangeNotifierProvider<RewardTransactionService>.value(
+            value: registry.rewardTransactions),
       ],
       child: const BrightBoundApp(),
     ),

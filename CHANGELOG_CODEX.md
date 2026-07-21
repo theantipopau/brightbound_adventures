@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-20 - Atomic reward transaction service (RE-1, foundation only)
+
+- Added `lib/core/services/reward_transaction_service.dart`: `RewardTransactionService.apply(QuestOutcome) -> RewardResult` applies XP/level, stars (via `ShopService`), streak (via `StreakService`), and achievement/cosmetic unlock detection as one operation, idempotent by `outcomeId`. Persists to SharedPreferences *before* returning, so a killed-and-relaunched app replays the same result instead of re-earning anything — verified directly in `test/services/reward_transaction_test.dart` by constructing a second service instance against the same prefs.
+- Modified `ShopService.awardStarsForActivity` to return the star count awarded (`Future<int>`, was `Future<void>`); confirmed backward-compatible (all 3 existing callers discard the return value).
+- Registered via `ServiceRegistry`/`main.dart` alongside the other app-lifetime services.
+- **Explicitly not done in this pass:** rerouting existing quest-completion call sites to use the new service. Attempted to migrate the literacy results screen and discovered `skill_practice_screen.dart` and `quiz_results_screen.dart` each run their *own independent* achievement/streak/daily-challenge tracking for the same quiz completion — two divergent fragmented paths, not one. Reconciling both safely is real work that deserves its own focused pass with proper before/after verification, not a bolt-on to this task. Tracked as part of Sprint 5's IN-7/MO-4, which already touch these screens for session pacing and reward reveal.
+
 ## 2026-07-20 - World map safety-net tests + real bug fixes found by them (WM-1)
 
 - Added `test/world_map/world_map_regression_test.dart`: 18 tests (3 viewports x 2 themes x 3 checks) covering `WorldMapScreen` renders without exceptions, shows HUD/zone/quest content, and exposes accessible zone semantics. Recorded *before* the WM-2..WM-6 map rebuild so that work has a regression net.

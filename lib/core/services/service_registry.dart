@@ -24,6 +24,7 @@ class ServiceRegistry {
   late QuestSessionHistoryService _questSessionHistory;
   late ThemeModeService _themeMode;
   late VisualAccessibilityService _visualAccessibility;
+  late RewardTransactionService _rewardTransactions;
 
   LocalStorageService get storage => _storage;
   AchievementService get achievements => _achievements;
@@ -41,6 +42,7 @@ class ServiceRegistry {
   QuestSessionHistoryService get questSessionHistory => _questSessionHistory;
   ThemeModeService get themeMode => _themeMode;
   VisualAccessibilityService get visualAccessibility => _visualAccessibility;
+  RewardTransactionService get rewardTransactions => _rewardTransactions;
 
   Future<void> initializeAll() async {
     _storage = LocalStorageService();
@@ -88,5 +90,12 @@ class ServiceRegistry {
 
     _visualAccessibility = VisualAccessibilityService();
     await _visualAccessibility.initialize();
+
+    _rewardTransactions = RewardTransactionService(
+      shop: _shop,
+      achievements: _achievements,
+      streak: _streak,
+      cosmeticUnlock: _cosmeticUnlock,
+    );
   }
 }

@@ -161,8 +161,9 @@ class ShopService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Award stars for completing activities
-  Future<void> awardStarsForActivity({
+  /// Award stars for completing activities. Returns the number of stars
+  /// awarded so callers (e.g. `RewardTransactionService`) can report it.
+  Future<int> awardStarsForActivity({
     required int score,
     required int maxScore,
     required double accuracy,
@@ -181,5 +182,7 @@ class ShopService extends ChangeNotifier {
     if (stars > 0) {
       await addStars(stars);
     }
+
+    return stars;
   }
 }

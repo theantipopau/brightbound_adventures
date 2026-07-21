@@ -25,3 +25,4 @@ export 'ai_question_service.dart';
 export 'theme_mode_service.dart';
 export 'quiz_preferences_service.dart';
 export 'visual_accessibility_service.dart';
+export 'reward_transaction_service.dart';
