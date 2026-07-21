@@ -2,6 +2,16 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-21 - Synced `main` with Sprint 1 work; fixed real CI failures found by watching it run
+
+- Fast-forward merged `codex/rpg-map-ui-loop` into `main` (main was 19 commits behind, cleanly ancestor-of, no divergence) and pushed, so the GitHub repo's default branch/README now reflects the rebuilt README, all v2.1 planning docs, and Sprint 1's code changes instead of the pre-audit state.
+- Watching the resulting `Build & Deploy` Actions run surfaced two real, previously-failing issues (the two most recent runs on `main` before this had also failed, for the same reasons — not something this session introduced, just newly visible):
+  1. `actions/upload-artifact@v3`/`download-artifact@v3` are hard-blocked by GitHub now ("automatically failed because it uses a deprecated version"), not just deprecated — this was failing the `Build Web`/`Build Android`/`Build iOS` jobs outright. Bumped all to `@v4` in `.github/workflows/build-deploy.yml`.
+  2. `wrangler` requires Node >= 20; the workflow's `setup-node` steps were pinned to `'18'`. Bumped to `'20'` (and `setup-node` itself from `@v3` to `@v4`).
+  3. `Format check` had been failing on `main` prior to this session (`dart format --set-exit-if-changed lib`, no `test/`) — already fixed by the CO-4 change in this session's Sprint 1 work; confirmed the `Analyze` job now passes on the real runner.
+- **Still failing, not fixable from code:** `Deploy Website to Cloudflare Pages` fails because `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` repo secrets are empty. `Deploy Flutter Game` will hit the same wall. These need to be set in the repo's Settings -> Secrets and variables -> Actions by someone with admin access; not something fixable in this session.
+- Verified the rebuilt README's links resolve: the live-demo badge (`playbrightbound.matthurley.dev`) loads, and the `docs/V2_1_PREMIUM_AUDIT_AND_ROADMAP.md`/`CHANGELOG_CODEX.md` relative links resolve correctly on GitHub's `main` branch view.
+
 ## 2026-07-20 - Procedural 3D map painter upgrade (A3D-7) + stale SDK path fix
 
 - Upgraded `lib/ui/painters/terrain_painter.dart`: each zone island is now an extruded isometric platform (24px thickness) with two shaded side faces (HSL lightness -16%/-26%, faking a top-left light source), a rounded bottom seam, a tight ambient-occlusion ellipse under the extrusion, and a darker rim inset on the top face — replacing the previous flat rhombus-plus-glow look. Zero new assets required.
