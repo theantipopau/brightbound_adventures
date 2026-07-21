@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Custom page route with fade and slide transitions
+/// Custom page route with fade and slide transitions.
+///
+/// Superseded for new call sites by the semantic routes in `app_routes.dart`
+/// (`ZoneEntryRoute`/`SheetRoute`/`CelebrationRoute`), which read timing
+/// from `MotionTokens` and handle reduced motion automatically. Existing
+/// call sites migrate incrementally; this stays available in the meantime.
 class FadeSlidePageRoute<T> extends PageRouteBuilder<T> {
   final Widget page;
   final Duration duration;
@@ -173,142 +178,5 @@ class _BrightBoundLoadingState extends State<BrightBoundLoading>
         ],
       ),
     );
-  }
-}
-
-/// Answer feedback animation - confetti for correct, shake for incorrect
-class AnswerFeedbackAnimation extends StatefulWidget {
-  final bool isCorrect;
-  final Widget child;
-  final VoidCallback? onComplete;
-
-  const AnswerFeedbackAnimation({
-    super.key,
-    required this.isCorrect,
-    required this.child,
-    this.onComplete,
-  });
-
-  @override
-  State<AnswerFeedbackAnimation> createState() =>
-      _AnswerFeedbackAnimationState();
-}
-
-class _AnswerFeedbackAnimationState extends State<AnswerFeedbackAnimation>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: Duration(milliseconds: widget.isCorrect ? 600 : 400),
-      vsync: this,
-    );
-
-    if (widget.isCorrect) {
-      // Bounce animation for correct
-      _animation = TweenSequence<double>([
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 1.0, end: 1.2)
-              .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 30,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 1.2, end: 0.95)
-              .chain(CurveTween(curve: Curves.easeIn)),
-          weight: 30,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 0.95, end: 1.0)
-              .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 40,
-        ),
-      ]).animate(_controller);
-    } else {
-      // Shake animation for incorrect
-      _animation = TweenSequence<double>([
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 0.0, end: 10.0),
-          weight: 25,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 10.0, end: -10.0),
-          weight: 25,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: -10.0, end: 5.0),
-          weight: 25,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 5.0, end: 0.0),
-          weight: 25,
-        ),
-      ]).animate(_controller);
-    }
-
-    _controller.forward().then((_) {
-      widget.onComplete?.call();
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        if (widget.isCorrect) {
-          return Transform.scale(
-            scale: _animation.value,
-            child: child,
-          );
-        } else {
-          return Transform.translate(
-            offset: Offset(_animation.value, 0),
-            child: child,
-          );
-        }
-      },
-      child: widget.child,
-    );
-  }
-}
-
-/// Responsive helper for desktop layouts
-class ResponsiveHelper {
-  static bool isDesktop(BuildContext context) {
-    return MediaQuery.of(context).size.width >= 1200;
-  }
-
-  static bool isTablet(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    return width >= 768 && width < 1200;
-  }
-
-  static bool isMobile(BuildContext context) {
-    return MediaQuery.of(context).size.width < 768;
-  }
-
-  static double getResponsivePadding(BuildContext context) {
-    if (isDesktop(context)) return 48;
-    if (isTablet(context)) return 32;
-    return 16;
-  }
-
-  static double getMaxContentWidth(BuildContext context) {
-    if (isDesktop(context)) return 1200;
-    return double.infinity;
-  }
-
-  static EdgeInsets getResponsiveInsets(BuildContext context) {
-    final padding = getResponsivePadding(context);
-    return EdgeInsets.symmetric(horizontal: padding);
   }
 }

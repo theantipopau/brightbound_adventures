@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-21 - Shared transition kit (MO-2)
+
+- Added `lib/ui/transitions/app_routes.dart`: `ZoneEntryRoute` (scale-up entry, from a tapped element's `originRect` if given, else center), `SheetRoute` (modal-feeling slide-up with a spring overshoot), `CelebrationRoute` (bigger playful scale+fade, for reward reveals). All three read `MotionTokens.of(context)` from the pushing context, so reduced motion is handled automatically. Tests in `test/ui/transitions/app_routes_test.dart` (4 tests) cover navigation for each route plus a reduced-motion completion case.
+- Moved `lib/ui/widgets/transitions.dart` to `lib/ui/transitions/transitions.dart`. While moving it, deleted two confirmed-dead classes it contained: `AnswerFeedbackAnimation` and a duplicate `ResponsiveHelper` (a same-named, unrelated class already exists and is actively used at `lib/core/utils/responsive_helper.dart`) — grepped the whole of `lib/` first to confirm neither had any consumer.
+- Migrated every real ad-hoc `PageRouteBuilder` and semantically-fitting `FadeSlidePageRoute` call site to the new kit: the one true ad-hoc route (`mini_games_screen.dart`'s game launch) and 9 `FadeSlidePageRoute` call sites across `world_map_screen.dart`/`zone_detail_screen.dart` — modal-feeling navigations (profile, settings, parent dashboard, achievements) to `SheetRoute`; activity/quest entries (boss battle, practice screens, mini-games menu, daily challenges) to `ZoneEntryRoute`.
+- Left `main.dart`'s `onGenerateRoute` catch-all on `FadeSlidePageRoute`: it has no `BuildContext` to resolve `MotionTokens` from (`onGenerateRoute: (settings) => ...` doesn't receive one), and mixes both zone-entry and modal-style destinations in one generic handler. `FadeSlidePageRoute` now lives in the transitions folder, so this still satisfies "no ad-hoc `PageRouteBuilder` outside `lib/ui/transitions/`" — it just isn't using a *semantic* route yet.
+
 ## 2026-07-21 - Synced `main` with Sprint 1 work; fixed real CI failures found by watching it run
 
 - Fast-forward merged `codex/rpg-map-ui-loop` into `main` (main was 19 commits behind, cleanly ancestor-of, no divergence) and pushed, so the GitHub repo's default branch/README now reflects the rebuilt README, all v2.1 planning docs, and Sprint 1's code changes instead of the pre-audit state.

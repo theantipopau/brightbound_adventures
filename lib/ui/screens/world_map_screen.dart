@@ -15,7 +15,7 @@ import 'package:brightbound_adventures/ui/widgets/visual_effects/adventure_patte
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_score_counter.dart';
-import 'package:brightbound_adventures/ui/widgets/transitions.dart';
+import 'package:brightbound_adventures/ui/transitions/app_routes.dart';
 import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
 import 'package:brightbound_adventures/ui/screens/daily_challenge_screen.dart';
 import 'package:brightbound_adventures/ui/screens/mini_games_screen.dart';
@@ -1425,8 +1425,10 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       child: GestureDetector(
                         onTap: () => Navigator.push(
                           context,
-                          FadeSlidePageRoute(
-                              page: const DailyChallengeScreen()),
+                          ZoneEntryRoute(
+                            context: context,
+                            builder: (context) => const DailyChallengeScreen(),
+                          ),
                         ),
                         child: Container(
                           margin: const EdgeInsets.only(right: 12),
@@ -2975,30 +2977,33 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   void _showProfileStats() {
     Navigator.push(
       context,
-      FadeSlidePageRoute(page: const ProfileStatsScreen()),
+      SheetRoute(
+          context: context, builder: (context) => const ProfileStatsScreen()),
     );
   }
 
   void _showSettings() {
     Navigator.push(
       context,
-      FadeSlidePageRoute(page: const SettingsScreen()),
+      SheetRoute(
+          context: context, builder: (context) => const SettingsScreen()),
     );
   }
 
   void _showParentDashboard() {
     Navigator.push(
       context,
-      FadeSlidePageRoute(page: const ParentDashboardScreen()),
+      SheetRoute(
+          context: context,
+          builder: (context) => const ParentDashboardScreen()),
     );
   }
 
   void _showMiniGamesMenu() {
     Navigator.push(
       context,
-      FadeSlidePageRoute(
-        page: const MiniGamesScreen(),
-      ),
+      ZoneEntryRoute(
+          context: context, builder: (context) => const MiniGamesScreen()),
     );
   }
 
@@ -3092,8 +3097,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   void _showDailyChallenges() {
     Navigator.push(
       context,
-      FadeSlidePageRoute(
-        page: const DailyChallengeScreen(),
+      ZoneEntryRoute(
+        context: context,
+        builder: (context) => const DailyChallengeScreen(),
       ),
     );
   }
@@ -3101,8 +3107,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   void _showAchievements() {
     Navigator.push(
       context,
-      FadeSlidePageRoute(
-        page: const TrophyRoomScreen(),
+      SheetRoute(
+        context: context,
+        builder: (context) => const TrophyRoomScreen(),
       ),
     );
   }

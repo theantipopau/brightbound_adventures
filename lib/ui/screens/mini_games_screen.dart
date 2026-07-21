@@ -7,6 +7,7 @@ import 'package:brightbound_adventures/features/mini_games/word_search_game.dart
 
 import 'package:brightbound_adventures/ui/widgets/visual_effects/particle_background.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/screen_shaker.dart';
+import 'package:brightbound_adventures/ui/transitions/app_routes.dart';
 
 /// Improved Mini Games Screen with enhanced GUI and better gameplay
 class MiniGamesScreen extends StatefulWidget {
@@ -493,20 +494,9 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
   void _launchGame(BuildContext context, String gameType) {
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            GameScreen(gameType: gameType),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(1.0, 0.0);
-          const end = Offset.zero;
-          const curve = Curves.easeInOut;
-          var tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
+      ZoneEntryRoute(
+        context: context,
+        builder: (context) => GameScreen(gameType: gameType),
       ),
     );
   }

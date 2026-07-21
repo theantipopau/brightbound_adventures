@@ -161,10 +161,10 @@ DELETED by end of release:
 
 *Sequence: MO-2 → MO-3 any time; WM-2 before Sprint 3. Art track starts in parallel.*
 
-- [ ] **MO-2 · Shared transition kit** — [plan §4A]
-  - CREATE `lib/ui/transitions/app_routes.dart` (`ZoneEntryRoute` scale-from-node, `SheetRoute` spring slide, `CelebrationRoute`). MOVE `lib/ui/widgets/transitions.dart` → `lib/ui/transitions/`.
-  - MODIFY every `Navigator.push` call site using bespoke `PageRouteBuilder`s (grep `PageRouteBuilder` across `lib/`) to use the kit.
-  - Done when: zero ad-hoc `PageRouteBuilder` outside `lib/ui/transitions/`.
+- [x] **MO-2 · Shared transition kit** — [plan §4A] — done 2026-07-21
+  - CREATED `lib/ui/transitions/app_routes.dart` (`ZoneEntryRoute`/`SheetRoute`/`CelebrationRoute`, all `MotionTokens`-driven). MOVED `lib/ui/widgets/transitions.dart` → `lib/ui/transitions/transitions.dart`, dropping 2 confirmed-dead classes (`AnswerFeedbackAnimation`, a duplicate unused `ResponsiveHelper`) found while moving it.
+  - MODIFIED the one real ad-hoc `PageRouteBuilder` (`mini_games_screen.dart`) and 9 `FadeSlidePageRoute` call sites across `world_map_screen.dart`/`zone_detail_screen.dart` to use the new semantic routes.
+  - Done-when met with one documented exception: `main.dart`'s `onGenerateRoute` catch-all still uses `FadeSlidePageRoute` (now living in `lib/ui/transitions/`, so technically not "ad-hoc" or "outside" the folder) because `onGenerateRoute` receives no `BuildContext` to resolve `MotionTokens` from. Follow-up if this matters later: thread a context through (e.g. a navigator observer or restructuring route generation inside a `Builder`).
 - [ ] **MO-3 · Juice pass / Pressable** — [plan §4A]
   - CREATE `lib/ui/components/pressable.dart` (press scale 0.96 + shadow drop + optional haptic/sound, tokens from MO-1).
   - MODIFY `lib/ui/widgets/juicy_button.dart` (rebuild on Pressable), `animated_answer_option.dart` (press-down, correct-bounce, wrong-shake via tokens).

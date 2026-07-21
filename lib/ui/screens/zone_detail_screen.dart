@@ -219,8 +219,9 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                     child: GestureDetector(
                       onTap: () => Navigator.push(
                         context,
-                        FadeSlidePageRoute(
-                          page: const BossBattleScreen(),
+                        ZoneEntryRoute(
+                          context: context,
+                          builder: (context) => const BossBattleScreen(),
                         ),
                       ),
                       child: Container(
@@ -1151,7 +1152,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
 
     Navigator.push(
       context,
-      FadeSlidePageRoute(page: practiceScreen),
+      ZoneEntryRoute(context: context, builder: (context) => practiceScreen),
     );
   }
 }
