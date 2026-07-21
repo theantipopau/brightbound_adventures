@@ -14,10 +14,10 @@
 4. **Verify before PR** (every task, no exceptions):
 
 ```powershell
-& 'F:\Flutter\flutter\bin\dart.bat' format --output=none --set-exit-if-changed lib test
-& 'F:\Flutter\flutter\bin\flutter.bat' analyze
-& 'F:\Flutter\flutter\bin\flutter.bat' test
-& 'F:\Flutter\flutter\bin\flutter.bat' build web --release   # release-touching tasks only
+& 'E:\Flutter\flutter\bin\dart.bat' format --output=none --set-exit-if-changed lib test
+& 'E:\Flutter\flutter\bin\flutter.bat' analyze
+& 'E:\Flutter\flutter\bin\flutter.bat' test
+& 'E:\Flutter\flutter\bin\flutter.bat' build web --release   # release-touching tasks only
 ```
 
 5. **Tick the box here, note the date + PR** in the same commit as the merge.
@@ -147,9 +147,11 @@ DELETED by end of release:
   - MODIFIED `lib/core/services/service_registry.dart` + `lib/main.dart` to construct/provide it. MODIFIED `lib/core/services/shop_service.dart`: `awardStarsForActivity` now returns the star count it awarded (`Future<int>`, was `Future<void>`) so the transaction can report it — backward compatible, all 3 existing callers already discarded the return value.
   - **NOT done: call-site migration.** Investigated migrating `lib/features/literacy/widgets/quiz_results_screen.dart` (the most complete example) and found the fragmentation is worse than the audit's description implies: `lib/features/literacy/screens/skill_practice_screen.dart`'s `_onGameComplete()` *already* does its own independent achievement (`achievementService.updateProgress('achievement_stars_25', ...)` etc.) and daily-challenge tracking *before* `QuizResultsScreen` even mounts and runs its *separate* `_processResults()` (which calls the differently-named `trackQuestionAnswered`/`trackPerfectScore`). These are two divergent reward-tracking code paths for one quiz completion, not one. Reconciling them safely needs to be understood and tested as its own task — attempting it as a bolt-on here, in a screen with zero existing reward-flow tests, risked a real regression for no Sprint-1-scoped benefit. **Follow-up:** this reconciliation naturally belongs to **IN-7** (session pacing) and **MO-4** (reward reveal) in Sprint 5, which already touch these same screens — do the migration there, not as a standalone task.
   - Done-when items not yet met: "no screen mutates stars/XP/streak directly" — still false; grep still finds direct `avatarProvider.addExperience`/`shopService.awardStarsForActivity`/`achievementService.updateProgress` calls in `quiz_results_screen.dart`, `skill_practice_screen.dart`, `numeracy_results_screen.dart`, `science_results_screen.dart`, `boss_battle_screen.dart`, `logic_practice_screen.dart`, `motor_practice_screen.dart`, `story_practice_screen.dart`.
-- [ ] **A3D-7 · Procedural 3D painter upgrade** — [3D spec §6/A3D-7](V2_1_3D_VISUAL_DIRECTION.md)
-  - MODIFY `lib/ui/painters/terrain_painter.dart` (extruded platforms: lit top face, −25%/−40% side faces, 24 px thickness, rounded corners, AO ellipse), `lib/ui/painters/path_painter.dart` (nodes get same treatment).
-  - Done when: WM-1 goldens intentionally re-recorded with the new look; before/after screenshot in PR.
+- [x] **A3D-7 · Procedural 3D painter upgrade** — [3D spec §6/A3D-7](V2_1_3D_VISUAL_DIRECTION.md) — done 2026-07-20
+  - MODIFIED `lib/ui/painters/terrain_painter.dart`: each zone island's top-face diamond now sits on an extruded 24px platform with two side faces (HSL lightness −16%/−26% for left/right, faking a top-left light source), a rounded bottom seam, a tighter AO ellipse under the extrusion (in addition to the existing ambient glow), and a darker rim inset on the top face.
+  - MODIFIED `lib/ui/painters/path_painter.dart`: the animated travel dots get a small offset drop-shadow + top-left highlight (glossy "bead" look) instead of a flat filled circle — the lightweight version of "path nodes get the same treatment," since this codebase doesn't yet have discrete stamped route nodes (that's part of the WM-3/WM-6 route rebuild).
+  - **Not done: before/after screenshot.** Could not capture one — `flutter run -d web-server` served the app cleanly (asset requests 200 OK, no console/server errors) but the Browser-pane `computer screenshot` tool itself timed out repeatedly, including on a freshly opened tab, which points at an environment/tool limitation rather than an app problem. Confidence instead comes from: `flutter analyze` clean, the full 66-test suite passing (including the WM-1 structural regression tests, which exercise `TerrainPainter` through `WorldMapScreen` and assert no render exceptions), and the extrusion math being plain vertex geometry with no external unknowns. **Follow-up:** grab a real screenshot/recording next time a working browser/device is available, for the PR record and to sanity-check the visual proportions (24px depth, corner radius) against the art direction in the 3D spec.
+  - Added `.claude/launch.json` (`flutter run -d web-server --web-port 5959`) so future sessions can preview the app via the `run` skill / Browser pane without rediscovering the Flutter SDK path.
 
 **Sprint exit:** CI green on a clean checkout · tokens/extensions merged · 6 map goldens recorded · rewards atomic.
 

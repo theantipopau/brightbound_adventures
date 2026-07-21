@@ -29,10 +29,10 @@ The full audit defines the world-map v2 experience, light/dark requirements, ass
 Recent work recorded passing format, analyzer, tests, and release web build, with a known third-party `flutter_tts_web` Wasm dry-run warning. Re-run from a clean checkout before treating that record as current evidence:
 
 ```powershell
-& 'F:\Flutter\flutter\bin\dart.bat' format --output=none --set-exit-if-changed lib test
-& 'F:\Flutter\flutter\bin\flutter.bat' analyze
-& 'F:\Flutter\flutter\bin\flutter.bat' test
-& 'F:\Flutter\flutter\bin\flutter.bat' build web --release
+& 'E:\Flutter\flutter\bin\dart.bat' format --output=none --set-exit-if-changed lib test
+& 'E:\Flutter\flutter\bin\flutter.bat' analyze
+& 'E:\Flutter\flutter\bin\flutter.bat' test
+& 'E:\Flutter\flutter\bin\flutter.bat' build web --release
 ```
 
 Older `PHASE_*`, session, completion, and roadmap documents are historical context, not current product truth.

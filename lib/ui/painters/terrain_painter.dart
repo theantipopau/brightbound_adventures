@@ -18,48 +18,113 @@ class TerrainPainter extends CustomPainter {
     }
   }
 
+  // Vertical thickness of the extruded island platform, in logical px.
+  static const double _extrusionDepth = 24;
+  static const double _halfWidth = 140;
+  static const double _halfHeight = 70;
+
+  /// Returns [base] shaded darker/lighter by [amount] in HSL lightness,
+  /// used to fake a single top-left light source across the extruded
+  /// island faces (top face lightest, left face -25%, right face -40%).
+  Color _shade(Color base, double amount) {
+    final hsl = HSLColor.fromColor(base);
+    final lightness = (hsl.lightness + amount).clamp(0.0, 1.0);
+    return hsl.withLightness(lightness).toColor();
+  }
+
   void _drawBiomePatch(
       Canvas canvas, Offset center, Color color, String zoneId) {
-    // 1. Large soft glow for ambient biome color
+    // Visual center adjusted for the 3D 'floor' (below where the island floats)
+    final floorCenter = center + const Offset(0, 40);
+
+    // Diamond (top-face) vertices, in isometric 2:1 projection.
+    final top = Offset(floorCenter.dx, floorCenter.dy - _halfHeight);
+    final right = Offset(floorCenter.dx + _halfWidth, floorCenter.dy);
+    final bottom = Offset(floorCenter.dx, floorCenter.dy + _halfHeight);
+    final left = Offset(floorCenter.dx - _halfWidth, floorCenter.dy);
+    const depthOffset = Offset(0, _extrusionDepth);
+
+    // 1. Ambient glow (unchanged) plus a tighter ambient-occlusion ellipse
+    // hugging the extruded underside, which is what actually sells the
+    // island as a solid floating object rather than a flat patch.
     final glowPaint = Paint()
       ..color = color.withValues(alpha: 0.25)
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30);
-
-    // Visual center adjusted for the 3D 'floor' (below where the island floats)
-    final floorCenter = center + const Offset(0, 40);
-
     canvas.drawOval(
       Rect.fromCenter(center: floorCenter, width: 350, height: 200),
       glowPaint,
     );
 
-    // 2. Isometric Terrain Base (Rhombus shape to suggest grid/land)
-    final terrainPaint = Paint()
-      ..color = color.withValues(alpha: 0.15)
+    final aoPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.22)
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: bottom + depthOffset + const Offset(0, 6),
+        width: _halfWidth * 1.15,
+        height: 28,
+      ),
+      aoPaint,
+    );
+
+    // 2. Side faces (the extrusion). Drawn before the top face so the top
+    // face's edges cleanly cover their upper seams. Left face is lit more
+    // than right, matching a top-left light source. The shared bottom
+    // vertex is rounded slightly so the island's base isn't a sharp point.
+    const cornerRadius = 10.0;
+    final bottomDeep = bottom + depthOffset;
+    final leftDeep = left + depthOffset;
+    final rightDeep = right + depthOffset;
+
+    final leftFacePaint = Paint()
+      ..color = _shade(color, -0.16).withValues(alpha: 0.55)
       ..style = PaintingStyle.fill;
+    final leftFace = Path()
+      ..moveTo(left.dx, left.dy)
+      ..lineTo(bottom.dx - cornerRadius, bottom.dy)
+      ..quadraticBezierTo(
+          bottom.dx, bottom.dy, bottom.dx, bottom.dy + cornerRadius * 0.4)
+      ..lineTo(bottomDeep.dx, bottomDeep.dy)
+      ..lineTo(leftDeep.dx, leftDeep.dy)
+      ..close();
+    canvas.drawPath(leftFace, leftFacePaint);
 
-    final path = Path();
-    const double width = 140; // Half width magnitude
-    const double height = 70; // Half height magnitude
+    final rightFacePaint = Paint()
+      ..color = _shade(color, -0.26).withValues(alpha: 0.55)
+      ..style = PaintingStyle.fill;
+    final rightFace = Path()
+      ..moveTo(bottom.dx + cornerRadius, bottom.dy)
+      ..lineTo(right.dx, right.dy)
+      ..lineTo(rightDeep.dx, rightDeep.dy)
+      ..lineTo(bottomDeep.dx, bottomDeep.dy)
+      ..quadraticBezierTo(
+          bottom.dx, bottom.dy, bottom.dx + cornerRadius, bottom.dy)
+      ..close();
+    canvas.drawPath(rightFace, rightFacePaint);
 
-    path.moveTo(floorCenter.dx, floorCenter.dy - height); // Top
-    path.lineTo(floorCenter.dx + width, floorCenter.dy); // Right
-    path.lineTo(floorCenter.dx, floorCenter.dy + height); // Bottom
-    path.lineTo(floorCenter.dx - width, floorCenter.dy); // Left
-    path.close();
-
+    // 3. Top face (the original diamond), lit and drawn last.
+    final terrainPaint = Paint()
+      ..color = _shade(color, 0.06).withValues(alpha: 0.32)
+      ..style = PaintingStyle.fill;
+    final path = Path()
+      ..moveTo(top.dx, top.dy)
+      ..lineTo(right.dx, right.dy)
+      ..lineTo(bottom.dx, bottom.dy)
+      ..lineTo(left.dx, left.dy)
+      ..close();
     canvas.drawPath(path, terrainPaint);
 
-    // 3. Terrain Detail Rings (Ripples)
-    final ringPaint = Paint()
-      ..color = color.withValues(alpha: 0.3)
+    // 4. Rim inset - a slightly darker stroke just inside the top face's
+    // edge, giving the platform a defined, tactile border.
+    final rimPaint = Paint()
+      ..color = _shade(color, -0.1).withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
+    canvas.drawPath(path, rimPaint);
 
-    canvas.drawPath(path, ringPaint);
-
-    // 4. Biome-specific texture patterns
+    // 5. Biome-specific texture patterns
     _drawBiomeTexture(canvas, floorCenter, color, zoneId);
   }
 

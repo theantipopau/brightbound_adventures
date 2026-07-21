@@ -89,9 +89,24 @@ class PathPainter extends CustomPainter {
             ?.position;
 
         if (pos != null) {
+          // Small drop shadow (light from top-left, so it falls bottom-right)
+          // plus a top-left highlight, giving the travel dot a glossy,
+          // 3D "bead" look instead of a flat filled circle.
+          canvas.drawCircle(
+            pos + const Offset(1.5, 2),
+            6,
+            Paint()
+              ..color = Colors.black.withValues(alpha: 0.18)
+              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+          );
           canvas.drawCircle(
               pos, 10, dotPaint..color = Colors.amber.withValues(alpha: 0.35));
           canvas.drawCircle(pos, 6, dotPaint..color = Colors.amber);
+          canvas.drawCircle(
+            pos + const Offset(-1.5, -1.5),
+            2,
+            Paint()..color = Colors.white.withValues(alpha: 0.55),
+          );
         }
       }
     }

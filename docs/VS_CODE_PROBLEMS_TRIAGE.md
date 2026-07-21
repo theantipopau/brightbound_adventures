@@ -1,6 +1,6 @@
 # VS Code Problems Triage
 
-VS Code previously reported **318 problems**. After using the explicit Flutter SDK path at `F:\Flutter\flutter`, the command-line analyzer is clean.
+VS Code previously reported **318 problems**. After using the explicit Flutter SDK path at `E:\Flutter\flutter`, the command-line analyzer is clean.
 
 This file remains as the repeatable workflow for future analyzer regressions.
 
@@ -16,8 +16,8 @@ flutter analyze
 Or run with the explicit SDK path:
 
 ```powershell
-& 'F:\Flutter\flutter\bin\dart.bat' format lib test
-& 'F:\Flutter\flutter\bin\flutter.bat' analyze
+& 'E:\Flutter\flutter\bin\dart.bat' format lib test
+& 'E:\Flutter\flutter\bin\flutter.bat' analyze
 ```
 
 Then group problems into:

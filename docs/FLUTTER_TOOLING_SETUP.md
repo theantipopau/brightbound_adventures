@@ -3,7 +3,7 @@
 The Flutter SDK is installed locally at:
 
 ```text
-F:\Flutter\flutter
+E:\Flutter\flutter
 ```
 
 The issue was that `flutter` and `dart` were not available on PATH. Commands can be run directly through the SDK path.
@@ -27,13 +27,13 @@ flutter analyze
 For this machine, Flutter is installed at:
 
 ```text
-F:\Flutter\flutter
+E:\Flutter\flutter
 ```
 
 Add this to the user PATH:
 
 ```text
-F:\Flutter\flutter\bin
+E:\Flutter\flutter\bin
 ```
 
 Then open a new PowerShell terminal and confirm:
@@ -88,10 +88,10 @@ Start with compile errors before lints. The reported 318 VS Code problems will l
 Using the explicit SDK path:
 
 ```powershell
-& 'F:\Flutter\flutter\bin\flutter.bat' pub get
-& 'F:\Flutter\flutter\bin\dart.bat' format lib test
-& 'F:\Flutter\flutter\bin\flutter.bat' analyze
-& 'F:\Flutter\flutter\bin\flutter.bat' test
+& 'E:\Flutter\flutter\bin\flutter.bat' pub get
+& 'E:\Flutter\flutter\bin\dart.bat' format lib test
+& 'E:\Flutter\flutter\bin\flutter.bat' analyze
+& 'E:\Flutter\flutter\bin\flutter.bat' test
 ```
 
 Current status:

@@ -2,6 +2,14 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-20 - Procedural 3D map painter upgrade (A3D-7) + stale SDK path fix
+
+- Upgraded `lib/ui/painters/terrain_painter.dart`: each zone island is now an extruded isometric platform (24px thickness) with two shaded side faces (HSL lightness -16%/-26%, faking a top-left light source), a rounded bottom seam, a tight ambient-occlusion ellipse under the extrusion, and a darker rim inset on the top face — replacing the previous flat rhombus-plus-glow look. Zero new assets required.
+- Polished `lib/ui/painters/path_painter.dart`'s animated travel dots with a drop shadow + top-left highlight (glossy "bead" look).
+- Could not capture a before/after screenshot: the app served correctly (`flutter run -d web-server`, clean console/server logs, 200s on all asset requests) but the available screenshot tooling timed out in this environment, reproducing on a fresh tab. Confidence instead comes from `flutter analyze` being clean, the full 66-test suite passing (including the WM-1 structural tests that exercise this painter through `WorldMapScreen`), and the extrusion being straightforward vertex geometry.
+- Fixed a stale documented Flutter SDK path: `docs/`, `README.md` said `F:\Flutter\flutter`; the SDK is actually at `E:\Flutter\flutter` on this machine now. Updated all current-instruction docs (README, NEXT_STEPS, the roadmap tracker, FLUTTER_TOOLING_SETUP, VS_CODE_PROBLEMS_TRIAGE) to the correct path; left the historical changelog entry from when `F:\` was correct untouched.
+- Added `.claude/launch.json` (`flutter run -d web-server --web-port 5959`) so a future session can preview the app via the Browser pane without rediscovering the SDK location.
+
 ## 2026-07-20 - Atomic reward transaction service (RE-1, foundation only)
 
 - Added `lib/core/services/reward_transaction_service.dart`: `RewardTransactionService.apply(QuestOutcome) -> RewardResult` applies XP/level, stars (via `ShopService`), streak (via `StreakService`), and achievement/cosmetic unlock detection as one operation, idempotent by `outcomeId`. Persists to SharedPreferences *before* returning, so a killed-and-relaunched app replays the same result instead of re-earning anything — verified directly in `test/services/reward_transaction_test.dart` by constructing a second service instance against the same prefs.

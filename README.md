@@ -101,7 +101,7 @@ flutter test
 flutter build web --release
 ```
 
-If Flutter is not on `PATH`, this workspace has used `F:\Flutter\flutter\bin\flutter.bat`. The web build may report a known third-party `flutter_tts_web` Wasm dry-run warning.
+If Flutter is not on `PATH`, this workspace has used `E:\Flutter\flutter\bin\flutter.bat`. The web build may report a known third-party `flutter_tts_web` Wasm dry-run warning.
 
 ## Deploy
 
