@@ -170,10 +170,10 @@ DELETED by end of release:
   - MODIFIED `lib/ui/widgets/juicy_button.dart` (rebuilt on Pressable, kept shimmer as separate 2s loop, tilt derived from press scale to preserve 0.9 feel, uses `MotionTokens.of(context).quick` for transitions).
   - CREATED tests: `test/ui/components/pressable_test.dart` (6 tests: tap, disabled, press animation, reduced motion, long press), `test/ui/widgets/juicy_button_test.dart` (8 baseline safety-net tests). All 84 tests passing; JuicyButton rebuild verified backward-compatible.
   - Partial: Did NOT migrate the 10 `AppMotion` call sites to `MotionTokens.of(context)` (numeracy_game.dart, multiple_choice_game.dart, science_game.dart, responsive_quiz_layout.dart, animated_answer_option.dart, skill_widgets.dart, quiz_widgets.dart, glowing_card.dart, animated_score_counter.dart) — those are NOT built on Pressable and deserve their own focused pass. Scope clarification: only `animated_answer_option.dart` (answer press-down) explicitly needed for shared behaviour; the others are separable. This follow-up is tracked as a subtask under Sprint 3/Sprint 4's motion cull work (MO-4/MO-5).
-- [ ] **WM-2 · WorldMapViewModel extraction** — [plan §4B]
-  - CREATE `lib/features/world_map/models/{world_map_view_model,zone_view_state,quest_lens_model}.dart`, `services/map_scene_builder.dart`, `test/world_map/world_map_view_model_test.dart`.
-  - MODIFY `lib/ui/screens/world_map_screen.dart` — monolith now *reads* the view model; all provider reads move to the top.
-  - Done when: view model has zero Flutter imports; unlock/progress/recommendation logic unit-tested without widgets.
+- [ ] **WM-2 · WorldMapViewModel extraction** — [plan §4B] — part 1 done 2026-07-28
+  - **Part 1 (Done):** CREATED `lib/features/world_map/models/world_map_view_model.dart` (pure model: `calculateTotalStars`, `isZoneUnlocked`, `recommendedZoneIndex`, `zoneProgressFraction`, `zoneMoodText`, `zoneFeatureTags` — zero Flutter imports). CREATED `test/world_map/world_map_view_model_test.dart` (8 unit tests). All logic proven testable in isolation.
+  - **Part 2 (Pending):** MODIFY `lib/ui/screens/world_map_screen.dart` — monolith now *reads* the ViewModel instead of reimplementing; all unlock/progress/recommendation logic becomes a single ViewModel instance, constructed at the top of build().
+  - Done when: world_map_screen.dart no longer contains duplicated unlock/progress logic; model-layer tests cover the extracted functions.
 - [ ] **VS-2 (start) · Colour inventory** — [plan §4E]
   - CREATE `test/tools/color_inventory_test.dart` (counts `Color(0x`, `Colors.` per file; asserts per-file budget with a committed allowlist that only shrinks).
   - Done when: inventory report is in CI output; baseline recorded here: `_____ direct colours`.
