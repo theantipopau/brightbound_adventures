@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/components/pressable.dart';
 
 /// A polished, animated button with press-scale and glow feedback.
 ///
@@ -110,31 +110,12 @@ class JuicyButton extends StatefulWidget {
 }
 
 class _JuicyButtonState extends State<JuicyButton>
-    with TickerProviderStateMixin {
-  late AnimationController _pressController;
+    with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
-  late Animation<double> _scaleAnim;
-  late Animation<double> _tiltAnim;
-  bool _isHovered = false;
-  bool _isFocused = false;
 
   @override
   void initState() {
     super.initState();
-
-    _pressController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 220),
-    );
-
-    _scaleAnim = Tween<double>(begin: 1.0, end: 0.9).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeOutBack),
-    );
-
-    _tiltAnim = Tween<double>(begin: 0.0, end: -0.03).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeOut),
-    );
-
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -154,14 +135,9 @@ class _JuicyButtonState extends State<JuicyButton>
 
   @override
   void dispose() {
-    _pressController.dispose();
     _shimmerController.dispose();
     super.dispose();
   }
-
-  void _onTapDown(TapDownDetails _) => _pressController.forward();
-  void _onTapUp(TapUpDetails _) => _pressController.reverse();
-  void _onTapCancel() => _pressController.reverse();
 
   @override
   Widget build(BuildContext context) {
@@ -178,98 +154,79 @@ class _JuicyButtonState extends State<JuicyButton>
               end: Alignment.bottomRight,
             );
 
-    return FocusableActionDetector(
+    return Pressable(
       enabled: !disabled,
-      mouseCursor: disabled ? MouseCursor.defer : SystemMouseCursors.click,
-      onShowHoverHighlight: (hovered) {
-        if (mounted) setState(() => _isHovered = hovered);
-      },
-      onShowFocusHighlight: (focused) {
-        if (mounted) setState(() => _isFocused = focused);
-      },
-      actions: {
-        ActivateIntent: CallbackAction<ActivateIntent>(
-          onInvoke: (_) {
-            if (!disabled) widget.onPressed?.call();
-            return null;
-          },
-        ),
-      },
-      shortcuts: const <ShortcutActivator, Intent>{
-        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-      },
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapDown: disabled ? null : _onTapDown,
-        onTapUp: disabled ? null : _onTapUp,
-        onTapCancel: disabled ? null : _onTapCancel,
-        onTap: disabled ? null : widget.onPressed,
-        child: Semantics(
-          button: true,
-          enabled: !disabled,
-          label: widget.label,
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_pressController, _shimmerController]),
-            builder: (context, child) {
-              final hoverScale =
-                  ((_isHovered || _isFocused) && !disabled) ? 1.02 : 1.0;
-              return Transform.scale(
-                scale: _scaleAnim.value * hoverScale,
-                child: Transform.rotate(
-                  angle: _tiltAnim.value,
-                  child: Stack(
-                    children: [
-                      AnimatedContainer(
-                        duration: AppMotion.fast,
-                        width: widget.width,
-                        height: widget.height < AppInput.preferredTouchTarget
-                            ? AppInput.preferredTouchTarget
-                            : widget.height,
-                        padding: widget.padding ??
-                            const EdgeInsets.symmetric(
-                                horizontal: 28, vertical: 0),
-                        decoration: BoxDecoration(
-                          gradient: effectiveGradient,
-                          borderRadius: BorderRadius.circular(AppBorders.lg),
-                          border: _isFocused && !disabled
-                              ? Border.all(
-                                  color: Colors.white.withValues(alpha: 0.95),
-                                  width: AppInput.focusRingWidth,
-                                )
-                              : null,
-                          boxShadow: disabled
-                              ? null
-                              : ((_isHovered || _isFocused)
-                                  ? AppShadows.md(
-                                      (widget.color ?? AppColors.primary))
-                                  : AppShadows.sm(
-                                      (widget.color ?? AppColors.primary))),
-                        ),
-                        child: _buildContent(),
+      onPressed: widget.onPressed,
+      semanticLabel: widget.label,
+      // JuicyButton has always used a more dramatic press-down than the
+      // shared Pressable default (0.96) — preserve that exact feel.
+      pressScale: 0.9,
+      builder: (context, state, child) {
+        final hoverScale =
+            (state.isHovered || state.isFocused) && !disabled ? 1.02 : 1.0;
+        // Tilt derived from the same press-scale value Pressable already
+        // animates, instead of a second parallel AnimationController: at
+        // full press (scale == pressScale == 0.9) this reaches the same
+        // -0.03 rad the original two-tween implementation used.
+        final tilt = -(1.0 - state.scale) * 0.3;
+        return AnimatedBuilder(
+          animation: _shimmerController,
+          builder: (context, _) {
+            return Transform.scale(
+              scale: state.scale * hoverScale,
+              child: Transform.rotate(
+                angle: tilt,
+                child: Stack(
+                  children: [
+                    AnimatedContainer(
+                      duration: MotionTokens.of(context).quick,
+                      width: widget.width,
+                      height: widget.height < AppInput.preferredTouchTarget
+                          ? AppInput.preferredTouchTarget
+                          : widget.height,
+                      padding: widget.padding ??
+                          const EdgeInsets.symmetric(
+                              horizontal: 28, vertical: 0),
+                      decoration: BoxDecoration(
+                        gradient: effectiveGradient,
+                        borderRadius: BorderRadius.circular(AppBorders.lg),
+                        border: state.isFocused && !disabled
+                            ? Border.all(
+                                color: Colors.white.withValues(alpha: 0.95),
+                                width: AppInput.focusRingWidth,
+                              )
+                            : null,
+                        boxShadow: disabled
+                            ? null
+                            : ((state.isHovered || state.isFocused)
+                                ? AppShadows.md(
+                                    (widget.color ?? AppColors.primary))
+                                : AppShadows.sm(
+                                    (widget.color ?? AppColors.primary))),
                       ),
-                      // Shimmer sweep overlay — bright diagonal band that sweeps left→right
-                      if (widget.shimmer && !disabled)
-                        Positioned.fill(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(AppBorders.lg),
-                            child: IgnorePointer(
-                              child: CustomPaint(
-                                painter: _ShimmerSweepPainter(
-                                  progress: _shimmerController.value,
-                                ),
+                      child: _buildContent(),
+                    ),
+                    // Shimmer sweep overlay — bright diagonal band that sweeps left→right
+                    if (widget.shimmer && !disabled)
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(AppBorders.lg),
+                          child: IgnorePointer(
+                            child: CustomPaint(
+                              painter: _ShimmerSweepPainter(
+                                progress: _shimmerController.value,
                               ),
                             ),
                           ),
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
-              );
-            },
-          ),
-        ),
-      ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

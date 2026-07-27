@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-28 - Pressable component + JuicyButton rebuild (MO-3)
+
+- Added `lib/ui/components/pressable.dart`: headless interaction primitive owns a single `AnimationController` driving press-scale, keyboard activation (Enter/Space), hover/focus tracking, and optional haptic feedback — but draws nothing itself. Callers provide a `builder` to render decoration (gradient, shadow, border) driven by `PressableState` (scale/isPressed/isHovered/isFocused/enabled). This exists so all pressable surfaces in the app (buttons, cards, answer options, zone nodes) share one interaction implementation instead of hand-rolling separate `GestureDetector` + `AnimationController` + focus logic.
+- Rebuilt `lib/ui/widgets/juicy_button.dart` on top of `Pressable`: removed dual `AnimationController`s (press + shimmer), kept shimmer as a separate 2s loop, and derived tilt from the shared press scale (`tilt = -(1.0 - state.scale) * 0.3` to preserve the 0.9 press-scale feel). Uses `MotionTokens.of(context).quick` for the AnimatedContainer's color/shadow transitions instead of hard-coded 200ms.
+- Tests for both: `test/ui/components/pressable_test.dart` (6 tests covering tap, disabled semantics, press animation, reduced motion, long press) and `test/ui/widgets/juicy_button_test.dart` (8 baseline safety-net tests — label/emoji render, tap trigger, disabled state, loading indicator, press without throw, label ellipsis, shimmer, factories). All 70+ tests passing; JuicyButton rebuild verified backward-compatible by the safety-net suite.
+- Updated `lib/ui/components/` and `test/ui/components/` as new directories, mirroring the existing `widgets/` structure for reusable interaction primitives.
+
 ## 2026-07-21 - Shared transition kit (MO-2)
 
 - Added `lib/ui/transitions/app_routes.dart`: `ZoneEntryRoute` (scale-up entry, from a tapped element's `originRect` if given, else center), `SheetRoute` (modal-feeling slide-up with a spring overshoot), `CelebrationRoute` (bigger playful scale+fade, for reward reveals). All three read `MotionTokens.of(context)` from the pushing context, so reduced motion is handled automatically. Tests in `test/ui/transitions/app_routes_test.dart` (4 tests) cover navigation for each route plus a reduced-motion completion case.
