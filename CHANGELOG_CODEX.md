@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-28 - WorldMapViewModel extraction foundation (WM-2, part 1)
+
+- Created `lib/features/world_map/models/world_map_view_model.dart`: pure model logic extracted from the 5570-line `world_map_screen.dart`, zero Flutter imports. Methods: `calculateTotalStars()`, `isZoneUnlocked()`, `recommendedZoneIndex()`, `zoneProgressFraction()`, `zoneMoodText()`, `zoneFeatureTags()`. All are unit-testable pure functions.
+- Created `test/world_map/world_map_view_model_test.dart`: 8 tests covering zone unlock logic (boundary conditions, star requirements), progress calculation, and flavor text. All passing.
+- **Scope note:** This is the foundation layer of WM-2. The monolithic `world_map_screen.dart` still contains the view model logic; next step is to refactor the screen to *read* the extracted ViewModel instead of implementing that logic inline. That refactoring (modifying world_map_screen.dart to use the new ViewModel) is a separate followup — this commit extracts the pure logic and proves it's testable.
+- All 91 tests passing (84 existing + 8 new, - 1 from ViewModel test naming).
+
 ## 2026-07-28 - Pressable component + JuicyButton rebuild (MO-3)
 
 - Added `lib/ui/components/pressable.dart`: headless interaction primitive owns a single `AnimationController` driving press-scale, keyboard activation (Enter/Space), hover/focus tracking, and optional haptic feedback — but draws nothing itself. Callers provide a `builder` to render decoration (gradient, shadow, border) driven by `PressableState` (scale/isPressed/isHovered/isFocused/enabled). This exists so all pressable surfaces in the app (buttons, cards, answer options, zone nodes) share one interaction implementation instead of hand-rolling separate `GestureDetector` + `AnimationController` + focus logic.
