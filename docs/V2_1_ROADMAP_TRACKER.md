@@ -185,6 +185,8 @@ DELETED by end of release:
 
 **Sprint exit:** all navigation uses the kit · map logic is pure and tested · art pipeline producing approved assets.
 
+**Status as of 2026-08-02:** `main` is synced through MO-3/WM-2 pt.1/VS-2 (CI: Analyze/Test/Build Web all green). Deploy jobs (`Deploy Website`/`Deploy Flutter Game` to Cloudflare Pages) are wired up correctly but blocked on missing `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` repo secrets — needs repo admin to set these in GitHub Settings → Secrets and variables → Actions. Local `wrangler` deploy is also blocked, by an unrelated malformed Windows `PATH` entry (`C:\Program Files\nodejs"`, stray trailing quote) breaking `node` resolution for npm-spawned install scripts.
+
 ---
 
 ## Sprint 3 (wk 5–6) — Map Rebuild I
