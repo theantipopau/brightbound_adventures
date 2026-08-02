@@ -174,10 +174,10 @@ DELETED by end of release:
   - **Part 1 (Done):** CREATED `lib/features/world_map/models/world_map_view_model.dart` (pure model: `calculateTotalStars`, `isZoneUnlocked`, `recommendedZoneIndex`, `zoneProgressFraction`, `zoneMoodText`, `zoneFeatureTags` — zero Flutter imports). CREATED `test/world_map/world_map_view_model_test.dart` (8 unit tests). All logic proven testable in isolation.
   - **Part 2 (Pending):** MODIFY `lib/ui/screens/world_map_screen.dart` — monolith now *reads* the ViewModel instead of reimplementing; all unlock/progress/recommendation logic becomes a single ViewModel instance, constructed at the top of build().
   - Done when: world_map_screen.dart no longer contains duplicated unlock/progress logic; model-layer tests cover the extracted functions.
-- [ ] **VS-2 (start) · Colour inventory** — [plan §4E]
-  - CREATE `test/tools/color_inventory_test.dart` (counts `Color(0x`, `Colors.` per file; asserts per-file budget with a committed allowlist that only shrinks).
-  - Done when: inventory report is in CI output; baseline recorded here: `_____ direct colours`.
-  - Known debt from VS-1 (confirmed by grep, 2026-07-20): 58 occurrences of `AppColors.textPrimary`/`textSecondary`/`surface` across 13 files bypass brightness entirely, incl. `avatar_creator_screen.dart` (15), `world_map_screen.dart` (5), `skill_widgets.dart` (5), `animated_answer_option.dart` (5), `zone_detail_screen.dart` (4). These are exactly the call sites `SemanticColors`/`ZonePalettes` (VS-1) exist to replace.
+- [x] **VS-2 (start) · Colour inventory** — [plan §4E] — done 2026-07-28
+  - CREATED `test/tools/color_inventory_test.dart` (counts `Color(0x`, `Colors.` per file; asserts per-file budget against a committed, shrinking-only allowlist; unlisted files with usage fail the test).
+  - Done when: inventory report is in CI output (via `flutter test` stdout); baseline recorded here: **2506 direct colours across 87 files** (2026-07-28). Largest: `world_map_screen.dart` (295), `app_theme.dart` (158, token-definition file), `fantasy_map.dart` (126).
+  - Known debt from VS-1 (confirmed by grep, 2026-07-20): 58 occurrences of `AppColors.textPrimary`/`textSecondary`/`surface` across 13 files bypass brightness entirely, incl. `avatar_creator_screen.dart` (15), `world_map_screen.dart` (5), `skill_widgets.dart` (5), `animated_answer_option.dart` (5), `zone_detail_screen.dart` (4). These are exactly the call sites `SemanticColors`/`ZonePalettes` (VS-1) exist to replace — the inventory test now makes any regression in this debt visible and blocked, but migrating the 58 sites themselves is still open, separate work (full VS-2 migration pass, not yet scheduled).
 - [ ] **WM-7 (start, art track) · Art bible + global asset set** — [3D spec §4–5]
   - CREATE `assets/art/PROMPTS.md`, first global assets under `assets/images/map/{islands,routes,sky}/`, `assets/map_manifest.json` (schema per 3D spec §4.4).
   - MODIFY `pubspec.yaml` (asset folders).

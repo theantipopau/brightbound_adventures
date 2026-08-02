@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-07-28 - Colour inventory CI check (VS-2, start)
+
+- Added `test/tools/color_inventory_test.dart`: counts every direct `Color(0x...)` / `Colors.foo` usage under `lib/`, per file, and asserts each stays within a committed allowlist. The allowlist is shrinking-only by design — a count is allowed to drop (as call sites migrate to `SemanticColors`/`ZonePalettes`/`ShapeTokens` from VS-1) but never silently rise, and any new file with direct color usage that isn't already in the allowlist fails the test outright, forcing a deliberate reviewed addition rather than quiet drift.
+- **Baseline recorded 2026-07-28: 2506 direct colours across 87 files.** The three largest offenders are `world_map_screen.dart` (295 — mostly its own zone/HUD styling, a WM-3/WM-4 rebuild target), `app_theme.dart` (158 — largely legitimate, it's the token-definition file itself), and `fantasy_map.dart` (126).
+- Deliberately did **not** exempt `app_theme.dart`/`semantic_colors.dart`/`zone_palettes.dart` from counting even though they're the token *definitions* and legitimately need literal colors — the test's job is total visibility, not letting any file opt out; their ceilings just aren't expected to shrink much.
+- This is the CI-visibility half of VS-2. The actual migration of the 58 `AppColors.textPrimary`/`textSecondary`/`surface` call sites flagged in MO-3/VS-1 notes (bypassing light/dark entirely) is separate follow-on work — this task's job was making regressions in that debt visible and blocked, not fixing it in one pass.
+
 ## 2026-07-28 - WorldMapViewModel extraction foundation (WM-2, part 1)
 
 - Created `lib/features/world_map/models/world_map_view_model.dart`: pure model logic extracted from the 5570-line `world_map_screen.dart`, zero Flutter imports. Methods: `calculateTotalStars()`, `isZoneUnlocked()`, `recommendedZoneIndex()`, `zoneProgressFraction()`, `zoneMoodText()`, `zoneFeatureTags()`. All are unit-testable pure functions.
