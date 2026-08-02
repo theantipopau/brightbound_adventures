@@ -46,7 +46,8 @@ class WorldMapViewModel {
       if (!isZoneUnlocked(i, totalStars, skillProvider)) continue;
 
       final stats = skillProvider.getZoneStats(zones[i].skillZoneId);
-      final progress = zoneProgressFraction(stats.masteredSkills, stats.totalSkills);
+      final progress =
+          zoneProgressFraction(stats.masteredSkills, stats.totalSkills);
 
       if (progress < 1.0 && progress < lowestProgress) {
         fallback = i;

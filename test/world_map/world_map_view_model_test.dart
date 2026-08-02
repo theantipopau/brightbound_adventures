@@ -44,7 +44,9 @@ void main() {
       expect(unlocked, isFalse);
     });
 
-    test('isZoneUnlocked returns true when star requirement is met (no skill group)', () {
+    test(
+        'isZoneUnlocked returns true when star requirement is met (no skill group)',
+        () {
       final unlocked = viewModel.isZoneUnlocked(1, 3, null);
       expect(unlocked, isTrue);
     });

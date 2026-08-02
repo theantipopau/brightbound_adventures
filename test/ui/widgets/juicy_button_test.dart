@@ -1,7 +1,6 @@
 // Safety-net tests for JuicyButton, written before rebuilding it on
 // Pressable (MO-3), so the rebuild can be verified against known-good
 // behaviour rather than just "it compiles".
-import 'dart:ui' show Tristate;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
@@ -32,12 +31,14 @@ void main() {
 
   testWidgets('disabled (onPressed null) does not trigger and is not tappable',
       (tester) async {
-    var tapped = false;
     await tester.pumpWidget(wrap(
       const JuicyButton(label: 'Locked', onPressed: null),
     ));
 
-    // Verify tapping a disabled button does not call any callback
+    await tester.tap(find.text('Locked'));
+    await tester.pump();
+
+    // No onPressed to call, and tapping a disabled button must not throw.
     expect(tester.takeException(), isNull);
   });
 

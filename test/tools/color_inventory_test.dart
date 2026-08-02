@@ -118,8 +118,8 @@ final RegExp _colorLiteral =
 /// test runner was invoked from.
 Directory _findRepoRoot() {
   var dir = Directory.current;
-  while (!File('${dir.path}${Platform.pathSeparator}pubspec.yaml')
-      .existsSync()) {
+  while (
+      !File('${dir.path}${Platform.pathSeparator}pubspec.yaml').existsSync()) {
     final parent = dir.parent;
     if (parent.path == dir.path) {
       throw StateError('Could not locate repo root (no pubspec.yaml found)');
@@ -130,8 +130,7 @@ Directory _findRepoRoot() {
 }
 
 void main() {
-  test('direct Color()/Colors. usage stays within the committed allowlist',
-      () {
+  test('direct Color()/Colors. usage stays within the committed allowlist', () {
     final repoRoot = _findRepoRoot();
     final libDir = Directory('${repoRoot.path}${Platform.pathSeparator}lib');
     expect(libDir.existsSync(), isTrue,
