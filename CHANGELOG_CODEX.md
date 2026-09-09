@@ -2,6 +2,15 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-09 - Avatar readability and world-map visual hierarchy pass
+
+- Improved `lib/ui/screens/avatar_creator_screen.dart`: the name field now requests focus on the first step, uses explicit name/length guidance, configures the name keyboard, exposes a clear action, and resolves text colours through `SemanticColors`.
+- Improved `lib/ui/widgets/animated_character.dart`: enlarged the head and face treatment so the selected companion remains recognisable in the creator, live preview, and map contexts.
+- Improved `lib/ui/screens/world_map_screen.dart`: zone nodes now receive the semantic state calculated by `WorldMapViewModel` and visibly label non-default states such as Recommended, In progress, Boss ready, and Mastered. Landmark placement was adjusted to avoid the state badge, and idle bobbing/selection pulsing was reduced for easier scanning.
+- The visual pass reuses existing landmark and character assets; it does not introduce an untracked asset pipeline or new direct-colour budget. Colour inventory is now **2505 direct colour usages across 87 files**.
+- Verified after the pass: `dart format`, `flutter analyze --no-pub`, full Flutter suite (**97 tests**), colour inventory, responsive/map smoke tests, and `flutter build web --release` all pass. The known `flutter_tts_web` Wasm dry-run warning remains third-party and does not block the normal web build.
+- Scope boundary: the map remains a large active screen. The three-region responsive shell, full direct-colour migration, authored map asset families, and removal of the known narrow-phone HUD overflow remain tracked under WM-3/WM-4/VS-2/WM-7.
+
 ## 2026-09-09 - Story Springs drag-to-order vertical slice (IN-1/IN-2 prototype)
 
 - Added `lib/features/interactions/types/drag_to_order.dart`: a reusable ordering interaction with drag handles, forgiving card targets, move-up/move-down controls for keyboard-equivalent access, semantic labelling, and a single submission callback.

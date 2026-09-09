@@ -1077,6 +1077,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           alignment: Alignment.bottomCenter,
           child: _ZoneIsland(
             zone: zone,
+            statusLabel: zoneStatus.label,
             isUnlocked: isUnlocked,
             isCurrentZone: isCurrentZone,
             isSelected: _selectedZoneIndex == index,
@@ -3617,6 +3618,7 @@ class _BoardGameAvatarPawn extends StatelessWidget {
 /// Zone island widget with 3D floating effect
 class _ZoneIsland extends StatefulWidget {
   final ZoneData zone;
+  final String statusLabel;
   final bool isUnlocked;
   final bool isCurrentZone;
   final bool isSelected;
@@ -3630,6 +3632,7 @@ class _ZoneIsland extends StatefulWidget {
 
   const _ZoneIsland({
     required this.zone,
+    required this.statusLabel,
     required this.isUnlocked,
     required this.isCurrentZone,
     required this.isSelected,
@@ -3651,6 +3654,7 @@ class _ZoneIslandState extends State<_ZoneIsland> {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
     return AnimatedBuilder(
       animation: widget.floatAnimation,
       builder: (context, child) {
@@ -3658,9 +3662,10 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                     math.pi *
                     (1.0 + widget.zone.order * 0.05) +
                 widget.zone.order) *
-            8; // Unique per-zone float frequency
+            4; // Unique per-zone float frequency, kept subtle for scanning
         final selectionPulse = widget.isSelected
-            ? 1.0 + (math.sin(widget.floatAnimation.value * math.pi * 2) * 0.03)
+            ? 1.0 +
+                (math.sin(widget.floatAnimation.value * math.pi * 2) * 0.015)
             : 1.0;
 
         return Transform.translate(
@@ -3846,7 +3851,7 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                               if (widget.isUnlocked)
                                 Positioned(
                                   left: 16,
-                                  top: 18,
+                                  top: 42,
                                   child: Transform.rotate(
                                     angle: math.sin(
                                             widget.floatAnimation.value *
@@ -4266,6 +4271,43 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                       '⭐ ${widget.starsEarned}/${widget.totalSkills}',
                                       style: const TextStyle(
                                         fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                              if (widget.statusLabel != 'Available' &&
+                                  widget.statusLabel != 'Locked')
+                                Positioned(
+                                  left: 10,
+                                  top: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 7,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: widget.zone.color,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color:
+                                            foreground.withValues(alpha: 0.8),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: widget.zone.color
+                                              .withValues(alpha: 0.35),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      widget.statusLabel,
+                                      style: TextStyle(
+                                        color: foreground,
+                                        fontSize: 9,
                                         fontWeight: FontWeight.w900,
                                       ),
                                     ),

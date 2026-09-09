@@ -288,8 +288,8 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
             children: [
               // Head background
               Container(
-                width: widget.size * 0.55,
-                height: widget.size * 0.55,
+                width: widget.size * 0.64,
+                height: widget.size * 0.64,
                 decoration: BoxDecoration(
                   color: skinColor,
                   shape: BoxShape.circle,
@@ -314,7 +314,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
               // Character emoji face
               Text(
                 _getCharacterEmoji(),
-                style: TextStyle(fontSize: widget.size * 0.35),
+                style: TextStyle(fontSize: widget.size * 0.43),
               ),
             ],
           ),

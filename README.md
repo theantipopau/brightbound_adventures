@@ -37,6 +37,7 @@ Children create a companion, explore an isometric board-game world, practise lit
 |---|---|
 | Adventure | Eight unlockable zones, avatar travel, quest board, and game shortcuts |
 | Learning | Literacy, numeracy, science, logic, storytelling, motor activities, and mini-games |
+| Interaction | Story Springs includes a structured drag-to-order activity with drag handles and keyboard-equivalent controls |
 | Character | Companion creation, outfits, levels, cosmetic unlocks, and equip flows |
 | Motivation | XP, stars, streaks, daily challenges, achievements, bosses, mastery, and Star Shop |
 | Replayability | Session history, question freshness, variation, and spaced-repetition foundations |
@@ -45,6 +46,9 @@ Children create a companion, explore an isometric board-game world, practise lit
 
 > [!NOTE]
 > BrightBound is feature-rich but not yet at the next premium release bar. The June 2026 audit found unfinished content paths, fragmented styling, world-map maintainability and theme gaps, and missing release-level visual/performance tests. See the [v2.1 Premium Audit & Roadmap](docs/V2_1_PREMIUM_AUDIT_AND_ROADMAP.md).
+
+> [!TIP]
+> The latest v2.1 work improves the first-time character flow with clearer name entry and larger avatar faces, and makes world-map zone states easier to scan with explicit state badges and calmer ambient motion. The map is still on the path toward the planned three-region responsive rebuild.
 
 ## Eight learning worlds
 
@@ -117,6 +121,10 @@ npm.cmd run deploy
 ## Project status
 
 Current version: `2.0.0+2`. Proposed milestone: **v2.1 Living World**.
+
+Latest verified local baseline: `flutter analyze`, the full Flutter test suite (97 tests), colour inventory, formatting, and `flutter build web --release` pass. The release build retains a known third-party `flutter_tts_web` Wasm dry-run warning; the normal web bundle succeeds.
+
+The current v2.1 slice includes a tested Story Springs drag-to-order prototype, semantic world-map zone-state logic, clearer map state badges, reduced idle map motion, larger avatar faces, and more usable first-time name entry. Reachable placeholder paths, reward-call-site consolidation, the full map shell split, and broader non-MCQ interaction coverage remain open roadmap work.
 
 - [Premium Audit & Roadmap](docs/V2_1_PREMIUM_AUDIT_AND_ROADMAP.md) - source of truth.
 - [Current next steps](docs/NEXT_STEPS.md) | [Changelog](CHANGELOG_CODEX.md)

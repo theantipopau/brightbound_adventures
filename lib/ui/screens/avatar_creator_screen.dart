@@ -17,6 +17,7 @@ class AvatarCreatorScreen extends StatefulWidget {
 class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     with TickerProviderStateMixin {
   late TextEditingController _nameController;
+  final FocusNode _nameFocusNode = FocusNode(debugLabel: 'avatar_name');
   late PageController _pageController;
   late AnimationController _backgroundController;
   late AnimationController _sparkleController;
@@ -218,6 +219,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
   @override
   void dispose() {
     _nameController.dispose();
+    _nameFocusNode.dispose();
     _pageController.dispose();
     _backgroundController.dispose();
     _sparkleController.dispose();
@@ -703,8 +705,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
         ? selectedCharacter['name'] as String
         : _nameController.text.trim();
 
-    final circleDiameter = 68.0 * scale;
-    final charSize = 44.0 * scale;
+    final previewDiameter = 92.0 * scale;
+    final charSize = 72.0 * scale;
     final padding = 14.0 * scale;
     final spacing = 14.0 * scale;
 
@@ -748,8 +750,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
             child: Row(
               children: [
                 Container(
-                  width: circleDiameter,
-                  height: circleDiameter,
+                  width: previewDiameter,
+                  height: previewDiameter,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
@@ -841,6 +843,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
         final trimmedName = _nameController.text.trim();
         final nameLength = trimmedName.length;
         final hasValidName = nameLength >= 2;
+        final semantic = context.semanticColors;
 
         return SingleChildScrollView(
           padding: EdgeInsets.all(isTinyScreen ? 12 : (isCompact ? 16 : 24)),
@@ -928,11 +931,26 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                   style: TextStyle(
                     fontSize: isTinyScreen ? 18 : (isCompact ? 20 : 24),
                     fontWeight: FontWeight.bold,
+                    color: semantic.textPrimary,
                   ),
+                  focusNode: _nameFocusNode,
+                  autofocus: _currentStep == 0,
+                  textCapitalization: TextCapitalization.words,
+                  keyboardType: TextInputType.name,
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
+                    labelText: 'Adventurer name',
+                    labelStyle: TextStyle(
+                      color: semantic.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    floatingLabelStyle: TextStyle(
+                      color: semantic.textPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
                     hintText: 'Type your name...',
                     hintStyle: TextStyle(
-                      color: Colors.grey.shade400,
+                      color: semantic.textHint,
                       fontWeight: FontWeight.normal,
                     ),
                     filled: true,
@@ -944,13 +962,17 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                               fontSize:
                                   isTinyScreen ? 18 : (isCompact ? 20 : 24))),
                     ),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Text('✨',
-                          style: TextStyle(
-                              fontSize:
-                                  isTinyScreen ? 18 : (isCompact ? 20 : 24))),
-                    ),
+                    suffixIcon: _trimmedName.isEmpty
+                        ? const Icon(Icons.auto_awesome_rounded)
+                        : IconButton(
+                            tooltip: 'Clear name',
+                            onPressed: () {
+                              _nameController.clear();
+                              setState(() {});
+                              _nameFocusNode.requestFocus();
+                            },
+                            icon: const Icon(Icons.clear_rounded),
+                          ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide.none,
@@ -966,11 +988,17 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                       borderSide:
                           const BorderSide(color: AppColors.primary, width: 3),
                     ),
+                    helperText: '2-16 letters',
+                    helperStyle: TextStyle(
+                      color: semantic.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
                     contentPadding: EdgeInsets.symmetric(
                         vertical: isCompact ? 16 : 20, horizontal: 24),
                   ),
                   onChanged: (_) => setState(() {}),
                   onSubmitted: (_) => _nextStep(),
+                  onTapOutside: (_) => _nameFocusNode.unfocus(),
                 ),
               ),
               const SizedBox(height: 10),
