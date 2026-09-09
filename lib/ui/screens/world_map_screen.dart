@@ -1192,6 +1192,10 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   Widget _buildTopHUD(Avatar avatar, int totalStars,
       {required bool compact, required double uiScale}) {
     final streakService = Provider.of<StreakService>(context);
+    if (compact) {
+      return _buildCompactTopHUD(avatar, totalStars, streakService, uiScale);
+    }
+
     final hudButtonSize = compact ? 36.0 : 40.0;
     final hudIconSize = compact ? 20.0 : 22.0;
     final hudButtonGap = compact ? 6.0 : 8.0;
@@ -1555,6 +1559,188 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildCompactTopHUD(
+    Avatar avatar,
+    int totalStars,
+    StreakService streakService,
+    double uiScale,
+  ) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    return Positioned(
+      top: 8,
+      left: 10,
+      right: 10,
+      child: Transform.scale(
+        alignment: Alignment.topCenter,
+        scale: math.min(uiScale, 1.0),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 52),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: primary.withValues(alpha: 0.24),
+            ),
+            boxShadow: AppShadows.md(primary),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  label:
+                      '${avatar.name}, level ${avatar.level}, ${avatar.experiencePoints} experience points',
+                  child: GestureDetector(
+                    onTap: () => _showAvatarInfo(context, avatar),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 19,
+                          backgroundColor: theme.colorScheme.primaryContainer,
+                          child: Text(
+                            _getCharacterEmoji(avatar.baseCharacter),
+                            style: const TextStyle(fontSize: 19),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            avatar.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.labelLarge.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              _buildCompactStat(
+                icon: '⭐',
+                value: '$totalStars',
+                label: 'Stars',
+              ),
+              if (streakService.currentStreak > 0)
+                _buildCompactStat(
+                  icon: '🔥',
+                  value: '${streakService.currentStreak}',
+                  label: 'Days',
+                ),
+              PopupMenuButton<String>(
+                tooltip: 'Adventure menu',
+                onSelected: _handleCompactMenuAction,
+                icon: const Icon(Icons.menu_rounded),
+                itemBuilder: (context) => const [
+                  PopupMenuItem(
+                    value: 'profile',
+                    child: ListTile(
+                      leading: Icon(Icons.person_rounded),
+                      title: Text('My profile'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'settings',
+                    child: ListTile(
+                      leading: Icon(Icons.settings_rounded),
+                      title: Text('Settings'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'parent',
+                    child: ListTile(
+                      leading: Icon(Icons.supervised_user_circle_rounded),
+                      title: Text('Parent dashboard'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'daily',
+                    child: ListTile(
+                      leading: Icon(Icons.track_changes_rounded),
+                      title: Text('Daily challenges'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'mini_games',
+                    child: ListTile(
+                      leading: Icon(Icons.sports_esports_rounded),
+                      title: Text('Mini-games'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'shop',
+                    child: ListTile(
+                      leading: Icon(Icons.shopping_bag_rounded),
+                      title: Text('Star Shop'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'achievements',
+                    child: ListTile(
+                      leading: Icon(Icons.emoji_events_rounded),
+                      title: Text('Achievements'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactStat({
+    required String icon,
+    required String value,
+    required String label,
+  }) {
+    return Tooltip(
+      message: '$value $label',
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        child: Text(
+          '$icon $value',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleCompactMenuAction(String action) {
+    switch (action) {
+      case 'profile':
+        _showProfileStats();
+        break;
+      case 'settings':
+        _showSettings();
+        break;
+      case 'parent':
+        _showParentDashboard();
+        break;
+      case 'daily':
+        _showDailyChallenges();
+        break;
+      case 'mini_games':
+        _showMiniGamesMenu();
+        break;
+      case 'shop':
+        _showShop();
+        break;
+      case 'achievements':
+        _showAchievements();
+        break;
+    }
   }
 
   Widget _buildWorldSelectBanner({

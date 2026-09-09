@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-09 - Compact world-map adventure bar (WM-4 responsive slice)
+
+- Reworked the compact branch of `_buildTopHUD` in `lib/ui/screens/world_map_screen.dart` into a responsive identity/progress bar with avatar identity, stars, streak, and an accessible `Adventure menu` for profile, settings, parent dashboard, daily challenges, mini-games, Star Shop, and achievements.
+- Removed the pre-existing 360x640 phone HUD overflow allowlist from `test/world_map/world_map_regression_test.dart` and added compact-menu coverage for phone and tablet-width layouts.
+- Preserved the desktop HUD and all existing navigation/progression callbacks; the change is limited to the compact presentation path.
+- Verified: compact map regression (**22 tests**), full Flutter suite (**101 tests**), `flutter analyze --no-pub`, formatting, and colour inventory pass. The release build remains the final gate for this slice.
+
 ## 2026-09-09 - Avatar readability and world-map visual hierarchy pass
 
 - Improved `lib/ui/screens/avatar_creator_screen.dart`: the name field now requests focus on the first step, uses explicit name/length guidance, configures the name keyboard, exposes a clear action, and resolves text colours through `SemanticColors`.

@@ -91,21 +91,10 @@ void main() {
   ///    only asserts in debug), reproduces regardless of theme. Not worth
   ///    patching blindly without knowing which of the many Columns in the
   ///    non-compact branch is 1px too tall.
-  /// 2. At the narrow phone breakpoint (360x640) the top HUD Row (player
-  ///    chip + profile/settings/parent buttons + stars/streak/daily/SRS
-  ///    badges + avatar circle, none of it `Flexible`) overflows by ~176px.
-  ///    This is not a small patch — it is *exactly* the P0 acceptance
-  ///    criterion ("no overlap/clipping at 360x640") that the WM-4
-  ///    three-region responsive shell task exists to fix properly
-  ///    (adventure bar / living board / quest lens, secondary destinations
-  ///    moved into an adventure menu). Redesigning the HUD row here, ahead
-  ///    of that rebuild, risks new bugs in a screen about to be replaced.
-  ///    This allowlist entry should be deleted the moment WM-4 lands.
   void expectNoUnknownException(WidgetTester tester, Size size) {
     final allowedForSize = <String>[
       if (size == const Size(1366, 768))
         'overflowed by 1.00 pixels on the bottom',
-      if (size == const Size(360, 640)) 'overflowed by 176 pixels on the right',
     ];
     Object? exception;
     while ((exception = tester.takeException()) != null) {
@@ -155,6 +144,21 @@ void main() {
 
         expectNoUnknownException(tester, size);
       });
+
+      if (size.width < 980) {
+        testWidgets('compact map exposes the adventure menu ($label)',
+            (tester) async {
+          await pumpWorldMap(tester, size: size, themeMode: mode);
+
+          expect(find.byTooltip('Adventure menu'), findsOneWidget);
+          await tester.tap(find.byTooltip('Adventure menu'));
+          await tester.pump();
+
+          expect(find.text('Settings'), findsOneWidget);
+          expect(find.text('Daily challenges'), findsOneWidget);
+          expectNoUnknownException(tester, size);
+        });
+      }
     }
   }
 }
