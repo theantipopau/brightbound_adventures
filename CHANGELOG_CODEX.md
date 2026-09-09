@@ -2,6 +2,13 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-09 - Removed legacy commented map presentation code
+
+- Removed the non-executable legacy Adventure Bar and Quest Lens implementations left inside `lib/ui/screens/world_map_screen.dart` after the presentation extraction.
+- Runtime behavior is unchanged: the active `WorldMapAdventureBar` and `WorldMapQuestLens` widgets remain the presentation seams, while parent-owned selection, providers, travel, and navigation are untouched.
+- Reduced `world_map_screen.dart` from 5,634 to 4,410 lines by removing 1,244 comment-only lines. Colour inventory improved from 2505 to **2438 direct colour usages across 87 files**.
+- Verified: full Flutter suite (**107 tests**), map regression (**26 tests**), `flutter analyze --no-pub`, formatting, and colour inventory pass. The normal web release remains verified from the preceding extraction slice; the known third-party `flutter_tts_web` Wasm dry-run warning is unchanged.
+
 ## 2026-09-09 - Extracted Adventure Bar and Quest Lens presentation seams
 
 - Added `lib/ui/screens/world_map/world_map_adventure_bar.dart` as a presentation-only Adventure Bar. It receives player/progress snapshots and intent callbacks; the parent retains provider reads, destination behavior, and navigation.
