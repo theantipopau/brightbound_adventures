@@ -21,7 +21,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// colors are included at their real counts, not exempted — the point of
 /// this test is visibility into the total, not letting any file opt out.
 const Map<String, int> _colorUsageAllowlist = {
-  'lib/ui/screens/world_map_screen.dart': 295,
+  'lib/ui/screens/world_map_screen.dart': 217,
+  'lib/ui/screens/world_map/world_map_living_board.dart': 11,
   'lib/ui/themes/app_theme.dart': 158,
   'lib/ui/widgets/fantasy_map.dart': 126,
   'lib/ui/screens/parent_dashboard_screen.dart': 118,

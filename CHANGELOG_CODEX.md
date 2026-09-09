@@ -2,6 +2,14 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-10 - Moved board-base painter into Living Board module
+
+- Moved the existing board-base `CustomPainter` implementation into `lib/ui/screens/world_map/world_map_living_board.dart` as `WorldMapBoardPainter` without changing its geometry, gradients, route track, selection pulse, or repaint behavior.
+- `WorldMapScreen` now supplies the painter as an explicit dependency while `WorldMapLivingBoard` owns the ordered board/terrain/shadow/route layer composition.
+- Updated the shrinking colour inventory deliberately: the parent screen budget decreased to 217 and the new Living Board module records its inherited 11 painter colour literals; total inventory remains **2438 usages across 88 files**.
+- Verified: map/presentation integration (**28 tests**), full Flutter suite (**107 tests**), `flutter analyze --no-pub`, formatting, colour inventory, and `flutter build web --release` pass.
+- Remaining coupling: zone/pawn scene widgets and terrain/route/shadow painters remain active dependencies of the Living Board. Authored assets and deeper scene decomposition remain open.
+
 ## 2026-09-10 - Extracted Living Board layer composition seam
 
 - Added `lib/ui/screens/world_map/world_map_living_board.dart` as a narrow composition boundary for the existing board base, terrain, shadow, route, and scene layers.
