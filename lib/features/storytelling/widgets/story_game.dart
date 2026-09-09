@@ -12,6 +12,7 @@ import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
 import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
 import 'package:brightbound_adventures/ui/widgets/difficulty_indicator.dart';
+import 'package:brightbound_adventures/features/interactions/types/drag_to_order.dart';
 import '../models/question.dart';
 
 /// Interactive storytelling game with book/story theme
@@ -228,6 +229,47 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
     });
   }
 
+  void _submitSequence(bool isCorrect) {
+    if (_showFeedback) return;
+
+    final avatarProvider = context.read<AvatarProvider>();
+    setState(() {
+      _showFeedback = true;
+      _isCorrect = isCorrect;
+      if (isCorrect) {
+        _correctAnswers++;
+        _currentStreak++;
+        _sparkleController.forward(from: 0);
+        _audioManager.playCorrectAnswer();
+      } else {
+        _currentStreak = 0;
+        _audioManager.playIncorrectAnswer();
+      }
+    });
+
+    if (isCorrect) {
+      showFloatingReward(
+        context,
+        '+10 ⭐',
+        color: Theme.of(context).colorScheme.secondary,
+      );
+      avatarProvider.setEmotion(
+        _currentStreak >= 3 ? AvatarEmotion.proud : AvatarEmotion.happy,
+        resetAfter: const Duration(milliseconds: 1800),
+      );
+    } else {
+      avatarProvider.setEmotion(
+        AvatarEmotion.sad,
+        resetAfter: const Duration(milliseconds: 800),
+      );
+    }
+    _prepareAiExplanation();
+
+    Future.delayed(const Duration(milliseconds: 2000), () {
+      if (mounted) _nextQuestion();
+    });
+  }
+
   void _nextQuestion() {
     if (_currentIndex < widget.questions.length - 1) {
       _pageController.reverse().then((_) {
@@ -304,7 +346,9 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
           } else if (_selectedAnswer == null) {
             setState(() => _selectedAnswer = 0);
           }
-        } else if (key == LogicalKeyboardKey.enter && !_showFeedback) {
+        } else if (key == LogicalKeyboardKey.enter &&
+            !_showFeedback &&
+            _currentQuestion.type != StoryQuestionType.sequencing) {
           _selectAnswer(_selectedAnswer ?? -1);
         }
       },
@@ -636,21 +680,31 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
 
                 const SizedBox(height: 28),
 
-                // Answer options
-                ..._currentQuestion.options.asMap().entries.map((entry) {
-                  return AnimatedAnswerOption(
-                    key: ValueKey('${_currentIndex}_${entry.key}'),
-                    label: entry.value,
-                    optionLetter:
-                        _optionLetters[entry.key % _optionLetters.length],
-                    state: _getOptionState(entry.key),
-                    isSelected: _selectedAnswer == entry.key,
-                    onTap:
-                        _showFeedback ? null : () => _selectAnswer(entry.key),
-                    accentColor: Colors.purpleAccent,
-                    animationDelay: entry.key * 60,
-                  );
-                }),
+                if (_currentQuestion.type == StoryQuestionType.sequencing &&
+                    _currentQuestion.sequenceItems != null &&
+                    _currentQuestion.correctOrder != null)
+                  DragToOrderQuestion(
+                    key: ValueKey('${_currentQuestion.id}_ordering'),
+                    prompt: _currentQuestion.question,
+                    items: _currentQuestion.sequenceItems!,
+                    correctOrder: _currentQuestion.correctOrder!,
+                    onSubmitted: _submitSequence,
+                  )
+                else
+                  ..._currentQuestion.options.asMap().entries.map((entry) {
+                    return AnimatedAnswerOption(
+                      key: ValueKey('${_currentIndex}_${entry.key}'),
+                      label: entry.value,
+                      optionLetter:
+                          _optionLetters[entry.key % _optionLetters.length],
+                      state: _getOptionState(entry.key),
+                      isSelected: _selectedAnswer == entry.key,
+                      onTap:
+                          _showFeedback ? null : () => _selectAnswer(entry.key),
+                      accentColor: Colors.purpleAccent,
+                      animationDelay: entry.key * 60,
+                    );
+                  }),
 
                 // Feedback section
                 if (_showFeedback) ...[

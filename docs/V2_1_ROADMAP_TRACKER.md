@@ -170,10 +170,16 @@ DELETED by end of release:
   - MODIFIED `lib/ui/widgets/juicy_button.dart` (rebuilt on Pressable, kept shimmer as separate 2s loop, tilt derived from press scale to preserve 0.9 feel, uses `MotionTokens.of(context).quick` for transitions).
   - CREATED tests: `test/ui/components/pressable_test.dart` (6 tests: tap, disabled, press animation, reduced motion, long press), `test/ui/widgets/juicy_button_test.dart` (8 baseline safety-net tests). All 84 tests passing; JuicyButton rebuild verified backward-compatible.
   - Partial: Did NOT migrate the 10 `AppMotion` call sites to `MotionTokens.of(context)` (numeracy_game.dart, multiple_choice_game.dart, science_game.dart, responsive_quiz_layout.dart, animated_answer_option.dart, skill_widgets.dart, quiz_widgets.dart, glowing_card.dart, animated_score_counter.dart) — those are NOT built on Pressable and deserve their own focused pass. Scope clarification: only `animated_answer_option.dart` (answer press-down) explicitly needed for shared behaviour; the others are separable. This follow-up is tracked as a subtask under Sprint 3/Sprint 4's motion cull work (MO-4/MO-5).
-- [ ] **WM-2 · WorldMapViewModel extraction** — [plan §4B] — part 1 done 2026-07-28
+- [ ] **WM-2 · WorldMapViewModel extraction** — [plan §4B] — part 1 done 2026-07-28; screen integration and semantic zone states landed 2026-09-09
   - **Part 1 (Done):** CREATED `lib/features/world_map/models/world_map_view_model.dart` (pure model: `calculateTotalStars`, `isZoneUnlocked`, `recommendedZoneIndex`, `zoneProgressFraction`, `zoneMoodText`, `zoneFeatureTags` — zero Flutter imports). CREATED `test/world_map/world_map_view_model_test.dart` (8 unit tests). All logic proven testable in isolation.
-  - **Part 2 (Pending):** MODIFY `lib/ui/screens/world_map_screen.dart` — monolith now *reads* the ViewModel instead of reimplementing; all unlock/progress/recommendation logic becomes a single ViewModel instance, constructed at the top of build().
-  - Done when: world_map_screen.dart no longer contains duplicated unlock/progress logic; model-layer tests cover the extracted functions.
+  - **Part 2 (Done for the current slice):** MODIFY `lib/ui/screens/world_map_screen.dart` — the active screen now reads the ViewModel for stars, unlocks, recommendations, progress, and semantic zone status. The semantic contract covers locked, available, recommended, in-progress, boss-ready, and mastered states.
+  - Done when: world_map_screen.dart no longer contains duplicated unlock/progress logic; model-layer tests cover the extracted functions. The broader WM-3/WM-4 monolith split remains open.
+
+- [~] **IN-1/IN-2 · First interactive learning slice** — prototype landed 2026-09-09
+  - CREATED `lib/features/interactions/types/drag_to_order.dart` with drag handles, keyboard-equivalent move controls, semantic labelling, and submission feedback.
+  - EXTENDED `StoryQuestion` with structured sequence items and wired one curated Story Springs question through the new interaction.
+  - CREATED `test/interactions/drag_to_order_test.dart` covering correct/incorrect ordering and the structured answer contract.
+  - Scope note: the full interaction framework and rollout across all sequencing content remain open; next interaction candidate is a number line.
 - [x] **VS-2 (start) · Colour inventory** — [plan §4E] — done 2026-07-28
   - CREATED `test/tools/color_inventory_test.dart` (counts `Color(0x`, `Colors.` per file; asserts per-file budget against a committed, shrinking-only allowlist; unlisted files with usage fail the test).
   - Done when: inventory report is in CI output (via `flutter test` stdout); baseline recorded here: **2506 direct colours across 87 files** (2026-07-28). Largest: `world_map_screen.dart` (295), `app_theme.dart` (158, token-definition file), `fantasy_map.dart` (126).

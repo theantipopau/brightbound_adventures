@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
+import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/features/world_map/models/world_map_view_model.dart';
 
 void main() {
@@ -83,5 +84,68 @@ void main() {
         ['Counting', 'Place Value', 'Numeracy'],
       );
     });
+
+    test(
+        'evaluateZoneState labels locked, available, in-progress, recommended and mastered states consistently',
+        () {
+      final noProgress = SkillProvider(_FakeWorldMapStorage());
+      noProgress.skills['word_woods'] = Skill(
+        id: 'word_woods',
+        name: 'Word Woods Intro',
+        description: 'Word Woods starter skill',
+        strand: 'literacy',
+        state: SkillState.practising,
+        difficulty: 1,
+        accuracy: 0.8,
+        hintsUsed: 0,
+        attempts: 1,
+        lastPracticed: DateTime(2024, 1, 1),
+      );
+      noProgress.skills['number_nebula'] = Skill(
+        id: 'number_nebula',
+        name: 'Number Nebula Intro',
+        description: 'Number Nebula starter skill',
+        strand: 'numeracy',
+        state: SkillState.mastered,
+        difficulty: 4,
+        accuracy: 0.95,
+        hintsUsed: 0,
+        attempts: 7,
+        lastPracticed: DateTime(2024, 1, 1),
+      );
+
+      final status = viewModel.evaluateZoneState(
+        zoneIndex: 1,
+        totalStars: 3,
+        skillProvider: noProgress,
+        recommendedZoneIndex: 1,
+      );
+
+      expect(status.state, WorldMapZoneState.recommended);
+      expect(status.label, 'Recommended');
+      expect(viewModel.zoneStateLabel(WorldMapZoneState.mastered), 'Mastered');
+    });
+
+    test(
+        'evaluateZoneState reports a locked zone before required stars are met',
+        () {
+      final status = viewModel.evaluateZoneState(
+        zoneIndex: 1,
+        totalStars: 2,
+        skillProvider: null,
+        recommendedZoneIndex: 0,
+      );
+
+      expect(status.state, WorldMapZoneState.locked);
+      expect(status.label, 'Locked');
+    });
   });
+}
+
+class _FakeWorldMapStorage extends LocalStorageService {
+  @override
+  Future<List<Skill>> getAllSkills() async => const [];
+
+  @override
+  Future<void> saveSkill(Skill skill) async {}
 }

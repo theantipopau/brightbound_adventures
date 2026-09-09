@@ -2,6 +2,15 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-09 - Story Springs drag-to-order vertical slice (IN-1/IN-2 prototype)
+
+- Added `lib/features/interactions/types/drag_to_order.dart`: a reusable ordering interaction with drag handles, forgiving card targets, move-up/move-down controls for keyboard-equivalent access, semantic labelling, and a single submission callback.
+- Extended `StoryQuestion` with structured `sequenceItems` and `correctOrder` data. Sequencing questions now derive a safe ordered `correctAnswer` for shared explanation paths instead of assuming every question is multiple-choice.
+- Added a curated seed-to-flower ordering question to Story Springs and routed structured sequencing questions through the new interaction while preserving the existing MCQ path for legacy questions.
+- Added `test/interactions/drag_to_order_test.dart` covering correct/incorrect submission, move controls, and the structured answer contract.
+- Verified: format, `flutter analyze --no-pub`, and the full Flutter suite pass. The colour inventory remains at 2506 direct colour usages across 87 files; the new interaction adds no direct colour debt.
+- Scope boundary: this is the first production interaction slice, not completion of the full IN-1 framework or IN-2 rollout across every storytelling sequencing question. Number-line, sorting, evidence-tap, and generator-wide interaction wiring remain open.
+
 ## 2026-08-02 - Synced `main` with Sprint 2 work (MO-3, WM-2 pt.1, VS-2); fixed a real CI format/lint failure
 
 - Fast-forward merged `codex/rpg-map-ui-loop` into `main` (clean ancestor, 0 behind/5 ahead) and pushed, bringing MO-3, WM-2 part 1, and VS-2 onto the default branch.

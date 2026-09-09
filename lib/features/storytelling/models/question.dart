@@ -11,6 +11,8 @@ class StoryQuestion {
   final StoryQuestionType type;
   final String? imageEmoji;
   final List<String>? storyParts; // For sequencing
+  final List<String>? sequenceItems;
+  final List<int>? correctOrder;
 
   const StoryQuestion({
     required this.id,
@@ -24,9 +26,19 @@ class StoryQuestion {
     this.type = StoryQuestionType.multipleChoice,
     this.imageEmoji,
     this.storyParts,
+    this.sequenceItems,
+    this.correctOrder,
   });
 
-  String get correctAnswer => options[correctIndex];
+  String get correctAnswer {
+    if (type == StoryQuestionType.sequencing &&
+        sequenceItems != null &&
+        correctOrder != null) {
+      return correctOrder!.map((index) => sequenceItems![index]).join(' -> ');
+    }
+    return options[correctIndex];
+  }
+
   bool isCorrect(int selectedIndex) => selectedIndex == correctIndex;
 }
 

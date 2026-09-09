@@ -8,6 +8,7 @@ import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/core/utils/isometric_engine.dart';
 import 'package:brightbound_adventures/core/utils/world_map_isometric_helper.dart';
+import 'package:brightbound_adventures/features/world_map/models/world_map_view_model.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/animated_cloud_background.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/particle_background.dart';
@@ -36,6 +37,8 @@ class WorldMapScreen extends StatefulWidget {
 
 class _WorldMapScreenState extends State<WorldMapScreen>
     with TickerProviderStateMixin {
+  late final WorldMapViewModel _viewModel = WorldMapViewModel(zones: _zones);
+
   // Animation controllers
   late AnimationController _entranceController;
   late AnimationController _floatController;
@@ -342,21 +345,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   int _recommendedZoneIndex(int totalStars, SkillProvider skillProvider) {
-    var fallback = _currentZoneIndex;
-    var lowestProgress = 2.0;
-
-    for (var i = 0; i < _zones.length; i++) {
-      if (!_isZoneUnlocked(i, totalStars, skillProvider)) continue;
-      final stats = skillProvider.getZoneStats(_zones[i].skillZoneId);
-      final progress =
-          _zoneProgressFraction(stats.masteredSkills, stats.totalSkills);
-      if (progress < 1.0 && progress < lowestProgress) {
-        fallback = i;
-        lowestProgress = progress;
-      }
-    }
-
-    return fallback;
+    return _viewModel.recommendedZoneIndex(
+      _currentZoneIndex,
+      totalStars,
+      skillProvider,
+    );
   }
 
   void _selectZoneByNumber(int index, int totalStars) {
@@ -373,19 +366,26 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   int _calculateTotalStars(SkillProvider skillProvider) {
-    // Calculate stars based on mastered skills
-    final stats = skillProvider.getProgressionStats();
-    return stats.mastered * 3 + stats.practising;
+    return _viewModel.calculateTotalStars(skillProvider);
   }
 
   bool _isZoneUnlocked(int zoneIndex, int totalStars,
       [SkillProvider? skillProvider]) {
-    if (totalStars < _zones[zoneIndex].requiredStars) return false;
-    final group = _zones[zoneIndex].requiredSkillGroup;
-    if (group == null || skillProvider == null) return true;
-    return skillProvider
-        .getSkillsByStrand(group)
-        .any((s) => s.state == SkillState.mastered);
+    return _viewModel.isZoneUnlocked(zoneIndex, totalStars, skillProvider);
+  }
+
+  WorldMapZoneStatus _zoneStatusForIndex(
+    int zoneIndex,
+    int totalStars,
+    SkillProvider skillProvider,
+  ) {
+    final recommendedIndex = _recommendedZoneIndex(totalStars, skillProvider);
+    return _viewModel.evaluateZoneState(
+      zoneIndex: zoneIndex,
+      totalStars: totalStars,
+      skillProvider: skillProvider,
+      recommendedZoneIndex: recommendedIndex,
+    );
   }
 
   void _moveToZone(int targetIndex) {
@@ -827,8 +827,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   double _zoneProgressFraction(int masteredSkills, int totalSkills) {
-    if (totalSkills <= 0) return 0;
-    return (masteredSkills / totalSkills).clamp(0, 1).toDouble();
+    return _viewModel.zoneProgressFraction(masteredSkills, totalSkills);
   }
 
   String _zoneMoodText(ZoneData zone) {
@@ -1015,7 +1014,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   Widget _buildZoneItem(ZoneData zone, BoxConstraints constraints,
       int totalStars, SkillProvider skillProvider) {
     final index = _zones.indexOf(zone);
-    final isUnlocked = _isZoneUnlocked(index, totalStars, skillProvider);
+    final zoneStatus = _zoneStatusForIndex(index, totalStars, skillProvider);
+    final isUnlocked = zoneStatus.state != WorldMapZoneState.locked;
     final isCurrentZone = _currentZoneIndex == index;
     final zoneStats = skillProvider.getZoneStats(zone.skillZoneId);
 
@@ -2044,7 +2044,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     required double uiScale,
   }) {
     final selected = _zones[_selectedZoneIndex];
-    final isUnlocked = _isZoneUnlocked(_selectedZoneIndex, totalStars);
+    final zoneStatus = _zoneStatusForIndex(
+      _selectedZoneIndex,
+      totalStars,
+      skillProvider,
+    );
+    final isUnlocked = zoneStatus.state != WorldMapZoneState.locked;
     final stats = skillProvider.getZoneStats(selected.skillZoneId);
     final progress =
         _zoneProgressFraction(stats.masteredSkills, stats.totalSkills);

@@ -4,5 +4,21 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"dart.analysisExcludedFolders": [
+			"${workspaceFolder}/build",
+			"${workspaceFolder}/.dart_tool",
+			"${workspaceFolder}/brightbound-api/node_modules"
+		],
+		"files.exclude": {
+			"**/.dart_tool": true,
+			"**/build": true,
+			"**/node_modules": true
+		},
+		"files.watcherExclude": {
+			"**/.dart_tool/**": true,
+			"**/build/**": true,
+			"**/node_modules/**": true
+		}
+	}
 }

@@ -35,6 +35,26 @@ class StorySpringsSkillQuestions {
   static const List<StoryQuestion> _sequencingQuestions = [
     // Level 1: Basics (3-4 steps)
     StoryQuestion(
+      id: 'ss_seq_drag_1',
+      skillId: 'skill_story_sequencing',
+      question: 'A seed becomes a flower. Put the story beats in order.',
+      options: [],
+      correctIndex: 0,
+      hint: 'A seed needs soil and water before it can grow.',
+      explanation:
+          'First plant the seed, then water it, then the shoot grows, and finally the flower opens.',
+      difficulty: 1,
+      type: StoryQuestionType.sequencing,
+      imageEmoji: '🌱',
+      sequenceItems: [
+        'A flower opens.',
+        'Plant the seed in soil.',
+        'Water the seed.',
+        'A green shoot grows.',
+      ],
+      correctOrder: [1, 2, 3, 0],
+    ),
+    StoryQuestion(
       id: 'ss_seq_1',
       skillId: 'skill_story_sequencing',
       question: 'What happens FIRST when getting ready for a day at the beach?',
