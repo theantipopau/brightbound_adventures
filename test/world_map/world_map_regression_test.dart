@@ -158,6 +158,24 @@ void main() {
           expect(find.text('Daily challenges'), findsOneWidget);
           expectNoUnknownException(tester, size);
         });
+
+        testWidgets(
+            'compact quest lens expands without losing its action ($label)',
+            (tester) async {
+          await pumpWorldMap(tester, size: size, themeMode: mode);
+
+          expect(find.byTooltip('Expand quest details'), findsOneWidget);
+          await tester.tap(find.byTooltip('Expand quest details'));
+          await tester.pump();
+
+          expect(find.byTooltip('Collapse quest details'), findsOneWidget);
+          expect(find.text('Enter Zone'), findsOneWidget);
+
+          await tester.tap(find.byTooltip('Collapse quest details'));
+          await tester.pump();
+          expect(find.byTooltip('Expand quest details'), findsOneWidget);
+          expectNoUnknownException(tester, size);
+        });
       }
     }
   }

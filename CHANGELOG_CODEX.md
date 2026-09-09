@@ -2,6 +2,16 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-09 - Responsive world-map Quest Lens (WM-4 responsive slice)
+
+- Extended the existing `_buildZoneSpotlightPanel` in `lib/ui/screens/world_map_screen.dart` into a responsive Quest Lens without creating a competing navigation or state system.
+- Compact layouts now provide a collapsed lens summary with truthful zone state, state reason, mastered-skill progress, XP/reward preview, and one primary Enter/Travel action. Existing detail content remains available through an accessible expand/collapse control.
+- Desktop retains the persistent detailed panel. Existing selected-zone state, `WorldMapViewModel` status evaluation, `SkillProvider` progress, `CosmeticUnlockService` reward data, and `_moveToZone` travel/navigation are preserved.
+- Added regression coverage for compact expansion/collapse and primary action visibility in `test/world_map/world_map_regression_test.dart`. The compact Adventure Bar remains unchanged.
+- Verified: Quest Lens/map regression (**26 tests**), full Flutter suite (**105 tests**), `flutter analyze --no-pub`, full formatting, colour inventory (**2505 usages**), and `flutter build web --release` pass.
+- The release build retains the known third-party `flutter_tts_web` Wasm dry-run warning; the normal web bundle succeeds.
+- Scope boundary: recommendation reasons remain based on available zone state, not learner-history evidence. Full map decomposition, authored map assets, reward migration, and golden coverage remain open.
+
 ## 2026-09-09 - Compact world-map adventure bar (WM-4 responsive slice)
 
 - Reworked the compact branch of `_buildTopHUD` in `lib/ui/screens/world_map_screen.dart` into a responsive identity/progress bar with avatar identity, stars, streak, and an accessible `Adventure menu` for profile, settings, parent dashboard, daily challenges, mini-games, Star Shop, and achievements.

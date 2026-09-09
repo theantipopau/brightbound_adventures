@@ -48,6 +48,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   // Keyboard focus
   final FocusNode _focusNode = FocusNode();
   int _selectedZoneIndex = 0;
+  bool _questLensExpanded = false;
 
   // Device detection
   bool _isPhoneDevice = false;
@@ -2265,6 +2266,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             maxHeight: compact ? 392 : 610,
           ),
           child: Container(
+            width: panelWidth,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -2296,13 +2298,17 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       Icon(Icons.assignment_rounded,
                           color: selected.color, size: 18),
                       const SizedBox(width: 6),
-                      Text(
-                        'Quest Board',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.7,
-                          color: selected.color.withValues(alpha: 0.9),
+                      Expanded(
+                        child: Text(
+                          'Quest Board',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.7,
+                            color: selected.color.withValues(alpha: 0.9),
+                          ),
                         ),
                       ),
                       const Spacer(),
@@ -2326,6 +2332,26 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                           ),
                         ),
                       ),
+                      if (compact)
+                        IconButton(
+                          tooltip: _questLensExpanded
+                              ? 'Collapse quest details'
+                              : 'Expand quest details',
+                          onPressed: () => setState(
+                            () => _questLensExpanded = !_questLensExpanded,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 32,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          icon: Icon(
+                            _questLensExpanded
+                                ? Icons.expand_less_rounded
+                                : Icons.expand_more_rounded,
+                          ),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -2423,178 +2449,265 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _zoneMoodText(selected),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.blueGrey.shade700,
-                      fontWeight: FontWeight.w600,
+                  if (compact && !_questLensExpanded) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      zoneStatus.label,
+                      style: TextStyle(
+                        color: selected.color,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    selected.description,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.blueGrey.shade800,
-                      height: 1.35,
+                    const SizedBox(height: 4),
+                    Text(
+                      zoneStatus.reason,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: LinearProgressIndicator(
-                      minHeight: 8,
+                    const SizedBox(height: 8),
+                    Text(
+                      'Mastered ${stats.masteredSkills}/${stats.totalSkills} skills',
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    const SizedBox(height: 6),
+                    LinearProgressIndicator(
+                      minHeight: 6,
                       value: progress,
-                      backgroundColor: Colors.blueGrey.shade100,
+                      borderRadius: BorderRadius.circular(999),
                       valueColor: AlwaysStoppedAnimation<Color>(selected.color),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Mastered ${stats.masteredSkills}/${stats.totalSkills} skills',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.blueGrey.shade700,
-                      fontWeight: FontWeight.w700,
+                    const SizedBox(height: 8),
+                    Text(
+                      '+$rewardXp XP${nextReward == null ? '' : ' • ${nextReward.name} next'}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 11,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildQuestRewardCard(
-                    rewardXp: rewardXp,
-                    nextReward: nextReward,
-                    rewardProgress: rewardProgress,
-                    rewardRequirement: rewardRequirement,
-                    nextSkillName: nextSkill?.name,
-                    selectedColor: selected.color,
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      _buildZoneChip(
-                        icon: isUnlocked ? Icons.lock_open : Icons.lock,
-                        label: isUnlocked
-                            ? 'Ready to play'
-                            : '${selected.requiredStars}⭐ required',
-                        color: isUnlocked ? Colors.green : Colors.redAccent,
+                    const SizedBox(height: 10),
+                    _buildQuestLensPrimaryAction(
+                      selected: selected,
+                      isUnlocked: isUnlocked,
+                      totalStars: totalStars,
+                    ),
+                  ],
+                  if (!compact || _questLensExpanded) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _zoneMoodText(selected),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.blueGrey.shade700,
+                        fontWeight: FontWeight.w600,
                       ),
-                      _buildZoneChip(
-                        icon: Icons.auto_graph_rounded,
-                        label: '${(progress * 100).round()}% complete',
-                        color: selected.color,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      selected.description,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.blueGrey.shade800,
+                        height: 1.35,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: List.generate(_zoneFeatureIcons(selected).length,
-                        (index) {
-                      final icon = _zoneFeatureIcons(selected)[index];
-                      return AnimatedBuilder(
-                        animation: _floatController,
-                        builder: (context, _) {
-                          final bob = math.sin(
-                                  (_floatController.value * math.pi * 2) +
-                                      index) *
-                              2;
-                          return Transform.translate(
-                            offset: Offset(0, bob),
-                            child: Container(
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                color: selected.color.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: selected.color.withValues(alpha: 0.30),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: LinearProgressIndicator(
+                        minHeight: 8,
+                        value: progress,
+                        backgroundColor: Colors.blueGrey.shade100,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(selected.color),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Mastered ${stats.masteredSkills}/${stats.totalSkills} skills',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.blueGrey.shade700,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildQuestRewardCard(
+                      rewardXp: rewardXp,
+                      nextReward: nextReward,
+                      rewardProgress: rewardProgress,
+                      rewardRequirement: rewardRequirement,
+                      nextSkillName: nextSkill?.name,
+                      selectedColor: selected.color,
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _buildZoneChip(
+                          icon: isUnlocked ? Icons.lock_open : Icons.lock,
+                          label: isUnlocked
+                              ? 'Ready to play'
+                              : '${selected.requiredStars}⭐ required',
+                          color: isUnlocked ? Colors.green : Colors.redAccent,
+                        ),
+                        _buildZoneChip(
+                          icon: Icons.auto_graph_rounded,
+                          label: '${(progress * 100).round()}% complete',
+                          color: selected.color,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: List.generate(
+                          _zoneFeatureIcons(selected).length, (index) {
+                        final icon = _zoneFeatureIcons(selected)[index];
+                        return AnimatedBuilder(
+                          animation: _floatController,
+                          builder: (context, _) {
+                            final bob = math.sin(
+                                    (_floatController.value * math.pi * 2) +
+                                        index) *
+                                2;
+                            return Transform.translate(
+                              offset: Offset(0, bob),
+                              child: Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: selected.color.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
                                     color:
-                                        selected.color.withValues(alpha: 0.18),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 3),
+                                        selected.color.withValues(alpha: 0.30),
                                   ),
-                                ],
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: selected.color
+                                          .withValues(alpha: 0.18),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(icon,
+                                      style: const TextStyle(fontSize: 16)),
+                                ),
                               ),
-                              child: Center(
-                                child: Text(icon,
-                                    style: const TextStyle(fontSize: 16)),
+                            );
+                          },
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: _zoneFeatureTags(selected)
+                          .map(
+                            (tag) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: selected.color.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(
+                                  color: selected.color.withValues(alpha: 0.16),
+                                ),
+                              ),
+                              child: Text(
+                                tag,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: selected.color,
+                                ),
                               ),
                             ),
-                          );
-                        },
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: _zoneFeatureTags(selected)
-                        .map(
-                          (tag) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: selected.color.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(
-                                color: selected.color.withValues(alpha: 0.16),
-                              ),
-                            ),
-                            child: Text(
-                              tag,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                color: selected.color,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _isMoving
-                          ? null
-                          : () {
-                              if (isUnlocked) {
-                                _moveToZone(_selectedZoneIndex);
-                              } else {
-                                _showLockedDialog(selected, totalStars);
-                              }
-                            },
-                      icon: Icon(isUnlocked ? Icons.rocket_launch : Icons.lock),
-                      label: Text(
-                        isUnlocked
-                            ? (_currentZoneIndex == _selectedZoneIndex
-                                ? 'Enter Zone'
-                                : 'Travel Here')
-                            : 'Need ${selected.requiredStars}⭐',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: selected.color,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        minimumSize: const Size.fromHeight(48),
+                          )
+                          .toList(),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isMoving
+                            ? null
+                            : () {
+                                if (isUnlocked) {
+                                  _moveToZone(_selectedZoneIndex);
+                                } else {
+                                  _showLockedDialog(selected, totalStars);
+                                }
+                              },
+                        icon:
+                            Icon(isUnlocked ? Icons.rocket_launch : Icons.lock),
+                        label: Text(
+                          isUnlocked
+                              ? (_currentZoneIndex == _selectedZoneIndex
+                                  ? 'Enter Zone'
+                                  : 'Travel Here')
+                              : 'Need ${selected.requiredStars}⭐',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: selected.color,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          minimumSize: const Size.fromHeight(48),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestLensPrimaryAction({
+    required ZoneData selected,
+    required bool isUnlocked,
+    required int totalStars,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: _isMoving
+            ? null
+            : () {
+                if (isUnlocked) {
+                  _moveToZone(_selectedZoneIndex);
+                } else {
+                  _showLockedDialog(selected, totalStars);
+                }
+              },
+        icon: Icon(isUnlocked ? Icons.rocket_launch : Icons.lock),
+        label: Text(
+          isUnlocked
+              ? (_currentZoneIndex == _selectedZoneIndex
+                  ? 'Enter Zone'
+                  : 'Travel Here')
+              : 'Need ${selected.requiredStars} stars',
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: selected.color,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          minimumSize: const Size.fromHeight(48),
         ),
       ),
     );
