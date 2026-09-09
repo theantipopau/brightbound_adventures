@@ -2,6 +2,14 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-10 - Extracted Living Board layer composition seam
+
+- Added `lib/ui/screens/world_map/world_map_living_board.dart` as a narrow composition boundary for the existing board base, terrain, shadow, route, and scene layers.
+- Modified `lib/ui/screens/world_map_screen.dart` to provide immutable positions, painter inputs, zoom, avatar position, and the existing scene widget. Providers, selection, travel animation, pawn/zone rendering, callbacks, and navigation remain parent-owned.
+- No visual redesign or persistence/state-management change was introduced. Existing painters and map interaction behavior remain active.
+- Verified: map/presentation integration (**28 tests**), full Flutter suite (**107 tests**), `flutter analyze --no-pub`, formatting, colour inventory (**2438 usages**), and `flutter build web --release` pass.
+- Scope boundary: board painter, terrain painter, route painter, pawn rendering, and orchestration remain coupled to the parent. Authored assets, scene-layer decomposition, and performance budgets remain open.
+
 ## 2026-09-09 - Removed legacy commented map presentation code
 
 - Removed the non-executable legacy Adventure Bar and Quest Lens implementations left inside `lib/ui/screens/world_map_screen.dart` after the presentation extraction.

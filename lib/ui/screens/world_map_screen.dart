@@ -17,6 +17,7 @@ import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
 import 'package:brightbound_adventures/ui/screens/world_map/world_map_adventure_bar.dart';
 import 'package:brightbound_adventures/ui/screens/world_map/world_map_quest_lens.dart';
+import 'package:brightbound_adventures/ui/screens/world_map/world_map_living_board.dart';
 import 'package:brightbound_adventures/ui/transitions/app_routes.dart';
 import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
 import 'package:brightbound_adventures/ui/screens/daily_challenge_screen.dart';
@@ -24,9 +25,6 @@ import 'package:brightbound_adventures/ui/screens/mini_games_screen.dart';
 import 'package:brightbound_adventures/ui/screens/settings_screen.dart';
 import 'package:brightbound_adventures/ui/screens/parent_dashboard_screen.dart';
 import 'package:brightbound_adventures/ui/screens/profile_stats_screen.dart';
-import 'package:brightbound_adventures/ui/painters/shadow_painter.dart';
-import 'package:brightbound_adventures/ui/painters/terrain_painter.dart';
-import 'package:brightbound_adventures/ui/painters/path_painter.dart';
 
 /// Enhanced World Map with 3D-style visuals and progressive unlocking
 class WorldMapScreen extends StatefulWidget {
@@ -512,95 +510,40 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         return Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            // Premium raised board base under the world islands.
-                            RepaintBoundary(
-                              child: Transform.scale(
-                                alignment: Alignment.center,
-                                scale: _mapZoom,
-                                child: CustomPaint(
-                                  painter: _BoardGameBasePainter(
-                                    zones: _zones,
-                                    positions: {
-                                      for (final z in _zones)
-                                        z.id: WorldMapIsometricHelper
-                                            .gridToScreen(
-                                          _zoneIsometricPositions[z.id]!,
-                                          Size(constraints.maxWidth,
-                                              constraints.maxHeight),
-                                        ),
-                                    },
-                                    selectedZoneId:
-                                        _zones[_selectedZoneIndex].id,
-                                    animationValue: _ambientAnimationsRunning
-                                        ? _floatController.value
-                                        : 0,
+                            WorldMapLivingBoard(
+                              zones: _zones,
+                              screenPositions: {
+                                for (final z in _zones)
+                                  z.id: WorldMapIsometricHelper.gridToScreen(
+                                    _zoneIsometricPositions[z.id]!,
+                                    Size(constraints.maxWidth,
+                                        constraints.maxHeight),
                                   ),
-                                  size: Size(constraints.maxWidth,
-                                      constraints.maxHeight),
-                                ),
+                              },
+                              avatarPosition: avatarIsoPos,
+                              pathAnimation: _pathController,
+                              totalStars: totalStars,
+                              mapZoom: _mapZoom,
+                              size: Size(
+                                constraints.maxWidth,
+                                constraints.maxHeight,
                               ),
-                            ),
-
-                            // Terrain patches showing biome regions under each zone
-                            RepaintBoundary(
-                              child: Transform.scale(
-                                alignment: Alignment.center,
-                                scale: _mapZoom,
-                                child: CustomPaint(
-                                  painter: TerrainPainter(zones: _zones),
-                                  size: Size(constraints.maxWidth,
-                                      constraints.maxHeight),
-                                ),
+                              boardPainter: _BoardGameBasePainter(
+                                zones: _zones,
+                                positions: {
+                                  for (final z in _zones)
+                                    z.id: WorldMapIsometricHelper.gridToScreen(
+                                      _zoneIsometricPositions[z.id]!,
+                                      Size(constraints.maxWidth,
+                                          constraints.maxHeight),
+                                    ),
+                                },
+                                selectedZoneId: _zones[_selectedZoneIndex].id,
+                                animationValue: _ambientAnimationsRunning
+                                    ? _floatController.value
+                                    : 0,
                               ),
-                            ),
-
-                            // Shadows for 3D depth
-                            RepaintBoundary(
-                              child: Transform.scale(
-                                alignment: Alignment.center,
-                                scale: _mapZoom,
-                                child: CustomPaint(
-                                  painter: ShadowPainter(
-                                    zones: _zones,
-                                    avatarPosition: avatarIsoPos,
-                                  ),
-                                  size: Size(constraints.maxWidth,
-                                      constraints.maxHeight),
-                                ),
-                              ),
-                            ),
-
-                            // Animated paths between zones (optimized)
-                            RepaintBoundary(
-                              child: Transform.scale(
-                                alignment: Alignment.center,
-                                scale: _mapZoom,
-                                child: CustomPaint(
-                                  painter: PathPainter(
-                                    zones: _zones,
-                                    zoneScreenPositions: {
-                                      for (final z in _zones)
-                                        z.id: WorldMapIsometricHelper
-                                            .gridToScreen(
-                                          _zoneIsometricPositions[z.id]!,
-                                          Size(constraints.maxWidth,
-                                              constraints.maxHeight),
-                                        ),
-                                    },
-                                    animation: _pathController,
-                                    totalStars: totalStars,
-                                  ),
-                                  size: Size(constraints.maxWidth,
-                                      constraints.maxHeight),
-                                ),
-                              ),
-                            ),
-
-                            // Combined isometric render layer (Zones + Avatar)
-                            Transform.scale(
-                              alignment: Alignment.center,
-                              scale: _mapZoom,
-                              child: Stack(
+                              sceneLayer: Stack(
                                 clipBehavior: Clip.none,
                                 children: _build3DMapLayer(
                                   constraints,

@@ -122,7 +122,7 @@ npm.cmd run deploy
 
 Current version: `2.0.0+2`. Proposed milestone: **v2.1 Living World**.
 
-Latest verified local baseline: `flutter analyze`, the full Flutter test suite (105 tests), colour inventory, formatting, and `flutter build web --release` pass. The release build retains a known third-party `flutter_tts_web` Wasm dry-run warning; the normal web bundle succeeds.
+Latest verified local baseline: `flutter analyze`, the full Flutter test suite (107 tests), colour inventory, formatting, and `flutter build web --release` pass. The release build retains a known third-party `flutter_tts_web` Wasm dry-run warning; the normal web bundle succeeds.
 
 The current v2.1 slice includes a tested Story Springs drag-to-order prototype, semantic world-map zone-state logic, clearer map state badges, a compact adventure bar that removes the known phone HUD overflow, a responsive Quest Lens for selected/recommended zones, reduced idle map motion, larger avatar faces, and more usable first-time name entry. Reachable placeholder paths, reward-call-site consolidation, the full map shell split, and broader non-MCQ interaction coverage remain open roadmap work.
 
