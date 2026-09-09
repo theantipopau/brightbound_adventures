@@ -15,7 +15,8 @@ import 'package:brightbound_adventures/ui/widgets/visual_effects/particle_backgr
 import 'package:brightbound_adventures/ui/widgets/visual_effects/adventure_pattern_overlay.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
-import 'package:brightbound_adventures/ui/widgets/animated_score_counter.dart';
+import 'package:brightbound_adventures/ui/screens/world_map/world_map_adventure_bar.dart';
+import 'package:brightbound_adventures/ui/screens/world_map/world_map_quest_lens.dart';
 import 'package:brightbound_adventures/ui/transitions/app_routes.dart';
 import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
 import 'package:brightbound_adventures/ui/screens/daily_challenge_screen.dart';
@@ -1193,6 +1194,35 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   Widget _buildTopHUD(Avatar avatar, int totalStars,
       {required bool compact, required double uiScale}) {
     final streakService = Provider.of<StreakService>(context);
+    final dailyChallenge = context.read<DailyChallengeService>();
+    final spacedRepetition = context.read<SpacedRepetitionService>();
+    return WorldMapAdventureBar(
+      avatar: avatar,
+      totalStars: totalStars,
+      streak: streakService.currentStreak,
+      dailyCompleted: dailyChallenge.todaysCompletionCount,
+      dailyTotal: dailyChallenge.todaysChallenges.length,
+      reviewDue: spacedRepetition.dueCount,
+      compact: compact,
+      uiScale: uiScale,
+      onAvatarInfo: () => _showAvatarInfo(context, avatar),
+      onAvatarCreator: () => Navigator.pushNamed(context, '/avatar-creator'),
+      onAppInfo: () => _showAppInfoDialog(context),
+      onProfile: _showProfileStats,
+      onSettings: _showSettings,
+      onParentDashboard: _showParentDashboard,
+      onDailyChallenges: _showDailyChallenges,
+      onMiniGames: _showMiniGamesMenu,
+      onShop: _showShop,
+      onAchievements: _showAchievements,
+    );
+
+    /*
+     * Legacy implementation retained temporarily below while the extracted
+     * presentation seam is verified. It will be removed once integration
+     * tests pass against the new widget.
+     */
+    /*
     if (compact) {
       return _buildCompactTopHUD(avatar, totalStars, streakService, uiScale);
     }
@@ -1559,9 +1589,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           ],
         ),
       ),
-    );
+    ); */
   }
 
+  /* Legacy compact HUD retained in history during the extraction. The active
+   * presentation is WorldMapAdventureBar.
   Widget _buildCompactTopHUD(
     Avatar avatar,
     int totalStars,
@@ -1743,6 +1775,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         break;
     }
   }
+
+  }
+  */
 
   Widget _buildWorldSelectBanner({
     required bool compact,
@@ -2252,6 +2287,48 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     final rewardRequirement = nextReward == null
         ? null
         : unlockService.getUnlockDescription(nextReward);
+
+    return WorldMapQuestLens(
+      selected: selected,
+      status: zoneStatus,
+      stats: stats,
+      progress: progress,
+      rewardXp: rewardXp,
+      nextReward: nextReward,
+      rewardProgress: rewardProgress,
+      rewardRequirement: rewardRequirement,
+      nextSkillName: nextSkill?.name,
+      moodText: _zoneMoodText(selected),
+      featureIcons: _zoneFeatureIcons(selected),
+      featureTags: _zoneFeatureTags(selected),
+      isUnlocked: isUnlocked,
+      compact: compact,
+      uiScale: uiScale,
+      expanded: _questLensExpanded,
+      isMoving: _isMoving,
+      isCurrentZone: _currentZoneIndex == _selectedZoneIndex,
+      onToggleExpanded: () => setState(
+        () => _questLensExpanded = !_questLensExpanded,
+      ),
+      onPrimaryAction: () {
+        if (isUnlocked) {
+          _moveToZone(_selectedZoneIndex);
+        } else {
+          _showLockedDialog(selected, totalStars);
+        }
+      },
+      onRewardPreview: nextReward == null
+          ? null
+          : () => _showRewardPreview(
+                nextReward,
+                requirement: rewardRequirement,
+                progress: rewardProgress,
+              ),
+    );
+
+    /* Legacy inline Quest Lens implementation retained temporarily while the
+     * extracted presentation seam is verified by integration tests. */
+    /*
     final panelWidth = compact ? 252.0 : 304.0;
 
     return Positioned(
@@ -2678,6 +2755,10 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
+    */
+  }
+
+  /* Legacy inline Quest Lens helpers retained in history during extraction.
   Widget _buildQuestLensPrimaryAction({
     required ZoneData selected,
     required bool isUnlocked,
@@ -2895,6 +2976,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
+  */
   void _showRewardPreview(
     CosmeticItem reward, {
     required String? requirement,
@@ -2995,6 +3077,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
+  /* Legacy Quest Lens chip renderer retained in history during extraction.
   Widget _buildZoneChip({
     required IconData icon,
     required String label,
@@ -3025,6 +3108,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
+  }
+  */
   void _showLockedDialog(ZoneData zone, int totalStars) {
     final starsNeeded = zone.requiredStars - totalStars;
     final progress = zone.requiredStars <= 0
@@ -3421,38 +3506,6 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   void _showShop() {
     Navigator.pushNamed(context, '/shop');
-  }
-
-  String _getCharacterEmoji(String character) {
-    switch (character.toLowerCase()) {
-      case 'fox':
-        return '🦊';
-      case 'deer':
-        return '🦌';
-      case 'rabbit':
-      case 'bunny':
-        return '🐰';
-      case 'bear':
-        return '🐻';
-      case 'owl':
-        return '🦉';
-      case 'cat':
-        return '🐱';
-      case 'penguin':
-        return '🐧';
-      case 'koala':
-        return '🐨';
-      case 'panda':
-        return '🐼';
-      case 'otter':
-        return '🦦';
-      case 'wolf':
-        return '🐺';
-      case 'tiger':
-        return '🐯';
-      default:
-        return '🦊';
-    }
   }
 
   Widget _buildKeyboardHint() {

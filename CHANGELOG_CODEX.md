@@ -2,6 +2,16 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-09 - Extracted Adventure Bar and Quest Lens presentation seams
+
+- Added `lib/ui/screens/world_map/world_map_adventure_bar.dart` as a presentation-only Adventure Bar. It receives player/progress snapshots and intent callbacks; the parent retains provider reads, destination behavior, and navigation.
+- Added `lib/ui/screens/world_map/world_map_quest_lens.dart` as a presentation-only Quest Lens. It receives selected-zone state, progress, reward preview, and action callbacks; `_moveToZone`, selection, expansion state, and navigation remain parent-owned.
+- Added `test/world_map/world_map_presentation_test.dart` covering compact Adventure Menu availability, Quest Lens state copy, expansion, primary action, semantics, and the 48px action target.
+- Preserved the committed Adventure Bar and Quest Lens behavior: compact destinations, desktop detail, compact summary, expand/collapse, reward/progress presentation, and travel callbacks remain covered by the parent integration suite.
+- Verified: extracted presentation tests plus map regression (**28 focused tests**), full Flutter suite (**107 tests**), `flutter analyze --no-pub`, formatting, colour inventory (**2505 usages**), and `flutter build web --release` pass.
+- Remaining coupling: `world_map_screen.dart` still owns the Living Board, painters, pawn travel, and orchestration. Temporary commented legacy presentation bodies remain in the monolith as historical extraction context; they are non-executable and should be removed in a follow-up cleanup once review accepts the new seams.
+- The release build retains the unchanged third-party `flutter_tts_web` Wasm dry-run warning; the normal web bundle succeeds.
+
 ## 2026-09-09 - Responsive world-map Quest Lens (WM-4 responsive slice)
 
 - Extended the existing `_buildZoneSpotlightPanel` in `lib/ui/screens/world_map_screen.dart` into a responsive Quest Lens without creating a competing navigation or state system.
