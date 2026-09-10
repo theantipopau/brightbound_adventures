@@ -18,6 +18,7 @@ import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
 import 'package:brightbound_adventures/ui/screens/world_map/world_map_adventure_bar.dart';
 import 'package:brightbound_adventures/ui/screens/world_map/world_map_quest_lens.dart';
 import 'package:brightbound_adventures/ui/screens/world_map/world_map_living_board.dart';
+import 'package:brightbound_adventures/ui/screens/world_map/world_map_scene_layer.dart';
 import 'package:brightbound_adventures/ui/transitions/app_routes.dart';
 import 'package:brightbound_adventures/ui/screens/trophy_room_screen.dart';
 import 'package:brightbound_adventures/ui/screens/daily_challenge_screen.dart';
@@ -545,12 +546,42 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                               ),
                               sceneLayer: Stack(
                                 clipBehavior: Clip.none,
-                                children: _build3DMapLayer(
-                                  constraints,
-                                  totalStars,
-                                  skillProvider,
-                                  avatar,
-                                ),
+                                children: [
+                                  WorldMapSceneLayer(
+                                    zones: _zones,
+                                    avatar: avatar,
+                                    positions: _zoneIsometricPositions,
+                                    avatarPosition: avatarIsoPos!,
+                                    zoneSemanticsLabels: {
+                                      for (final zone in _zones)
+                                        zone.id: _zoneSemanticsLabel(
+                                          zone,
+                                          skillProvider,
+                                          totalStars,
+                                        ),
+                                    },
+                                    zoneSemanticsHints: {
+                                      for (final zone in _zones)
+                                        zone.id: _zoneSemanticsHint(
+                                          zone,
+                                          skillProvider,
+                                          totalStars,
+                                        ),
+                                    },
+                                    zoneBuilder: (zone) => _buildZoneItem(
+                                      zone,
+                                      constraints,
+                                      totalStars,
+                                      skillProvider,
+                                    ),
+                                    avatarBuilder: (sceneAvatar, position) =>
+                                        _buildAvatarItem(
+                                      sceneAvatar,
+                                      position,
+                                      constraints,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
 
@@ -867,95 +898,6 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     }
   }
 
-  List<Widget> _build3DMapLayer(
-    BoxConstraints constraints,
-    int totalStars,
-    SkillProvider skillProvider,
-    Avatar avatar,
-  ) {
-    return [
-      AnimatedBuilder(
-        animation:
-            Listenable.merge([_avatarMoveController, _entranceController]),
-        builder: (context, child) {
-          // 1. Calculate Avatar Isometric Position
-          IsometricPosition avatarIsoPos;
-          if (_isMoving && _targetZoneIndex != null) {
-            final currentZone = _zones[_currentZoneIndex];
-            final targetZone = _zones[_targetZoneIndex!];
-
-            final startIso = _zoneIsometricPositions[currentZone.id]!;
-            final endIso = _zoneIsometricPositions[targetZone.id]!;
-
-            // Use 3D lerp logic
-            // Curved path simulation:
-            // t is linear progress (0->1)
-            // We can just lerp linearly in grid space for depth sorting
-            // But visual position might have arc
-
-            double t =
-                Curves.easeInOutCubic.transform(_avatarMoveController.value);
-            avatarIsoPos = startIso.lerp(endIso, t);
-
-            // Add artificial Z height for jump arc if needed for depth?
-            // Actually depth = x+y-z. Higher Z = lower depth value?
-            // Isometric engine says: depth => x + y - z;
-            // If we jump up (increase Z), depth decreases (objects behind us might become in front?)
-            // Usually jumping shouldn't change sort order significantly unless we jump OVER something.
-            // Let's keep Z=0 for sorting purposes to avoid flickering.
-          } else {
-            final currentZone = _zones[_currentZoneIndex];
-            avatarIsoPos = _zoneIsometricPositions[currentZone.id]!;
-          }
-
-          // 2. Prepare Render Items
-          final List<dynamic> renderItems = [..._zones, avatar];
-
-          // Helper to get depth position
-          IsometricPosition getPos(dynamic item) {
-            if (item is ZoneData) {
-              return _zoneIsometricPositions[item.id]!;
-            } else {
-              return avatarIsoPos;
-            }
-          }
-
-          // 3. Sort by Depth
-          // We can use WorldMapIsometricHelper logic, leveraging engine
-          // Manual sort here since helper expects generic list
-          renderItems.sort((a, b) {
-            final posA = getPos(a);
-            final posB = getPos(b);
-            // Higher depth value = closer to camera (drawn LAST)
-            // Painter/Stack draws first items at bottom, last items on top.
-            // So we want smallest depth first (background), largest depth last (foreground).
-            // Engine.depth = x + y - z.
-            // Small x,y (top-left of grid) = Background?
-            // Let's check transformation:
-            // screenY = (x+y) * tileHeight/2.
-            // Larger (x+y) means larger Screen Y (down the screen).
-            // Objects lower on screen are "closer".
-            // So larger (x+y) should be drawn LAST.
-            // Hence sort ascending by depth.
-            return posA.depth.compareTo(posB.depth);
-          });
-
-          // 4. Build Widgets
-          return Stack(
-            children: renderItems.map((item) {
-              if (item is ZoneData) {
-                return _buildZoneItem(
-                    item, constraints, totalStars, skillProvider);
-              } else {
-                return _buildAvatarItem(avatar, avatarIsoPos, constraints);
-              }
-            }).toList(),
-          );
-        },
-      ),
-    ];
-  }
-
   Widget _buildZoneItem(ZoneData zone, BoxConstraints constraints,
       int totalStars, SkillProvider skillProvider) {
     final index = _zones.indexOf(zone);
@@ -1057,6 +999,33 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         ),
       ),
     );
+  }
+
+  String _zoneSemanticsLabel(
+    ZoneData zone,
+    SkillProvider skillProvider,
+    int totalStars,
+  ) {
+    final index = _zones.indexOf(zone);
+    final status = _zoneStatusForIndex(index, totalStars, skillProvider);
+    final stats = skillProvider.getZoneStats(zone.skillZoneId);
+    final accessLabel = status.state == WorldMapZoneState.locked
+      ? 'locked'
+      : 'unlocked';
+    return '${zone.name}, $accessLabel, '
+        '${stats.masteredSkills} of ${stats.totalSkills} skills mastered';
+  }
+
+  String _zoneSemanticsHint(
+    ZoneData zone,
+    SkillProvider skillProvider,
+    int totalStars,
+  ) {
+    final index = _zones.indexOf(zone);
+    final state = _zoneStatusForIndex(index, totalStars, skillProvider).state;
+    return state == WorldMapZoneState.locked
+        ? 'Earn more stars to unlock this zone'
+        : 'Double tap to travel to this zone';
   }
 
   Widget _buildAvatarItem(

@@ -2,6 +2,14 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-10 - Extracted Living Board scene depth layer
+
+- Added `lib/ui/screens/world_map/world_map_scene_layer.dart` to own depth ordering for zone nodes and the avatar pawn while preserving parent-provided rendering callbacks.
+- `WorldMapScreen` still owns zone/pawn visuals, selection, movement animation, providers, and navigation; the new layer only sorts scene items and preserves per-zone accessibility labels/hints.
+- No visible redesign or interaction behavior changed. Existing zone semantics, touch/pointer activation, keyboard navigation, and painter composition remain covered by the integration suite.
+- Verified: map/presentation integration (**28 tests**), full Flutter suite (**107 tests**), `flutter analyze --no-pub`, formatting, colour inventory (**2438 usages**), and `flutter build web --release` pass.
+- Current parent reduction: `world_map_screen.dart` decreased from 4,227 to 4,203 lines; the new scene-layer boundary is 68 lines. Terrain, shadow, route, pawn, and zone rendering remain the next decomposition targets.
+
 ## 2026-09-10 - Moved board-base painter into Living Board module
 
 - Moved the existing board-base `CustomPainter` implementation into `lib/ui/screens/world_map/world_map_living_board.dart` as `WorldMapBoardPainter` without changing its geometry, gradients, route track, selection pulse, or repaint behavior.
