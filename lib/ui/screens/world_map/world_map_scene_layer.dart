@@ -12,7 +12,8 @@ class WorldMapSceneLayer extends StatelessWidget {
   final Map<String, IsometricPosition> positions;
   final IsometricPosition avatarPosition;
   final Widget Function(ZoneData zone) zoneBuilder;
-  final Widget Function(Avatar avatar, IsometricPosition position) avatarBuilder;
+  final Widget Function(Avatar avatar, IsometricPosition position)
+      avatarBuilder;
   final Map<String, String> zoneSemanticsLabels;
   final Map<String, String> zoneSemanticsHints;
 

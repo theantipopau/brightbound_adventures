@@ -1009,9 +1009,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     final index = _zones.indexOf(zone);
     final status = _zoneStatusForIndex(index, totalStars, skillProvider);
     final stats = skillProvider.getZoneStats(zone.skillZoneId);
-    final accessLabel = status.state == WorldMapZoneState.locked
-      ? 'locked'
-      : 'unlocked';
+    final accessLabel =
+        status.state == WorldMapZoneState.locked ? 'locked' : 'unlocked';
     return '${zone.name}, $accessLabel, '
         '${stats.masteredSkills} of ${stats.totalSkills} skills mastered';
   }
