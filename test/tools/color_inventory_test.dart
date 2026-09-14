@@ -47,7 +47,11 @@ const Map<String, int> _colorUsageAllowlist = {
   'lib/ui/widgets/animated_answer_option.dart': 35,
   'lib/ui/widgets/animated_character.dart': 34,
   'lib/ui/screens/onboarding_screen.dart': 33,
-  'lib/ui/screens/profile_stats_screen.dart': 32,
+  // Raised from 32 during the Player Profile data-correctness fix
+  // (2026-09-15): added 7 zone-state status-chip colours (one per
+  // WorldMapZoneState) so state is communicated by colour+icon+label
+  // together, not colour alone.
+  'lib/ui/screens/profile_stats_screen.dart': 39,
   'lib/features/storytelling/widgets/story_results_screen.dart': 32,
   'lib/ui/widgets/streak_widget.dart': 29,
   'lib/features/motor/widgets/motor_results_screen.dart': 29,
@@ -89,6 +93,9 @@ const Map<String, int> _colorUsageAllowlist = {
   'lib/features/science/screens/science_practice_screen.dart': 6,
   'lib/core/models/daily_challenge.dart': 6,
   'lib/core/models/shop_item.dart': 5,
+  // Each zone's identity colour is genuinely content data (one colour per
+  // zone, not styling) — see ZoneCatalog's own doc comment.
+  'lib/core/models/zone_catalog.dart': 9,
   'lib/ui/widgets/visual_effects/animated_cloud_background.dart': 4,
   'lib/core/models/achievement.dart': 4,
   'lib/ui/widgets/streak_badge.dart': 3,

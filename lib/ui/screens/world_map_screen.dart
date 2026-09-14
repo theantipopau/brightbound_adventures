@@ -69,97 +69,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   // Isometric 3D state
   late Map<String, IsometricPosition> _zoneIsometricPositions;
 
-  // Zone definitions with progression order - FULL MAP SPREAD
-  final List<ZoneData> _zones = [
-    const ZoneData(
-      id: 'word-woods',
-      name: 'Word Woods',
-      emoji: '🌲',
-      color: AppColors.wordWoodsColor,
-      // Lower-left starter zone.
-      position: Offset(0.06, 0.86),
-      description: 'Master letters & reading!',
-      order: 0,
-      requiredStars: 0,
-    ),
-    const ZoneData(
-      id: 'number-nebula',
-      name: 'Number Nebula',
-      emoji: '🌌',
-      color: AppColors.numberNebulaColor,
-      // Lower-right anchor.
-      position: Offset(0.94, 0.84),
-      description: 'Explore math & numbers!',
-      order: 1,
-      requiredStars: 3,
-    ),
-    const ZoneData(
-      id: 'math-facts',
-      name: 'Math Facts',
-      emoji: '🔢',
-      color: Color(0xFFFF6B6B),
-      // Mid-left, clear of the starter zone.
-      position: Offset(0.18, 0.62),
-      description: 'Master multiplication & addition!',
-      order: 2,
-      requiredStars: 6,
-    ),
-    const ZoneData(
-      id: 'story-springs',
-      name: 'Story Springs',
-      emoji: '📖',
-      color: AppColors.storyspringsColor,
-      // Mid-right, pulled away from the quest panel.
-      position: Offset(0.72, 0.60),
-      description: 'Create amazing stories!',
-      order: 3,
-      requiredStars: 10,
-    ),
-    const ZoneData(
-      id: 'science-explorers',
-      name: 'Science Explorers',
-      emoji: '🔬',
-      color: Color(0xFF4DB6AC), // Teal
-      // Upper-left anchor.
-      position: Offset(0.08, 0.36),
-      description: 'Discover the world!',
-      order: 4,
-      requiredStars: 15,
-    ),
-    const ZoneData(
-      id: 'creative-corner',
-      name: 'Creative Corner',
-      emoji: '🎨',
-      color: Color(0xFFFFB74D), // Orange
-      // Upper-right, with room for the side panel.
-      position: Offset(0.82, 0.34),
-      description: 'Draw and make music!',
-      order: 5,
-      requiredStars: 20,
-    ),
-    const ZoneData(
-      id: 'puzzle-peaks',
-      name: 'Puzzle Peaks',
-      emoji: '🧩',
-      color: AppColors.puzzlePeaksColor,
-      // Upper centre-left, spaced away from Science Explorers.
-      position: Offset(0.34, 0.18),
-      description: 'Solve tricky puzzles!',
-      order: 6,
-      requiredStars: 22,
-    ),
-    const ZoneData(
-      id: 'adventure-arena',
-      name: 'Adventure Arena',
-      emoji: '🏆',
-      color: AppColors.adventureArenaColor,
-      // Upper centre-right, spaced away from Creative Corner.
-      position: Offset(0.60, 0.16),
-      description: 'Ultimate challenges!',
-      order: 7,
-      requiredStars: 28,
-    ),
-  ];
+  // Zone definitions with progression order - FULL MAP SPREAD.
+  // Sourced from ZoneCatalog (lib/core/models/zone_catalog.dart), the single
+  // shared definition of the eight zones — previously this list was
+  // hand-duplicated here and in profile_stats_screen.dart (which had drifted
+  // to a stale, incomplete 5-zone copy).
+  final List<ZoneData> _zones = ZoneCatalog.zones;
 
   // Zone elevation map (Z-height for true 3D)
   final Map<String, double> _zoneElevations = {

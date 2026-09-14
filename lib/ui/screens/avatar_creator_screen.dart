@@ -150,7 +150,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     },
     {
       'id': 'turtle',
-      'emoji': 'T',
+      'emoji': '🐢',
       'name': 'Tara Turtle',
       'trait': 'Patient & Steady',
       'description':
@@ -159,7 +159,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     },
     {
       'id': 'dragon',
-      'emoji': 'D',
+      'emoji': '🐉',
       'name': 'Nova Dragon',
       'trait': 'Imaginative & Bold',
       'description':

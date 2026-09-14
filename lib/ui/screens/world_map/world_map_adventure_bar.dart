@@ -252,7 +252,7 @@ class WorldMapAdventureBar extends StatelessWidget {
                   backgroundColor:
                       Theme.of(context).colorScheme.primaryContainer,
                   child: Text(
-                    _characterEmoji(avatar.baseCharacter),
+                    CompanionCatalog.emojiFor(avatar.baseCharacter),
                     style: TextStyle(fontSize: compact ? 19 : 22),
                   ),
                 ),
@@ -476,7 +476,7 @@ class WorldMapAdventureBar extends StatelessWidget {
           radius: 24,
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           child: Text(
-            _characterEmoji(avatar.baseCharacter),
+            CompanionCatalog.emojiFor(avatar.baseCharacter),
             style: const TextStyle(fontSize: 24),
           ),
         ),
@@ -507,21 +507,6 @@ class WorldMapAdventureBar extends StatelessWidget {
       case 'achievements':
         onAchievements();
         break;
-    }
-  }
-
-  String _characterEmoji(String character) {
-    switch (character.toLowerCase()) {
-      case 'fox':
-        return '🦊';
-      case 'bear':
-        return '🐻';
-      case 'rabbit':
-        return '🐰';
-      case 'dragon':
-        return '🐉';
-      default:
-        return '🧭';
     }
   }
 }

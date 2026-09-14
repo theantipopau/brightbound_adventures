@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
@@ -180,7 +181,8 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
   @override
   Widget build(BuildContext context) {
     final avatar = context.watch<AvatarProvider>().avatar;
-    final characterEmoji = _getCharacterEmoji(avatar?.baseCharacter ?? 'bear');
+    final characterEmoji =
+        CompanionCatalog.emojiFor(avatar?.baseCharacter ?? 'bear');
 
     return Scaffold(
       body: Stack(
@@ -774,37 +776,6 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
         return Colors.purple;
       default:
         return AppColors.primary;
-    }
-  }
-
-  String _getCharacterEmoji(String character) {
-    switch (character.toLowerCase()) {
-      case 'bear':
-        return '🐻';
-      case 'fox':
-        return '🦊';
-      case 'rabbit':
-        return '🐰';
-      case 'deer':
-        return '🦌';
-      case 'cat':
-        return '🐱';
-      case 'penguin':
-        return '🐧';
-      case 'koala':
-        return '🐨';
-      case 'panda':
-        return '🐼';
-      case 'owl':
-        return '🦉';
-      case 'otter':
-        return '🦦';
-      case 'wolf':
-        return '🐺';
-      case 'tiger':
-        return '🐯';
-      default:
-        return '🐻';
     }
   }
 }

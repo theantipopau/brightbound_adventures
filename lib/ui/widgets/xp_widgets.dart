@@ -1,24 +1,32 @@
 import 'package:flutter/material.dart';
-import '../../core/models/player_stats.dart';
 
+/// Renders an XP progress bar for the current level.
+///
+/// Takes plain level/XP values rather than a stats model, so it can be
+/// driven by whatever the caller's canonical progression source is
+/// (currently `Avatar.level`/`Avatar.experiencePoints`/`Avatar.nextLevelXP`
+/// from `AvatarProvider`) without coupling this widget to one specific
+/// player-stats model.
 class XpBar extends StatelessWidget {
-  final PlayerStats stats;
+  final int currentLevel;
+  final int currentLevelXp;
+  final int xpNeeded;
   final bool showLabel;
   final double height;
 
   const XpBar({
     super.key,
-    required this.stats,
+    required this.currentLevel,
+    required this.currentLevelXp,
+    required this.xpNeeded,
     this.showLabel = true,
     this.height = 24,
   });
 
   @override
   Widget build(BuildContext context) {
-    final progress = stats.xpProgressToNextLevel;
-    final currentLevelXp =
-        stats.totalXp - PlayerStats.totalXpForLevel(stats.currentLevel - 1);
-    final xpNeeded = stats.xpForNextLevel;
+    final progress =
+        xpNeeded > 0 ? (currentLevelXp / xpNeeded).clamp(0.0, 1.0) : 0.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,7 +39,7 @@ class XpBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Level ${stats.currentLevel}',
+                  'Level $currentLevel',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
