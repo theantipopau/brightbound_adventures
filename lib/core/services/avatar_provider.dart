@@ -64,6 +64,17 @@ class AvatarProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Every mutator below builds the new Avatar value locally and only
+  // assigns it to `_avatar` (and notifies) *after* `saveAvatar` succeeds.
+  // Previously `_avatar` was mutated first and persisted second: if
+  // `saveAvatar` threw (storage error, disk full), the in-memory avatar
+  // had already "succeeded" even though nothing was written — the app
+  // would behave as if the change worked until the next restart silently
+  // reverted it. Building-then-saving-then-committing means a failed save
+  // leaves `_avatar` at its last known-persisted value, so in-memory state
+  // can never drift ahead of what's actually on disk. Callers still see
+  // the exception (nothing here swallows it) and can react to it.
+
   Future<void> createAvatar({
     required String name,
     required String baseCharacter,
@@ -76,7 +87,7 @@ class AvatarProvider extends ChangeNotifier {
     ],
     List<String> unlockedAccessories = const ['acc_bow'],
   }) async {
-    _avatar = Avatar(
+    final created = Avatar(
       id: 'avatar_${DateTime.now().millisecondsSinceEpoch}',
       name: name,
       baseCharacter: baseCharacter,
@@ -90,66 +101,75 @@ class AvatarProvider extends ChangeNotifier {
       lastModified: DateTime.now(),
     );
 
-    await _storageService.saveAvatar(_avatar!);
+    await _storageService.saveAvatar(created);
 
+    _avatar = created;
     notifyListeners();
   }
 
   Future<void> updateAvatarName(String newName) async {
     if (_avatar == null) return;
 
-    _avatar = _avatar!.copyWith(
+    final updated = _avatar!.copyWith(
       name: newName,
       lastModified: DateTime.now(),
     );
 
-    await _storageService.saveAvatar(_avatar!);
+    await _storageService.saveAvatar(updated);
+
+    _avatar = updated;
     notifyListeners();
   }
 
   Future<void> changeOutfit(String outfitId) async {
     if (_avatar == null) return;
 
-    _avatar = _avatar!.copyWith(
+    final updated = _avatar!.copyWith(
       outfitId: outfitId,
       lastModified: DateTime.now(),
     );
 
-    await _storageService.saveAvatar(_avatar!);
+    await _storageService.saveAvatar(updated);
+
+    _avatar = updated;
     notifyListeners();
   }
 
   Future<void> unlockOutfit(String outfitId) async {
     if (_avatar == null) return;
 
-    final updated = _avatar!.unlockedOutfits.toList();
-    if (!updated.contains(outfitId)) {
-      updated.add(outfitId);
+    final unlockedOutfits = _avatar!.unlockedOutfits.toList();
+    if (!unlockedOutfits.contains(outfitId)) {
+      unlockedOutfits.add(outfitId);
     }
 
-    _avatar = _avatar!.copyWith(
-      unlockedOutfits: updated,
+    final updated = _avatar!.copyWith(
+      unlockedOutfits: unlockedOutfits,
       lastModified: DateTime.now(),
     );
 
-    await _storageService.saveAvatar(_avatar!);
+    await _storageService.saveAvatar(updated);
+
+    _avatar = updated;
     notifyListeners();
   }
 
   Future<void> unlockAccessory(String accessoryId) async {
     if (_avatar == null) return;
 
-    final updated = _avatar!.unlockedAccessories.toList();
-    if (!updated.contains(accessoryId)) {
-      updated.add(accessoryId);
+    final unlockedAccessories = _avatar!.unlockedAccessories.toList();
+    if (!unlockedAccessories.contains(accessoryId)) {
+      unlockedAccessories.add(accessoryId);
     }
 
-    _avatar = _avatar!.copyWith(
-      unlockedAccessories: updated,
+    final updated = _avatar!.copyWith(
+      unlockedAccessories: unlockedAccessories,
       lastModified: DateTime.now(),
     );
 
-    await _storageService.saveAvatar(_avatar!);
+    await _storageService.saveAvatar(updated);
+
+    _avatar = updated;
     notifyListeners();
   }
 
@@ -166,13 +186,15 @@ class AvatarProvider extends ChangeNotifier {
       }
     }
 
-    _avatar = _avatar!.copyWith(
+    final updated = _avatar!.copyWith(
       experiencePoints: newXP,
       level: newLevel,
       lastModified: DateTime.now(),
     );
 
-    await _storageService.saveAvatar(_avatar!);
+    await _storageService.saveAvatar(updated);
+
+    _avatar = updated;
     notifyListeners();
   }
 

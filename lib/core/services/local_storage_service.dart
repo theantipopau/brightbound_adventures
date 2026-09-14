@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 
@@ -55,7 +56,21 @@ class LocalStorageService {
     final box = Hive.box(avatarBoxName);
     final data = box.get('current');
     if (data == null) return null;
-    return _mapToAvatar(data);
+    try {
+      return _mapToAvatar(data);
+    } catch (e) {
+      // A corrupt or partially-written record here previously propagated
+      // all the way up through AvatarProvider.loadAvatar() to the splash
+      // screen's fire-and-forget _checkAppState(), with nothing anywhere
+      // in that chain catching it — the app would hang on the splash
+      // screen forever with no recovery. Treating unreadable data as "no
+      // avatar" lets the player create a new one instead of being locked
+      // out; there is no way to partially recover a record missing
+      // required fields or with an unparsable date.
+      debugPrint(
+          'LocalStorageService: discarding unreadable avatar record: $e');
+      return null;
+    }
   }
 
   // Game progress operations

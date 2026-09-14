@@ -317,8 +317,20 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _checkAppState() async {
     final startedAt = DateTime.now();
 
-    // Load avatar from storage
-    await context.read<AvatarProvider>().loadAvatar();
+    // Load avatar from storage. _checkAppState is fire-and-forget from
+    // initState (not awaited there), so an uncaught exception here would
+    // become an unhandled Future error and leave the splash screen showing
+    // forever with no way forward for the player. LocalStorageService
+    // itself now treats unreadable records as "no avatar" rather than
+    // throwing, but this catch is defence-in-depth against any other
+    // unexpected startup failure (e.g. storage not ready) reaching the
+    // same dead end.
+    try {
+      await context.read<AvatarProvider>().loadAvatar();
+    } catch (e) {
+      debugPrint(
+          'Startup: failed to load avatar, continuing as new player: $e');
+    }
 
     // Keep the splash long enough to feel intentional, but do not force every
     // returning player to wait three seconds after the app is already ready.
