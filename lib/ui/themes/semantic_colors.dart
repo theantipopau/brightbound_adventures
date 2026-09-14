@@ -56,12 +56,26 @@ class SemanticColors extends ThemeExtension<SemanticColors> {
 
   /// Light-mode values, matching the existing `AppColors` constants so
   /// migrated call sites render identically in light mode.
+  ///
+  /// Three values deliberately differ from the original `AppColors`
+  /// constants because the WCAG contrast audit
+  /// (`test/tools/contrast_audit_test.dart`) measured them failing AA:
+  /// - `onSuccess`: white-on-`success` measured 2.24:1 (needs 4.5:1 for
+  ///   text/icons). Changed to black, matching the convention dark mode
+  ///   already uses for the same reason — now ~9.4:1.
+  /// - `info`: white-on-`info` (`0xFF2979FF`, Material Blue A400) measured
+  ///   3.98:1. Darkened to `0xFF1976D2` (Material Blue 700) so white text
+  ///   still works rather than switching to black-on-blue — now ~4.7:1.
+  /// - `correctFeedbackBorder`: the original `0xFF4CAF50` (Material Green
+  ///   500) against `correctFeedbackSurface` measured 2.47:1 (needs 3:1
+  ///   for a non-text UI boundary). Changed to `0xFF2E7D32` (Material
+  ///   Green 800) — now ~4.6:1.
   static const light = SemanticColors(
     success: Color(0xFF00C853),
-    onSuccess: Colors.white,
+    onSuccess: Colors.black,
     warning: Color(0xFFFFAB00),
     onWarning: Colors.black,
-    info: Color(0xFF2979FF),
+    info: Color(0xFF1976D2),
     onInfo: Colors.white,
     reward: Color(0xFFFFD600),
     onReward: Colors.black,
@@ -69,7 +83,7 @@ class SemanticColors extends ThemeExtension<SemanticColors> {
     textSecondary: Color(0xFF626480),
     textHint: Color(0xFFBBBBCC),
     correctFeedbackSurface: Color(0xFFE8F5E9),
-    correctFeedbackBorder: Color(0xFF4CAF50),
+    correctFeedbackBorder: Color(0xFF2E7D32),
     incorrectFeedbackSurface: Color(0xFFFFEBEE),
     incorrectFeedbackBorder: Color(0xFFE53935),
     surfaceSubtle: Color(0xFFF0F0F8),

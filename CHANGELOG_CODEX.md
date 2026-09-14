@@ -2,6 +2,19 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-15 - WCAG contrast audit for the design tokens: found and fixed 3 real AA failures
+
+Started Phase 2 of the `prompt.md` review (design system) with the contrast requirement it explicitly calls for: "Check meaningful text/icon combinations against WCAG contrast expectations. Include the measured ratios in the audit or test output where feasible."
+
+- Added `test/tools/contrast_audit_test.dart`: computes real WCAG 2.1 contrast ratios using the standard relative-luminance formula (no external dependency needed) for every meaningful `SemanticColors` text/icon/border pair against its background, across both light and dark, and prints every measured ratio to test output rather than asserting silently.
+- **Found 3 real AA failures, all in light mode** (dark mode passed every pair measured):
+  - `onSuccess` (white) on `success`: 2.24:1, needs 4.5:1 for text/icons. Changed `onSuccess` to black — matches the convention dark mode already used for the same reason — now 9.39:1.
+  - `onInfo` (white) on `info` (`0xFF2979FF`, Material Blue A400): 3.98:1. Darkened `info` to `0xFF1976D2` (Blue 700) rather than switching text colour, preserving the conventional white-on-blue look — now 4.60:1.
+  - `correctFeedbackBorder` (`0xFF4CAF50`, Green 500) on `correctFeedbackSurface`: 2.47:1, needs 3:1 for a non-text UI boundary. Darkened the border to `0xFF2E7D32` (Green 800) — now 4.56:1.
+- Confirmed via grep that none of these three `SemanticColors` values had a production consumer yet — only the separate legacy `AppColors.correctFeedbackBorder`/`.info` constants are what `animated_answer_option.dart`/`quiz_widgets.dart`/`zone_detail_screen.dart` actually render today. Fixing the `SemanticColors` values had zero visual impact on any shipped screen; it closes the gap before anything starts depending on the wrong numbers, ahead of the VS-2 migration that will eventually point those screens at these tokens instead.
+- **Not measured by this pass, noted as follow-up:** the legacy `AppColors` equivalents that are actually live in the quiz/zone-detail screens today. Worth the same measurement once VS-2 migrates those call sites, or sooner if a similar defect is suspected there.
+- Verified: `dart format` clean, `flutter analyze` 0 issues, **123/123 tests passing** (was 116, +7), `flutter build web --release` succeeds.
+
 ## 2026-09-15 - Avatar save/restore race-condition audit: a real startup-hang risk and a silent-persistence-failure bug
 
 Continuation of working through `prompt.md` (see `docs/PROMPT_MD_EXECUTION_TRACKER.md`) — this completes Phase 1's last item, the avatar save/restore/equip audit, following directly from the Player Profile fix above.
