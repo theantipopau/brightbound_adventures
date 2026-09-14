@@ -2,6 +2,18 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-15 - Fixed two real bugs the user found live in the deployed app (dark-mode text field, world map overlap)
+
+User feedback on the deployed build: "lots of clipping, and the text boxes to enter names etc has weird colours." This is the first pass in this review that actually ran the app in a live browser rather than working from static code/test review — worked through the avatar creator and world map at phone width in a real dev-server session.
+
+- **Avatar name field showed a hardcoded white box in dark mode**: `lib/ui/screens/avatar_creator_screen.dart`'s name `TextField` had `filled: true, fillColor: Colors.white` on its `InputDecoration`, completely overriding the app's theme, which already has a correct `InputDecorationTheme` for both light (white) and dark (`0xFF2A2E43`) — defined in `app_theme.dart` but never reached because of this override. Combined with the input text colour correctly following the theme (near-white in dark mode), this produced a bright white field with barely-visible text. Removed the override entirely so the field inherits the already-correct theme default. Verified visually in-browser in both light and dark mode after the fix.
+- **A real overlap on the world map's compact (phone) layout**: `_buildWorldSelectBanner()` (`Positioned(top: 72)`) and `WorldMapQuestLens` (`Positioned(top: 92)`) occupy overlapping regions on phone-width screens; the Quest Lens paints on top (added later in the same `Stack`), visually clipping the World Select banner. Fixed by hiding the World Select banner on compact layouts — its content (the current zone name) is already shown prominently in the Quest Lens's own header there, so it was redundant as well as overlapping. Verified in-browser at both compact and desktop widths: no overlap at phone width, unchanged and correct at desktop width.
+- **Investigated and ruled out, with evidence, two other things that looked like bugs**:
+  - A bottom action row that appeared to have a button cut off at the phone-width screen edge. Traced to a deliberate horizontal `SingleChildScrollView` in `_buildBottomActions()`; manually dragging it in-browser confirmed it scrolls correctly and reveals all 5 actions. Not a bug, but flagged as a UX discoverability gap (nothing signals it's scrollable) worth a lighter follow-up.
+  - A garbled duplicated-looking name string ("AlAlexex") seen mid-testing. Root-caused to this session's own automated-browser interaction (a click landing mid-string on the canvas-rendered text field, immediately followed by typing without confirming the field's current value first), not an app defect — reproduced the exact mechanism, then confirmed a normal single click-and-type sequence works correctly every time.
+- Verified: `dart format` clean, `flutter analyze` 0 issues, 123/123 tests passing, `flutter build web --release` succeeds. The two real fixes were also re-verified visually in a live browser session, not just by the automated test suite.
+- Full detail, including what's still open for Phase 3 (a systematic clipping/text-scale audit, and the discoverability polish noted above), in `docs/PROMPT_MD_EXECUTION_TRACKER.md`.
+
 ## 2026-09-15 - Typography audit: fixed a font-constant duplication, found a serious global text-scale clamp
 
 Continuing Phase 2 of the `prompt.md` review after the contrast audit above.

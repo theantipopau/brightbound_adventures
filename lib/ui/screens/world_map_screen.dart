@@ -508,10 +508,20 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                               uiScale: _uiScale,
                             ),
 
-                            _buildWorldSelectBanner(
-                              compact: _isCompactLayout,
-                              uiScale: _uiScale,
-                            ),
+                            // Hidden on compact/phone layouts: it overlaps
+                            // WorldMapQuestLens there (World Select starts
+                            // at top:72 and is tall enough to still be
+                            // rendering past the quest lens's top:92), and
+                            // its content — the current zone's name — is
+                            // already shown prominently in the quest lens's
+                            // own header on compact layouts, so hiding it
+                            // removes an overlap rather than duplicating
+                            // information.
+                            if (!_isCompactLayout)
+                              _buildWorldSelectBanner(
+                                compact: _isCompactLayout,
+                                uiScale: _uiScale,
+                              ),
 
                             if (!_isShortViewport)
                               _buildStreakRiskBanner(

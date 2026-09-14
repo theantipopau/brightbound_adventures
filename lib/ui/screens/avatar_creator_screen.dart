@@ -953,8 +953,12 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                       color: semantic.textHint,
                       fontWeight: FontWeight.normal,
                     ),
-                    filled: true,
-                    fillColor: Colors.white,
+                    // No local filled/fillColor: this previously hard-coded
+                    // Colors.white regardless of theme, so in dark mode the
+                    // field showed a bright white box with near-white text
+                    // on top of it (Theme.of(context).inputDecorationTheme
+                    // already has a correct fillColor for both light and
+                    // dark — inherit it instead of overriding it).
                     prefixIcon: Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: Text('✨',
