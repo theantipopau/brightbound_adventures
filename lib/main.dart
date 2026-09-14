@@ -98,7 +98,8 @@ class BrightBoundApp extends StatelessWidget {
             return MediaQuery(
               data: adjustedMediaQuery,
               child: DefaultTextStyle.merge(
-                style: const TextStyle(fontFamilyFallback: ['NotoEmoji']),
+                style:
+                    const TextStyle(fontFamilyFallback: [AppTheme.fontEmoji]),
                 child: ResponsiveWrapper(
                   designSize: const Size(1280, 800),
                   minWidth: true,

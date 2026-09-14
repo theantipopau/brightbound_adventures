@@ -2,6 +2,15 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-15 - Typography audit: fixed a font-constant duplication, found a serious global text-scale clamp
+
+Continuing Phase 2 of the `prompt.md` review after the contrast audit above.
+
+- **Font declarations audited and confirmed clean**: all 10 files declared in `pubspec.yaml` (`Fredoka` x3, `Comfortaa` x2, `NotoEmoji` x5) exist under `assets/fonts/` and match exactly — no bundled-but-undeclared or declared-but-missing assets. Every `fontFamily:` reference across `lib/` goes through a named constant; no stray literal font-name strings or typos anywhere.
+- **Fixed a small duplication**: `fontPrimary`/`fontBody` string constants were independently declared twice — once in `AppTypography`, again with matching values in `AppTheme` — the same drift-risk pattern as the zone-catalog/companion-emoji duplications fixed earlier this session. `AppTheme` now references `AppTypography`'s constants instead of re-declaring them. Also fixed `main.dart`, which used a raw `'NotoEmoji'` literal instead of `AppTheme.fontEmoji` for the CanvasKit emoji-fallback style.
+- **Found, but deliberately did not fix in this pass, a significant defect**: `lib/main.dart:87-93` clamps the app's effective text scale to a hard maximum of 1.28x — `(mediaQuery.textScaler.scale(1) * textScale).clamp(1.0, 1.28)` — regardless of the platform's actual accessibility text-size setting. A user with their OS set to 200% text has it silently forced down to 128%, app-wide. This directly contradicts the brief's own explicit rule: "Do not block text scaling globally." Confirmed via `test/startup_responsive_smoke_test.dart` that the app currently has zero test coverage at any scaled text size (that test explicitly forces `TextScaler.noScaling`), so raising or removing the clamp risks exposing real, currently-invisible overflow across many screens with no existing safety net to catch regressions automatically. Fixing this properly means the systematic clipping/portrait audit that is Phase 3's own mandate, not a same-session token-level change made right before a deploy intended for live testing. Recorded as Phase 3's concrete first task.
+- Verified: `dart format` clean, `flutter analyze` 0 issues, 123/123 tests passing (no count change — this pass fixed constants and documented a finding, added no new tests), `flutter build web --release` succeeds.
+
 ## 2026-09-15 - WCAG contrast audit for the design tokens: found and fixed 3 real AA failures
 
 Started Phase 2 of the `prompt.md` review (design system) with the contrast requirement it explicitly calls for: "Check meaningful text/icon combinations against WCAG contrast expectations. Include the measured ratios in the audit or test output where feasible."

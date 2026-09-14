@@ -549,9 +549,10 @@ class AppGradients {
 }
 
 class AppTheme {
-  // Font families
-  static const String fontPrimary = 'Fredoka';
-  static const String fontBody = 'Comfortaa';
+  // Font families — sourced from AppTypography (the single declaration),
+  // not re-declared, so the two can't drift apart.
+  static const String fontPrimary = AppTypography.fontPrimary;
+  static const String fontBody = AppTypography.fontBody;
   static const String fontEmoji = 'NotoEmoji';
 
   static ThemeData lightTheme() {
