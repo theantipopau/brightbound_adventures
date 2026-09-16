@@ -164,6 +164,24 @@ void main() {
 
       expect(find.text('Discover Amazing Worlds'), findsOneWidget);
       expect(tester.takeException(), isNull);
+
+      // At 200% scale the content can be taller than the viewport, so
+      // "Enter now" may start outside the visible area — same as a real
+      // user needing to scroll before they can see and tap it. Scroll to
+      // it first (as a real user would) rather than tapping blind, to
+      // prove it's genuinely reachable and not just present in the tree.
+      // Deliberately a bounded pump, not pumpAndSettle(): this screen's
+      // own entry sequence auto-navigates away after ~2.3s, and
+      // pumpAndSettle() would drain that whole timer chain first,
+      // removing "Enter now" from the tree before this check runs.
+      await tester.ensureVisible(find.text('Enter now'));
+      await tester.pump(const Duration(milliseconds: 200));
+      final buttonRect = tester.getRect(find.text('Enter now'));
+      final screenRect = Offset.zero & size;
+      expect(screenRect.contains(buttonRect.center), isTrue,
+          reason: 'Enter now should be scrollable into view, not just '
+              'present somewhere outside the reachable viewport');
+
       // This screen schedules its own entry-sequence Future.delayed chain
       // independently of the tap below; whichever step is in flight must
       // be allowed to actually resolve before the tree is torn down, or
