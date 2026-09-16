@@ -1024,14 +1024,18 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      hasValidName ? '✅ Ready!' : '✍️ Add 2+ letters',
-                      style: TextStyle(
-                        color: hasValidName
-                            ? AppColors.success
-                            : Colors.orange.shade800,
-                        fontWeight: FontWeight.w700,
-                        fontSize: isTinyScreen ? 12 : 13,
+                    Flexible(
+                      child: Text(
+                        hasValidName ? '✅ Ready!' : '✍️ Add 2+ letters',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: hasValidName
+                              ? AppColors.success
+                              : Colors.orange.shade800,
+                          fontWeight: FontWeight.w700,
+                          fontSize: isTinyScreen ? 12 : 13,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),

@@ -2,6 +2,19 @@
 
 This document tracks the production improvements made during the Codex audit and enhancement pass. It is intentionally implementation-focused so future work can continue from a clear baseline.
 
+## 2026-09-16 - Fixed the 200% text-scale clamp properly: raised the ceiling, then found and fixed every real overflow it exposed
+
+Picked up Phase 3's flagged starting point from yesterday's session (`docs/PROMPT_MD_EXECUTION_TRACKER.md`): the global text-scale clamp in `lib/main.dart` was capping the real platform accessibility setting at 1.28x, silently defeating a genuine 200% request. Raised it to `.clamp(1.0, 2.0)` (kept the 1.0 floor deliberately — a legibility minimum for young readers, not part of the bug).
+
+Rather than guess which of the app's many screens would overflow once real 200% scaling was actually reaching them, added genuine `TextScaler.linear(2.0)` coverage to both existing responsive-smoke test suites and fixed every real failure they turned up:
+
+- **`world_map/world_map_quest_lens.dart`'s header Row**: the "Quest Board" eyebrow label was `Expanded`, but the status chip (e.g. "Recommended") and the expand/collapse icon button were fixed-size. At 200% scale the chip's own text needed more room than was left regardless of how far the label shrank — overflowed by 82px. Made the chip `Flexible` too, with its own ellipsis, so both compete for space instead of only one being adjustable.
+- **`world_map_screen.dart`'s zone-island badge**: the zone's emoji/lock icon `Text` had no `textScaler` override, so its 44/32px `fontSize` doubled to 88/64px at 200% scale — a purely decorative icon-glyph alone consuming the zone island's entire fixed-height badge, overflowing by 60px (unlocked) / 3.3px (locked). Added `textScaler: TextScaler.noScaling` to that one `Text`: it stands in for an icon, not reading content, so it should stay a fixed visual size regardless of the accessibility text setting. The zone name label right below it is real reading content and correctly keeps respecting scaling (already safely bounded by its own `FittedBox`).
+- **`avatar_creator_screen.dart`'s "✅ Ready!" / "✍️ Add 2+ letters" status chip Row**: both `Text` children were fixed-size with no `Expanded`/`Flexible` anywhere in the Row — overflowed by 145px at 200% scale on a 390px-wide phone. Wrapped the status label in `Flexible` with ellipsis.
+- Test coverage: `test/world_map/world_map_regression_test.dart` gained 6 tests (light+dark, 200% scale, at the narrowest phone breakpoint); `test/startup_responsive_smoke_test.dart` gained 9 (200% variants of onboarding/avatar-creator/world-entry across all 3 viewport sizes it already covers — onboarding needed no fix).
+- **Found, not fixed**: at 200% scale and desktop width, `WorldEntryScreen`'s "Enter now" button hit-tests outside the visible render-tree bounds — a genuine Flutter test-framework warning, not a guess. The screen's content is already wrapped in a scrollable, so it's reachable by scrolling rather than a hard failure, but it's flagged in the tracker for the next pass rather than assumed fine because nothing threw.
+- Verified: `dart format` clean, `flutter analyze` 0 issues, **138/138 tests passing** (was 123), `flutter build web --release` succeeds.
+
 ## 2026-09-15 - Fixed two real bugs the user found live in the deployed app (dark-mode text field, world map overlap)
 
 User feedback on the deployed build: "lots of clipping, and the text boxes to enter names etc has weird colours." This is the first pass in this review that actually ran the app in a live browser rather than working from static code/test review — worked through the avatar creator and world map at phone width in a real dev-server session.

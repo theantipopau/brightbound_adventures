@@ -2935,6 +2935,17 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                                               ? widget
                                                                   .zone.emoji
                                                               : '🔒',
+                                                          // This emoji stands in for a decorative
+                                                          // icon, not reading content — it must
+                                                          // stay a fixed visual size regardless of
+                                                          // the platform text-scale setting.
+                                                          // Without this, at 200% text scale the
+                                                          // (44/32px) fontSize doubles to 88/64px
+                                                          // and alone overflows the zone island's
+                                                          // fixed-height badge, which also has to
+                                                          // fit the zone name and star row below it.
+                                                          textScaler: TextScaler
+                                                              .noScaling,
                                                           style: TextStyle(
                                                             fontSize: widget
                                                                     .isUnlocked

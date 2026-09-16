@@ -21,6 +21,7 @@ void main() {
     Size size = const Size(390, 844),
     bool withAvatarProvider = false,
     bool withAppProviders = false,
+    TextScaler textScaler = TextScaler.noScaling,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = size;
@@ -31,7 +32,7 @@ void main() {
       data: MediaQueryData(
         size: size,
         disableAnimations: true,
-        textScaler: TextScaler.noScaling,
+        textScaler: textScaler,
       ),
       child: child,
     );
@@ -92,6 +93,20 @@ void main() {
       expect(find.text('Skip'), findsOneWidget);
     });
 
+    testWidgets(
+        'onboarding renders without overflow at ${size.width}x${size.height} @200% text',
+        (tester) async {
+      await pumpResponsiveShell(
+        tester,
+        OnboardingScreen(onComplete: () {}),
+        size: size,
+        textScaler: const TextScaler.linear(2.0),
+      );
+
+      expect(find.textContaining('Welcome to BrightBound'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('avatar creator renders at ${size.width}x${size.height}',
         (tester) async {
       await pumpResponsiveShell(
@@ -102,6 +117,21 @@ void main() {
 
       expect(find.textContaining('Welcome'), findsWidgets);
       expect(find.byTooltip('Surprise me'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets(
+        'avatar creator renders without overflow at ${size.width}x${size.height} @200% text',
+        (tester) async {
+      await pumpResponsiveShell(
+        tester,
+        const AvatarCreatorScreen(),
+        size: size,
+        textScaler: const TextScaler.linear(2.0),
+      );
+
+      expect(find.textContaining('Welcome'), findsWidgets);
+      expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
     });
 
@@ -118,6 +148,31 @@ void main() {
       expect(find.text('Discover Amazing Worlds'), findsOneWidget);
       await tester.tap(find.text('Enter now'));
       await tester.pump(const Duration(milliseconds: 320));
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets(
+        'world entry renders without overflow at ${size.width}x${size.height} @200% text',
+        (tester) async {
+      await pumpResponsiveShell(
+        tester,
+        const WorldEntryScreen(),
+        size: size,
+        withAvatarProvider: true,
+        textScaler: const TextScaler.linear(2.0),
+      );
+
+      expect(find.text('Discover Amazing Worlds'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      // This screen schedules its own entry-sequence Future.delayed chain
+      // independently of the tap below; whichever step is in flight must
+      // be allowed to actually resolve before the tree is torn down, or
+      // the binding fails teardown with "A Timer is still pending". The
+      // un-scaled test above tolerates 320ms; give this one more headroom
+      // since which step is in flight when the tap lands is inherently a
+      // little timing-dependent, not something to cut close.
+      await tester.tap(find.text('Enter now'));
+      await tester.pump(const Duration(milliseconds: 600));
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }

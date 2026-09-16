@@ -108,7 +108,17 @@ class WorldMapQuestLens extends StatelessWidget {
       children: [
         Icon(Icons.assignment_rounded, color: selected.color, size: 18),
         const SizedBox(width: 6),
-        Expanded(
+        // Flexible with a lower effective priority than the status chip:
+        // "Quest Board" is a decorative eyebrow label, status.label (e.g.
+        // "Recommended"/"Mastered") is the information that actually
+        // matters. At 200% text scale the chip's own text roughly doubles
+        // in width; previously only this label was flexible; the chip
+        // (was a fixed-size Container) and the icon button were not, so
+        // when the chip alone needed more room than was left the whole
+        // Row overflowed by ~80px regardless of how far this label
+        // shrank. Both are Flexible now.
+        Flexible(
+          flex: 2,
           child: Text(
             'Quest Board',
             maxLines: 1,
@@ -121,16 +131,22 @@ class WorldMapQuestLens extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: stateColor.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Text(
-            status.label,
-            style: TextStyle(
-                fontSize: 10, fontWeight: FontWeight.w900, color: stateColor),
+        const SizedBox(width: 6),
+        Flexible(
+          flex: 3,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: stateColor.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              status.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 10, fontWeight: FontWeight.w900, color: stateColor),
+            ),
           ),
         ),
         if (compact)

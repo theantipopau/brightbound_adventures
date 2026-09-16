@@ -85,11 +85,20 @@ class BrightBoundApp extends StatelessWidget {
                 WidgetsBinding.instance.platformDispatcher.accessibilityFeatures
                     .disableAnimations;
             final textScale = visualAccessibility.largeText ? 1.16 : 1.0;
+            // Floor of 1.0 is deliberate (never render smaller than the
+            // base design, a legibility floor for young readers); the
+            // ceiling used to be 1.28, which silently overrode a real
+            // platform accessibility setting of up to 200% down to 128% —
+            // directly against the product requirement that critical
+            // journeys stay usable at 200% text. Raised to 2.0 so a real
+            // 200% platform setting is actually honoured; overflow this
+            // exposes is being audited and fixed screen-by-screen (see
+            // docs/PROMPT_MD_EXECUTION_TRACKER.md, Phase 3).
             final adjustedMediaQuery = mediaQuery.copyWith(
               disableAnimations:
                   platformReducedMotion || visualAccessibility.reduceMotion,
               textScaler: TextScaler.linear(
-                (mediaQuery.textScaler.scale(1) * textScale).clamp(1.0, 1.28),
+                (mediaQuery.textScaler.scale(1) * textScale).clamp(1.0, 2.0),
               ),
             );
             // DefaultTextStyle.merge ensures the bundled NotoEmoji font is listed

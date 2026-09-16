@@ -31,6 +31,7 @@ void main() {
     WidgetTester tester, {
     required Size size,
     required ThemeMode themeMode,
+    TextScaler textScaler = TextScaler.noScaling,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = size;
@@ -67,7 +68,11 @@ void main() {
           darkTheme: AppTheme.darkTheme(),
           themeMode: themeMode,
           home: MediaQuery(
-            data: MediaQueryData(size: size, disableAnimations: true),
+            data: MediaQueryData(
+              size: size,
+              disableAnimations: true,
+              textScaler: textScaler,
+            ),
             child: const WorldMapScreen(),
           ),
         ),
@@ -178,6 +183,62 @@ void main() {
         });
       }
     }
+  }
+
+  // 200% text-scale coverage (Phase 3 of docs/PROMPT_MD_EXECUTION_TRACKER.md):
+  // main.dart's global text-scale clamp used to cap the real platform
+  // setting down to 1.28x, so nothing had ever exercised this screen at a
+  // genuine 200% scale. Limited to the narrowest phone breakpoint (the
+  // highest-risk case) rather than the full viewport x theme matrix, to
+  // keep this addition focused on proving the clamp fix is actually safe
+  // rather than re-running the whole existing matrix at a second scale.
+  for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+    final label = '${mode.name} 360x640 @200% text';
+
+    testWidgets('world map renders without exceptions ($label)',
+        (tester) async {
+      await pumpWorldMap(
+        tester,
+        size: const Size(360, 640),
+        themeMode: mode,
+        textScaler: const TextScaler.linear(2.0),
+      );
+
+      expectNoUnknownException(tester, const Size(360, 640));
+    });
+
+    testWidgets('world map shows HUD, zones, and quest content ($label)',
+        (tester) async {
+      await pumpWorldMap(
+        tester,
+        size: const Size(360, 640),
+        themeMode: mode,
+        textScaler: const TextScaler.linear(2.0),
+      );
+
+      expect(find.textContaining('Explorer'), findsWidgets);
+      expect(find.textContaining('Word Woods'), findsWidgets);
+      expect(find.textContaining('Number Nebula'), findsWidgets);
+      expectNoUnknownException(tester, const Size(360, 640));
+    });
+
+    testWidgets('compact quest lens expands without losing its action ($label)',
+        (tester) async {
+      await pumpWorldMap(
+        tester,
+        size: const Size(360, 640),
+        themeMode: mode,
+        textScaler: const TextScaler.linear(2.0),
+      );
+
+      expect(find.byTooltip('Expand quest details'), findsOneWidget);
+      await tester.tap(find.byTooltip('Expand quest details'));
+      await tester.pump();
+
+      expect(find.byTooltip('Collapse quest details'), findsOneWidget);
+      expect(find.text('Enter Zone'), findsOneWidget);
+      expectNoUnknownException(tester, const Size(360, 640));
+    });
   }
 }
 
