@@ -32,6 +32,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
   bool _showCountdown = true;
   int _countdown = 3;
   Duration _timeRemaining = Duration.zero;
+  Timer? _countdownTimer;
   Timer? _gameTimer;
   Timer? _targetSpawnTimer;
   Timer? _movementTimer;
@@ -65,6 +66,9 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    // The countdown must be cancelled here too: without a stored handle it
+    // kept ticking for up to a second after the arena was left.
+    _countdownTimer?.cancel();
     _gameTimer?.cancel();
     _targetSpawnTimer?.cancel();
     _movementTimer?.cancel();
@@ -73,7 +77,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
   }
 
   void _startCountdown() {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -448,59 +452,62 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
               ),
             ),
 
-            // Round info
-            Column(
-              children: [
-                Text(
-                  widget.config.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            // Round info. Expanded so a long arena name or the HUD chips
+            // shrink/wrap instead of overflowing a phone-width header.
+            Expanded(
+              child: Column(
+                children: [
+                  Text(
+                    widget.config.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                // Difficulty indicator
-                Consumer<AdaptiveDifficultyService>(
-                  builder: (context, difficultySvc, _) {
-                    final difficulty =
-                        difficultySvc.getDifficultyForSkill('motor');
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: DifficultyIndicator(
-                        difficulty: difficulty,
-                        color: Colors.white,
-                        compact: true,
+                  // Difficulty indicator
+                  Consumer<AdaptiveDifficultyService>(
+                    builder: (context, difficultySvc, _) {
+                      final difficulty =
+                          difficultySvc.getDifficultyForSkill('motor');
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: DifficultyIndicator(
+                          difficulty: difficulty,
+                          color: Colors.white,
+                          compact: true,
+                        ),
+                      );
+                    },
+                  ),
+                  Text(
+                    'Round $_currentRound of ${widget.config.rounds}',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Tap quickly and stay accurate',
+                    style: TextStyle(color: Colors.white54, fontSize: 11),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      _buildHudChip(
+                        icon: Icons.auto_awesome_rounded,
+                        label: 'Focus mode',
+                        color: Colors.orangeAccent,
                       ),
-                    );
-                  },
-                ),
-                Text(
-                  'Round $_currentRound of ${widget.config.rounds}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  'Tap quickly and stay accurate',
-                  style: TextStyle(color: Colors.white54, fontSize: 11),
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    _buildHudChip(
-                      icon: Icons.auto_awesome_rounded,
-                      label: 'Focus mode',
-                      color: Colors.orangeAccent,
-                    ),
-                    _buildHudChip(
-                      icon: Icons.touch_app_rounded,
-                      label: '${widget.config.targetCount} targets',
-                      color: Colors.amberAccent,
-                    ),
-                  ],
-                ),
-              ],
+                      _buildHudChip(
+                        icon: Icons.touch_app_rounded,
+                        label: '${widget.config.targetCount} targets',
+                        color: Colors.amberAccent,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
 
             // Score and timer
@@ -566,12 +573,18 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
         children: [
           Icon(icon, size: 12, color: color),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
+          // Flexible + ellipsis: at 200% text these HUD chips overflowed
+          // the header row by up to 118 px (clipping probe).
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],
@@ -659,7 +672,12 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
     return Container(
       color: Colors.black54,
       child: Center(
-        child: Column(
+        // FittedBox: the fixed-size countdown stack (title + 100 px ring +
+        // description) overflowed short viewports by 39 px at 200% text;
+        // scaling the whole stack down keeps it centered and whole.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
@@ -700,6 +718,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
               textAlign: TextAlign.center,
             ),
           ],
+          ),
         ),
       ),
     );
@@ -763,31 +782,102 @@ class _TapFeedback {
   });
 }
 
+/// Arena backdrop for the motor-skills games (2026-10-10 art pass).
+///
+/// Replaces the old flat rings + crosshair with a training-dome scene:
+/// a soft radial glow, solid + dashed energy rings, a deterministic
+/// sparkle grid, and viewfinder corner brackets that frame the play area.
+/// All positions derive from `size` and integer math, so the painter is
+/// deterministic and never repaints.
 class _ArenaPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.05)
+    final center = Offset(size.width / 2, size.height / 2);
+    final shortest = math.min(size.width, size.height);
+
+    // Soft glow behind the play area.
+    final glowRadius = shortest * 0.45;
+    canvas.drawCircle(
+      center,
+      glowRadius,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            Colors.white.withValues(alpha: 0.07),
+            Colors.white.withValues(alpha: 0.0),
+          ],
+        ).createShader(Rect.fromCircle(center: center, radius: glowRadius)),
+    );
+
+    // Solid arena rings.
+    final ring = Paint()
+      ..color = Colors.white.withValues(alpha: 0.06)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-
-    // Draw arena circles
-    final center = Offset(size.width / 2, size.height / 2);
-    for (int i = 1; i <= 4; i++) {
-      canvas.drawCircle(center, size.width * 0.15 * i, paint);
+    for (var i = 1; i <= 3; i++) {
+      canvas.drawCircle(center, shortest * 0.18 * i, ring);
     }
 
-    // Draw crosshairs
+    // Dashed amber energy ring.
+    final dash = Paint()
+      ..color = Colors.amber.withValues(alpha: 0.12)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    const segments = 36;
+    final energyRadius = shortest * 0.28;
+    final energyRect = Rect.fromCircle(center: center, radius: energyRadius);
+    for (var s = 0; s < segments; s += 2) {
+      final a0 = s * 2 * math.pi / segments;
+      final a1 = (s + 1) * 2 * math.pi / segments;
+      canvas.drawArc(energyRect, a0, a1 - a0, false, dash);
+    }
+
+    // Crosshair with a gap around the center so targets stay readable.
+    final hair = Paint()
+      ..color = Colors.white.withValues(alpha: 0.05)
+      ..strokeWidth = 2;
+    final gap = energyRadius * 0.6;
+    canvas.drawLine(Offset(0, center.dy), Offset(center.dx - gap, center.dy), hair);
     canvas.drawLine(
-      Offset(0, size.height / 2),
-      Offset(size.width, size.height / 2),
-      paint,
-    );
+        Offset(center.dx + gap, center.dy), Offset(size.width, center.dy), hair);
+    canvas.drawLine(Offset(center.dx, 0), Offset(center.dx, center.dy - gap), hair);
     canvas.drawLine(
-      Offset(size.width / 2, 0),
-      Offset(size.width / 2, size.height),
-      paint,
-    );
+        Offset(center.dx, center.dy + gap), Offset(center.dx, size.height), hair);
+
+    // Deterministic sparkle grid.
+    final dot = Paint()..color = Colors.white.withValues(alpha: 0.08);
+    const step = 72.0;
+    for (var x = step / 2; x < size.width; x += step) {
+      for (var y = step / 2; y < size.height; y += step) {
+        final jitter = ((x * 13 + y * 7) % 17) - 8;
+        canvas.drawCircle(Offset(x + jitter, y - jitter), 1.6, dot);
+      }
+    }
+
+    // Viewfinder corner brackets.
+    final bracket = Paint()
+      ..color = Colors.white.withValues(alpha: 0.14)
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    const inset = 16.0;
+    const len = 28.0;
+    final corners = <(Offset, Offset, Offset)>[
+      (Offset(inset, inset), const Offset(inset + len, inset),
+          const Offset(inset, inset + len)),
+      (Offset(size.width - inset, inset),
+          Offset(size.width - inset - len, inset),
+          Offset(size.width - inset, inset + len)),
+      (Offset(inset, size.height - inset),
+          Offset(inset + len, size.height - inset),
+          Offset(inset, size.height - inset - len)),
+      (Offset(size.width - inset, size.height - inset),
+          Offset(size.width - inset - len, size.height - inset),
+          Offset(size.width - inset, size.height - inset - len)),
+    ];
+    for (final (corner, hEnd, vEnd) in corners) {
+      canvas.drawLine(corner, hEnd, bracket);
+      canvas.drawLine(corner, vEnd, bracket);
+    }
   }
 
   @override

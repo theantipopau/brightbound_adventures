@@ -30,3 +30,4 @@ export 'typewriter_text.dart';
 export 'wave_progress_bar.dart';
 export 'gradient_text.dart';
 export 'star_burst_overlay.dart';
+export 'zone_badge.dart';

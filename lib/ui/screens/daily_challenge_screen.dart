@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/models/daily_challenge.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Daily Skill Challenges Screen
 /// Features rotating daily challenges with rewards
@@ -179,7 +180,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.amber.shade900,
+                                color: InkTokens.onTint(Colors.amber.shade900),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -187,7 +188,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                               'Complete daily challenges for extra XP!',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.amber.shade700,
+                                color: InkTokens.onTint(Colors.amber.shade700),
                               ),
                             ),
                           ],
@@ -203,9 +204,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                           ),
                           child: Text(
                             '+$totalRewards XP',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: InkTokens.on(Colors.amber),
                             ),
                           ),
                         ),
@@ -312,7 +313,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isCompleted ? Colors.grey[400] : Colors.black,
+                        color: isCompleted ? Colors.grey[600] : Colors.black,
                         decoration: isCompleted
                             ? TextDecoration.lineThrough
                             : TextDecoration.none,
@@ -322,9 +323,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                     Text(
                       challenge.description,
                       style: TextStyle(
-                        fontSize: 12,
-                        color:
-                            isCompleted ? Colors.grey[400] : Colors.grey[600],
+                        fontSize: 12,                      color: Colors.grey[600],
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -434,7 +433,7 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
       SnackBar(
         content: const Text('✨ Challenge Completed! +10 XP'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: Colors.green.shade800,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );

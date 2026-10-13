@@ -6,6 +6,7 @@ import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
+import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 
 class AvatarCreatorScreen extends StatefulWidget {
   const AvatarCreatorScreen({super.key});
@@ -295,8 +296,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
 
   Future<void> _createAvatar() async {
     if (!_hasValidName) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(        SnackBar(
           content: const Row(
             children: [
               Icon(Icons.warning, color: Colors.white),
@@ -304,10 +304,11 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               Text('Please enter at least 2 letters.'),
             ],
           ),
-          backgroundColor: AppColors.tertiary,
+          // Navy, not the bright tertiary cyan: the default SnackBar text
+          // is near-white, which measured ~1.6:1 on cyan.
+          backgroundColor: AppColors.textPrimary,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -354,7 +355,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter at least 2 letters first.'),
-          backgroundColor: AppColors.tertiary,
+          backgroundColor: AppColors.textPrimary,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -535,6 +536,18 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     }
   }
 
+  /// Ink for glyphs drawn ON a step colour (see [InkTokens.on]):
+  /// white below luminance 0.179, black above it — the old pinned white
+  /// failed on cyan (≈1.6:1) and green (≈2.0:1) steps.
+  Color _stepInk(Color bg) => InkTokens.on(bg);
+
+  /// Ink for a step colour drawn ON the white header/nav surfaces:
+  /// keeps the dark steps (purple) themed, falls back to the semantic
+  /// secondary ink when the step colour is too bright to read (pink,
+  /// cyan, green measured 1.6–3.3:1 on white).
+  Color _stepLabelInk(Color fg) =>
+      fg.computeLuminance() <= 0.183 ? fg : AppColors.textSecondary;
+
   String _characterPropAsset(String characterId) {
     switch (characterId) {
       case 'bear':
@@ -612,7 +625,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 Text(
                   'Step ${_currentStep + 1} of 4',
                   style: TextStyle(
-                    color: _getStepColor(_currentStep),
+                    color: _stepLabelInk(_getStepColor(_currentStep)),
                     fontSize: isSmallScreen ? 11 : 13,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
@@ -666,11 +679,17 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                   ),
                   child: Center(
                     child: isCompleted
-                        ? const Icon(Icons.check, color: Colors.white, size: 20)
+                        ? Icon(
+                            Icons.check,
+                            color: _stepInk(_getStepColor(index)),
+                            size: 20,
+                          )
                         : Text(
                             '${index + 1}',
                             style: TextStyle(
-                              color: isActive ? Colors.white : Colors.grey,
+                              color: isActive
+                                  ? _stepInk(_getStepColor(index))
+                                  : AppColors.textPrimary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -709,121 +728,185 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     final charSize = 72.0 * scale;
     final padding = 14.0 * scale;
     final spacing = 14.0 * scale;
+    // Opaque base for every surface inside the ExtrudedCard: the card's
+    // dark extruded side face sits behind the child, so translucent
+    // gradient stops (0.96/0.10/0.5/0.32) used to bleed it through and
+    // left the trait/prompt text sitting on dark brown. Lerping from an
+    // opaque white renders the same tint without the bleed.
+    final face = Colors.white;
 
     return Padding(
       padding:
           EdgeInsets.fromLTRB(20 * scale, 10 * scale, 20 * scale, 6 * scale),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(24),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: _cyclePreviewAnimation,
+      // Extruded slab + ambient-occlusion shadow so the banner reads as a
+      // physical card on the table (2.5D diorama pass).
+      child: ExtrudedCard(
+        accent: selectedCharacter['color'] as Color,
+        depth: 7,
+        radius: BorderRadius.circular(24),
+        child: Material(
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(24),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: EdgeInsets.all(padding),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withValues(alpha: 0.96),
-                  (selectedCharacter['color'] as Color).withValues(alpha: 0.10),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: (selectedCharacter['color'] as Color)
-                    .withValues(alpha: 0.25),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: (selectedCharacter['color'] as Color)
-                      .withValues(alpha: 0.18),
-                  blurRadius: 18 * scale,
-                  offset: Offset(0, 10 * scale),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: _cyclePreviewAnimation,
+            borderRadius: BorderRadius.circular(24),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: EdgeInsets.all(padding),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    face,
+                    Color.lerp(face, selectedCharacter['color'] as Color, 0.10)!,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: previewDiameter,
-                  height: previewDiameter,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        (selectedCharacter['color'] as Color)
-                            .withValues(alpha: 0.25),
-                        Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: (selectedCharacter['color'] as Color)
+                      .withValues(alpha: 0.25),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (selectedCharacter['color'] as Color)
+                        .withValues(alpha: 0.18),
+                    blurRadius: 18 * scale,
+                    offset: Offset(0, 10 * scale),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: previewDiameter,
+                    height: previewDiameter,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          (selectedCharacter['color'] as Color)
+                              .withValues(alpha: 0.25),
+                          Colors.white,
+                        ],
+                      ),
+                    ),
+                    child: Stack(
+                      fit: StackFit.passthrough,
+                      alignment: Alignment.center,
+                      children: [
+                        // Toy pedestal: a tiny extruded disc so the character
+                        // stands on a little base instead of mid-air — same
+                        // extrusion language as the world-map board tiles.
+                        Positioned(
+                          bottom: 9 * scale,
+                          child: ExtrudedCard(
+                            accent: selectedCharacter['color'] as Color,
+                            depth: 5,
+                            shadowStrength: 0.2,
+                            radius: BorderRadius.circular(999),
+                            child: Container(
+                              width: previewDiameter * 0.56,
+                              height: previewDiameter * 0.17,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color.lerp(
+                                        face,
+                                        selectedCharacter['color'] as Color,
+                                        0.5)!,
+                                    Color.lerp(
+                                        face,
+                                        selectedCharacter['color'] as Color,
+                                        0.32)!,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                          ),
+                        ),
+                        AnimatedCharacter(
+                          character: _selectedCharacter,
+                          skinColor: _selectedColor,
+                          size: charSize,
+                          animation: _previewAnimation,
+                          showParticles: !_reduceMotion &&
+                              _previewAnimation ==
+                                  CharacterAnimation.celebrating,
+                        ),
                       ],
                     ),
                   ),
-                  child: AnimatedCharacter(
-                    character: _selectedCharacter,
-                    skinColor: _selectedColor,
-                    size: charSize,
-                    animation: _previewAnimation,
-                    showParticles: !_reduceMotion &&
-                        _previewAnimation == CharacterAnimation.celebrating,
+                  SizedBox(width: spacing),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          previewName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          // Pinned (not theme/accent): the banner face is an
+                          // always-light surface inside ExtrudedCard, so it
+                          // must stay dark-on-light in both colour schemes
+                          // and for every character accent.
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 13 * scale,
+                                    color: AppColors.textPrimary,
+                                  ),
+                        ),
+                        SizedBox(height: 3 * scale),
+                        Text(
+                          '${selectedCharacter['emoji']} ${selectedCharacter['trait']}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Tap preview to animate',
+                          // Pinned to the semantic secondary ink: character
+                          // accents include pale pink/grey/amber that fall
+                          // below 3:1 on the light banner face.
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(width: spacing),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        previewName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13 * scale,
-                            ),
-                      ),
-                      SizedBox(height: 3 * scale),
-                      Text(
-                        '${selectedCharacter['emoji']} ${selectedCharacter['trait']}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        'Tap preview to animate',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: selectedCharacter['color'] as Color,
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  decoration: const BoxDecoration(shape: BoxShape.circle),
-                  child: Tooltip(
-                    message: 'Surprise me',
-                    child: IconButton(
-                      onPressed: _randomizeLook,
-                      icon: Icon(
-                        Icons.casino_rounded,
-                        color: selectedCharacter['color'] as Color,
-                      ),
-                      style: IconButton.styleFrom(
-                        backgroundColor: (selectedCharacter['color'] as Color)
-                            .withValues(alpha: 0.12),
-                        minimumSize: Size(44 * scale, 44 * scale),
+                  Container(
+                    decoration: const BoxDecoration(shape: BoxShape.circle),
+                    child: Tooltip(
+                      message: 'Surprise me',
+                      child: IconButton(
+                        onPressed: _randomizeLook,
+                        icon: Icon(
+                          Icons.casino_rounded,
+                          color: selectedCharacter['color'] as Color,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: (selectedCharacter['color'] as Color)
+                              .withValues(alpha: 0.12),
+                          minimumSize: Size(44 * scale, 44 * scale),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -2088,7 +2171,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.arrow_back,
-                            color: _getStepColor(_currentStep),
+                            color: _stepLabelInk(_getStepColor(_currentStep)),
                             size: compact ? 18 : 24),
                         SizedBox(width: compact ? 4 : 8),
                         Text(
@@ -2096,7 +2179,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                           style: TextStyle(
                             fontSize: compact ? 13 : 16,
                             fontWeight: FontWeight.bold,
-                            color: _getStepColor(_currentStep),
+                            color:
+                                _stepLabelInk(_getStepColor(_currentStep)),
                           ),
                         ),
                       ],
@@ -2116,7 +2200,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _getStepColor(_currentStep),
-                    foregroundColor: Colors.white,
+                    foregroundColor: _stepInk(_getStepColor(_currentStep)),
                     padding:
                         EdgeInsets.symmetric(vertical: isCompact ? 12 : 16),
                     shape: RoundedRectangleBorder(

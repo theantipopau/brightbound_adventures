@@ -1,4 +1,5 @@
 export 'app_theme.dart';
+export 'ink_tokens.dart';
 export 'motion_tokens.dart';
 export 'semantic_colors.dart';
 export 'zone_palettes.dart';

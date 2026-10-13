@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/core/services/shop_service.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/models/shop_item.dart';
@@ -93,8 +94,10 @@ class _ShopScreenState extends State<ShopScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   '🛍️ Star Shop',
+                  textScaler: MediaQuery.textScalerOf(context).clamp(
+                      maxScaleFactor: 1.3),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -103,6 +106,8 @@ class _ShopScreenState extends State<ShopScreen>
                 ),
                 Text(
                   'Buy cool items with your stars!',
+                  textScaler: MediaQuery.textScalerOf(context).clamp(
+                      maxScaleFactor: 1.3),
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 14,
@@ -137,6 +142,8 @@ class _ShopScreenState extends State<ShopScreen>
                     const SizedBox(width: 8),
                     Text(
                       '${shop.starBalance}',
+                      textScaler: MediaQuery.textScalerOf(context).clamp(
+                          maxScaleFactor: 1.3),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -275,7 +282,7 @@ class _ShopScreenState extends State<ShopScreen>
           borderRadius: BorderRadius.circular(18),
           onTap: onTap,
           child: Container(
-            height: 72,
+            constraints: const BoxConstraints(minHeight: 72),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.14),
@@ -367,7 +374,7 @@ class _ShopScreenState extends State<ShopScreen>
                 const Text('📦', style: TextStyle(fontSize: 64)),
                 const SizedBox(height: 16),
                 Text(
-                  'Coming soon!',
+                  'Nothing here yet!',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 20,
@@ -476,7 +483,7 @@ class _ShopScreenState extends State<ShopScreen>
                               : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.amber,
-                            foregroundColor: Colors.white,
+                            foregroundColor: InkTokens.on(Colors.amber),
                           ),
                           child: const Text('Buy'),
                         ),
@@ -672,7 +679,7 @@ class _ShopScreenState extends State<ShopScreen>
             ),
           ],
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.green.shade800,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -709,7 +716,7 @@ class _ShopScreenState extends State<ShopScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Purchase failed! Please try again.'),
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.red.shade800,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),

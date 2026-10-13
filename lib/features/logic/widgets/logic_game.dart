@@ -9,6 +9,7 @@ import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
 import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
+import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 import '../models/question.dart';
 
 /// Interactive logic puzzle game with mountain/peaks theme
@@ -16,7 +17,11 @@ class LogicGame extends StatefulWidget {
   final List<LogicQuestion> questions;
   final String skillName;
   final VoidCallback onComplete;
-  final Function(int correct, int total, int xpEarned) onFinish;
+
+  /// Hints are reported with the score so the shared reward breakdown can
+  /// tell an unaided solve from an assisted one. XP is deliberately absent:
+  /// it is computed once by `RewardBreakdown`, not by each game.
+  final Function(int correct, int total, int hintsUsed) onFinish;
 
   const LogicGame({
     super.key,
@@ -34,6 +39,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
   int _currentIndex = 0;
   int _correctAnswers = 0;
   int _currentStreak = 0;
+  int _hintsUsed = 0;
   int? _selectedAnswer;
   bool _showFeedback = false;
   bool _isCorrect = false;
@@ -210,15 +216,12 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
         _slideController.forward();
       });
     } else {
-      final xpEarned = _correctAnswers * 18 +
-          (_correctAnswers == widget.questions.length ? 30 : 0);
-
       // Play celebration sound for perfect score
       if (_correctAnswers == widget.questions.length) {
         _audioManager.playPerfectScore();
       }
 
-      widget.onFinish(_correctAnswers, widget.questions.length, xpEarned);
+      widget.onFinish(_correctAnswers, widget.questions.length, _hintsUsed);
     }
   }
 
@@ -291,12 +294,16 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
                   children: [
                     const Text('🏔️', style: TextStyle(fontSize: 24)),
                     const SizedBox(width: 8),
-                    Text(
-                      widget.skillName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    Flexible(
+                      child: Text(
+                        widget.skillName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -342,182 +349,189 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
   }
 
   Widget _buildQuestionCard() {
+    // Card identity colour — reused by the extruded side face below so
+    // no new direct colour literal is introduced (colour inventory test).
+    final accent = Colors.teal;
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.blueGrey.shade800.withValues(alpha: 0.92),
-              Colors.blueGrey.shade900.withValues(alpha: 0.92),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.teal.withValues(alpha: 0.25),
-              blurRadius: 30,
-              offset: const Offset(0, 15),
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-          border: Border.all(
-            color: Colors.teal.withValues(alpha: 0.4),
-            width: 2.5,
-          ),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
-                children: [
-                  _buildQuizChip(
-                    icon: Icons.auto_awesome_rounded,
-                    label: 'Focus mode',
-                    color: Colors.tealAccent,
-                  ),
-                  _buildQuizChip(
-                    icon: Icons.extension_rounded,
-                    label: 'Q${_currentIndex + 1}/${widget.questions.length}',
-                    color: Colors.cyanAccent,
-                  ),
-                  if (_autoReadQuestions)
-                    _buildQuizChip(
-                      icon: Icons.record_voice_over,
-                      label: 'Read aloud',
-                      color: Colors.lightBlueAccent,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              // Question emoji - animated
-              if (_currentQuestion.imageEmoji != null) ...[
-                AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) {
-                    final bounce =
-                        math.sin(_pulseAnimation.value * 3.14159 * 2) * 10;
-                    final scale =
-                        0.94 + math.sin(_pulseAnimation.value * 3.14159) * 0.08;
-                    return Transform.translate(
-                      offset: Offset(0, bounce),
-                      child: Transform.scale(
-                        scale: scale,
-                        child: Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                Colors.teal.withValues(alpha: 0.3),
-                                Colors.teal.withValues(alpha: 0.08),
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.teal.withValues(alpha: 0.5),
-                                blurRadius: 25,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            _currentQuestion.imageEmoji!,
-                            style: const TextStyle(fontSize: 64),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
+      child: ExtrudedCard(
+        accent: accent,
+        radius: BorderRadius.circular(32),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.blueGrey.shade800.withValues(alpha: 0.92),
+                Colors.blueGrey.shade900.withValues(alpha: 0.92),
               ],
-
-              // Question text
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    width: 1.5,
-                  ),
-                ),
-                child: Column(
+            ),
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withValues(alpha: 0.25),
+                blurRadius: 30,
+                offset: const Offset(0, 15),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+            border: Border.all(
+              color: Colors.teal.withValues(alpha: 0.4),
+              width: 2.5,
+            ),
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
                   children: [
-                    Text(
-                      _currentQuestion.question,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize:
-                            MediaQuery.of(context).size.width < 600 ? 18 : 22,
-                        fontWeight: FontWeight.w800,
-                        height: 1.42,
-                        fontFamily: AppTheme.fontPrimary,
-                      ),
-                      maxLines: 10,
-                      overflow: TextOverflow.ellipsis,
+                    _buildQuizChip(
+                      icon: Icons.auto_awesome_rounded,
+                      label: 'Focus mode',
+                      color: Colors.tealAccent,
                     ),
-                    const SizedBox(height: 12),
-                    // Question counter
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.teal.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        'Question ${_currentIndex + 1} of ${widget.questions.length}',
-                        style: const TextStyle(
-                          color: Colors.tealAccent,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: AppTheme.fontPrimary,
-                        ),
-                      ),
+                    _buildQuizChip(
+                      icon: Icons.extension_rounded,
+                      label: 'Q${_currentIndex + 1}/${widget.questions.length}',
+                      color: Colors.cyanAccent,
                     ),
+                    if (_autoReadQuestions)
+                      _buildQuizChip(
+                        icon: Icons.record_voice_over,
+                        label: 'Read aloud',
+                        color: Colors.lightBlueAccent,
+                      ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 18),
+                // Question emoji - animated
+                if (_currentQuestion.imageEmoji != null) ...[
+                  AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (context, child) {
+                      final bounce =
+                          math.sin(_pulseAnimation.value * 3.14159 * 2) * 10;
+                      final scale = 0.94 +
+                          math.sin(_pulseAnimation.value * 3.14159) * 0.08;
+                      return Transform.translate(
+                        offset: Offset(0, bounce),
+                        child: Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  Colors.teal.withValues(alpha: 0.3),
+                                  Colors.teal.withValues(alpha: 0.08),
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.teal.withValues(alpha: 0.5),
+                                  blurRadius: 25,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              _currentQuestion.imageEmoji!,
+                              style: const TextStyle(fontSize: 64),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                ],
 
-              const SizedBox(height: 24),
-
-              // Answer options
-              ..._currentQuestion.options.asMap().entries.map((entry) {
-                return _buildAnswerOption(entry.key, entry.value);
-              }),
-
-              // Feedback
-              if (_showFeedback) ...[
-                const SizedBox(height: 16),
-                _buildFeedback(),
-              ],
-
-              // Hint button
-              if (!_showFeedback && _currentQuestion.hint != null) ...[
-                const SizedBox(height: 16),
-                TextButton.icon(
-                  onPressed: () => _showHint(),
-                  icon:
-                      const Icon(Icons.lightbulb_outline, color: Colors.amber),
-                  label: const Text('Need a hint?',
-                      style: TextStyle(color: Colors.amber)),
+                // Question text
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        _currentQuestion.question,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize:
+                              MediaQuery.of(context).size.width < 600 ? 18 : 22,
+                          fontWeight: FontWeight.w800,
+                          height: 1.42,
+                          fontFamily: AppTheme.fontPrimary,
+                        ),
+                        maxLines: 10,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 12),
+                      // Question counter
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.teal.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          'Question ${_currentIndex + 1} of ${widget.questions.length}',
+                          style: const TextStyle(
+                            color: Colors.tealAccent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: AppTheme.fontPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+
+                const SizedBox(height: 24),
+
+                // Answer options
+                ..._currentQuestion.options.asMap().entries.map((entry) {
+                  return _buildAnswerOption(entry.key, entry.value);
+                }),
+
+                // Feedback
+                if (_showFeedback) ...[
+                  const SizedBox(height: 16),
+                  PunchIn(child: _buildFeedback()),
+                ],
+
+                // Hint button
+                if (!_showFeedback && _currentQuestion.hint != null) ...[
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    onPressed: () => _showHint(),
+                    icon: const Icon(Icons.lightbulb_outline,
+                        color: Colors.amber),
+                    label: const Text('Need a hint?',
+                        style: TextStyle(color: Colors.amber)),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -639,8 +653,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: _isCorrect
-            ? Colors.green.withValues(alpha: 0.2)
-            : Colors.orange.withValues(alpha: 0.2),
+            ? Colors.green.shade900
+            : Colors.deepOrange.shade900,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _isCorrect ? Colors.green : Colors.orange,
@@ -654,14 +668,14 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
             children: [
               Icon(
                 _isCorrect ? Icons.emoji_events : Icons.psychology,
-                color: _isCorrect ? Colors.greenAccent : Colors.orange,
+                color: _isCorrect ? Colors.greenAccent : Colors.white,
                 size: 28,
               ),
               const SizedBox(width: 8),
               Text(
                 message,
                 style: TextStyle(
-                  color: _isCorrect ? Colors.greenAccent : Colors.orange,
+                  color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -684,7 +698,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
             Text(
               _aiExplanationText!,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
           ] else if (_currentQuestion.explanation != null) ...[
             const SizedBox(height: 8),
@@ -692,7 +706,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
               _currentQuestion.explanation!,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Colors.white70,
+                color: Colors.white,
                 fontSize: 14,
               ),
             ),
@@ -722,7 +736,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
           Text(
             label,
             style: TextStyle(
-              color: color,
+              color: Colors.white,
               fontSize: 11,
               fontWeight: FontWeight.w800,
             ),
@@ -737,55 +751,59 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // Mountain climb progress visualization
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(widget.questions.length, (index) {
-              final isCompleted = index < _currentIndex;
-              final isCurrent = index == _currentIndex;
+          // Mountain climb progress visualization. Scaled down when a long
+          // quiz's dots would overflow a phone-width row.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(widget.questions.length, (index) {
+                final isCompleted = index < _currentIndex;
+                final isCurrent = index == _currentIndex;
 
-              return Row(
-                children: [
-                  Container(
-                    width: isCurrent ? 40 : 24,
-                    height: isCurrent ? 40 : 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isCompleted
-                          ? Colors.tealAccent
-                          : (isCurrent
-                              ? Colors.teal
-                              : Colors.white.withValues(alpha: 0.2)),
-                      boxShadow: isCurrent
-                          ? [
-                              BoxShadow(
-                                color: Colors.teal.withValues(alpha: 0.5),
-                                blurRadius: 12,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: Center(
-                      child: isCompleted
-                          ? const Icon(Icons.check,
-                              color: Colors.black, size: 16)
-                          : (isCurrent
-                              ? const Icon(Icons.landscape,
-                                  color: Colors.white, size: 20)
-                              : null),
-                    ),
-                  ),
-                  if (index < widget.questions.length - 1)
+                return Row(
+                  children: [
                     Container(
-                      width: 20,
-                      height: 3,
-                      color: isCompleted
-                          ? Colors.tealAccent
-                          : Colors.white.withValues(alpha: 0.2),
+                      width: isCurrent ? 40 : 24,
+                      height: isCurrent ? 40 : 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isCompleted
+                            ? Colors.tealAccent
+                            : (isCurrent
+                                ? Colors.teal
+                                : Colors.white.withValues(alpha: 0.2)),
+                        boxShadow: isCurrent
+                            ? [
+                                BoxShadow(
+                                  color: Colors.teal.withValues(alpha: 0.5),
+                                  blurRadius: 12,
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Center(
+                        child: isCompleted
+                            ? const Icon(Icons.check,
+                                color: Colors.black, size: 16)
+                            : (isCurrent
+                                ? const Icon(Icons.landscape,
+                                    color: Colors.white, size: 20)
+                                : null),
+                      ),
                     ),
-                ],
-              );
-            }),
+                    if (index < widget.questions.length - 1)
+                      Container(
+                        width: 20,
+                        height: 3,
+                        color: isCompleted
+                            ? Colors.tealAccent
+                            : Colors.white.withValues(alpha: 0.2),
+                      ),
+                  ],
+                );
+              }),
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -827,6 +845,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
   }
 
   Future<void> _showHint() async {
+    _hintsUsed++;
     String hintText = _currentQuestion.hint ?? '';
     if (_aiHintsEnabled && hintText.isEmpty) {
       if (mounted) {

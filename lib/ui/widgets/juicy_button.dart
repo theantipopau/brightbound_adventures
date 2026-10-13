@@ -59,7 +59,6 @@ class JuicyButton extends StatefulWidget {
         icon: icon,
         emoji: emoji,
         gradient: AppGradients.primary,
-        textColor: Colors.white,
         width: width,
         shimmer: shimmer,
       );
@@ -80,7 +79,6 @@ class JuicyButton extends StatefulWidget {
         icon: icon,
         emoji: emoji,
         gradient: AppGradients.success,
-        textColor: Colors.white,
         width: width,
       );
 
@@ -100,7 +98,6 @@ class JuicyButton extends StatefulWidget {
         onPressed: onPressed,
         icon: icon,
         gradient: world.headerGradient,
-        textColor: Colors.white,
         width: width,
         shimmer: shimmer,
       );
@@ -137,6 +134,20 @@ class _JuicyButtonState extends State<JuicyButton>
   void dispose() {
     _shimmerController.dispose();
     super.dispose();
+  }
+
+  /// Ink that keeps the label at >=4.5:1 on the button's fill — see
+  /// [InkTokens.on]. The old pinned white failed on bright fills: Daily
+  /// Challenge orange measured ~2.2:1 on the world-map nav.
+  static Color _inkFor(Color bg) => InkTokens.on(bg);
+
+  /// First colour of the fill that actually paints behind the label.
+  Color get _baseColor {
+    final gradient = widget.gradient;
+    if (gradient is LinearGradient && gradient.colors.isNotEmpty) {
+      return gradient.colors.first;
+    }
+    return widget.color ?? AppColors.primary;
   }
 
   @override
@@ -246,7 +257,7 @@ class _JuicyButtonState extends State<JuicyButton>
 
     final textColor = widget.onPressed == null
         ? Colors.white70
-        : (widget.textColor ?? Colors.white);
+        : (widget.textColor ?? _inkFor(_baseColor));
 
     return Row(
       mainAxisSize: MainAxisSize.min,

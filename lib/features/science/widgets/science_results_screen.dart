@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import 'package:brightbound_adventures/core/services/index.dart';
+import 'package:brightbound_adventures/ui/components/reward_reveal.dart';
+import 'package:brightbound_adventures/ui/components/session_completion.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
-import 'package:brightbound_adventures/ui/widgets/achievement_notification.dart';
 import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
-import 'package:brightbound_adventures/ui/widgets/zone_mastered_celebration.dart';
 
 /// Completion summary for Science Explorers sessions.
+///
+/// This is the single place a science quest applies its rewards: it runs
+/// the shared `completeSession` orchestration (evidence updates + exactly
+/// one `RewardTransactionService.apply()` per [sessionId]), then the earned
+/// [SessionCompletion] is presented by [RewardReveal]. Rebuilding, resuming,
+/// or revisiting this screen replays the same result instead of re-awarding
+/// it.
 class ScienceResultsScreen extends StatefulWidget {
   final String skillName;
   final String skillId;
+
+  /// Stable identity for this completion; the reward transaction is keyed
+  /// on it, so one session awards exactly once.
+  final String sessionId;
+
   final int correctAnswers;
   final int totalQuestions;
   final double accuracy;
@@ -25,6 +35,7 @@ class ScienceResultsScreen extends StatefulWidget {
     super.key,
     required this.skillName,
     required this.skillId,
+    required this.sessionId,
     required this.correctAnswers,
     required this.totalQuestions,
     required this.accuracy,
@@ -46,8 +57,9 @@ class _ScienceResultsScreenState extends State<ScienceResultsScreen>
   late final AnimationController _pulseController;
   late final Animation<double> _scoreAnimation;
 
-  int _xpAwarded = 0;
-  bool _leveledUp = false;
+  SessionCompletion? _completion;
+  bool _applying = true;
+  Object? _error;
   bool _reduceMotion = false;
   bool _motionSynced = false;
 
@@ -67,7 +79,13 @@ class _ScienceResultsScreenState extends State<ScienceResultsScreen>
     );
 
     _scoreController.forward();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _processResults());
+
+    // Kick off after the first frame so reward work never runs during build,
+    // and so the child sees an honest "packing your reward" beat rather than
+    // a frozen screen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _processResults();
+    });
   }
 
   @override
@@ -96,107 +114,42 @@ class _ScienceResultsScreenState extends State<ScienceResultsScreen>
   }
 
   Future<void> _processResults() async {
-    _xpAwarded = _calculateXp();
-
-    final skillProvider = context.read<SkillProvider>();
-    final spacedRepetitionService = context.read<SpacedRepetitionService>();
-    final avatarProvider = context.read<AvatarProvider>();
-    final shopService = context.read<ShopService>();
-    final achievementService = context.read<AchievementService>();
-    final dailyService = context.read<DailyChallengeService>();
-
-    skillProvider.updateSkillProgress(
-      skillId: widget.skillId,
-      sessionAccuracy: widget.accuracy,
-      sessionHints: widget.hintsUsed,
-    );
-
-    spacedRepetitionService.recordSession(
-      skillId: widget.skillId,
-      accuracy: widget.accuracy,
-    );
-
-    checkAndShowZoneMastered(
-      context,
-      skillProvider,
-      zoneId: widget.zoneId,
-      zoneName: widget.zoneName,
-      themeColor: widget.themeColor,
-    );
-
-    final previousLevel = avatarProvider.avatar?.level;
-    if (avatarProvider.hasAvatar) {
-      avatarProvider.addExperience(_xpAwarded);
-      _leveledUp = previousLevel != null &&
-          avatarProvider.avatar != null &&
-          avatarProvider.avatar!.level > previousLevel;
-    }
-
-    await shopService.awardStarsForActivity(
-      score: widget.correctAnswers,
-      maxScore: widget.totalQuestions,
-      accuracy: widget.accuracy,
-    );
+    setState(() {
+      _applying = true;
+      _error = null;
+    });
 
     try {
-      final starsEarned = widget.correctAnswers * 10;
-      await achievementService.updateProgress(
-          'achievement_stars_25', starsEarned);
-      await achievementService.updateProgress(
-          'achievement_stars_50', starsEarned);
-      await achievementService.updateProgress(
-          'achievement_stars_100', starsEarned);
-      await achievementService.trackQuestionAnswered(widget.correctAnswers > 0);
-      if (widget.accuracy >= 1.0) {
-        await achievementService.updateProgress('achievement_perfect_1', 1);
-        await achievementService.updateProgress('achievement_perfect_5', 1);
-        await achievementService.trackPerfectScore();
-      }
-      if (widget.correctAnswers >= 3) {
-        await achievementService.updateProgress('achievement_quick_learner', 1);
-      }
+      // The single shared orchestration path: evidence updates, then the
+      // one idempotent reward transaction, then presentation data.
+      final completion = await completeSession(
+        context,
+        sessionId: widget.sessionId,
+        skillId: widget.skillId,
+        skillName: widget.skillName,
+        accuracy: widget.accuracy,
+        correctAnswers: widget.correctAnswers,
+        totalQuestions: widget.totalQuestions,
+        hintsUsed: widget.hintsUsed,
+        accent: widget.themeColor,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
+      );
 
-      if (mounted) {
-        for (final achievement in achievementService.recentlyUnlocked) {
-          AchievementNotificationManager.show(context, achievement);
-        }
-        achievementService.clearRecentlyUnlocked();
-      }
-    } catch (e) {
-      debugPrint('Failed to update science achievements: $e');
+      if (!mounted) return;
+      setState(() {
+        _completion = completion;
+        _applying = false;
+      });
+    } catch (error) {
+      // Never pretend the reward landed: show a real error with a retry,
+      // which is safe because the transaction is idempotent.
+      if (!mounted) return;
+      setState(() {
+        _error = error;
+        _applying = false;
+      });
     }
-
-    try {
-      for (int i = 0; i < widget.correctAnswers; i++) {
-        for (final challenge in dailyService.todaysChallenges) {
-          if (challenge.skillId == widget.skillId) {
-            dailyService.updateProgress(
-              challengeId: challenge.id,
-              correct: true,
-            );
-            break;
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Failed to update science daily challenges: $e');
-    }
-
-    if (mounted) setState(() {});
-  }
-
-  int _calculateXp() {
-    final base = (widget.accuracy * 95).round();
-    final investigationBonus = widget.hintsUsed == 0 ? 15 : 5;
-    final masteryBonus = widget.accuracy >= 0.85 ? 25 : 0;
-    return base + investigationBonus + masteryBonus;
-  }
-
-  int get _starsEarned {
-    if (widget.accuracy >= 0.9) return 3;
-    if (widget.accuracy >= 0.7) return 2;
-    if (widget.accuracy >= 0.5) return 1;
-    return 0;
   }
 
   String get _headline {
@@ -207,11 +160,20 @@ class _ScienceResultsScreenState extends State<ScienceResultsScreen>
   }
 
   String get _subhead {
-    if (_leveledUp) return 'Level up! Your explorer skills are growing.';
+    if (_completion?.reward.leveledUp == true) {
+      return 'Level up! Your explorer skills are growing.';
+    }
     if (widget.accuracy >= 0.8) {
       return 'You observed carefully and connected the clues.';
     }
     return 'Every result teaches you something for the next experiment.';
+  }
+
+  int get _starsEarned {
+    if (widget.accuracy >= 0.9) return 3;
+    if (widget.accuracy >= 0.7) return 2;
+    if (widget.accuracy >= 0.5) return 1;
+    return 0;
   }
 
   Color _scoreColor(double value) {
@@ -224,6 +186,7 @@ class _ScienceResultsScreenState extends State<ScienceResultsScreen>
   @override
   Widget build(BuildContext context) {
     final isCompact = MediaQuery.of(context).size.width < 560;
+    final completion = _completion;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -299,7 +262,7 @@ class _ScienceResultsScreenState extends State<ScienceResultsScreen>
                         ),
                       ),
                       const SizedBox(height: 24),
-                      _buildResultsCard(isCompact),
+                      _buildResultsCard(isCompact, completion),
                     ],
                   ),
                 ),
@@ -311,7 +274,7 @@ class _ScienceResultsScreenState extends State<ScienceResultsScreen>
     );
   }
 
-  Widget _buildResultsCard(bool isCompact) {
+  Widget _buildResultsCard(bool isCompact, SessionCompletion? completion) {
     return Container(
       width: double.infinity,
       constraints: const BoxConstraints(maxWidth: 760),
@@ -418,11 +381,31 @@ class _ScienceResultsScreenState extends State<ScienceResultsScreen>
               ),
               _ResultChip(
                 icon: Icons.bolt_rounded,
-                label: '+$_xpAwarded XP',
+                label: '+${completion?.breakdown.totalXp ?? 0} XP',
                 color: widget.themeColor,
               ),
             ],
           ),
+          const SizedBox(height: 20),
+          if (_applying)
+            RewardApplyingCard(accent: widget.themeColor)
+          else if (_error != null)
+            RewardErrorCard(onRetry: _processResults)
+          else if (completion != null)
+            RewardReveal(
+              result: completion.reward,
+              breakdown: completion.breakdown,
+              starBalance: completion.starBalance,
+              levelProgressBefore: completion.levelProgressBefore,
+              levelProgressAfter: completion.levelProgressAfter,
+              accent: widget.themeColor,
+              skillName: widget.skillName,
+              skillAccuracyBefore: completion.skillAccuracyBefore,
+              skillAccuracyAfter: completion.skillAccuracyAfter,
+              recommendation: completion.recommendation,
+              unlockNames: completion.unlockNames,
+              onBackToMap: () => backToWorldMap(context),
+            ),
           const SizedBox(height: 24),
           Wrap(
             alignment: WrapAlignment.center,
@@ -434,8 +417,11 @@ class _ScienceResultsScreenState extends State<ScienceResultsScreen>
                 child: BrandedBackButton(
                   label: 'Back to Zone',
                   onPressed: widget.onExit,
-                  backgroundColor: Colors.white,
-                  foregroundColor: widget.themeColor,
+                  // Solid themeColor + derived ink: the old white-bg/
+                  // themeColor-fg pairing measured 2.44:1 for the teal
+                  // science theme on white.
+                  backgroundColor: widget.themeColor,
+                  foregroundColor: InkTokens.on(widget.themeColor),
                   borderColor: widget.themeColor,
                   tokenBackgroundColor:
                       widget.themeColor.withValues(alpha: 0.12),
@@ -449,7 +435,7 @@ class _ScienceResultsScreenState extends State<ScienceResultsScreen>
                   label: const Text('Try Again'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.themeColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: InkTokens.on(widget.themeColor),
                     minimumSize: const Size.fromHeight(52),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -485,20 +471,25 @@ class _ResultChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: InkTokens.onTint(color), size: 16),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                // Ink on the 12% chip tint, not the raw accent: teal labels
+                // measured 2.44:1 on the near-white pill.
+                color: InkTokens.onTint(color),
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

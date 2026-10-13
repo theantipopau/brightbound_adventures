@@ -10,6 +10,7 @@ import 'package:brightbound_adventures/core/services/ai_learning_assistant_servi
 import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
 import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
+import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
 import 'package:brightbound_adventures/ui/widgets/difficulty_indicator.dart';
 import 'package:brightbound_adventures/features/interactions/types/drag_to_order.dart';
@@ -20,7 +21,11 @@ class StoryGame extends StatefulWidget {
   final List<StoryQuestion> questions;
   final String skillName;
   final VoidCallback onComplete;
-  final Function(int correct, int total, int xpEarned) onFinish;
+
+  /// Hints are reported with the score so the shared reward breakdown can
+  /// tell an unaided solve from an assisted one. XP is deliberately absent:
+  /// it is computed once by `RewardBreakdown`, not by each game.
+  final Function(int correct, int total, int hintsUsed) onFinish;
 
   const StoryGame({
     super.key,
@@ -39,6 +44,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   late FocusNode _focusNode;
   int _correctAnswers = 0;
   int _currentStreak = 0;
+  int _hintsUsed = 0;
   int? _selectedAnswer;
   bool _showFeedback = false;
   bool _isCorrect = false;
@@ -283,15 +289,12 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       });
     } else {
       // Game complete
-      final xpEarned = _correctAnswers * 15 +
-          (_correctAnswers == widget.questions.length ? 25 : 0);
-
       // Play celebration sound for perfect score
       if (_correctAnswers == widget.questions.length) {
         _audioManager.playPerfectScore();
       }
 
-      widget.onFinish(_correctAnswers, widget.questions.length, xpEarned);
+      widget.onFinish(_correctAnswers, widget.questions.length, _hintsUsed);
     }
   }
 
@@ -450,8 +453,13 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
           Expanded(
             child: Column(
               children: [
+                // Line caps: at 200% text these four stacked rows measured
+                // 204/120/248 px tall and pushed the header to 650 px,
+                // overflowing the screen bottom by 74 px (clipping probe).
                 Text(
                   widget.skillName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -477,11 +485,15 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                 ),
                 Text(
                   'Question ${_currentIndex + 1} of ${widget.questions.length}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.white60, fontSize: 14),
                 ),
                 const SizedBox(height: 2),
                 const Text(
                   'Follow the clues and pick the best answer',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: Colors.white54, fontSize: 11),
                 ),
               ],
@@ -513,6 +525,9 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   }
 
   Widget _buildQuestionCard() {
+    // Card identity colour — reused by the extruded side face below so
+    // no new direct colour literal is introduced (colour inventory test).
+    final cardTone = Colors.purple.shade900;
     return AnimatedBuilder(
       animation: _pageAnimation,
       builder: (context, child) {
@@ -522,196 +537,203 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
             ..rotateY((1 - _pageAnimation.value) * math.pi / 2),
           alignment: Alignment.center,
           child: Opacity(
-            opacity: _pageAnimation.value,
+            opacity: _pageAnimation.value.clamp(0.0, 1.0),
             child: child,
           ),
         );
       },
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.purple.shade900.withValues(alpha: 0.85),
-                Colors.indigo.shade900.withValues(alpha: 0.85),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(32),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.purple.withValues(alpha: 0.4),
-                blurRadius: 30,
-                offset: const Offset(0, 15),
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.25),
-              width: 2.5,
-            ),
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(28),
-            child: Column(
-              children: [
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    _buildQuizChip(
-                      icon: Icons.auto_awesome_rounded,
-                      label: 'Focus mode',
-                      color: Colors.purpleAccent,
-                    ),
-                    _buildQuizChip(
-                      icon: Icons.menu_book_rounded,
-                      label: 'Q${_currentIndex + 1}/${widget.questions.length}',
-                      color: Colors.deepPurpleAccent,
-                    ),
-                    if (_autoReadQuestions)
-                      _buildQuizChip(
-                        icon: Icons.record_voice_over,
-                        label: 'Read aloud',
-                        color: Colors.tealAccent,
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                // Question emoji - animated with bounce
-                if (_currentQuestion.imageEmoji != null) ...[
-                  AnimatedBuilder(
-                    animation: _pageController,
-                    builder: (context, _) {
-                      final bounce =
-                          math.sin(_pageController.value * 3.14159 * 2) * 12;
-                      final scale = 0.92 +
-                          math.sin(_pageController.value * 3.14159) * 0.1;
-                      return Transform.translate(
-                        offset: Offset(0, bounce),
-                        child: Transform.scale(
-                          scale: scale,
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              gradient: RadialGradient(
-                                colors: [
-                                  Colors.purple.withValues(alpha: 0.3),
-                                  Colors.purple.withValues(alpha: 0.1),
-                                ],
-                              ),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.purple.withValues(alpha: 0.5),
-                                  blurRadius: 20,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              _currentQuestion.imageEmoji!,
-                              style: const TextStyle(fontSize: 72),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
+        child: ExtrudedCard(
+          accent: cardTone,
+          radius: BorderRadius.circular(32),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  cardTone.withValues(alpha: 0.85),
+                  Colors.indigo.shade900.withValues(alpha: 0.85),
                 ],
-
-                // Question text with better styling
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.black26.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Column(
+              ),
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.purple.withValues(alpha: 0.4),
+                  blurRadius: 30,
+                  offset: const Offset(0, 15),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.25),
+                width: 2.5,
+              ),
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
                     children: [
-                      Text(
-                        _currentQuestion.question,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize:
-                              MediaQuery.of(context).size.width < 600 ? 20 : 24,
-                          fontWeight: FontWeight.w800,
-                          height: 1.38,
-                          fontFamily: AppTheme.fontPrimary,
-                        ),
-                        maxLines: 12,
-                        overflow: TextOverflow.ellipsis,
+                      _buildQuizChip(
+                        icon: Icons.auto_awesome_rounded,
+                        label: 'Focus mode',
+                        color: Colors.purpleAccent,
                       ),
-                      const SizedBox(height: 12),
-                      // Question counter
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.purple.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          'Question ${_currentIndex + 1} of ${widget.questions.length}',
-                          style: const TextStyle(
-                            color: Colors.purpleAccent,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: AppTheme.fontPrimary,
-                          ),
-                        ),
+                      _buildQuizChip(
+                        icon: Icons.menu_book_rounded,
+                        label:
+                            'Q${_currentIndex + 1}/${widget.questions.length}',
+                        color: Colors.deepPurpleAccent,
                       ),
+                      if (_autoReadQuestions)
+                        _buildQuizChip(
+                          icon: Icons.record_voice_over,
+                          label: 'Read aloud',
+                          color: Colors.tealAccent,
+                        ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 18),
+                  // Question emoji - animated with bounce
+                  if (_currentQuestion.imageEmoji != null) ...[
+                    AnimatedBuilder(
+                      animation: _pageController,
+                      builder: (context, _) {
+                        final bounce =
+                            math.sin(_pageController.value * 3.14159 * 2) * 12;
+                        final scale = 0.92 +
+                            math.sin(_pageController.value * 3.14159) * 0.1;
+                        return Transform.translate(
+                          offset: Offset(0, bounce),
+                          child: Transform.scale(
+                            scale: scale,
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  colors: [
+                                    Colors.purple.withValues(alpha: 0.3),
+                                    Colors.purple.withValues(alpha: 0.1),
+                                  ],
+                                ),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.purple.withValues(alpha: 0.5),
+                                    blurRadius: 20,
+                                    spreadRadius: 5,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                _currentQuestion.imageEmoji!,
+                                style: const TextStyle(fontSize: 72),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                  ],
 
-                const SizedBox(height: 28),
+                  // Question text with better styling
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.black26.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          _currentQuestion.question,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: MediaQuery.of(context).size.width < 600
+                                ? 20
+                                : 24,
+                            fontWeight: FontWeight.w800,
+                            height: 1.38,
+                            fontFamily: AppTheme.fontPrimary,
+                          ),
+                          maxLines: 12,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 12),
+                        // Question counter
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.purple.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            'Question ${_currentIndex + 1} of ${widget.questions.length}',
+                            style: const TextStyle(
+                              color: Colors.purpleAccent,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: AppTheme.fontPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                if (_currentQuestion.type == StoryQuestionType.sequencing &&
-                    _currentQuestion.sequenceItems != null &&
-                    _currentQuestion.correctOrder != null)
-                  DragToOrderQuestion(
-                    key: ValueKey('${_currentQuestion.id}_ordering'),
-                    prompt: _currentQuestion.question,
-                    items: _currentQuestion.sequenceItems!,
-                    correctOrder: _currentQuestion.correctOrder!,
-                    onSubmitted: _submitSequence,
-                  )
-                else
-                  ..._currentQuestion.options.asMap().entries.map((entry) {
-                    return AnimatedAnswerOption(
-                      key: ValueKey('${_currentIndex}_${entry.key}'),
-                      label: entry.value,
-                      optionLetter:
-                          _optionLetters[entry.key % _optionLetters.length],
-                      state: _getOptionState(entry.key),
-                      isSelected: _selectedAnswer == entry.key,
-                      onTap:
-                          _showFeedback ? null : () => _selectAnswer(entry.key),
-                      accentColor: Colors.purpleAccent,
-                      animationDelay: entry.key * 60,
-                    );
-                  }),
+                  const SizedBox(height: 28),
 
-                // Feedback section
-                if (_showFeedback) ...[
-                  const SizedBox(height: 20),
-                  _buildFeedback(),
+                  if (_currentQuestion.type == StoryQuestionType.sequencing &&
+                      _currentQuestion.sequenceItems != null &&
+                      _currentQuestion.correctOrder != null)
+                    DragToOrderQuestion(
+                      key: ValueKey('${_currentQuestion.id}_ordering'),
+                      prompt: _currentQuestion.question,
+                      items: _currentQuestion.sequenceItems!,
+                      correctOrder: _currentQuestion.correctOrder!,
+                      onSubmitted: _submitSequence,
+                    )
+                  else
+                    ..._currentQuestion.options.asMap().entries.map((entry) {
+                      return AnimatedAnswerOption(
+                        key: ValueKey('${_currentIndex}_${entry.key}'),
+                        label: entry.value,
+                        optionLetter:
+                            _optionLetters[entry.key % _optionLetters.length],
+                        state: _getOptionState(entry.key),
+                        isSelected: _selectedAnswer == entry.key,
+                        onTap: _showFeedback
+                            ? null
+                            : () => _selectAnswer(entry.key),
+                        accentColor: Colors.purpleAccent,
+                        animationDelay: entry.key * 60,
+                      );
+                    }),
+
+                  // Feedback section
+                  if (_showFeedback) ...[
+                    const SizedBox(height: 20),
+                    PunchIn(child: _buildFeedback()),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
@@ -741,8 +763,8 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: _isCorrect
-            ? Colors.green.withValues(alpha: 0.2)
-            : Colors.orange.withValues(alpha: 0.2),
+            ? Colors.green.shade900
+            : Colors.deepOrange.shade900,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _isCorrect ? Colors.green : Colors.orange,
@@ -756,14 +778,14 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
             children: [
               Icon(
                 _isCorrect ? Icons.celebration : Icons.lightbulb,
-                color: _isCorrect ? Colors.greenAccent : Colors.orange,
+                color: _isCorrect ? Colors.greenAccent : Colors.white,
                 size: 28,
               ),
               const SizedBox(width: 8),
               Text(
                 message,
                 style: TextStyle(
-                  color: _isCorrect ? Colors.greenAccent : Colors.orange,
+                  color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -787,7 +809,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
               _aiExplanationText!,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Colors.white70,
+                color: Colors.white,
                 fontSize: 14,
               ),
             ),
@@ -797,7 +819,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
               _currentQuestion.explanation!,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Colors.white70,
+                color: Colors.white,
                 fontSize: 14,
               ),
             ),
@@ -824,12 +846,16 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
         children: [
           Icon(icon, size: 13, color: color),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],
@@ -929,6 +955,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
   }
 
   Future<void> _showHint() async {
+    _hintsUsed++;
     String hintText = _currentQuestion.hint ?? '';
     if (_aiHintsEnabled && hintText.isEmpty) {
       if (mounted) {

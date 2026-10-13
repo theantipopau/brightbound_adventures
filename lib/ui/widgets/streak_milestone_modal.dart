@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// A fullscreen modal that celebrates a streak milestone.
 /// Shows when the player hits 3, 7, 14, 30, 50, 100, or 365 days.
@@ -144,7 +145,8 @@ class _StreakMilestoneModalState extends State<StreakMilestoneModal>
                     ),
                   ],
                 ),
-                child: Column(
+                child: SingleChildScrollView(
+                  child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Giant emoji
@@ -165,22 +167,25 @@ class _StreakMilestoneModalState extends State<StreakMilestoneModal>
                           width: 1.5,
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.local_fire_department,
-                              color: _accentColor, size: 20),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${widget.streakDays} DAY STREAK',
-                            style: TextStyle(
-                              color: _accentColor,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 15,
-                              letterSpacing: 1.2,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.local_fire_department,
+                                color: _accentColor, size: 20),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${widget.streakDays} DAY STREAK',
+                              style: TextStyle(
+                                color: InkTokens.onTint(_accentColor),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                                letterSpacing: 1.2,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -222,20 +227,23 @@ class _StreakMilestoneModalState extends State<StreakMilestoneModal>
                             width: 1.5,
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('⭐', style: TextStyle(fontSize: 24)),
-                            const SizedBox(width: 8),
-                            Text(
-                              '+${widget.bonusStars} Bonus Stars!',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 18,
-                                color: Color(0xFFCC8800),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('⭐', style: TextStyle(fontSize: 24)),
+                              const SizedBox(width: 8),
+                              Text(
+                                '+${widget.bonusStars} Bonus Stars!',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 18,
+                                  color: Color(0xFFCC8800),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -246,7 +254,7 @@ class _StreakMilestoneModalState extends State<StreakMilestoneModal>
                         onPressed: widget.onDismiss,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _accentColor,
-                          foregroundColor: Colors.white,
+                          foregroundColor: InkTokens.on(_accentColor),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -263,6 +271,7 @@ class _StreakMilestoneModalState extends State<StreakMilestoneModal>
                       ),
                     ),
                   ],
+                  ),
                 ),
               ),
             ),

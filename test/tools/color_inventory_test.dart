@@ -34,7 +34,10 @@ const Map<String, int> _colorUsageAllowlist = {
   'lib/ui/screens/boss_battle_screen.dart': 59,
   'lib/features/storytelling/widgets/story_game.dart': 55,
   'lib/main.dart': 53,
-  'lib/features/science/widgets/science_game.dart': 48,
+  // Raised from 48 during the 2026-10-10 clipping pass: the Discovery
+  // Meter row got contrast-correct inks (blueGrey.shade800 label,
+  // brown.shade800 shield text) while being made overflow-proof.
+  'lib/features/science/widgets/science_game.dart': 50,
   'lib/ui/screens/world_entry_screen.dart': 46,
   'lib/features/literacy/widgets/multiple_choice_game.dart': 43,
   'lib/ui/widgets/skill_widgets.dart': 40,
@@ -43,7 +46,10 @@ const Map<String, int> _colorUsageAllowlist = {
   'lib/features/logic/widgets/logic_results_screen.dart': 39,
   'lib/ui/screens/daily_challenge_screen.dart': 37,
   'lib/ui/screens/shop_screen.dart': 36,
-  'lib/features/motor/widgets/motor_game.dart': 36,
+  // Raised from 36 during the 2026-10-10 movement/art pass: the arena
+  // backdrop painter gained a radial glow, amber dashed energy ring,
+  // sparkle grid, and viewfinder brackets (6 reviewed white/amber tones).
+  'lib/features/motor/widgets/motor_game.dart': 42,
   'lib/ui/widgets/animated_answer_option.dart': 35,
   'lib/ui/widgets/animated_character.dart': 34,
   'lib/ui/screens/onboarding_screen.dart': 33,
@@ -52,6 +58,12 @@ const Map<String, int> _colorUsageAllowlist = {
   // WorldMapZoneState) so state is communicated by colour+icon+label
   // together, not colour alone.
   'lib/ui/screens/profile_stats_screen.dart': 39,
+  // New 2026-10-09 (contrast pass): the single shared home for the
+  // black/white ink bookends behind InkTokens.on() — see its doc comment.
+  // Raised from 2 during the 2026-10-09 contrast pass: onTint() composites
+  // the chip tint over white with one more Colors.white use, keeping every
+  // accent-tinted quiz chip's ink derived instead of re-literal'd per game.
+  'lib/ui/themes/ink_tokens.dart': 3,
   'lib/features/storytelling/widgets/story_results_screen.dart': 32,
   'lib/ui/widgets/streak_widget.dart': 29,
   'lib/features/motor/widgets/motor_results_screen.dart': 29,
@@ -85,6 +97,13 @@ const Map<String, int> _colorUsageAllowlist = {
   'lib/features/logic/screens/logic_practice_screen.dart': 11,
   'lib/ui/screens/mastery_certificate_screen.dart': 10,
   'lib/ui/painters/path_painter.dart': 10,
+  // New 2026-10-07 (board-spaces pass): Mario-Party-style route tiles.
+  // Deliberate exception, reviewed: 7 direct uses are the procedural
+  // shading for the extruded tiles (grey base + black/white/amber for
+  // side shade, rim, highlight and the gold question space). Tile identity
+  // colours themselves come from ZoneData.color (data, not literals), so
+  // this stays a small, fixed set.
+  'lib/ui/painters/board_tile_painter.dart': 7,
   'lib/core/services/animation_service.dart': 9,
   'lib/features/motor/models/motor_game.dart': 8,
   'lib/ui/painters/terrain_painter.dart': 7,
@@ -112,7 +131,6 @@ const Map<String, int> _colorUsageAllowlist = {
   'lib/ui/widgets/visual_effects/pulse_effect.dart': 1,
   'lib/ui/widgets/difficulty_indicator.dart': 1,
   'lib/ui/widgets/branded_back_button.dart': 1,
-  'lib/ui/screens/placeholder_zone_screen.dart': 1,
   'lib/ui/painters/shadow_painter.dart': 1,
   'lib/ui/components/pressable.dart': 1,
   'lib/features/literacy/screens/skill_practice_screen.dart': 1,

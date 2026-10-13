@@ -15,7 +15,6 @@ import 'package:brightbound_adventures/core/services/quiz_preferences_service.da
 import 'package:brightbound_adventures/core/services/tts_service.dart';
 import 'package:brightbound_adventures/core/controllers/game_session_controller.dart';
 import 'package:brightbound_adventures/core/utils/question_variation_helper.dart';
-import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/responsive_quiz_layout.dart';
 import 'package:brightbound_adventures/ui/widgets/difficulty_indicator.dart';
@@ -23,6 +22,7 @@ import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/adventure_pattern_overlay.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/screen_shaker.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
+import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
 
 /// Multiple choice quiz game for numeracy skills
@@ -30,7 +30,12 @@ class NumeracyGame extends StatefulWidget {
   final List<NumeracyQuestion> questions;
   final String skillName;
   final Color themeColor;
-  final void Function(double accuracy, int correct, int total)? onComplete;
+
+  /// Hints are reported with the score so the shared reward breakdown can
+  /// tell an unaided solve from an assisted one — the game counts them, the
+  /// results screen is where they matter.
+  final void Function(double accuracy, int correct, int total, int hintsUsed)?
+      onComplete;
   final VoidCallback? onCancel;
 
   const NumeracyGame({
@@ -56,6 +61,27 @@ class _NumeracyGameState extends State<NumeracyGame>
   int _currentIndex = 0;
   int? _selectedIndex;
   bool _answered = false;
+
+  /// Timers that advance the game after an answer (confetti clear and the
+  /// next-question hop, correct + wrong variants) so dispose() can cancel
+  /// them all — widget tests otherwise end with timers still pending.
+  final List<Timer> _advanceTimers = [];
+  void _delayed(Duration duration, VoidCallback callback) {
+    late final Timer newTimer;
+    newTimer = Timer(duration, () {
+      _advanceTimers.remove(newTimer);
+      if (mounted) callback();
+    });
+    _advanceTimers.add(newTimer);
+  }
+
+  void _cancelAdvanceTimers() {
+    for (final timer in _advanceTimers) {
+      timer.cancel();
+    }
+    _advanceTimers.clear();
+  }
+
   bool _showHint = false;
   bool _hintUsed = false;
   bool _autoReadQuestions = false;
@@ -146,6 +172,7 @@ class _NumeracyGameState extends State<NumeracyGame>
 
   @override
   void dispose() {
+    _cancelAdvanceTimers();
     _focusNode.dispose();
     _gameController.dispose();
     _feedbackController.dispose();
@@ -224,22 +251,22 @@ class _NumeracyGameState extends State<NumeracyGame>
       setState(() {
         _showConfetti = true;
       });
-      Future.delayed(const Duration(seconds: 2), () {
+      _delayed(const Duration(seconds: 2), () {
         if (mounted) setState(() => _showConfetti = false);
       });
 
-      Future.delayed(const Duration(milliseconds: 1500), _nextQuestion);
+      _delayed(const Duration(milliseconds: 1500), _nextQuestion);
     } else {
       hapticService.onWrongAnswer();
       avatarProvider?.setEmotion(AvatarEmotion.sad,
           resetAfter: const Duration(milliseconds: 800));
-      Future.delayed(const Duration(milliseconds: 800), () {
+      _delayed(const Duration(milliseconds: 800), () {
         if (mounted) {
           avatarProvider?.setEmotion(AvatarEmotion.thinking,
               resetAfter: const Duration(milliseconds: 1200));
         }
       });
-      Future.delayed(const Duration(milliseconds: 2000), _nextQuestion);
+      _delayed(const Duration(milliseconds: 2000), _nextQuestion);
     }
 
     _feedbackController.forward(from: 0);
@@ -273,14 +300,54 @@ class _NumeracyGameState extends State<NumeracyGame>
     }
   }
 
+  /// The learner tapped Continue on the feedback panel.
+  ///
+  /// The session controller ends the game from inside `submitAnswer` (on the
+  /// last question, or when lives run out). That completion is parked here
+  /// instead and run only once the child has seen the explanation — the same
+  /// contract as the literacy MCQ's `_onContinue`.
+  void _onContinue() {
+    if (_pendingComplete) {
+      _finishSession(forced: _pendingForced);
+      return;
+    }
+    _nextQuestion();
+  }
+
+  /// Completion requested by the session controller while the child is
+  /// still reading feedback.
+  bool _pendingComplete = false;
+  bool _pendingForced = false;
+
   void _completeGame({bool forced = false}) {
+    if (_answered && !_pendingComplete) {
+      _pendingComplete = true;
+      _pendingForced = forced;
+      _cancelAdvanceTimers();
+      return;
+    }
+    if (_pendingComplete) return;
+    _finishSession(forced: forced);
+  }
+
+  /// Set once the session has handed control to the results screen, so a
+  /// double-tap on Continue can never fire `onComplete` twice.
+  bool _finished = false;
+
+  void _finishSession({required bool forced}) {
+    if (_finished) return;
+    _finished = true;
     final accuracy = _gameController.correctAnswers / _shuffledQuestions.length;
     if (accuracy == 1.0) {
       _audioManager.playPerfectScore();
     }
     _recordSessionSummary(forced: forced);
     widget.onComplete?.call(
-        accuracy, _gameController.correctAnswers, _shuffledQuestions.length);
+      accuracy,
+      _gameController.correctAnswers,
+      _shuffledQuestions.length,
+      _hintsUsedInSession,
+    );
   }
 
   void _recordSessionSummary({required bool forced}) {
@@ -645,118 +712,129 @@ class _NumeracyGameState extends State<NumeracyGame>
   Widget _buildQuestionCard() {
     final width = MediaQuery.of(context).size.width;
     final isCompact = width < 700;
+    // Opaque card face: ExtrudedCard paints a *dark* extruded side face
+    // behind the child, so any translucent gradient pixel lets that dark
+    // slab bleed through and muddies the text sitting on it. White at 7%
+    // alpha over the page and `Color.lerp(white, accent, 0.07)` render
+    // identically — the lerp just stays opaque.
+    final face = Colors.white;
 
-    return Container(
-      padding: EdgeInsets.all(isCompact ? 20 : 28),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, widget.themeColor.withValues(alpha: 0.07)],
+    return ExtrudedCard(
+      accent: widget.themeColor,
+      radius: BorderRadius.circular(AppBorders.xl),
+      child: Container(
+        padding: EdgeInsets.all(isCompact ? 20 : 28),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [face, Color.lerp(face, widget.themeColor, 0.07)!],
+          ),
+          borderRadius: BorderRadius.circular(AppBorders.xl),
+          border: Border.all(
+            color: widget.themeColor.withValues(alpha: 0.25),
+            width: 1.5,
+          ),
+          boxShadow: AppShadows.md(widget.themeColor),
         ),
-        borderRadius: BorderRadius.circular(AppBorders.xl),
-        border: Border.all(
-          color: widget.themeColor.withValues(alpha: 0.25),
-          width: 1.5,
-        ),
-        boxShadow: AppShadows.md(widget.themeColor),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildQuizChip(
-                icon: Icons.auto_awesome_rounded,
-                label: 'Focus mode',
-                color: widget.themeColor,
-              ),
-              _buildQuizChip(
-                icon: Icons.calculate_rounded,
-                label: 'Q${_currentIndex + 1}/${_shuffledQuestions.length}',
-                color: Colors.deepPurple,
-              ),
-              if (_autoReadQuestions)
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
                 _buildQuizChip(
-                  icon: Icons.record_voice_over,
-                  label: 'Read aloud',
-                  color: Colors.teal,
-                ),
-            ],
-          ),
-          SizedBox(height: isCompact ? 14 : 18),
-          // Q number chip
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: widget.themeColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppBorders.pill),
-              ),
-              child: Text(
-                'Q${_currentIndex + 1} of ${_shuffledQuestions.length}',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
+                  icon: Icons.auto_awesome_rounded,
+                  label: 'Focus mode',
                   color: widget.themeColor,
-                  fontFamily: AppTheme.fontPrimary,
                 ),
-              ),
-            ),
-          ),
-          SizedBox(height: isCompact ? 16 : 24),
-          _buildIllustration(),
-          SizedBox(height: isCompact ? 16 : 24),
-          Text(
-            _currentQuestion.question,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: isCompact ? 22 : 26,
-              fontWeight: FontWeight.w800,
-              height: 1.26,
-              color: AppColors.textPrimary,
-              fontFamily: AppTheme.fontPrimary,
-            ),
-          ),
-          if (_showHint) ...[
-            const SizedBox(height: 20),
-            AnimatedContainer(
-              duration: AppMotion.standard,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.amber.shade50,
-                    Colors.orange.shade50,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                _buildQuizChip(
+                  icon: Icons.calculate_rounded,
+                  label: 'Q${_currentIndex + 1}/${_shuffledQuestions.length}',
+                  color: Colors.deepPurple,
                 ),
-                border: Border.all(color: Colors.amber.shade200),
-                borderRadius: BorderRadius.circular(AppBorders.md),
-                boxShadow: AppShadows.sm(Colors.amber),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.lightbulb, color: Colors.amber),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      _activeHintText ?? _currentQuestion.hint ?? '',
-                      style:
-                          TextStyle(color: Colors.brown.shade800, fontSize: 15),
-                    ),
+                if (_autoReadQuestions)
+                  _buildQuizChip(
+                    icon: Icons.record_voice_over,
+                    label: 'Read aloud',
+                    color: Colors.teal,
                   ),
-                ],
+              ],
+            ),
+            SizedBox(height: isCompact ? 14 : 18),
+            // Q number chip
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: widget.themeColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppBorders.pill),
+                ),
+                child: Text(
+                  'Q${_currentIndex + 1} of ${_shuffledQuestions.length}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: widget.themeColor,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
               ),
             ),
+            SizedBox(height: isCompact ? 16 : 24),
+            _buildIllustration(),
+            SizedBox(height: isCompact ? 16 : 24),
+            Text(
+              _currentQuestion.question,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: isCompact ? 22 : 26,
+                fontWeight: FontWeight.w800,
+                height: 1.26,
+                color: AppColors.textPrimary,
+                fontFamily: AppTheme.fontPrimary,
+              ),
+            ),
+            if (_showHint) ...[
+              const SizedBox(height: 20),
+              AnimatedContainer(
+                duration: AppMotion.standard,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.amber.shade50,
+                      Colors.orange.shade50,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(color: Colors.amber.shade200),
+                  borderRadius: BorderRadius.circular(AppBorders.md),
+                  boxShadow: AppShadows.sm(Colors.amber),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.lightbulb, color: Colors.amber),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _activeHintText ?? _currentQuestion.hint ?? '',
+                        style: TextStyle(
+                            color: Colors.brown.shade800, fontSize: 15),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -962,6 +1040,19 @@ class _NumeracyGameState extends State<NumeracyGame>
     );
   }
 
+  /// The authored explanation for the current question, falling back to the
+  /// AI explanation when no authored one exists. Null hides the panel.
+  ///
+  /// Mirrors the literacy MCQ's teaching note: the child learns *why* the
+  /// answer is what it is, not merely whether they scored.
+  String? get _teachingNote {
+    final authored = _currentQuestion.explanation?.trim() ?? '';
+    if (authored.isNotEmpty) return authored;
+    final ai = _aiExplanationText?.trim();
+    if (ai != null && ai.isNotEmpty) return ai;
+    return null;
+  }
+
   Widget _buildFeedback(bool isCorrect) {
     final correctMessages = [
       'Brilliant! 🌟',
@@ -1001,10 +1092,12 @@ class _NumeracyGameState extends State<NumeracyGame>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
+          // Deep ramp ends so white/gold feedback text stays above 4.5:1
+          // (shade500/shade400 tops out around 2.8:1 — see WCAG 1.4.3).
           gradient: LinearGradient(
             colors: isCorrect
-                ? [Colors.green.shade500, Colors.teal.shade400]
-                : [Colors.red.shade400, Colors.deepOrange.shade400],
+                ? [Colors.green.shade900, Colors.teal.shade800]
+                : [Colors.red.shade900, Colors.deepOrange.shade900],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -1042,24 +1135,75 @@ class _NumeracyGameState extends State<NumeracyGame>
                   if (isCorrect)
                     Text(
                       '+$pts pts',
-                      style: TextStyle(
-                        color: Colors.yellow.shade200,
+                      style: const TextStyle(
+                        color: Color(0xFFFFF6E8),
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                  if (_aiExplanationText != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      _aiExplanationText!,
-                      style: const TextStyle(
-                        color: Color(0xFFFFF6E8),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        height: 1.25,
+                  if (_teachingNote != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text('💡', style: TextStyle(fontSize: 13)),
+                              const SizedBox(width: 5),
+                              Text(
+                                'Why?',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            _teachingNote!,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 44,
+                    child: ElevatedButton.icon(
+                      key: const ValueKey('quiz-continue'),
+                      onPressed: _onContinue,
+                      icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                      label: Text(
+                        _isLastQuestion ? 'See my rewards' : 'Continue',
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onSurface,
+                        elevation: 0,
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1068,6 +1212,8 @@ class _NumeracyGameState extends State<NumeracyGame>
       ),
     );
   }
+
+  bool get _isLastQuestion => _currentIndex >= _shuffledQuestions.length - 1;
 
   Widget _buildQuizChip({
     required IconData icon,
@@ -1091,7 +1237,9 @@ class _NumeracyGameState extends State<NumeracyGame>
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
-              color: color,
+              // Accent text on a 12% tint failed WCAG for bright hues
+              // (teal ≈ 2.7:1); ink derives from the tint instead.
+              color: InkTokens.onTint(color),
             ),
           ),
         ],

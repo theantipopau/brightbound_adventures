@@ -34,6 +34,16 @@ class Skill extends Equatable {
     this.difficulty = 1,
   });
 
+  /// Human-friendly label for [naplanArea], e.g. `multi_step_problems`
+  /// becomes `Multi step problems`. Null when the skill carries no
+  /// NAPLAN tag.
+  String? get naplanAreaLabel {
+    final area = naplanArea;
+    if (area == null || area.isEmpty) return null;
+    final words = area.replaceAll('_', ' ');
+    return words.substring(0, 1).toUpperCase() + words.substring(1);
+  }
+
   // Progression logic
   SkillState getNextState() {
     if (state == SkillState.locked) return SkillState.introduced;

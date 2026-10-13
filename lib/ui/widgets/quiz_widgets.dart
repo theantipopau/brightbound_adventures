@@ -418,7 +418,7 @@ class AnswerFeedbackPanel extends StatelessWidget {
                   label: const Text('Continue'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accentColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: InkTokens.on(accentColor),
                     minimumSize:
                         const Size.fromHeight(AppInput.preferredTouchTarget),
                   ),
@@ -460,7 +460,7 @@ class _FeedbackChip extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: color,
+              color: InkTokens.onTint(color),
               fontSize: 12,
               fontWeight: FontWeight.w900,
             ),
@@ -538,7 +538,7 @@ class QuizStatusStrip extends StatelessWidget {
                 Text(
                   '$currentQuestion/$totalQuestions',
                   style: TextStyle(
-                    color: accentColor,
+                    color: InkTokens.onTint(accentColor),
                     fontWeight: FontWeight.w900,
                     fontSize: 12,
                   ),

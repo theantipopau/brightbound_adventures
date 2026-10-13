@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
+import 'package:brightbound_adventures/core/utils/board_path.dart';
 import 'package:brightbound_adventures/core/utils/isometric_engine.dart';
+import 'package:brightbound_adventures/ui/painters/board_tile_painter.dart';
 import 'package:brightbound_adventures/ui/painters/path_painter.dart';
 import 'package:brightbound_adventures/ui/painters/shadow_painter.dart';
 import 'package:brightbound_adventures/ui/painters/terrain_painter.dart';
@@ -14,6 +16,11 @@ class WorldMapLivingBoard extends StatelessWidget {
   final List<ZoneData> zones;
   final Map<String, Offset> screenPositions;
   final IsometricPosition? avatarPosition;
+
+  /// Exact screen-space anchor of the pawn's feet. Set during travel so the
+  /// ground shadow tracks the character along the curved route instead of
+  /// cutting the corner with a straight iso lerp.
+  final Offset? avatarScreenOffset;
   final Animation<double> pathAnimation;
   final int totalStars;
   final double mapZoom;
@@ -26,6 +33,7 @@ class WorldMapLivingBoard extends StatelessWidget {
     required this.zones,
     required this.screenPositions,
     required this.avatarPosition,
+    this.avatarScreenOffset,
     required this.pathAnimation,
     required this.totalStars,
     required this.mapZoom,
@@ -47,6 +55,7 @@ class WorldMapLivingBoard extends StatelessWidget {
           painter: ShadowPainter(
             zones: zones,
             avatarPosition: avatarPosition,
+            avatarScreenOffset: avatarScreenOffset,
           ),
         ),
         _paintLayer(
@@ -54,6 +63,14 @@ class WorldMapLivingBoard extends StatelessWidget {
             zones: zones,
             zoneScreenPositions: screenPositions,
             animation: pathAnimation,
+            totalStars: totalStars,
+          ),
+        ),
+        // Board spaces sit on top of the painted track, below the scene.
+        _paintLayer(
+          painter: BoardTilePainter(
+            zones: zones,
+            positions: screenPositions,
             totalStars: totalStars,
           ),
         ),
@@ -163,17 +180,9 @@ class WorldMapBoardPainter extends CustomPainter {
         .whereType<Offset>()
         .toList(growable: false);
     if (orderedPositions.length > 1) {
-      final path = Path()
-        ..moveTo(orderedPositions.first.dx, orderedPositions.first.dy);
-      for (var i = 1; i < orderedPositions.length; i++) {
-        final previous = orderedPositions[i - 1];
-        final current = orderedPositions[i];
-        final control = Offset(
-          (previous.dx + current.dx) / 2,
-          (previous.dy + current.dy) / 2 - 26,
-        );
-        path.quadraticBezierTo(control.dx, control.dy, current.dx, current.dy);
-      }
+      // Same shared route geometry PathPainter draws, so the white track
+      // sits exactly under the gold path instead of a hairline off it.
+      final path = BoardPath.fromPositions(orderedPositions).toPath();
       canvas.drawPath(path, trackGlow);
       canvas.drawPath(path, trackPaint);
     }

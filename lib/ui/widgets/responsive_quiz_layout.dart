@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 
 /// Helper to determine screen breakpoints
 class ScreenBreakpoints {
@@ -136,7 +137,7 @@ class ResponsiveQuizLayout extends StatelessWidget {
               questionCard,
               if (feedbackWidget != null) ...[
                 SizedBox(height: spacing),
-                feedbackWidget!,
+                PunchIn(child: feedbackWidget!),
               ],
             ],
           ),
@@ -167,7 +168,7 @@ class ResponsiveQuizLayout extends StatelessWidget {
         optionsArea,
         if (feedbackWidget != null) ...[
           SizedBox(height: spacing),
-          feedbackWidget!,
+          PunchIn(child: feedbackWidget!),
         ],
       ],
     );

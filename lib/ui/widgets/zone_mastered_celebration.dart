@@ -7,7 +7,7 @@ import 'package:brightbound_adventures/core/data/zone_guardian_data.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/ui/screens/mastery_certificate_screen.dart';
-import 'package:brightbound_adventures/ui/themes/app_theme.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 
 // ─────────────────────────────────────────────
 //  Public API
@@ -202,7 +202,8 @@ class _ZoneMasteredDialogState extends State<_ZoneMasteredDialog>
                   ),
                 ],
               ),
-              child: Column(
+              child: SingleChildScrollView(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Guardian emoji — bouncing
@@ -317,7 +318,7 @@ class _ZoneMasteredDialogState extends State<_ZoneMasteredDialog>
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: widget.themeColor,
+                        foregroundColor: InkTokens.onTint(widget.themeColor),
                         side: BorderSide(color: widget.themeColor, width: 1.8),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -345,7 +346,7 @@ class _ZoneMasteredDialogState extends State<_ZoneMasteredDialog>
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: widget.themeColor,
-                        foregroundColor: Colors.white,
+                        foregroundColor: InkTokens.on(widget.themeColor),
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -362,6 +363,7 @@ class _ZoneMasteredDialogState extends State<_ZoneMasteredDialog>
                     ),
                   ),
                 ],
+              ),
               ),
             ),
           ),

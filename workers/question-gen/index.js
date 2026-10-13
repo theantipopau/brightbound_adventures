@@ -1,7 +1,9 @@
 /**
  * BrightBound Adventures — AI Question Generator Worker
  *
- * Model: @cf/meta/llama-3.1-8b-instruct (Workers AI free tier)
+ * Model: @cf/meta/llama-3.1-8b-instruct-fp8 (Workers AI free tier)
+ * (the un-quantised 3.1-8b was deprecated 2026-05-30; fp8 is the same
+ * model at FP8 precision and the listed substitute per the model catalog)
  *
  * Deploy:
  *   cd workers/question-gen
@@ -92,7 +94,7 @@ export default {
     const prompt = buildPrompt(context, skillLabel, diffLabel, clampedCount, String(ageGroup));
 
     try {
-      const aiResponse = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+      const aiResponse = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fp8', {
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: prompt },

@@ -91,7 +91,7 @@ void main() {
             home: NumeracyGame(
               questions: [question],
               skillName: 'Test Skill',
-              onComplete: (value, correctAnswers, totalQuestions) {
+              onComplete: (value, correctAnswers, totalQuestions, _) {
                 accuracy = value;
                 correct = correctAnswers;
                 total = totalQuestions;
@@ -108,7 +108,15 @@ void main() {
       expect(find.textContaining('pts'), findsAtLeastNWidgets(1));
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
 
+      // Feedback waits for the child: 1.6 in the old auto-advance would have
+      // finished the session, but the results arrive only on Continue.
       await tester.pump(const Duration(milliseconds: 1600));
+      expect(accuracy, isNull);
+      expect(find.byKey(const ValueKey('quiz-continue')), findsOneWidget);
+
+      await tester.ensureVisible(find.byKey(const ValueKey('quiz-continue')));
+      await tester.pumpAndSettle(const Duration(milliseconds: 300));
+      await tester.tap(find.byKey(const ValueKey('quiz-continue')));
       await tester.pumpAndSettle(const Duration(milliseconds: 500));
 
       expect(accuracy, 1.0);

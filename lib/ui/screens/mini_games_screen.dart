@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'dart:async';
 import 'package:brightbound_adventures/features/mini_games/memory_match_game.dart';
 import 'package:brightbound_adventures/features/mini_games/pattern_puzzle_game.dart';
@@ -84,12 +85,15 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                             color: Colors.white, size: 28),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               '🎮 Mini Games',
+                              textScaler:
+                                  MediaQuery.textScalerOf(context).clamp(
+                                      maxScaleFactor: 1.3),
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 32,
@@ -99,6 +103,9 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                             SizedBox(height: 4),
                             Text(
                               'Quick games to boost your skills!',
+                              textScaler:
+                                  MediaQuery.textScalerOf(context).clamp(
+                                      maxScaleFactor: 1.3),
                               style: TextStyle(
                                 color: Colors.white70,
                                 fontSize: 15,
@@ -129,7 +136,11 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                           (padding * 2) -
                           (spacing * (crossAxisCount - 1));
                       final cardWidth = availableWidth / crossAxisCount;
-                      final cardHeight = width < 420 ? 190.0 : 220.0;
+                      final textScale = MediaQuery.textScalerOf(context)
+                          .scale(1)
+                          .clamp(1.0, 2.0);
+                      final cardHeight =
+                          (width < 420 ? 250.0 : 320.0) * textScale;
 
                       return AnimatedBuilder(
                         animation: _entranceController,
@@ -238,8 +249,11 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 4,
+        runSpacing: 4,
         children: [
           const Text(
             'Difficulty:',
@@ -326,7 +340,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
             ? 0.0
             : math.sin(_floatController.value * math.pi + index * 0.5) * 4;
         final scale = reduceMotion ? 1.0 : animation.value;
-        final opacity = reduceMotion ? 1.0 : animation.value;
+        // easeOutBack overshoots past 1.0; Opacity asserts 0..1.
+        final opacity = reduceMotion ? 1.0 : animation.value.clamp(0.0, 1.0);
         final titleText = title.replaceAll('\n', ' ');
 
         return Transform.scale(
@@ -367,7 +382,11 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                         splashColor: Colors.white.withValues(alpha: 0.3),
                         child: LayoutBuilder(
                           builder: (context, cardConstraints) {
-                            final compact = cardConstraints.maxHeight < 205 ||
+                            final textScale = MediaQuery.textScalerOf(context)
+                                .scale(1)
+                                .clamp(1.0, 2.0);
+                            final compact = cardConstraints.maxHeight <
+                                    260 * textScale ||
                                 cardConstraints.maxWidth < 220;
                             final iconSize = compact ? 42.0 : 56.0;
                             final iconPadding = compact ? 12.0 : 16.0;
@@ -886,13 +905,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       ElevatedButton(
                         onPressed: _startGame,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: _getGameColor,
+                          backgroundColor: _getGameColor,
+                          foregroundColor: InkTokens.on(_getGameColor),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 48,
                             vertical: 20,
                           ),
                           shape: RoundedRectangleBorder(
+                            side: const BorderSide(color: Colors.white, width: 2),
                             borderRadius: BorderRadius.circular(30),
                           ),
                           elevation: 8,
@@ -1112,7 +1132,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   onPressed: () => _checkMathAnswer(option),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
+                    foregroundColor: InkTokens.on(Colors.orange),
                     minimumSize: const Size(double.infinity, 70),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),

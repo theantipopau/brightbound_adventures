@@ -48,7 +48,7 @@ Children create a companion, explore an isometric board-game world, practise lit
 > BrightBound is feature-rich but not yet at the next premium release bar. The June 2026 audit found unfinished content paths, fragmented styling, world-map maintainability and theme gaps, and missing release-level visual/performance tests. See the [v2.1 Premium Audit & Roadmap](docs/V2_1_PREMIUM_AUDIT_AND_ROADMAP.md).
 
 > [!TIP]
-> The latest v2.1 work improves the first-time character flow with clearer name entry and larger avatar faces, and makes world-map zone states easier to scan with explicit state badges and calmer ambient motion. The map is still on the path toward the planned three-region responsive rebuild.
+> The latest v2.1 work rebuilds the core loop end to end on one route (quest intro → taught feedback → one atomic reward → premium reveal → a map that visibly changed → an explained next quest) and then migrates **every** zone's results screen onto that same shared, idempotent reward transaction and reveal. The map is still on the path toward the planned three-region responsive rebuild.
 
 ## Eight learning worlds
 
@@ -122,9 +122,9 @@ npm.cmd run deploy
 
 Current version: `2.0.0+2`. Proposed milestone: **v2.1 Living World**.
 
-Latest verified local baseline: `flutter analyze`, the full Flutter test suite (107 tests), colour inventory, formatting, and `flutter build web --release` pass. The release build retains a known third-party `flutter_tts_web` Wasm dry-run warning; the normal web bundle succeeds.
+Latest verified local baseline: `dart format`, `flutter analyze`, the full Flutter test suite (**198 tests**), colour inventory, and `flutter build web --release` all pass. The release build retains a known third-party `flutter_tts_web` Wasm dry-run warning; the normal web bundle succeeds.
 
-The current v2.1 slice includes a tested Story Springs drag-to-order prototype, semantic world-map zone-state logic, clearer map state badges, a compact adventure bar that removes the known phone HUD overflow, a responsive Quest Lens for selected/recommended zones, reduced idle map motion, larger avatar faces, and more usable first-time name entry. Reachable placeholder paths, reward-call-site consolidation, the full map shell split, and broader non-MCQ interaction coverage remain open roadmap work.
+The current v2.1 slice delivers one complete, tested core loop on the Word Woods route: a quest introduction (objective, why-now reason, reward preview), a learner-paced encounter that shows the authored explanation after every answer, a single idempotent reward transaction, a choreographed reward reveal that explains what was earned and why, a persisted world change on return (quest flag + Quest Lens acknowledgement), and an evidence-based "up next" recommendation. The Story Springs drag-to-order prototype, semantic world-map zone states, responsive Quest Lens and compact adventure bar remain in place. Reachable placeholder paths outside literacy, audio assets, the full map shell split, and broader non-MCQ interaction coverage remain open roadmap work — see [Current state audit](docs/CURRENT_STATE_AUDIT.md) and [Content quality report](docs/CONTENT_QUALITY_REPORT.md).
 
 - [Premium Audit & Roadmap](docs/V2_1_PREMIUM_AUDIT_AND_ROADMAP.md) - source of truth.
 - [Current next steps](docs/NEXT_STEPS.md) | [Changelog](CHANGELOG_CODEX.md)

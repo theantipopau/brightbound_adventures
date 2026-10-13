@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 import '../../core/services/stats_service.dart';
 
 class LevelUpDialog extends StatefulWidget {
@@ -115,7 +116,8 @@ class _LevelUpDialogState extends State<LevelUpDialog>
                   ),
                 ],
               ),
-              child: Column(
+              child: SingleChildScrollView(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Trophy Icon
@@ -161,23 +163,26 @@ class _LevelUpDialogState extends State<LevelUpDialog>
                       color: Colors.black.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          '⭐',
-                          style: TextStyle(fontSize: 24),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '+${widget.result.xpGained} XP',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            '⭐',
+                            style: TextStyle(fontSize: 24),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            '+${widget.result.xpGained} XP',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 
@@ -201,7 +206,7 @@ class _LevelUpDialogState extends State<LevelUpDialog>
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber.shade600,
-                      foregroundColor: Colors.white,
+                      foregroundColor: InkTokens.on(Colors.amber.shade600),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 48,
                         vertical: 16,
@@ -220,6 +225,7 @@ class _LevelUpDialogState extends State<LevelUpDialog>
                     ),
                   ),
                 ],
+              ),
               ),
             ),
           ),

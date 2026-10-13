@@ -224,13 +224,19 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                 child: AnimatedBuilder(
                   animation: _bounceController,
                   builder: (context, child) {
+                    final ao = Colors.black.withValues(alpha: 0.2);
                     final shadowScale = 1.0 - (_bounce.value.abs() / 20);
                     return Container(
                       width: widget.size * 0.6 * shadowScale,
                       height: widget.size * 0.15,
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.2),
+                        color: ao,
                         borderRadius: BorderRadius.circular(widget.size),
+                        // Soft ambient-occlusion halo: keeps the contact
+                        // patch feathered instead of a hard ellipse.
+                        boxShadow: [
+                          BoxShadow(color: ao, blurRadius: 6),
+                        ],
                       ),
                     );
                   },
@@ -276,6 +282,23 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
     final skinColor =
         Color(int.parse('0xFF${widget.skinColor.replaceFirst('#', '')}'));
 
+    // Volume shading derived from the skin tone (no direct colour
+    // literals — see the colour inventory test): a lighter top-left, a
+    // darker bottom-right, and a small specular dot where the key light
+    // (top-left, per the 3D style spec) hits the head.
+    final skinHsl = HSLColor.fromColor(skinColor);
+    final skinLit = skinHsl
+        .withLightness((skinHsl.lightness + 0.10).clamp(0.0, 1.0))
+        .toColor();
+    final skinShade = skinHsl
+        .withLightness((skinHsl.lightness - 0.15).clamp(0.0, 1.0))
+        .toColor();
+    final specular = HSLColor.fromColor(_getCharacterColor())
+        .withLightness(0.96)
+        .withSaturation(0.12)
+        .toColor();
+    final legRim = Colors.white.withValues(alpha: 0.35);
+
     // Use FittedBox to ensure the character fits within constraints
     return FittedBox(
       fit: BoxFit.contain,
@@ -291,7 +314,11 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                 width: widget.size * 0.64,
                 height: widget.size * 0.64,
                 decoration: BoxDecoration(
-                  color: skinColor,
+                  gradient: RadialGradient(
+                    center: const Alignment(-0.4, -0.5),
+                    radius: 1.15,
+                    colors: [skinLit, skinColor, skinShade],
+                  ),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.85),
@@ -309,6 +336,21 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                       spreadRadius: 2,
                     ),
                   ],
+                ),
+              ),
+              // Specular highlight — top-left, matching the key light.
+              Positioned(
+                left: widget.size * 0.16,
+                top: widget.size * 0.12,
+                child: Container(
+                  width: widget.size * 0.13,
+                  height: widget.size * 0.1,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [specular, specular.withValues(alpha: 0.0)],
+                    ),
+                  ),
                 ),
               ),
               // Character emoji face
@@ -395,7 +437,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                           borderRadius:
                               BorderRadius.circular(widget.size * 0.04),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.35),
+                            color: legRim,
                             width: 1,
                           ),
                         ),
@@ -412,7 +454,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                           borderRadius:
                               BorderRadius.circular(widget.size * 0.04),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.35),
+                            color: legRim,
                             width: 1,
                           ),
                         ),
@@ -433,7 +475,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                     color: _getCharacterColor().withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(widget.size * 0.04),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.35),
+                      color: legRim,
                       width: 1,
                     ),
                   ),
@@ -446,7 +488,7 @@ class _AnimatedCharacterState extends State<AnimatedCharacter>
                     color: _getCharacterColor().withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(widget.size * 0.04),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.35),
+                      color: legRim,
                       width: 1,
                     ),
                   ),

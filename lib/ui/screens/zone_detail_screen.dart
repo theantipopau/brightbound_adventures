@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
-import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 import 'package:brightbound_adventures/ui/widgets/index.dart';
 import 'package:brightbound_adventures/features/literacy/screens/skill_practice_screen.dart';
 import 'package:brightbound_adventures/features/numeracy/screens/numeracy_practice_screen.dart';
@@ -164,14 +163,15 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: worldTokens.primaryColor,
+                            color: InkTokens.onTint(worldTokens.primaryColor),
                             letterSpacing: 0.2,
                           ),
                         ),
                         const Spacer(),
-                        Text(
-                          worldTokens.emoji,
-                          style: const TextStyle(fontSize: 18),
+                        ZoneBadge(
+                          asset: worldTokens.badgeAsset,
+                          emoji: worldTokens.emoji,
+                          size: 22,
                         ),
                         const SizedBox(width: 6),
                         SizedBox(
@@ -656,7 +656,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
           Text(
             value,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: color,
+                  color: InkTokens.onTint(color),
                   fontWeight: FontWeight.bold,
                 ),
           ),
@@ -664,7 +664,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: color,
+                  color: InkTokens.onTint(color),
                 ),
             textAlign: TextAlign.center,
           ),
@@ -712,16 +712,15 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
           children: [
             Text(
               'Recommended Next',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.86),
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(                  color: InkTokens.on(worldTokens.primaryColor),
+                  fontWeight: FontWeight.w900,
+                ),
             ),
             const SizedBox(height: 6),
             Text(
               skill.name,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
+                    color: InkTokens.on(worldTokens.primaryColor),
                     fontWeight: FontWeight.w900,
                     height: 1.05,
                   ),
@@ -730,7 +729,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
             Text(
               skill.description,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.86),
+                    color: InkTokens.on(worldTokens.primaryColor),
                     height: 1.35,
                   ),
               maxLines: 3,
@@ -766,7 +765,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                   label: const Text('Start Skill'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: worldTokens.primaryColor,
+                    foregroundColor: InkTokens.onTint(worldTokens.primaryColor),
                   ),
                 ),
                 OutlinedButton.icon(
@@ -774,9 +773,9 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                   icon: const Icon(Icons.info_outline_rounded),
                   label: const Text('Details'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
+                    foregroundColor: InkTokens.on(worldTokens.primaryColor),
                     side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.72),
+                      color: InkTokens.on(worldTokens.primaryColor),
                       width: 1.5,
                     ),
                   ),
@@ -831,7 +830,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
+        color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
       ),
@@ -947,20 +946,27 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      worldTokens.primaryColor,
-                      worldTokens.secondaryColor,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              gradient: LinearGradient(
+                colors: [
+                  worldTokens.primaryColor,
+                  // Capped at the InkTokens luminance floor where the card
+                  // ink flips: red/deep-orange secondaries dip below it and
+                  // would drop the black ink under 4.5:1 (measured 3.9:1).
+                  InkTokens.lerpWithinInkFloor(
+                    worldTokens.primaryColor,
+                    worldTokens.secondaryColor,
                   ),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: Text(
-                    worldTokens.emoji,
-                    style: const TextStyle(fontSize: 26),
+                  child: ZoneBadge(
+                    asset: worldTokens.badgeAsset,
+                    emoji: worldTokens.emoji,
+                    size: 46,
                   ),
                 ),
               ),
@@ -971,10 +977,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                   children: [
                     Text(
                       widget.zoneName,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            color: worldTokens.primaryColor,
-                          ),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: InkTokens.onTint(worldTokens.primaryColor),
+                  ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -1058,7 +1064,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
-              color: color,
+              color: InkTokens.onTint(color),
             ),
           ),
         ],

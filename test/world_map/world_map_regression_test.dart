@@ -16,7 +16,9 @@ import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/screens/world_map_screen.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
@@ -32,13 +34,15 @@ void main() {
     required Size size,
     required ThemeMode themeMode,
     TextScaler textScaler = TextScaler.noScaling,
+    LocalStorageService? storage,
+    Map<String, WidgetBuilder>? routes,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = size;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final storage = _FakeMapStorageService();
+    final store = storage ?? _FakeMapStorageService();
 
     await tester.pumpWidget(
       MultiProvider(
@@ -48,7 +52,7 @@ void main() {
             create: (_) => _MapTestAvatarProvider(),
           ),
           ChangeNotifierProvider<SkillProvider>(
-            create: (_) => SkillProvider(storage),
+            create: (_) => SkillProvider(store),
           ),
           ChangeNotifierProvider<StreakService>(create: (_) => StreakService()),
           // CosmeticUnlockService() is a factory singleton shared across the
@@ -59,7 +63,7 @@ void main() {
           ChangeNotifierProvider<CosmeticUnlockService>.value(
               value: CosmeticUnlockService()),
           ChangeNotifierProvider<DailyChallengeService>(
-              create: (_) => DailyChallengeService(storage)),
+              create: (_) => DailyChallengeService(store)),
           ChangeNotifierProvider<SpacedRepetitionService>(
               create: (_) => SpacedRepetitionService()),
         ],
@@ -67,6 +71,7 @@ void main() {
           theme: AppTheme.lightTheme(),
           darkTheme: AppTheme.darkTheme(),
           themeMode: themeMode,
+          routes: routes ?? const {},
           home: MediaQuery(
             data: MediaQueryData(
               size: size,
@@ -240,6 +245,79 @@ void main() {
       expectNoUnknownException(tester, const Size(360, 640));
     });
   }
+
+  // The pawn must genuinely walk the shared BoardPath route frame-by-frame.
+  // It used to sample its position only when the parent rebuilt, so travel
+  // rendered as a 1.2s freeze followed by a jump to the destination.
+  testWidgets('pawn walks the board route into an unlocked zone',
+      (tester) async {
+    const size = Size(1366, 768);
+    await pumpWorldMap(
+      tester,
+      size: size,
+      themeMode: ThemeMode.light,
+      storage: _SeededStarStorageService(),
+      routes: {
+        '/number-nebula': (_) =>
+            const Scaffold(body: Center(child: Text('zone route reached'))),
+      },
+    );
+
+    Offset pawnTopLeft() {
+      final finder = find.byType(AnimatedCharacter);
+      expect(finder, findsOneWidget,
+          reason: 'the travelling pawn is the only AnimatedCharacter');
+      Positioned? positioned;
+      final chain = <String>[];
+      finder.evaluate().single.visitAncestorElements((node) {
+        final widget = node.widget;
+        chain.add(widget.runtimeType.toString());
+        // The pawn's internal Stack also uses Positioned (bottom/right
+        // anchored); the route anchor is the one with left+top set.
+        if (widget is Positioned && widget.left != null && widget.top != null) {
+          positioned = widget;
+        }
+        return true;
+      });
+      final box = positioned;
+      expect(box, isNotNull,
+          reason: 'pawn must sit inside a Positioned; chain: $chain');
+      expect(box!.left, isNotNull);
+      expect(box.top, isNotNull);
+      return Offset(box.left!, box.top!);
+    }
+
+    final start = pawnTopLeft();
+
+    // Number Nebula (index 1) needs 3 stars; the seeded storage reports
+    // exactly one mastered skill, which is exactly 3 stars.
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+
+    await tester.pump(const Duration(milliseconds: 300));
+    final early = pawnTopLeft();
+    expect(early, isNot(start),
+        reason: 'pawn position must tick during travel instead of freezing');
+
+    await tester.pump(const Duration(milliseconds: 300));
+    final later = pawnTopLeft();
+    expect(later, isNot(early),
+        reason: 'pawn keeps walking the route frame-by-frame');
+
+    // Ride out arrival (1250ms), then the 400ms beat: the delayed push is
+    // scheduled *during* the arrival frame, so it needs its own elapsed
+    // pump before the route exists.
+    await tester.pump(const Duration(milliseconds: 2500));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('zone route reached'), findsOneWidget,
+        reason: 'arrival must navigate into the target zone');
+
+    expectNoUnknownException(tester, size);
+  });
 }
 
 /// In-memory avatar so the map renders its real layout instead of the
@@ -280,4 +358,22 @@ class _FakeMapStorageService extends LocalStorageService {
 
   @override
   List<DailyChallenge> getDailyChallenges(String dateString) => [];
+}
+
+/// Storage stub that reports one mastered skill so the test avatar holds
+/// the 3 stars that unlock Number Nebula (zone index 1), letting the
+/// pawn-travel test exercise real route walking instead of the locked
+/// dialog.
+class _SeededStarStorageService extends _FakeMapStorageService {
+  @override
+  Future<List<Skill>> getAllSkills() async => [
+        Skill(
+          id: 'skill_place_value',
+          name: 'Place Value',
+          description: 'Seeded mastery for the pawn travel test',
+          strand: 'Numeracy',
+          state: SkillState.mastered,
+          lastPracticed: DateTime(2026, 1, 1),
+        ),
+      ];
 }

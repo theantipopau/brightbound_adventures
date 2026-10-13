@@ -75,7 +75,7 @@ class AiQuestionService extends ChangeNotifier {
   // After running `npx wrangler deploy` in workers/question-gen/, paste the
   // deployed URL here (e.g. https://brightbound-question-gen.<sub>.workers.dev).
   static const String workerUrl =
-      'https://brightbound-question-gen.workers.dev';
+      'https://brightbound-question-gen.matt-hurley91.workers.dev';
 
   // ── Singleton ──────────────────────────────────────────────────────────────
 

@@ -9,6 +9,7 @@ export 'daily_challenge.dart';
 export 'question_history.dart';
 export 'question_metadata.dart';
 export 'quest_session_summary.dart';
+export 'reward_breakdown.dart';
 export 'zone_data.dart';
 export 'zone_catalog.dart';
 export 'companion_catalog.dart';

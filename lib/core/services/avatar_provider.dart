@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
@@ -21,12 +23,19 @@ class AvatarProvider extends ChangeNotifier {
 
   AvatarEmotion get emotion => _emotion;
 
+  Timer? _emotionResetTimer;
+
   /// Set a transient emotion — automatically resets to neutral after [resetAfter].
+  ///
+  /// Each call replaces the pending reset timer, so rapid emotion changes
+  /// never stack delayed callbacks, and [dispose] cancels any timer still
+  /// outstanding (widget tests assert no timers survive the tree).
   void setEmotion(AvatarEmotion emotion,
       {Duration resetAfter = const Duration(seconds: 2)}) {
+    _emotionResetTimer?.cancel();
     _emotion = emotion;
     notifyListeners();
-    Future.delayed(resetAfter, () {
+    _emotionResetTimer = Timer(resetAfter, () {
       if (_emotion == emotion) {
         _emotion = AvatarEmotion.neutral;
         notifyListeners();
@@ -201,5 +210,11 @@ class AvatarProvider extends ChangeNotifier {
   void resetAvatar() {
     _avatar = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _emotionResetTimer?.cancel();
+    super.dispose();
   }
 }

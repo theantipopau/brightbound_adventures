@@ -106,3 +106,7 @@ app.*.map.json
 # Generated files
 *.hive
 *.hive_lock
+
+# Local agent tooling scratch
+.freebuff/
+.qa/

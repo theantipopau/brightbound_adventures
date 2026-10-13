@@ -121,14 +121,14 @@ class AchievementService extends ChangeNotifier {
     await incrementProgress('first_question');
     await incrementProgress('ten_correct');
     await incrementProgress('fifty_correct');
-    await incrementProgress('one_hundred_correct');
+    await incrementProgress('hundred_correct');
     await incrementProgress('five_hundred_correct');
   }
 
   /// Track perfect quiz score
   Future<void> trackPerfectScore() async {
-    await incrementProgress('perfect_score');
-    await incrementProgress('five_perfect');
+    await incrementProgress('perfect_game');
+    await incrementProgress('five_perfect_games');
   }
 
   /// Track zone visited

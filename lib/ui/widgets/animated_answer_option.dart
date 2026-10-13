@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 
 /// The state of an answer option button
 enum AnswerState { idle, selected, correct, incorrect }
@@ -504,6 +505,7 @@ class _QuestionCardState extends State<QuestionCard>
   late AnimationController _ctrl;
   late Animation<double> _fadeIn;
   late Animation<Offset> _slideIn;
+  late Animation<double> _flipUp;
   bool _reduceMotion = false;
 
   @override
@@ -515,6 +517,9 @@ class _QuestionCardState extends State<QuestionCard>
       begin: const Offset(0, 0.08),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _ctrl, curve: AppMotion.enter));
+    // 2.5D entrance: the card flips up from a slight backward lean so it
+    // lands like a physical card on a table (v2.1 3D spec, A3D-6).
+    _flipUp = CurvedAnimation(parent: _ctrl, curve: AppMotion.enter);
     _ctrl.forward();
   }
 
@@ -559,7 +564,19 @@ class _QuestionCardState extends State<QuestionCard>
               opacity: _fadeIn,
               child: SlideTransition(
                 position: _slideIn,
-                child: _buildCard(context),
+                child: AnimatedBuilder(
+                  animation: _ctrl,
+                  builder: (context, child) {
+                    return Transform(
+                      alignment: FractionalOffset.center,
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.0015)
+                        ..rotateX(0.05 * (1 - _flipUp.value)),
+                      child: child,
+                    );
+                  },
+                  child: _buildCard(context),
+                ),
               ),
             ),
     );
@@ -567,127 +584,147 @@ class _QuestionCardState extends State<QuestionCard>
 
   Widget _buildCard(BuildContext context) {
     final isCompact = MediaQuery.of(context).size.width < 560;
+    // Opaque face — the ExtrudedCard side face behind this card is dark,
+    // so translucent gradient stops would let it bleed into the text area
+    // (bottom-right stops were only 3.5–7.5% opaque before).
+    final face = Colors.white;
 
     return RepaintBoundary(
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(isCompact ? 18 : 22),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white,
-              widget.accentColor.withValues(alpha: 0.075),
-              widget.accentColor.withValues(alpha: 0.035),
-            ],
-            stops: const [0, 0.62, 1],
+      child: ExtrudedCard(
+        accent: widget.accentColor,
+        radius: BorderRadius.circular(AppBorders.lg),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(isCompact ? 18 : 22),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                face,
+                Color.lerp(face, widget.accentColor, 0.075)!,
+                Color.lerp(face, widget.accentColor, 0.035)!,
+              ],
+              stops: const [0, 0.62, 1],
+            ),
+            borderRadius: BorderRadius.circular(AppBorders.lg),
+            border: Border.all(
+              color: widget.accentColor.withValues(alpha: 0.28),
+              width: 1.5,
+            ),
+            boxShadow: AppShadows.sm(widget.accentColor),
           ),
-          borderRadius: BorderRadius.circular(AppBorders.lg),
-          border: Border.all(
-            color: widget.accentColor.withValues(alpha: 0.28),
-            width: 1.5,
-          ),
-          boxShadow: AppShadows.sm(widget.accentColor),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -8,
-              top: -10,
-              child: Opacity(
-                opacity: 0.10,
-                child: SizedBox(
-                  width: 86,
-                  height: 86,
-                  child: Image.asset(
-                    'assets/images/scroll.PNG',
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Icon(
-                      Icons.auto_stories_rounded,
-                      size: 78,
-                      color: widget.accentColor,
+          child: Stack(
+            children: [
+              Positioned(
+                right: -8,
+                top: -10,
+                child: Opacity(
+                  opacity: 0.10,
+                  child: SizedBox(
+                    width: 86,
+                    height: 86,
+                    child: Image.asset(
+                      'assets/images/scroll.PNG',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.auto_stories_rounded,
+                        size: 78,
+                        color: widget.accentColor,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 11, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: widget.accentColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(AppBorders.pill),
-                        border: Border.all(
-                          color: widget.accentColor.withValues(alpha: 0.25),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 11, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: widget.accentColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(AppBorders.pill),
+                          border: Border.all(
+                            color: widget.accentColor.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.flag_rounded,
+                                size: 13, color: widget.accentColor),
+                            const SizedBox(width: 5),
+                            // Flexible + ellipsis: the Wrap caps this chip's
+                            // width on narrow screens / 200% text, and an
+                            // unbounded Row would clip by up to 169 px
+                            // (2026-10-10 clipping probe).
+                            Flexible(
+                              child: Text(
+                                'Question ${widget.questionNumber}/${widget.totalQuestions}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: widget.accentColor,
+                                  fontFamily: AppTheme.fontPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.flag_rounded,
-                              size: 13, color: widget.accentColor),
-                          const SizedBox(width: 5),
-                          Text(
-                            'Question ${widget.questionNumber}/${widget.totalQuestions}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              color: widget.accentColor,
-                              fontFamily: AppTheme.fontPrimary,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.blueGrey.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(AppBorders.pill),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.touch_app_rounded,
+                                size: 13, color: AppColors.textSecondary),
+                            SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                'Choose one answer',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.blueGrey.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(AppBorders.pill),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.touch_app_rounded,
-                              size: 13, color: AppColors.textSecondary),
-                          SizedBox(width: 4),
-                          Text(
-                            'Choose one answer',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  widget.question,
-                  style: TextStyle(
-                    fontSize: isCompact ? 18 : 20,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                    height: 1.34,
-                    fontFamily: AppTheme.fontPrimary,
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ],
+                  const SizedBox(height: 14),
+                  Text(
+                    widget.question,
+                    style: TextStyle(
+                      fontSize: isCompact ? 18 : 20,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                      height: 1.34,
+                      fontFamily: AppTheme.fontPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

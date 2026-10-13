@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Word Search Game
 /// Find hidden words in a grid of letters
@@ -257,7 +258,7 @@ class _WordSearchGameState extends State<WordSearchGame> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Found: $matchedWord! 🎉'),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.green.shade800,
           duration: const Duration(seconds: 1),
         ),
       );
@@ -359,9 +360,10 @@ class _WordSearchGameState extends State<WordSearchGame> {
         appBar: AppBar(
           title: const Text('Word Search 🔤'),
           backgroundColor: Colors.teal,
-          foregroundColor: Colors.white,
+          foregroundColor: InkTokens.on(Colors.teal),
         ),
-        body: Column(
+        body: SingleChildScrollView(
+          child: Column(
           children: [
             // Stats
             Container(
@@ -421,8 +423,7 @@ class _WordSearchGameState extends State<WordSearchGame> {
             ),
 
             // Grid
-            Expanded(
-              child: Center(
+            Center(
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Padding(
@@ -485,7 +486,6 @@ class _WordSearchGameState extends State<WordSearchGame> {
                   ),
                 ),
               ),
-            ),
 
             // Check button
             Padding(
@@ -497,7 +497,7 @@ class _WordSearchGameState extends State<WordSearchGame> {
                       onPressed: _selectedCells.isEmpty ? null : _checkWord,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal,
-                        foregroundColor: Colors.white,
+                        foregroundColor: InkTokens.on(Colors.teal),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -519,7 +519,7 @@ class _WordSearchGameState extends State<WordSearchGame> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,
-                      foregroundColor: Colors.white,
+                      foregroundColor: InkTokens.on(Colors.grey),
                       padding: const EdgeInsets.symmetric(
                           vertical: 16, horizontal: 24),
                       shape: RoundedRectangleBorder(
@@ -532,6 +532,7 @@ class _WordSearchGameState extends State<WordSearchGame> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

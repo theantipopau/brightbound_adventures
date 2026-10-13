@@ -196,6 +196,20 @@ class RewardTransactionService extends ChangeNotifier {
       accuracy: outcome.accuracy,
     );
 
+    // Star-count achievements track the live balance. Nothing else updated
+    // them, so they could never unlock before this single award path existed.
+    final starBalance = _shop.starBalance;
+    for (final id in const [
+      'stars_10',
+      'stars_25',
+      'stars_50',
+      'stars_100',
+      'stars_250',
+      'stars_500',
+    ]) {
+      await _achievements.updateProgress(id, starBalance);
+    }
+
     final newStreakMilestone = await _streak.recordPlay();
 
     await _achievements.trackQuestionAnswered(true);
@@ -209,11 +223,17 @@ class RewardTransactionService extends ChangeNotifier {
         _achievements.recentlyUnlocked.map((a) => a.id).toList();
     _achievements.clearRecentlyUnlocked();
 
+    final unlockedBefore = _cosmeticUnlock.unlockedCosmeticIds.toSet();
+
     if (leveledUp) {
       await _cosmeticUnlock.updateLevel(newLevel);
     }
-    final newlyUnlockedCosmeticIds =
-        _cosmeticUnlock.getNewlyUnlocked().map((c) => c.id).toList();
+    // `getNewlyUnlocked()` actually returns *every* currently unlocked
+    // cosmetic, not just the ones this award added — so diff against a
+    // snapshot taken before `updateLevel` rather than trusting its name.
+    final newlyUnlockedCosmeticIds = _cosmeticUnlock.unlockedCosmeticIds
+        .where((id) => !unlockedBefore.contains(id))
+        .toList();
 
     final result = RewardResult(
       outcomeId: outcome.outcomeId,

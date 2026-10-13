@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:brightbound_adventures/core/services/index.dart';
-import 'package:brightbound_adventures/ui/widgets/achievement_notification.dart';
+import 'package:brightbound_adventures/ui/components/reward_reveal.dart';
+import 'package:brightbound_adventures/ui/components/session_completion.dart';
 import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
-import 'package:brightbound_adventures/ui/widgets/zone_mastered_celebration.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
-/// Quiz results screen for numeracy games
+/// Quiz results screen for numeracy games.
+///
+/// This is the single place a numeracy quest applies its rewards: it runs
+/// the shared `completeSession` orchestration (evidence updates + exactly
+/// one `RewardTransactionService.apply()` per [sessionId]), then the earned
+/// [SessionCompletion] is presented by [RewardReveal]. Rebuilding, resuming,
+/// or revisiting this screen replays the same result instead of re-awarding
+/// it.
 class NumeracyResultsScreen extends StatefulWidget {
   final String skillName;
   final String skillId;
+
+  /// Stable identity for this completion; the reward transaction is keyed
+  /// on it, so one session awards exactly once.
+  final String sessionId;
+
   final int correctAnswers;
   final int totalQuestions;
   final double accuracy;
@@ -28,6 +38,7 @@ class NumeracyResultsScreen extends StatefulWidget {
     super.key,
     required this.skillName,
     required this.skillId,
+    required this.sessionId,
     required this.correctAnswers,
     required this.totalQuestions,
     required this.accuracy,
@@ -51,6 +62,10 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
   bool _reduceMotion = false;
   bool _motionSynced = false;
 
+  SessionCompletion? _completion;
+  bool _applying = true;
+  Object? _error;
+
   @override
   void initState() {
     super.initState();
@@ -72,8 +87,12 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
     _celebrationController.repeat();
     _scoreController.forward();
 
-    // Record progress
-    _recordProgress();
+    // Kick off after the first frame so reward work never runs during build,
+    // and so the child sees an honest "packing your reward" beat rather than
+    // a frozen screen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _processResults();
+    });
   }
 
   @override
@@ -95,55 +114,42 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
     }
   }
 
-  void _recordProgress() async {
-    final skillProvider = context.read<SkillProvider>();
-    final achievementService = AchievementService();
-    final shopService = ShopService();
+  Future<void> _processResults() async {
+    setState(() {
+      _applying = true;
+      _error = null;
+    });
 
-    // Record practice session and update skill progress
-    skillProvider.updateSkillProgress(
-      skillId: widget.skillId,
-      sessionAccuracy: widget.accuracy,
-      sessionHints: widget.hintsUsed,
-    );
+    try {
+      // The single shared orchestration path: evidence updates, then the
+      // one idempotent reward transaction, then presentation data.
+      final completion = await completeSession(
+        context,
+        sessionId: widget.sessionId,
+        skillId: widget.skillId,
+        skillName: widget.skillName,
+        accuracy: widget.accuracy,
+        correctAnswers: widget.correctAnswers,
+        totalQuestions: widget.totalQuestions,
+        hintsUsed: widget.hintsUsed,
+        accent: widget.themeColor,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
+      );
 
-    // Schedule spaced repetition review
-    context.read<SpacedRepetitionService>().recordSession(
-          skillId: widget.skillId,
-          accuracy: widget.accuracy,
-        );
-
-    // Check if this session completed the whole zone
-    checkAndShowZoneMastered(
-      context,
-      skillProvider,
-      zoneId: widget.zoneId,
-      zoneName: widget.zoneName,
-      themeColor: widget.themeColor,
-    );
-
-    // Award stars
-    await shopService.awardStarsForActivity(
-      score: widget.correctAnswers,
-      maxScore: widget.totalQuestions,
-      accuracy: widget.accuracy,
-    );
-
-    // Track achievements
-    await achievementService
-        .trackQuestionAnswered(true); // Track correct answers
-
-    // Check for perfect score
-    if (widget.accuracy >= 1.0) {
-      await achievementService.trackPerfectScore();
-    }
-
-    // Show any newly unlocked achievements
-    if (mounted) {
-      for (final achievement in achievementService.recentlyUnlocked) {
-        AchievementNotificationManager.show(context, achievement);
-      }
-      achievementService.clearRecentlyUnlocked();
+      if (!mounted) return;
+      setState(() {
+        _completion = completion;
+        _applying = false;
+      });
+    } catch (error) {
+      // Never pretend the reward landed: show a real error with a retry,
+      // which is safe because the transaction is idempotent.
+      if (!mounted) return;
+      setState(() {
+        _error = error;
+        _applying = false;
+      });
     }
   }
 
@@ -184,6 +190,7 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final completion = _completion;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -198,7 +205,7 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
           ),
         ),
         child: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
@@ -283,132 +290,159 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                 const SizedBox(height: 30),
 
                 // Score card
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: widget.themeColor.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: widget.themeColor.withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.skillName,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: widget.themeColor,
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          widget.skillName,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: widget.themeColor,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
+                      ),
+                      const SizedBox(height: 20),
 
-                        // Animated score circle
-                        AnimatedBuilder(
-                          animation: _scoreAnimation,
-                          builder: (context, child) {
-                            return Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 120,
-                                  height: 120,
-                                  child: CircularProgressIndicator(
-                                    value: _scoreAnimation.value,
-                                    strokeWidth: 12,
-                                    backgroundColor: Colors.grey[200],
-                                    valueColor: AlwaysStoppedAnimation(
-                                      _getScoreColor(_scoreAnimation.value),
-                                    ),
+                      // Animated score circle
+                      AnimatedBuilder(
+                        animation: _scoreAnimation,
+                        builder: (context, child) {
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox(
+                                width: 120,
+                                height: 120,
+                                child: CircularProgressIndicator(
+                                  value: _scoreAnimation.value,
+                                  strokeWidth: 12,
+                                  backgroundColor: Colors.grey[200],
+                                  valueColor: AlwaysStoppedAnimation(
+                                    _getScoreColor(_scoreAnimation.value),
                                   ),
                                 ),
-                                Column(
-                                  children: [
-                                    Text(
-                                      '${(_scoreAnimation.value * 100).round()}%',
-                                      style: TextStyle(
-                                        fontSize: 32,
-                                        fontWeight: FontWeight.bold,
-                                        color: widget.themeColor,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Accuracy',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Stats row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildStatItem(
-                              '✅',
-                              '${widget.correctAnswers}/${widget.totalQuestions}',
-                              'Correct',
-                            ),
-                            _buildStatItem(
-                              '💡',
-                              '${widget.hintsUsed}',
-                              'Hints Used',
-                            ),
-                            _buildStatItem(
-                              '⭐',
-                              '+${_getXpEarned()}',
-                              'XP Earned',
-                            ),
-                          ],
-                        ),
-
-                        const Spacer(),
-
-                        // Action buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: BrandedBackButton(
-                                label: 'Back to Zone',
-                                onPressed: widget.onExit,
-                                backgroundColor: Colors.white,
-                                foregroundColor: widget.themeColor,
-                                borderColor: widget.themeColor,
-                                tokenBackgroundColor:
-                                    widget.themeColor.withValues(alpha: 0.12),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: widget.onPlayAgain,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: widget.themeColor,
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                              Column(
+                                children: [
+                                  Text(
+                                    '${(_scoreAnimation.value * 100).round()}%',
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: widget.themeColor,
+                                    ),
                                   ),
-                                  elevation: 6,
-                                  shadowColor:
-                                      widget.themeColor.withValues(alpha: 0.4),
+                                  Text(
+                                    'Accuracy',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Stats row
+                      Wrap(
+                        alignment: WrapAlignment.spaceEvenly,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        runSpacing: 12,
+                        children: [
+                          _buildStatItem(
+                            '✅',
+                            '${widget.correctAnswers}/${widget.totalQuestions}',
+                            'Correct',
+                          ),
+                          _buildStatItem(
+                            '💡',
+                            '${widget.hintsUsed}',
+                            'Hints Used',
+                          ),
+                          _buildStatItem(
+                            '⭐',
+                            '+${completion?.breakdown.totalXp ?? 0}',
+                            'XP Earned',
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      if (_applying)
+                        RewardApplyingCard(accent: widget.themeColor)
+                      else if (_error != null)
+                        RewardErrorCard(onRetry: _processResults)
+                      else if (completion != null)
+                        RewardReveal(
+                          result: completion.reward,
+                          breakdown: completion.breakdown,
+                          starBalance: completion.starBalance,
+                          levelProgressBefore: completion.levelProgressBefore,
+                          levelProgressAfter: completion.levelProgressAfter,
+                          accent: widget.themeColor,
+                          skillName: widget.skillName,
+                          skillAccuracyBefore: completion.skillAccuracyBefore,
+                          skillAccuracyAfter: completion.skillAccuracyAfter,
+                          recommendation: completion.recommendation,
+                          unlockNames: completion.unlockNames,
+                          onBackToMap: () => backToWorldMap(context),
+                        ),
+
+                      const SizedBox(height: 24),
+
+                      // Action buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: BrandedBackButton(
+                              label: 'Back to Zone',
+                              onPressed: widget.onExit,
+                              backgroundColor: Colors.white,
+                              foregroundColor: widget.themeColor,
+                              borderColor: widget.themeColor,
+                              tokenBackgroundColor:
+                                  widget.themeColor.withValues(alpha: 0.12),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: widget.onPlayAgain,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: widget.themeColor,
+                                foregroundColor:
+                                    InkTokens.on(widget.themeColor),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
+                                elevation: 6,
+                                shadowColor:
+                                    widget.themeColor.withValues(alpha: 0.4),
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -427,10 +461,10 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -446,13 +480,6 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
     if (score >= 0.7) return Colors.lightGreen;
     if (score >= 0.5) return Colors.orange;
     return Colors.red;
-  }
-
-  int _getXpEarned() {
-    if (widget.accuracy >= 0.9) return 30;
-    if (widget.accuracy >= 0.7) return 20;
-    if (widget.accuracy >= 0.5) return 10;
-    return 5;
   }
 
   Widget _buildStatItem(String emoji, String value, String label) {

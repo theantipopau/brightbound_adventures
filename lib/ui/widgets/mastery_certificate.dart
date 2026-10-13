@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Certificate Generator for Skill Mastery and Zone Completion
 /// Creates beautiful, shareable certificates for achievements
@@ -51,7 +52,9 @@ class MasteryCertificate extends StatelessWidget {
             // Content
             Padding(
               padding: const EdgeInsets.all(40),
-              child: Column(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Header
@@ -150,6 +153,7 @@ class MasteryCertificate extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
               ),
             ),
 
@@ -299,17 +303,28 @@ class CertificateDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               '🏆 Congratulations! 🏆',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textScaler: MediaQuery.textScalerOf(context).clamp(
+                  maxScaleFactor: 1.3),
+              style: const TextStyle(
+                  fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            SingleChildScrollView(
-              child: certificate,
+            Flexible(
+              child: SingleChildScrollView(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.topCenter,
+                  child: certificate,
+                ),
+              ),
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Wrap(
+              alignment: WrapAlignment.spaceEvenly,
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 ElevatedButton.icon(
                   onPressed: () => _shareCertificate(context),
@@ -317,7 +332,7 @@ class CertificateDialog extends StatelessWidget {
                   label: const Text('Share'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
+                    foregroundColor: InkTokens.on(Colors.blue),
                   ),
                 ),
                 ElevatedButton.icon(
@@ -326,7 +341,7 @@ class CertificateDialog extends StatelessWidget {
                   label: const Text('Close'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey,
-                    foregroundColor: Colors.white,
+                    foregroundColor: InkTokens.on(Colors.grey),
                   ),
                 ),
               ],

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Celebration overlay shown after completing a quiz
 class QuizResultsCelebration extends StatefulWidget {
@@ -270,7 +271,8 @@ class _QuizResultsCelebrationState extends State<QuizResultsCelebration>
           ),
         ],
       ),
-      child: Column(
+      child: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Result emoji with pulse
@@ -290,7 +292,7 @@ class _QuizResultsCelebrationState extends State<QuizResultsCelebration>
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: resultColor,
+              color: InkTokens.onTint(resultColor),
             ),
           ),
 
@@ -302,15 +304,17 @@ class _QuizResultsCelebrationState extends State<QuizResultsCelebration>
                 color: Colors.amber[100],
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('🏆', style: TextStyle(fontSize: 16)),
-                  SizedBox(width: 4),
+                  const Text('🏆', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 4),
                   Text(
                     'NEW BEST!',
+                    // Not const: the amber-100 pill takes the tint-derived
+                    // ink (amber label measured < 3:1 on the pale chip).
                     style: TextStyle(
-                      color: Colors.amber,
+                      color: InkTokens.onTint(Colors.amber),
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -329,8 +333,10 @@ class _QuizResultsCelebrationState extends State<QuizResultsCelebration>
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            child: Wrap(
+              alignment: WrapAlignment.spaceAround,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              runSpacing: 12,
               children: [
                 _buildScoreStat(
                   '${widget.correctAnswers}/${widget.totalQuestions}',
@@ -359,24 +365,27 @@ class _QuizResultsCelebrationState extends State<QuizResultsCelebration>
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.purple.shade400, Colors.blue.shade400],
+                colors: [Colors.purple.shade600, Colors.blue.shade700],
               ),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('✨', style: TextStyle(fontSize: 18)),
-                const SizedBox(width: 8),
-                Text(
-                  '+${widget.xpEarned} XP',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('✨', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
+                  Text(
+                    '+${widget.xpEarned} XP',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -389,7 +398,7 @@ class _QuizResultsCelebrationState extends State<QuizResultsCelebration>
               onPressed: widget.onContinue,
               style: ElevatedButton.styleFrom(
                 backgroundColor: resultColor,
-                foregroundColor: Colors.white,
+                foregroundColor: InkTokens.on(resultColor),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -405,6 +414,7 @@ class _QuizResultsCelebrationState extends State<QuizResultsCelebration>
             ),
           ),
         ],
+        ),
       ),
     );
   }

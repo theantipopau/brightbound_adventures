@@ -24,6 +24,10 @@ class WorldMapQuestLens extends StatelessWidget {
   final bool expanded;
   final bool isMoving;
   final bool isCurrentZone;
+
+  /// Acknowledges what already happened here (e.g. "You finished a quest
+  /// here today"), derived from persisted session history. Null hides it.
+  final String? recentNote;
   final VoidCallback onToggleExpanded;
   final VoidCallback onPrimaryAction;
   final VoidCallback? onRewardPreview;
@@ -48,6 +52,7 @@ class WorldMapQuestLens extends StatelessWidget {
     required this.expanded,
     required this.isMoving,
     required this.isCurrentZone,
+    this.recentNote,
     required this.onToggleExpanded,
     required this.onPrimaryAction,
     required this.onRewardPreview,
@@ -212,6 +217,10 @@ class WorldMapQuestLens extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (recentNote != null) ...[
+          _buildRecentNote(context),
+          const SizedBox(height: 8),
+        ],
         Text(status.reason,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -248,6 +257,10 @@ class WorldMapQuestLens extends StatelessWidget {
       children: [
         Text(selected.description,
             style: Theme.of(context).textTheme.bodySmall),
+        if (recentNote != null) ...[
+          const SizedBox(height: 8),
+          _buildRecentNote(context),
+        ],
         const SizedBox(height: 8),
         Text(moodText, style: Theme.of(context).textTheme.labelMedium),
         const SizedBox(height: 8),
@@ -339,6 +352,27 @@ class WorldMapQuestLens extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentNote(BuildContext context) {
+    return Semantics(
+      label: recentNote,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected.color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: selected.color.withValues(alpha: 0.3)),
+        ),
+        child: Text(
+          recentNote!,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
         ),
       ),
     );

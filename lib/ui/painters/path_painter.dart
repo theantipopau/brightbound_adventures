@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
+import 'package:brightbound_adventures/core/utils/board_path.dart';
 
 /// Animated path painter connecting zones with particle effects
 ///
@@ -22,25 +23,25 @@ class PathPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (int i = 0; i < zones.length - 1; i++) {
-      final start = zoneScreenPositions[zones[i].id]!;
-      final end = zoneScreenPositions[zones[i + 1].id]!;
+    // Route geometry is shared with the pawn that walks the board
+    // (BoardPath), so the painted track and the character always agree.
+    final boardPath = BoardPath.fromPositions([
+      for (final zone in zones) zoneScreenPositions[zone.id]!,
+    ]);
 
+    for (int i = 0; i < boardPath.segmentCount; i++) {
+      final segment = boardPath.segments[i];
       final isUnlocked = totalStars >= zones[i + 1].requiredStars;
 
-      // Create curved path (adjusted for iso perspective)
-      final path = Path();
-      path.moveTo(start.dx, start.dy);
-
-      // Midpoint for curve control
-      final midX = (start.dx + end.dx) / 2;
-      final midY = (start.dy + end.dy) / 2;
-
-      // Lift the curve up for visual depth
-      final controlX = midX;
-      final controlY = midY - 30;
-
-      path.quadraticBezierTo(controlX, controlY, end.dx, end.dy);
+      // Curved hop between islands (adjusted for iso perspective).
+      final path = Path()
+        ..moveTo(segment.start.dx, segment.start.dy)
+        ..quadraticBezierTo(
+          segment.control.dx,
+          segment.control.dy,
+          segment.end.dx,
+          segment.end.dy,
+        );
 
       // Draw path with stronger contrast and readability.
       final bounds = path.getBounds();

@@ -1,17 +1,27 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:brightbound_adventures/core/services/index.dart';
-import 'package:brightbound_adventures/ui/widgets/achievement_notification.dart';
+import 'package:brightbound_adventures/ui/components/reward_reveal.dart';
+import 'package:brightbound_adventures/ui/components/session_completion.dart';
 import 'package:brightbound_adventures/ui/widgets/branded_back_button.dart';
 import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
-import 'package:brightbound_adventures/ui/widgets/zone_mastered_celebration.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 
-/// Results screen shown after completing a quiz
+/// Results screen shown after completing a quiz.
+///
+/// This is the single place a literacy quest applies its rewards: it runs
+/// the shared `completeSession` orchestration (evidence updates + exactly
+/// one `RewardTransactionService.apply()` per [sessionId]), then the earned
+/// [SessionCompletion] is presented by [RewardReveal]. Rebuilding, resuming,
+/// or revisiting this screen replays the same result instead of re-awarding
+/// it.
 class QuizResultsScreen extends StatefulWidget {
   final String skillName;
   final String skillId;
+
+  /// Stable identity for this completion; the reward transaction is keyed
+  /// on it, so one session awards exactly once.
+  final String sessionId;
+
   final int correctAnswers;
   final int totalQuestions;
   final double accuracy;
@@ -36,6 +46,7 @@ class QuizResultsScreen extends StatefulWidget {
     super.key,
     required this.skillName,
     required this.skillId,
+    required this.sessionId,
     required this.correctAnswers,
     required this.totalQuestions,
     required this.accuracy,
@@ -59,9 +70,9 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
   late AnimationController _scoreController;
   late Animation<double> _scoreAnimation;
 
-  int _xpAwarded = 0;
-  bool _leveledUp = false;
-  int? _previousLevel;
+  SessionCompletion? _completion;
+  bool _applying = true;
+  Object? _error;
 
   @override
   void initState() {
@@ -82,10 +93,15 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
     );
 
     Future.delayed(const Duration(milliseconds: 300), () {
-      _scoreController.forward();
+      if (mounted) _scoreController.forward();
     });
 
-    _processResults();
+    // Kick off after the first frame so progress/reward work never runs
+    // during build, and so the child sees an honest "packing your reward"
+    // beat rather than a frozen screen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _processResults();
+    });
   }
 
   @override
@@ -95,71 +111,40 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
     super.dispose();
   }
 
-  void _processResults() async {
-    // Calculate XP based on performance
-    _xpAwarded = (widget.accuracy * 100).round();
-    if (widget.accuracy >= 0.85) {
-      _xpAwarded += 25; // Bonus for mastery-level performance
-    }
-    if (widget.hintsUsed == 0 && widget.accuracy >= 0.7) {
-      _xpAwarded += 10; // Bonus for no hints
-    }
+  Future<void> _processResults() async {
+    setState(() {
+      _applying = true;
+      _error = null;
+    });
 
-    // Update skill progress
-    final skillProvider = context.read<SkillProvider>();
-    skillProvider.updateSkillProgress(
-      skillId: widget.skillId,
-      sessionAccuracy: widget.accuracy,
-      sessionHints: widget.hintsUsed,
-    );
+    try {
+      // The single shared orchestration path: evidence updates, then the
+      // one idempotent reward transaction, then presentation data.
+      final completion = await completeSession(
+        context,
+        sessionId: widget.sessionId,
+        skillId: widget.skillId,
+        skillName: widget.skillName,
+        accuracy: widget.accuracy,
+        correctAnswers: widget.correctAnswers,
+        totalQuestions: widget.totalQuestions,
+        hintsUsed: widget.hintsUsed,
+        accent: widget.themeColor,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
+      );
 
-    // Schedule spaced repetition review
-    context.read<SpacedRepetitionService>().recordSession(
-          skillId: widget.skillId,
-          accuracy: widget.accuracy,
-        );
-
-    // Check if this session completed the whole zone
-    checkAndShowZoneMastered(
-      context,
-      skillProvider,
-      zoneId: widget.zoneId,
-      zoneName: widget.zoneName,
-      themeColor: widget.themeColor,
-    );
-
-    // Award XP
-    final avatarProvider = context.read<AvatarProvider>();
-    if (avatarProvider.hasAvatar) {
-      _previousLevel = avatarProvider.avatar!.level;
-      avatarProvider.addExperience(_xpAwarded);
-      _leveledUp = avatarProvider.avatar!.level > _previousLevel!;
-    }
-
-    // Award stars
-    final shopService = ShopService();
-    await shopService.awardStarsForActivity(
-      score: widget.correctAnswers,
-      maxScore: widget.totalQuestions,
-      accuracy: widget.accuracy,
-    );
-
-    // Track achievements
-    final achievementService = AchievementService();
-    await achievementService
-        .trackQuestionAnswered(true); // Track correct answers
-
-    // Check for perfect score
-    if (widget.accuracy >= 1.0) {
-      await achievementService.trackPerfectScore();
-    }
-
-    // Show any newly unlocked achievements
-    if (mounted) {
-      for (final achievement in achievementService.recentlyUnlocked) {
-        AchievementNotificationManager.show(context, achievement);
-      }
-      achievementService.clearRecentlyUnlocked();
+      setState(() {
+        _completion = completion;
+        _applying = false;
+      });
+    } catch (error) {
+      // Never pretend the reward landed: show a real error with a retry,
+      // which is safe because the transaction is idempotent.
+      setState(() {
+        _error = error;
+        _applying = false;
+      });
     }
   }
 
@@ -179,21 +164,15 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
     return '📚';
   }
 
-  int get _starCount {
-    if (widget.accuracy >= 0.95) return 3;
-    if (widget.accuracy >= 0.70) return 2;
-    if (widget.accuracy >= 0.40) return 1;
-    return 0;
-  }
-
   @override
   Widget build(BuildContext context) {
     final world = WorldTokens.fromColor(widget.themeColor);
     final showCelebration = widget.accuracy >= 0.85;
+    final completion = _completion;
+
     return Scaffold(
       body: Stack(
         children: [
-          // World-themed gradient background
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -210,8 +189,6 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
               ),
             ),
           ),
-
-          // Confetti burst for excellent / perfect scores
           if (showCelebration)
             Positioned.fill(
               child: IgnorePointer(
@@ -238,216 +215,63 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                 ),
               ),
             ),
-
-          // Content
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 children: [
                   const SizedBox(height: 16),
-
-                  // Performance emoji with scale entrance
                   ScaleTransition(
                     scale: _scoreAnimation,
                     child: Text(
                       _performanceEmoji,
-                      style: const TextStyle(fontSize: 80),
+                      style: const TextStyle(fontSize: 72),
                     ),
                   ),
                   const SizedBox(height: 12),
-
-                  // Title
-                  Text(
-                    'Quiz Complete!',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: widget.themeColor,
-                          fontFamily: AppTheme.fontPrimary,
-                        ),
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      'Quest complete!',
+                      textAlign: TextAlign.center,
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: widget.themeColor,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     widget.skillName,
+                    textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Colors.grey.shade600,
                         ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Stars with staggered entrance
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(3, (index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: AnimatedBuilder(
-                          animation: _celebrationController,
-                          builder: (context, child) {
-                            final delay = index * 0.22;
-                            final progress =
-                                ((_celebrationController.value - delay) /
-                                        (1 - delay))
-                                    .clamp(0.0, 1.0);
-                            final earned = index < _starCount;
-                            return Transform.scale(
-                              scale: earned
-                                  ? (0.3 +
-                                      0.7 *
-                                          Curves.elasticOut.transform(progress))
-                                  : 0.75,
-                              child: Icon(
-                                earned
-                                    ? Icons.star_rounded
-                                    : Icons.star_outline_rounded,
-                                size: 52,
-                                color: earned
-                                    ? Colors.amber.shade400
-                                    : Colors.grey.shade300,
-                                shadows: earned
-                                    ? [
-                                        Shadow(
-                                          color: Colors.amber
-                                              .withValues(alpha: 0.5),
-                                          blurRadius: 12,
-                                        )
-                                      ]
-                                    : null,
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 28),
-
-                  // Animated score card
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(AppBorders.xl),
-                      border: Border.all(
-                        color: widget.themeColor.withValues(alpha: 0.2),
-                        width: 1.5,
-                      ),
-                      boxShadow: AppShadows.lg(widget.themeColor),
+                  _buildScoreCard(context),
+                  const SizedBox(height: 20),
+                  if (_applying)
+                    RewardApplyingCard(accent: widget.themeColor)
+                  else if (_error != null)
+                    RewardErrorCard(onRetry: _processResults)
+                  else if (completion != null)
+                    RewardReveal(
+                      result: completion.reward,
+                      breakdown: completion.breakdown,
+                      starBalance: completion.starBalance,
+                      levelProgressBefore: completion.levelProgressBefore,
+                      levelProgressAfter: completion.levelProgressAfter,
+                      accent: widget.themeColor,
+                      skillName: widget.skillName,
+                      skillAccuracyBefore: completion.skillAccuracyBefore,
+                      skillAccuracyAfter: completion.skillAccuracyAfter,
+                      recommendation: completion.recommendation,
+                      unlockNames: completion.unlockNames,
+                      onBackToMap: () => backToWorldMap(context),
                     ),
-                    child: Column(
-                      children: [
-                        // Big animated accuracy
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AnimatedCounterText(
-                              targetValue: (widget.accuracy * 100).round(),
-                              suffix: '%',
-                              style: TextStyle(
-                                fontSize: 64,
-                                fontWeight: FontWeight.bold,
-                                color: widget.themeColor,
-                                fontFamily: AppTheme.fontPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          _performanceMessage,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 20),
-                        Divider(color: Colors.grey.shade100, thickness: 1.5),
-                        const SizedBox(height: 16),
-
-                        // Stats row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildStatItem(
-                              icon: Icons.check_circle_outline_rounded,
-                              color: AppColors.success,
-                              value:
-                                  '${widget.correctAnswers} / ${widget.totalQuestions}',
-                              label: 'Correct',
-                            ),
-                            Container(
-                                width: 1,
-                                height: 48,
-                                color: Colors.grey.shade200),
-                            _buildStatItem(
-                              icon: Icons.lightbulb_outline_rounded,
-                              color: Colors.amber.shade700,
-                              value: '${widget.hintsUsed}',
-                              label: 'Hints',
-                            ),
-                            Container(
-                                width: 1,
-                                height: 48,
-                                color: Colors.grey.shade200),
-                            _buildStatItem(
-                              icon: Icons.bolt_rounded,
-                              color: widget.themeColor,
-                              value: '+$_xpAwarded',
-                              label: 'XP',
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Level up notification
-                  if (_leveledUp) ...[
-                    const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        gradient: AppGradients.gold,
-                        borderRadius: BorderRadius.circular(AppBorders.lg),
-                        boxShadow:
-                            AppShadows.glow(Colors.amber, intensity: 0.4),
-                      ),
-                      child: Row(
-                        children: [
-                          const Text('🎉', style: TextStyle(fontSize: 32)),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'LEVEL UP!',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Consumer<AvatarProvider>(
-                                  builder: (context, provider, _) => Text(
-                                    'You reached Level ${provider.avatar?.level ?? 0}!',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Text('🌟', style: TextStyle(fontSize: 32)),
-                        ],
-                      ),
-                    ),
-                  ],
-
-                  // Guardian message banner
                   if (widget.guardianMessage != null) ...[
                     const SizedBox(height: 20),
                     _GuardianMessageBanner(
@@ -456,10 +280,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                       themeColor: widget.themeColor,
                     ),
                   ],
-
                   const SizedBox(height: 32),
-
-                  // Action buttons
                   Row(
                     children: [
                       Expanded(
@@ -467,7 +288,9 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                           label: 'Back to Zone',
                           onPressed: widget.onExit,
                           backgroundColor: Colors.grey.shade400,
-                          foregroundColor: Colors.white,
+                          // Grey400 + white measured ~1.8:1; derive the ink.
+                          foregroundColor:
+                              InkTokens.on(Colors.grey.shade400),
                           borderColor: Colors.grey.shade500,
                           tokenBackgroundColor:
                               Colors.white.withValues(alpha: 0.16),
@@ -488,7 +311,8 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          textColor: Colors.white,
+                          // Adaptive ink (JuicyButton): themeColor varies per
+                          // subject and pale accents can't carry white.
                           shimmer: widget.accuracy >= 0.85,
                         ),
                       ),
@@ -498,6 +322,80 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScoreCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppBorders.xl),
+        border: Border.all(
+          color: widget.themeColor.withValues(alpha: 0.2),
+          width: 1.5,
+        ),
+        boxShadow: AppShadows.lg(widget.themeColor),
+      ),
+      child: Column(
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedCounterText(
+                  targetValue: (widget.accuracy * 100).round(),
+                  suffix: '%',
+                  style: TextStyle(
+                    fontSize: 60,
+                    fontWeight: FontWeight.bold,
+                    color: widget.themeColor,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            _performanceMessage,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          Divider(color: Colors.grey.shade100, thickness: 1.5),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildStatItem(
+                icon: Icons.check_circle_outline_rounded,
+                color: AppColors.success,
+                value: '${widget.correctAnswers} / ${widget.totalQuestions}',
+                label: 'Correct',
+              ),
+              Container(width: 1, height: 48, color: Colors.grey.shade200),
+              _buildStatItem(
+                icon: Icons.lightbulb_outline_rounded,
+                color: Colors.amber.shade700,
+                value: '${widget.hintsUsed}',
+                label: 'Hints',
+              ),
+              Container(width: 1, height: 48, color: Colors.grey.shade200),
+              _buildStatItem(
+                icon: Icons.bolt_rounded,
+                color: widget.themeColor,
+                value: '+${_completion?.breakdown.totalXp ?? 0}',
+                label: 'XP',
+              ),
+            ],
           ),
         ],
       ),
@@ -515,14 +413,18 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
         children: [
           Icon(icon, color: color, size: 26),
           const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            // 18 px bold is normal-size text (AA 4.5:1): the accent itself
+            // fails on white for bright tokens (success ≈ 2.2:1, amber ≈
+            // 3.1:1, warm zone colours ≈ 3.0–4.0:1). Ink derives from the
+            // tint instead; the icon keeps the accent.
+            color: InkTokens.onTint(color),
           ),
+        ),
           Text(
             label,
             style: TextStyle(

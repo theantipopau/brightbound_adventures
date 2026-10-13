@@ -5,16 +5,20 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
+import 'package:brightbound_adventures/core/models/skill_database.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
+import 'package:brightbound_adventures/core/utils/board_path.dart';
 import 'package:brightbound_adventures/core/utils/isometric_engine.dart';
 import 'package:brightbound_adventures/core/utils/world_map_isometric_helper.dart';
 import 'package:brightbound_adventures/features/world_map/models/world_map_view_model.dart';
+import 'package:brightbound_adventures/features/world_map/services/recommendation_service.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/animated_cloud_background.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/particle_background.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/adventure_pattern_overlay.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
+import 'package:brightbound_adventures/ui/widgets/zone_badge.dart';
 import 'package:brightbound_adventures/ui/screens/world_map/world_map_adventure_bar.dart';
 import 'package:brightbound_adventures/ui/screens/world_map/world_map_quest_lens.dart';
 import 'package:brightbound_adventures/ui/screens/world_map/world_map_living_board.dart';
@@ -93,6 +97,21 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     super.initState();
     _initAnimations();
     _initIsometricPositions();
+    // The map draws star counts, lock states, and gold/grey routes from
+    // SkillProvider, but it is the first screen a session can open — so it
+    // must trigger the lazy skill hydration itself (ProfileStats and
+    // ZoneDetail do the same). Deferred to a microtask because
+    // initializeSkills() calls notifyListeners() synchronously, which would
+    // throw "markNeedsBuild() called during build" if it ran mid-build.
+    Future.microtask(_ensureSkillsHydrated);
+  }
+
+  Future<void> _ensureSkillsHydrated() async {
+    if (!mounted) return;
+    final skillProvider = context.read<SkillProvider>();
+    if (!skillProvider.isInitialized && !skillProvider.isInitializing) {
+      await skillProvider.initializeSkills();
+    }
   }
 
   @override
@@ -296,12 +315,103 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     SkillProvider skillProvider,
   ) {
     final recommendedIndex = _recommendedZoneIndex(totalStars, skillProvider);
-    return _viewModel.evaluateZoneState(
+    final status = _viewModel.evaluateZoneState(
       zoneIndex: zoneIndex,
       totalStars: totalStars,
       skillProvider: skillProvider,
       recommendedZoneIndex: recommendedIndex,
     );
+    if (status.state != WorldMapZoneState.recommended) return status;
+
+    // "Recommended" should say *why*, from real history rather than a fixed
+    // string. Falls back to the generic reason whenever the session-history
+    // service isn't available (widget tests, cold start).
+    final reason = _recommendationReason(zoneIndex, skillProvider);
+    if (reason == null) return status;
+    return WorldMapZoneStatus(
+      state: status.state,
+      label: status.label,
+      reason: reason,
+    );
+  }
+
+  /// Child-facing reason this zone is the current recommendation, straight
+  /// from `RecommendationService` (due review / in-progress skill / new
+  /// skill / boss-ready), or null when it cannot be computed.
+  String? _recommendationReason(int zoneIndex, SkillProvider skillProvider) {
+    try {
+      final zone = _zones[zoneIndex];
+      final history = context.read<QuestSessionHistoryService>();
+      final spaced = context.read<SpacedRepetitionService>();
+      final recommendation = const RecommendationService().recommend(
+        zoneId: zone.id,
+        zoneName: zone.name,
+        zoneSkills: skillProvider.getZoneSkills(zone.id),
+        recentSessions: history.recentSessions(limit: 40),
+        dueSkillIds: spaced.dueSkillIds.toSet(),
+      );
+      return recommendation.childReason;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Zone ids where the child has finished at least one real quest.
+  ///
+  /// Derived from persisted session history — never random, and never
+  /// disappears on reload. Drives the quest flag painted on the island.
+  Set<String> _completedQuestZoneIds() {
+    try {
+      // `watch` so returning from a completed session repaints the flag
+      // even when nothing else about the zone changed.
+      final history = context.watch<QuestSessionHistoryService>();
+      return history.sessions
+          .where((session) => !session.forced)
+          .map((session) => session.zoneId)
+          .toSet();
+    } catch (_) {
+      return const <String>{};
+    }
+  }
+
+  /// The Quest Lens acknowledgement line: what the child has already done
+  /// in this zone, read from persisted session history. Null when the zone
+  /// has no finished quest yet.
+  String? _recentActivityNote(String zoneId) {
+    try {
+      final history = context.read<QuestSessionHistoryService>();
+      final normalized = zoneId.replaceAll('_', '-');
+      final finished = history.sessions
+          .where((session) =>
+              !session.forced &&
+              session.zoneId.replaceAll('_', '-') == normalized)
+          .toList();
+      if (finished.isEmpty) return null;
+
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final todayCount =
+          finished.where((session) => !session.endedAt.isBefore(today)).length;
+      if (todayCount == 1) return '✅ You finished a quest here today';
+      if (todayCount > 1) {
+        return '✅ You finished $todayCount quests here today';
+      }
+      return '🚩 ${finished.length} quest'
+          '${finished.length == 1 ? '' : 's'} finished here so far';
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// How many finished quests belong to [zoneId] (normalised, because
+  /// different activities record `word-woods` and `word_woods`).
+  int _completedQuestCount(Set<String> completedZoneIds, String zoneId) {
+    final normalized = zoneId.replaceAll('_', '-');
+    var count = 0;
+    for (final id in completedZoneIds) {
+      if (id.replaceAll('_', '-') == normalized) count++;
+    }
+    return count;
   }
 
   void _moveToZone(int targetIndex) {
@@ -332,6 +442,10 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       _isMoving = true;
     });
 
+    // Scale travel time with the number of route hops so the pawn keeps a
+    // steady walking pace whether it hops next door or crosses the board.
+    final hops = (targetIndex - _currentZoneIndex).abs();
+    _avatarMoveController.duration = Duration(milliseconds: 700 + 550 * hops);
     _avatarMoveController.forward(from: 0);
   }
 
@@ -405,99 +519,140 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                           _uiScale = (shortest / 760).clamp(0.75, 1.0);
                         }
 
-                        // Calculate avatar position for shadows
-                        IsometricPosition? avatarIsoPos;
-                        if (_isMoving && _targetZoneIndex != null) {
-                          final currentZone = _zones[_currentZoneIndex];
-                          final targetZone = _zones[_targetZoneIndex!];
-                          final startIso =
-                              _zoneIsometricPositions[currentZone.id]!;
-                          final endIso =
-                              _zoneIsometricPositions[targetZone.id]!;
-                          double t = Curves.easeInOutCubic
-                              .transform(_avatarMoveController.value);
-                          avatarIsoPos = startIso.lerp(endIso, t);
-                        } else {
-                          final currentZone = _zones[_currentZoneIndex];
-                          avatarIsoPos =
-                              _zoneIsometricPositions[currentZone.id];
-                        }
+                        final mapSize = Size(
+                          constraints.maxWidth,
+                          constraints.maxHeight,
+                        );
+                        // Zone anchors in screen space — the single map the
+                        // painters, the pawn, and the shadow all read from.
+                        final screenPositions = <String, Offset>{
+                          for (final z in _zones)
+                            z.id: WorldMapIsometricHelper.gridToScreen(
+                              _zoneIsometricPositions[z.id]!,
+                              mapSize,
+                            ),
+                        };
 
                         return Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            WorldMapLivingBoard(
-                              zones: _zones,
-                              screenPositions: {
-                                for (final z in _zones)
-                                  z.id: WorldMapIsometricHelper.gridToScreen(
-                                    _zoneIsometricPositions[z.id]!,
-                                    Size(constraints.maxWidth,
-                                        constraints.maxHeight),
-                                  ),
-                              },
-                              avatarPosition: avatarIsoPos,
-                              pathAnimation: _pathController,
-                              totalStars: totalStars,
-                              mapZoom: _mapZoom,
-                              size: Size(
-                                constraints.maxWidth,
-                                constraints.maxHeight,
-                              ),
-                              boardPainter: WorldMapBoardPainter(
-                                zones: _zones,
-                                positions: {
-                                  for (final z in _zones)
-                                    z.id: WorldMapIsometricHelper.gridToScreen(
-                                      _zoneIsometricPositions[z.id]!,
-                                      Size(constraints.maxWidth,
-                                          constraints.maxHeight),
-                                    ),
-                                },
-                                selectedZoneId: _zones[_selectedZoneIndex].id,
-                                animationValue: _ambientAnimationsRunning
-                                    ? _floatController.value
-                                    : 0,
-                              ),
-                              sceneLayer: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  WorldMapSceneLayer(
+                            // Rebuild the board on every tick of the move
+                            // controller so the pawn genuinely walks the
+                            // painted route frame-by-frame (its position used
+                            // to be sampled only when the parent rebuilt, so
+                            // travel rendered as a 1.2s freeze then a jump).
+                            ListenableBuilder(
+                              listenable: _avatarMoveController,
+                              builder: (context, _) {
+                                final travelling =
+                                    _isMoving && _targetZoneIndex != null;
+
+                                // Straight iso lerp — only used for depth
+                                // sorting the pawn against the islands.
+                                final IsometricPosition avatarIsoPos;
+                                if (travelling) {
+                                  final startIso = _zoneIsometricPositions[
+                                      _zones[_currentZoneIndex].id]!;
+                                  final endIso = _zoneIsometricPositions[
+                                      _zones[_targetZoneIndex!].id]!;
+                                  final t = Curves.easeInOutCubic
+                                      .transform(_avatarMoveController.value);
+                                  avatarIsoPos = startIso.lerp(endIso, t);
+                                } else {
+                                  avatarIsoPos = _zoneIsometricPositions[
+                                      _zones[_currentZoneIndex].id]!;
+                                }
+
+                                // Feet on the painted track: sample the same
+                                // BoardPath PathPainter draws, one hop per
+                                // island with a little arc on each.
+                                final Offset avatarScreenOffset;
+                                final double hopHeight;
+                                if (travelling) {
+                                  final travelPath =
+                                      BoardPath.betweenZoneIndexes(
+                                    [
+                                      for (final z in _zones)
+                                        screenPositions[z.id]!,
+                                    ],
+                                    _currentZoneIndex,
+                                    _targetZoneIndex!,
+                                  );
+                                  final eased = Curves.easeInOutCubic
+                                      .transform(_avatarMoveController.value);
+                                  avatarScreenOffset =
+                                      travelPath.pointAt(eased);
+                                  final located = travelPath.locate(eased);
+                                  hopHeight =
+                                      -40 * math.sin(located.localT * math.pi);
+                                } else {
+                                  avatarScreenOffset = screenPositions[
+                                      _zones[_currentZoneIndex].id]!;
+                                  hopHeight = 0;
+                                }
+
+                                return WorldMapLivingBoard(
+                                  zones: _zones,
+                                  screenPositions: screenPositions,
+                                  avatarPosition: avatarIsoPos,
+                                  avatarScreenOffset: avatarScreenOffset,
+                                  pathAnimation: _pathController,
+                                  totalStars: totalStars,
+                                  mapZoom: _mapZoom,
+                                  size: mapSize,
+                                  boardPainter: WorldMapBoardPainter(
                                     zones: _zones,
-                                    avatar: avatar,
-                                    positions: _zoneIsometricPositions,
-                                    avatarPosition: avatarIsoPos!,
-                                    zoneSemanticsLabels: {
-                                      for (final zone in _zones)
-                                        zone.id: _zoneSemanticsLabel(
-                                          zone,
-                                          skillProvider,
-                                          totalStars,
-                                        ),
-                                    },
-                                    zoneSemanticsHints: {
-                                      for (final zone in _zones)
-                                        zone.id: _zoneSemanticsHint(
-                                          zone,
-                                          skillProvider,
-                                          totalStars,
-                                        ),
-                                    },
-                                    zoneBuilder: (zone) => _buildZoneItem(
-                                      zone,
-                                      constraints,
-                                      totalStars,
-                                      skillProvider,
-                                    ),
-                                    avatarBuilder: (sceneAvatar, position) =>
-                                        _buildAvatarItem(
-                                      sceneAvatar,
-                                      position,
-                                      constraints,
-                                    ),
+                                    positions: screenPositions,
+                                    selectedZoneId:
+                                        _zones[_selectedZoneIndex].id,
+                                    animationValue: _ambientAnimationsRunning
+                                        ? _floatController.value
+                                        : 0,
                                   ),
-                                ],
-                              ),
+                                  sceneLayer: Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      WorldMapSceneLayer(
+                                        zones: _zones,
+                                        avatar: avatar,
+                                        positions: _zoneIsometricPositions,
+                                        avatarPosition: avatarIsoPos,
+                                        zoneSemanticsLabels: {
+                                          for (final zone in _zones)
+                                            zone.id: _zoneSemanticsLabel(
+                                              zone,
+                                              skillProvider,
+                                              totalStars,
+                                            ),
+                                        },
+                                        zoneSemanticsHints: {
+                                          for (final zone in _zones)
+                                            zone.id: _zoneSemanticsHint(
+                                              zone,
+                                              skillProvider,
+                                              totalStars,
+                                            ),
+                                        },
+                                        zoneBuilder: (zone) => _buildZoneItem(
+                                          zone,
+                                          constraints,
+                                          totalStars,
+                                          skillProvider,
+                                        ),
+                                        avatarBuilder:
+                                            (sceneAvatar, position) =>
+                                                _buildAvatarItem(
+                                          sceneAvatar,
+                                          position,
+                                          constraints,
+                                          groundOffset: avatarScreenOffset,
+                                          hopHeight: hopHeight,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
 
                             // Top HUD
@@ -755,6 +910,15 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   List<String> _zoneFeatureTags(ZoneData zone) {
+    // Zones whose quest bank includes NAPLAN-aligned skills lead with that
+    // identity, so the quest lens advertises the alignment first.
+    final hasNaplan =
+        SkillDatabase.getZoneSkills(zone.id).any((s) => s.naplanArea != null);
+    final flavorTags = _zoneFlavorTags(zone);
+    return [if (hasNaplan) 'NAPLAN', ...flavorTags];
+  }
+
+  List<String> _zoneFlavorTags(ZoneData zone) {
     switch (zone.id) {
       case 'word-woods':
         return const ['Phonics', 'Sight Words', 'Reading Trails'];
@@ -899,6 +1063,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             landmarkAsset: _zoneLandmarkAsset(zone),
             floatAnimation: _floatController,
             visualScale: visualScale,
+            completedQuestCount:
+                _completedQuestCount(_completedQuestZoneIds(), zone.id),
             onTap: isUnlocked
                 ? () {
                     setState(() {
@@ -953,18 +1119,17 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   Widget _buildAvatarItem(
-      Avatar avatar, IsometricPosition isoPos, BoxConstraints constraints) {
-    final screenPos = WorldMapIsometricHelper.gridToScreen(
-      isoPos,
-      Size(constraints.maxWidth, constraints.maxHeight),
-    );
-
-    // Add jump arc if moving
-    double arcHeight = 0;
-    if (_isMoving) {
-      double t = Curves.easeInOutCubic.transform(_avatarMoveController.value);
-      arcHeight = -40 * math.sin(t * math.pi);
-    }
+    Avatar avatar,
+    IsometricPosition isoPos,
+    BoxConstraints constraints, {
+    required Offset groundOffset,
+    required double hopHeight,
+  }) {
+    // Where the pawn's feet touch the board: the shared route position
+    // during travel, the zone anchor otherwise. [hopHeight] is the
+    // per-island arc, applied on top.
+    final screenPos = groundOffset;
+    final arcHeight = hopHeight;
 
     final left = (screenPos.dx - 46)
         .clamp(6.0, math.max(6.0, constraints.maxWidth - 98.0))
@@ -1110,9 +1275,10 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: Text(
-                        selected.emoji,
-                        style: const TextStyle(fontSize: 18),
+                      child: ZoneBadge(
+                        asset: 'assets/images/zones/${selected.id}.png',
+                        emoji: selected.emoji,
+                        size: 32,
                       ),
                     ),
                   ),
@@ -1186,8 +1352,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.deepOrange.withValues(alpha: 0.95),
-                  Colors.orange.withValues(alpha: 0.92),
+                  Colors.red.shade900,
+                  Colors.deepOrange.shade900,
                 ],
               ),
               borderRadius: BorderRadius.circular(14),
@@ -1490,8 +1656,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(zone.emoji,
-                                style: const TextStyle(fontSize: 16)),
+                            ZoneBadge(
+                              asset: 'assets/images/zones/${zone.id}.png',
+                              emoji: zone.emoji,
+                              size: 20,
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               zone.name,
@@ -1582,6 +1751,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       expanded: _questLensExpanded,
       isMoving: _isMoving,
       isCurrentZone: _currentZoneIndex == _selectedZoneIndex,
+      recentNote: _recentActivityNote(selected.id),
       onToggleExpanded: () => setState(
         () => _questLensExpanded = !_questLensExpanded,
       ),
@@ -1746,9 +1916,9 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                   const TextSpan(text: 'Earn '),
                   TextSpan(
                     text: '$starsNeeded more ⭐',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.amber,
+                      color: InkTokens.onTint(Colors.amber),
                     ),
                   ),
                   const TextSpan(text: ' to unlock this world!'),
@@ -2068,7 +2238,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             text,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: color,
+              color: InkTokens.onTint(color),
             ),
           ),
         ],
@@ -2363,8 +2533,8 @@ class _BoardGameAvatarPawn extends StatelessWidget {
                 ),
                 child: Text(
                   '${avatar.level}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: InkTokens.on(Colors.amber.shade400),
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                     fontFamily: AppTheme.fontPrimary,
@@ -2429,6 +2599,11 @@ class _ZoneIsland extends StatefulWidget {
   final double visualScale;
   final VoidCallback onTap;
 
+  /// Number of finished quests in this zone, from persisted session
+  /// history. Drives the world-change flag: a zone that has been played
+  /// visibly says so, permanently.
+  final int completedQuestCount;
+
   const _ZoneIsland({
     required this.zone,
     required this.statusLabel,
@@ -2441,6 +2616,7 @@ class _ZoneIsland extends StatefulWidget {
     required this.landmarkAsset,
     required this.floatAnimation,
     this.visualScale = 1.0,
+    this.completedQuestCount = 0,
     required this.onTap,
   });
 
@@ -2930,32 +3106,35 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                                       child: Hero(
                                                         tag:
                                                             'zone_icon_${widget.zone.id}',
-                                                        child: Text(
-                                                          widget.isUnlocked
-                                                              ? widget
-                                                                  .zone.emoji
-                                                              : '🔒',
-                                                          // This emoji stands in for a decorative
-                                                          // icon, not reading content — it must
-                                                          // stay a fixed visual size regardless of
-                                                          // the platform text-scale setting.
-                                                          // Without this, at 200% text scale the
-                                                          // (44/32px) fontSize doubles to 88/64px
-                                                          // and alone overflows the zone island's
-                                                          // fixed-height badge, which also has to
-                                                          // fit the zone name and star row below it.
-                                                          textScaler: TextScaler
-                                                              .noScaling,
-                                                          style: TextStyle(
-                                                            fontSize: widget
-                                                                    .isUnlocked
-                                                                ? 44
-                                                                : 32,
-                                                            decoration:
-                                                                TextDecoration
-                                                                    .none, // Essential for Hero text flight
-                                                          ),
-                                                        ),
+                                                        // Unlocked islands show the generated
+                                                        // badge art (emoji fallback inside
+                                                        // ZoneBadge). The locked glyph keeps the
+                                                        // fixed-size rule: decorative icon, not
+                                                        // reading content, so it must not scale
+                                                        // with the platform text setting — at
+                                                        // 200% text the old 44px emoji doubled
+                                                        // and alone overflowed the island's
+                                                        // fixed-height badge.
+                                                        child: widget.isUnlocked
+                                                            ? ZoneBadge(
+                                                                asset: 'assets/images/zones/${widget.zone.id}.png',
+                                                                emoji: widget
+                                                                    .zone.emoji,
+                                                                size: 48,
+                                                              )
+                                                            : const Text(
+                                                                '🔒',
+                                                                textScaler:
+                                                                    TextScaler
+                                                                        .noScaling,
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 32,
+                                                                  decoration:
+                                                                      TextDecoration
+                                                                          .none, // Essential for Hero text flight
+                                                                ),
+                                                              ),
                                                       ),
                                                     );
                                                   },
@@ -3082,6 +3261,7 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                       style: const TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w900,
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -3124,6 +3304,63 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                   ),
                                 ),
 
+                              // Persisted world change: a zone the child has
+                              // actually finished a quest in raises a flag.
+                              // It is derived from session history, so it
+                              // survives reloads, and it uses an icon *and*
+                              // words rather than colour alone.
+                              if (widget.isUnlocked &&
+                                  widget.completedQuestCount > 0)
+                                Positioned(
+                                  left: 10,
+                                  top: widget.statusLabel != 'Available' &&
+                                          widget.statusLabel != 'Locked'
+                                      ? 32
+                                      : 8,
+                                  child: Semantics(
+                                    label:
+                                        'Quest complete flag raised at ${widget.zone.name}',
+                                    child: ExcludeSemantics(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 7,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: widget.zone.color
+                                              .withValues(alpha: 0.16),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: widget.zone.color
+                                                .withValues(alpha: 0.65),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Text('🚩',
+                                                textScaler:
+                                                    TextScaler.noScaling,
+                                                style: TextStyle(fontSize: 10)),
+                                            const SizedBox(width: 3),
+                                            Text(
+                                              widget.completedQuestCount == 1
+                                                  ? 'Quest done'
+                                                  : '${widget.completedQuestCount} quests',
+                                              style: TextStyle(
+                                                color: foreground,
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
                               // Current zone indicator - enhanced
                               if (widget.isCurrentZone)
                                 Positioned(
@@ -3156,6 +3393,7 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                         fontSize: 11,
                                         fontWeight: FontWeight.w900,
                                         letterSpacing: 0.4,
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
                                   ),

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -720,7 +721,7 @@ class _BossBattleScreenState extends State<BossBattleScreen>
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.redAccent,
-                          foregroundColor: Colors.white,
+                          foregroundColor: InkTokens.on(Colors.redAccent),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 32, vertical: 16),
                           shape: RoundedRectangleBorder(

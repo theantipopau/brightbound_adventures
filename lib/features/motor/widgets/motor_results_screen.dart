@@ -1,15 +1,41 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
-/// Results screen for Adventure Arena with arena/sports theme
+import 'package:brightbound_adventures/core/models/quest_session_summary.dart';
+import 'package:brightbound_adventures/ui/components/reward_reveal.dart';
+import 'package:brightbound_adventures/ui/components/session_completion.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
+
+/// Results screen for Adventure Arena with arena/sports theme.
+///
+/// This is the single place a motor quest applies its rewards: it runs
+/// the shared `completeSession` orchestration (evidence updates + exactly
+/// one `RewardTransactionService.apply()` per [sessionId]), then the earned
+/// [SessionCompletion] is presented by [RewardReveal]. Rebuilding, resuming,
+/// or revisiting this screen replays the same result instead of re-awarding
+/// it.
 class MotorResultsScreen extends StatefulWidget {
   final int targetsHit;
   final int totalTargets;
   final int score;
   final Duration avgReactionTime;
   final double accuracy;
-  final int xpEarned;
   final String skillName;
+
+  /// Stable identity for this completion; the reward transaction is keyed
+  /// on it, so one session awards exactly once.
+  final String sessionId;
+
+  /// Skill id for evidence updates and the recommendation engine.
+  final String skillId;
+
+  /// Zone context, for zone mastery and "what to do next".
+  final String? zoneId;
+  final String? zoneName;
+
+  /// Session-history entry for zones whose games don't record their own.
+  final QuestSessionSummary? history;
+
   final VoidCallback onContinue;
   final VoidCallback? onRetry;
 
@@ -20,8 +46,12 @@ class MotorResultsScreen extends StatefulWidget {
     required this.score,
     required this.avgReactionTime,
     required this.accuracy,
-    required this.xpEarned,
     required this.skillName,
+    required this.sessionId,
+    required this.skillId,
+    this.zoneId,
+    this.zoneName,
+    this.history,
     required this.onContinue,
     this.onRetry,
   });
@@ -40,6 +70,10 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
   late Animation<double> _medalRotation;
   bool _reduceMotion = false;
   bool _motionSynced = false;
+
+  SessionCompletion? _completion;
+  bool _applying = true;
+  Object? _error;
 
   @override
   void initState() {
@@ -75,6 +109,52 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted && !_reduceMotion) _statsController.forward();
     });
+
+    // Kick off after the first frame so reward work never runs during build,
+    // and so the child sees an honest "packing your reward" beat rather than
+    // a frozen screen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _processResults();
+    });
+  }
+
+  Future<void> _processResults() async {
+    setState(() {
+      _applying = true;
+      _error = null;
+    });
+
+    try {
+      // The single shared orchestration path: evidence updates, then the
+      // one idempotent reward transaction, then presentation data.
+      final completion = await completeSession(
+        context,
+        sessionId: widget.sessionId,
+        skillId: widget.skillId,
+        skillName: widget.skillName,
+        accuracy: widget.accuracy,
+        correctAnswers: widget.targetsHit,
+        totalQuestions: widget.totalTargets,
+        accent: _accent,
+        zoneId: widget.zoneId,
+        zoneName: widget.zoneName,
+        history: widget.history,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _completion = completion;
+        _applying = false;
+      });
+    } catch (error) {
+      // Never pretend the reward landed: show a real error with a retry,
+      // which is safe because the transaction is idempotent.
+      if (!mounted) return;
+      setState(() {
+        _error = error;
+        _applying = false;
+      });
+    }
   }
 
   @override
@@ -112,6 +192,10 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
 
   bool get _isPerfect => widget.accuracy >= 1.0;
 
+  /// Zone accent, so the reveal matches the arena theme. Shared with the
+  /// action buttons below rather than restated as a second literal.
+  Color get _accent => Colors.orange;
+
   int get _starsEarned {
     if (widget.accuracy >= 0.9) return 3;
     if (widget.accuracy >= 0.7) return 2;
@@ -145,6 +229,7 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final completion = _completion;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -243,8 +328,32 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
 
                       const SizedBox(height: 32),
 
-                      // XP earned
+                      // XP earned (from the shared breakdown once the
+                      // transaction lands — never a private formula)
                       _buildXpDisplay(),
+
+                      const SizedBox(height: 20),
+
+                      // The one choreographed reward moment
+                      if (_applying)
+                        RewardApplyingCard(accent: _accent)
+                      else if (_error != null)
+                        RewardErrorCard(onRetry: _processResults)
+                      else if (completion != null)
+                        RewardReveal(
+                          result: completion.reward,
+                          breakdown: completion.breakdown,
+                          starBalance: completion.starBalance,
+                          levelProgressBefore: completion.levelProgressBefore,
+                          levelProgressAfter: completion.levelProgressAfter,
+                          accent: _accent,
+                          skillName: widget.skillName,
+                          skillAccuracyBefore: completion.skillAccuracyBefore,
+                          skillAccuracyAfter: completion.skillAccuracyAfter,
+                          recommendation: completion.recommendation,
+                          unlockNames: completion.unlockNames,
+                          onBackToMap: () => backToWorldMap(context),
+                        ),
 
                       const SizedBox(height: 32),
 
@@ -335,8 +444,10 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
         ),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Wrap(
+              alignment: WrapAlignment.spaceEvenly,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              runSpacing: 12,
               children: [
                 _buildStatItem(
                   icon: '🎯',
@@ -351,8 +462,10 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Wrap(
+              alignment: WrapAlignment.spaceEvenly,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              runSpacing: 12,
               children: [
                 _buildStatItem(
                   icon: '📊',
@@ -438,10 +551,11 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
   }
 
   Widget _buildXpDisplay() {
+    final totalXp = _completion?.breakdown.totalXp ?? 0;
     return AnimatedBuilder(
       animation: _statsAnimation,
       builder: (context, child) {
-        final displayXp = (widget.xpEarned * _statsAnimation.value).round();
+        final displayXp = (totalXp * _statsAnimation.value).round();
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
@@ -449,20 +563,23 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
             borderRadius: BorderRadius.circular(30),
             border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('🔥', style: TextStyle(fontSize: 24)),
-              const SizedBox(width: 8),
-              Text(
-                '+$displayXp XP',
-                style: const TextStyle(
-                  color: Colors.amber,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🔥', style: TextStyle(fontSize: 24)),
+                const SizedBox(width: 8),
+                Text(
+                  '+$displayXp XP',
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -477,8 +594,8 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
           child: ElevatedButton(
             onPressed: widget.onContinue,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
+              backgroundColor: _accent,
+              foregroundColor: InkTokens.on(_accent),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -486,16 +603,19 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
               elevation: 8,
               shadowColor: Colors.orange.withValues(alpha: 0.5),
             ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Continue',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(width: 8),
-                Icon(Icons.arrow_forward),
-              ],
+            child: const FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Continue',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward),
+                ],
+              ),
             ),
           ),
         ),

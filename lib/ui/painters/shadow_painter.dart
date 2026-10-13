@@ -8,7 +8,15 @@ class ShadowPainter extends CustomPainter {
   final List<ZoneData> zones;
   final IsometricPosition? avatarPosition;
 
-  ShadowPainter({required this.zones, this.avatarPosition});
+  /// Screen-space pawn anchor (takes precedence over [avatarPosition]) so
+  /// the shadow follows the exact point on the route the pawn stands on.
+  final Offset? avatarScreenOffset;
+
+  ShadowPainter({
+    required this.zones,
+    this.avatarPosition,
+    this.avatarScreenOffset,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -31,9 +39,11 @@ class ShadowPainter extends CustomPainter {
     }
 
     // Draw avatar shadow
-    if (avatarPosition != null) {
-      final avatarScreen =
-          WorldMapIsometricHelper.gridToScreen(avatarPosition!, size);
+    final Offset? avatarScreen = avatarScreenOffset ??
+        (avatarPosition == null
+            ? null
+            : WorldMapIsometricHelper.gridToScreen(avatarPosition!, size));
+    if (avatarScreen != null) {
       final shadowCenter = avatarScreen + const Offset(10, 35);
 
       canvas.drawOval(
@@ -45,6 +55,7 @@ class ShadowPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(ShadowPainter oldDelegate) {
-    return avatarPosition != oldDelegate.avatarPosition;
+    return avatarPosition != oldDelegate.avatarPosition ||
+        avatarScreenOffset != oldDelegate.avatarScreenOffset;
   }
 }

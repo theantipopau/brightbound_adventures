@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
+import 'package:brightbound_adventures/ui/themes/ink_tokens.dart';
 import 'package:brightbound_adventures/core/services/ai_learning_assistant_service.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
@@ -20,6 +21,7 @@ import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/adventure_pattern_overlay.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/screen_shaker.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
+import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
 import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 
@@ -28,7 +30,12 @@ class ScienceGame extends StatefulWidget {
       questions; // Using dynamic to be safe, or Question if we are sure
   final String skillName;
   final Color themeColor;
-  final void Function(double accuracy, int correct, int total)? onComplete;
+
+  /// Hints are reported with the score so the shared reward breakdown can
+  /// tell an unaided solve from an assisted one — the game counts them, the
+  /// results screen is where they matter.
+  final void Function(double accuracy, int correct, int total, int hintsUsed)?
+      onComplete;
   final VoidCallback? onCancel;
 
   const ScienceGame({
@@ -54,6 +61,27 @@ class _ScienceGameState extends State<ScienceGame>
   int _currentIndex = 0;
   int? _selectedIndex;
   bool _answered = false;
+
+  /// Timers that advance the game after an answer (confetti clear and the
+  /// next-question hop, correct + wrong variants) so dispose() can cancel
+  /// them all — widget tests otherwise end with timers still pending.
+  final List<Timer> _advanceTimers = [];
+  void _delayed(Duration duration, VoidCallback callback) {
+    late final Timer newTimer;
+    newTimer = Timer(duration, () {
+      _advanceTimers.remove(newTimer);
+      if (mounted) callback();
+    });
+    _advanceTimers.add(newTimer);
+  }
+
+  void _cancelAdvanceTimers() {
+    for (final timer in _advanceTimers) {
+      timer.cancel();
+    }
+    _advanceTimers.clear();
+  }
+
   bool _autoReadQuestions = false;
   bool _aiHintsEnabled = false;
   bool _aiExplanationsEnabled = false;
@@ -142,6 +170,10 @@ class _ScienceGameState extends State<ScienceGame>
 
   @override
   void dispose() {
+    for (final timer in _advanceTimers) {
+      timer.cancel();
+    }
+    _advanceTimers.clear();
     _focusNode.dispose();
     _gameController.dispose();
     _feedbackController.dispose();
@@ -249,16 +281,16 @@ class _ScienceGameState extends State<ScienceGame>
       setState(() {
         _showConfetti = true;
       });
-      Future.delayed(const Duration(seconds: 2), () {
+      _delayed(const Duration(seconds: 2), () {
         if (mounted) setState(() => _showConfetti = false);
       });
 
-      Future.delayed(const Duration(milliseconds: 1500), _nextQuestion);
+      _delayed(const Duration(milliseconds: 1500), _nextQuestion);
     } else {
       hapticService.onWrongAnswer();
       avatarProvider.setEmotion(AvatarEmotion.sad,
           resetAfter: const Duration(milliseconds: 800));
-      Future.delayed(const Duration(milliseconds: 800), () {
+      _delayed(const Duration(milliseconds: 800), () {
         if (mounted) {
           avatarProvider.setEmotion(AvatarEmotion.thinking,
               resetAfter: const Duration(milliseconds: 1200));
@@ -281,7 +313,7 @@ class _ScienceGameState extends State<ScienceGame>
             : _nextCoachMessage(isCorrect: false);
       });
 
-      Future.delayed(const Duration(milliseconds: 2000), _nextQuestion);
+      _delayed(const Duration(milliseconds: 2000), _nextQuestion);
     }
 
     _feedbackController.forward(from: 0);
@@ -302,10 +334,33 @@ class _ScienceGameState extends State<ScienceGame>
       });
       _gameController.startQuestionTimer();
       _readCurrentQuestionAloud();
+    } else if (_pendingComplete) {
+      // The controller already parked completion while the child was reading
+      // the feedback — only _onContinue may hand over to the results.
+      return;
     } else {
       _completeGame();
     }
   }
+
+  /// The learner tapped Continue on the feedback panel.
+  ///
+  /// The session controller ends the game from inside `submitAnswer` (on the
+  /// last question, or when lives run out). That completion is parked here
+  /// instead and run only once the child has seen the explanation — the same
+  /// contract as the literacy MCQ's `_onContinue`.
+  void _onContinue() {
+    if (_pendingComplete) {
+      _finishSession(forced: _pendingForced);
+      return;
+    }
+    _nextQuestion();
+  }
+
+  /// Completion requested by the session controller while the child is
+  /// still reading feedback.
+  bool _pendingComplete = false;
+  bool _pendingForced = false;
 
   String _nextCoachMessage({required bool isCorrect}) {
     const success = [
@@ -421,13 +476,34 @@ class _ScienceGameState extends State<ScienceGame>
   }
 
   void _completeGame({bool forced = false}) {
+    if (_answered && !_pendingComplete) {
+      _pendingComplete = true;
+      _pendingForced = forced;
+      _cancelAdvanceTimers();
+      return;
+    }
+    if (_pendingComplete) return;
+    _finishSession(forced: forced);
+  }
+
+  /// Set once the session has handed control to the results screen, so a
+  /// double-tap on Continue can never fire `onComplete` twice.
+  bool _finished = false;
+
+  void _finishSession({required bool forced}) {
+    if (_finished) return;
+    _finished = true;
     final accuracy = _gameController.correctAnswers / _shuffledQuestions.length;
     if (accuracy == 1.0) {
       _audioManager.playPerfectScore();
     }
     _recordSessionSummary(forced: forced);
     widget.onComplete?.call(
-        accuracy, _gameController.correctAnswers, _shuffledQuestions.length);
+      accuracy,
+      _gameController.correctAnswers,
+      _shuffledQuestions.length,
+      _hintsUsedInSession,
+    );
   }
 
   void _recordSessionSummary({required bool forced}) {
@@ -738,145 +814,155 @@ class _ScienceGameState extends State<ScienceGame>
   Widget _buildQuestionCard() {
     final width = MediaQuery.of(context).size.width;
     final isCompact = width < 700;
+    // Opaque card face so the ExtrudedCard's dark side face can't bleed
+    // through the translucent tail of the gradient (see numeracy_game).
+    final face = Colors.white;
 
     final qText = _currentQuestion.question as String;
     final topic = _questionTopic(_currentQuestion);
     final difficulty = _questionDifficulty(_currentQuestion);
 
-    return Container(
-      padding: EdgeInsets.all(isCompact ? 20 : 28),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, widget.themeColor.withValues(alpha: 0.07)],
+    return ExtrudedCard(
+      accent: widget.themeColor,
+      radius: BorderRadius.circular(AppBorders.xl),
+      child: Container(
+        padding: EdgeInsets.all(isCompact ? 20 : 28),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [face, Color.lerp(face, widget.themeColor, 0.07)!],
+          ),
+          borderRadius: BorderRadius.circular(AppBorders.xl),
+          border: Border.all(
+            color: widget.themeColor.withValues(alpha: 0.25),
+            width: 1.5,
+          ),
+          boxShadow: AppShadows.md(widget.themeColor),
         ),
-        borderRadius: BorderRadius.circular(AppBorders.xl),
-        border: Border.all(
-          color: widget.themeColor.withValues(alpha: 0.25),
-          width: 1.5,
-        ),
-        boxShadow: AppShadows.md(widget.themeColor),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _buildQuizChip(
-                icon: Icons.auto_awesome_rounded,
-                label: 'Focus mode',
-                color: widget.themeColor,
-              ),
-              _buildQuizChip(
-                icon: Icons.biotech_rounded,
-                label: 'Q${_currentIndex + 1}/${_shuffledQuestions.length}',
-                color: Colors.indigo,
-              ),
-              if (_autoReadQuestions)
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
                 _buildQuizChip(
-                  icon: Icons.record_voice_over,
-                  label: 'Read aloud',
-                  color: Colors.teal,
-                ),
-            ],
-          ),
-          SizedBox(height: isCompact ? 14 : 16),
-          // Q number chip
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: widget.themeColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppBorders.pill),
-              ),
-              child: Text(
-                'Q${_currentIndex + 1} of ${_shuffledQuestions.length}',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
+                  icon: Icons.auto_awesome_rounded,
+                  label: 'Focus mode',
                   color: widget.themeColor,
-                  fontFamily: AppTheme.fontPrimary,
+                ),
+                _buildQuizChip(
+                  icon: Icons.biotech_rounded,
+                  label: 'Q${_currentIndex + 1}/${_shuffledQuestions.length}',
+                  color: Colors.indigo,
+                ),
+                if (_autoReadQuestions)
+                  _buildQuizChip(
+                    icon: Icons.record_voice_over,
+                    label: 'Read aloud',
+                    color: Colors.teal,
+                  ),
+              ],
+            ),
+            SizedBox(height: isCompact ? 14 : 16),
+            // Q number chip
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: widget.themeColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppBorders.pill),
+                ),
+                child: Text(
+                  'Q${_currentIndex + 1} of ${_shuffledQuestions.length}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: widget.themeColor,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
                 ),
               ),
             ),
-          ),
-          SizedBox(height: isCompact ? 14 : 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration:
-                BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
-            child: Icon(
-              Icons.science,
-              size: isCompact ? 48 : 60,
-              color: widget.themeColor.withValues(alpha: 0.5),
-            ),
-          ),
-          SizedBox(height: isCompact ? 14 : 20),
-          Text(
-            qText,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: isCompact ? 22 : 26,
-              fontWeight: FontWeight.w800,
-              height: 1.26,
-              color: AppColors.textPrimary,
-              fontFamily: AppTheme.fontPrimary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _ScienceChip(icon: '🔬', label: topic, color: widget.themeColor),
-              _ScienceChip(
-                  icon: '📈',
-                  label: 'Difficulty $difficulty',
-                  color: Colors.indigo),
-            ],
-          ),
-          if (_revealedHint != null) ...[
-            const SizedBox(height: 14),
-            AnimatedContainer(
-              duration: AppMotion.standard,
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
+            SizedBox(height: isCompact ? 14 : 20),
+            Container(
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.amber.shade50,
-                borderRadius: BorderRadius.circular(AppBorders.md),
-                border: Border.all(color: Colors.amber.shade300),
-                boxShadow: AppShadows.sm(Colors.amber),
+                  color: Colors.grey[100], shape: BoxShape.circle),
+              child: Icon(
+                Icons.science,
+                size: isCompact ? 48 : 60,
+                color: widget.themeColor.withValues(alpha: 0.5),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 1),
-                    child: Icon(Icons.lightbulb, color: Colors.amber, size: 18),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _revealedHint!,
-                      style: TextStyle(
-                        fontSize: isCompact ? 13 : 14,
-                        color: Colors.brown.shade800,
-                        fontWeight: FontWeight.w600,
+            ),
+            SizedBox(height: isCompact ? 14 : 20),
+            Text(
+              qText,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: isCompact ? 22 : 26,
+                fontWeight: FontWeight.w800,
+                height: 1.26,
+                color: AppColors.textPrimary,
+                fontFamily: AppTheme.fontPrimary,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _ScienceChip(
+                    icon: '🔬', label: topic, color: widget.themeColor),
+                _ScienceChip(
+                    icon: '📈',
+                    label: 'Difficulty $difficulty',
+                    color: Colors.indigo),
+              ],
+            ),
+            if (_revealedHint != null) ...[
+              const SizedBox(height: 14),
+              AnimatedContainer(
+                duration: AppMotion.standard,
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(AppBorders.md),
+                  border: Border.all(color: Colors.amber.shade300),
+                  boxShadow: AppShadows.sm(Colors.amber),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(top: 1),
+                      child:
+                          Icon(Icons.lightbulb, color: Colors.amber, size: 18),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _revealedHint!,
+                        style: TextStyle(
+                          fontSize: isCompact ? 13 : 14,
+                          color: Colors.brown.shade800,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -1078,6 +1164,19 @@ class _ScienceGameState extends State<ScienceGame>
     );
   }
 
+  /// The authored explanation for the current question, falling back to the
+  /// AI explanation when no authored one exists. Null hides the panel.
+  ///
+  /// Mirrors the literacy MCQ's teaching note: the child learns *why* the
+  /// answer is what it is, not merely whether they scored.
+  String? get _teachingNote {
+    final authored = _currentQuestion.explanation?.trim() ?? '';
+    if (authored.isNotEmpty) return authored;
+    final ai = _aiExplanationText?.trim();
+    if (ai != null && ai.isNotEmpty) return ai;
+    return null;
+  }
+
   Widget _buildFeedback(bool isCorrect) {
     final correctMessages = [
       'Correct!',
@@ -1108,7 +1207,9 @@ class _ScienceGameState extends State<ScienceGame>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: isCorrect ? Colors.green : Colors.red,
+          // Deep solid so white 20px text and the pale-gold +XP line stay
+          // above 4.5:1 (plain green/red measured ~2.8:1 — WCAG 1.4.3).
+          color: isCorrect ? Colors.green.shade900 : Colors.red.shade900,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
@@ -1145,23 +1246,74 @@ class _ScienceGameState extends State<ScienceGame>
                     Text(
                       '+$pts pts',
                       style: const TextStyle(
-                        color: Color(0xFFFFF1A8),
+                        color: Color(0xFFFFF6E8),
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                  if (_aiExplanationText != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      _aiExplanationText!,
-                      style: const TextStyle(
-                        color: Color(0xFFFFF6E8),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        height: 1.25,
+                  if (_teachingNote != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text('💡', style: TextStyle(fontSize: 13)),
+                              const SizedBox(width: 5),
+                              Text(
+                                'Why?',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            _teachingNote!,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 44,
+                    child: ElevatedButton.icon(
+                      key: const ValueKey('quiz-continue'),
+                      onPressed: _onContinue,
+                      icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                      label: Text(
+                        _isLastQuestion ? 'See my rewards' : 'Continue',
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onSurface,
+                        elevation: 0,
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1170,6 +1322,8 @@ class _ScienceGameState extends State<ScienceGame>
       ),
     );
   }
+
+  bool get _isLastQuestion => _currentIndex >= _shuffledQuestions.length - 1;
 
   Widget _buildQuizChip({
     required IconData icon,
@@ -1193,7 +1347,9 @@ class _ScienceGameState extends State<ScienceGame>
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
-              color: color,
+              // Accent text on a 10% tint failed WCAG for bright hues
+              // (teal ≈ 2.7:1); ink derives from the tint instead.
+              color: InkTokens.onTint(color),
             ),
           ),
         ],
@@ -1215,41 +1371,63 @@ class _ScienceGameState extends State<ScienceGame>
         children: [
           Row(
             children: [
-              const Text('Discovery Meter',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: (!_answered &&
-                        !_hintUsedThisQuestion &&
-                        _hintsRemaining > 0)
-                    ? _useHint
-                    : null,
-                style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  minimumSize: const Size(0, 28),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                icon: const Icon(Icons.lightbulb_outline, size: 16),
-                label: Text(
-                  'Hint $_hintsRemaining',
-                  style: const TextStyle(
-                      fontSize: 11, fontWeight: FontWeight.w700),
-                ),
+              // Flexible + ellipsis: at 200% text the label plus controls
+              // overflowed this row by 238 px (2026-10-10 clipping probe).
+              Flexible(
+                child: Text('Discovery Meter',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        color: Colors.blueGrey.shade800)),
               ),
               const SizedBox(width: 8),
-              if (_streakShieldAvailable)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade100,
-                    borderRadius: BorderRadius.circular(12),
+              Flexible(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      TextButton.icon(
+                        onPressed: (!_answered &&
+                                !_hintUsedThisQuestion &&
+                                _hintsRemaining > 0)
+                            ? _useHint
+                            : null,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0, 28),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        icon: const Icon(Icons.lightbulb_outline, size: 16),
+                        label: Text(
+                          'Hint $_hintsRemaining',
+                          style: const TextStyle(
+                              fontSize: 11, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      if (_streakShieldAvailable)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text('🛡️ Shield Ready',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.brown.shade800)),
+                        ),
+                    ],
                   ),
-                  child: const Text('🛡️ Shield Ready',
-                      style:
-                          TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
                 ),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -1304,12 +1482,16 @@ class _ScienceChip extends StatelessWidget {
         children: [
           Text(icon, style: const TextStyle(fontSize: 12)),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: color,
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:brightbound_adventures/ui/themes/index.dart';
 
 /// Pattern Puzzle Game
 /// Identify and complete patterns with shapes, colors, and sequences
@@ -545,6 +546,7 @@ class _PatternPuzzleGameState extends State<PatternPuzzleGame> {
     bool isSelected,
     VoidCallback onFocusOption,
   ) {
+    final optionBg = isSelected ? Colors.amber[700]! : Colors.deepPurple;
     return Semantics(
       button: true,
       enabled: !_showingFeedback,
@@ -559,8 +561,8 @@ class _PatternPuzzleGameState extends State<PatternPuzzleGame> {
                 _checkAnswer(option);
               },
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? Colors.amber[700] : Colors.deepPurple,
-          foregroundColor: Colors.white,
+          backgroundColor: optionBg,
+          foregroundColor: InkTokens.on(optionBg),
           padding: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(
             side: BorderSide(

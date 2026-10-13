@@ -34,6 +34,10 @@ class MultipleChoiceGame extends StatefulWidget {
   final void Function(double accuracy, int correct, int total)? onComplete;
   final VoidCallback? onCancel;
 
+  /// NAPLAN focus area (e.g. "Fractions"); shown as a chip on the
+  /// question card so the alignment is visible while the child plays.
+  final String? naplanLabel;
+
   const MultipleChoiceGame({
     super.key,
     required this.questions,
@@ -41,6 +45,7 @@ class MultipleChoiceGame extends StatefulWidget {
     this.themeColor = AppColors.wordWoodsColor,
     this.onComplete,
     this.onCancel,
+    this.naplanLabel,
   });
 
   @override
@@ -213,8 +218,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) setState(() => _showConfetti = false);
       });
-
-      Future.delayed(const Duration(milliseconds: 1500), _nextQuestion);
+      // No auto-advance: the child reads the feedback and taps Continue.
     } else {
       hapticService.onWrongAnswer();
       // Avatar looks sad then thoughtful
@@ -226,15 +230,14 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
               resetAfter: const Duration(milliseconds: 1200));
         }
       });
-      Future.delayed(const Duration(milliseconds: 2000), _nextQuestion);
+      // No auto-advance here either: an incorrect answer deserves time to
+      // read *why*, not a 2-second countdown.
     }
 
     _feedbackController.forward(from: 0);
   }
 
   void _nextQuestion() {
-    if (_gameController.state == GameState.finished) return;
-
     if (_currentIndex < _shuffledQuestions.length - 1) {
       setState(() {
         _currentIndex++;
@@ -248,11 +251,46 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
       _gameController.startQuestionTimer();
       _readCurrentQuestionAloud();
     } else {
-      _completeGame();
+      _finishSession();
     }
   }
 
+  /// The learner tapped Continue on the feedback panel.
+  ///
+  /// The session controller ends the game from inside `submitAnswer` (on the
+  /// last question, or when lives run out), which would otherwise skip the
+  /// final feedback entirely. That completion is parked here instead and run
+  /// only once the child has seen the explanation.
+  void _onContinue() {
+    if (_pendingComplete) {
+      _finishSession(forced: _pendingForced);
+      return;
+    }
+    _nextQuestion();
+  }
+
+  /// Completion requested by the session controller while the child is
+  /// still reading feedback.
+  bool _pendingComplete = false;
+  bool _pendingForced = false;
+
   void _completeGame({bool forced = false}) {
+    if (_answered && !_pendingComplete) {
+      _pendingComplete = true;
+      _pendingForced = forced;
+      return;
+    }
+    if (_pendingComplete) return;
+    _finishSession(forced: forced);
+  }
+
+  /// Set once the session has handed control to the results screen, so a
+  /// double-tap on Continue can never fire `onComplete` twice.
+  bool _finished = false;
+
+  void _finishSession({bool forced = false}) {
+    if (_finished) return;
+    _finished = true;
     final accuracy = _gameController.correctAnswers / _shuffledQuestions.length;
     if (accuracy == 1.0) {
       _audioManager.playPerfectScore();
@@ -723,6 +761,12 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                       label: 'Read aloud',
                       color: Colors.teal,
                     ),
+                  if (widget.naplanLabel != null)
+                    _buildQuizChip(
+                      icon: Icons.school_rounded,
+                      label: 'NAPLAN · ${widget.naplanLabel}',
+                      color: widget.themeColor,
+                    ),
                 ],
               ),
               SizedBox(height: isCompact ? 14 : 18),
@@ -1055,7 +1099,10 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
     }
 
     final pts = _gameController.lastPointsEarned;
-    final bgColor = isCorrect ? Colors.green.shade500 : Colors.red.shade400;
+    // Deep end-of-ramp greens/reds: the pill keeps white (18px) and pale
+    // gold (13px) text above 4.5:1 — the old shade500/shade400 ends only
+    // reached ~2.8:1, which failed WCAG for these sizes.
+    final bgColor = isCorrect ? Colors.green.shade800 : Colors.red.shade700;
 
     return AnimatedContainer(
       duration: AppMotion.standard,
@@ -1063,8 +1110,8 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isCorrect
-              ? [Colors.green.shade500, Colors.teal.shade400]
-              : [Colors.red.shade400, Colors.deepOrange.shade400],
+              ? [Colors.green.shade900, Colors.teal.shade800]
+              : [Colors.red.shade900, Colors.deepOrange.shade900],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -1087,8 +1134,8 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
             const SizedBox(height: 4),
             Text(
               '+$pts pts',
-              style: TextStyle(
-                color: Colors.yellow.shade200,
+              style: const TextStyle(
+                color: Color(0xFFFFF6E8),
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),
@@ -1107,9 +1154,89 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
               ),
             ),
           ],
+          if (_teachingNote != null) ...[
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('💡', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Why?',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          // Theme ink: the card is surface-coloured, which
+                          // flips dark at night — accent ink failed there
+                          // (green.shade800 ≈ 4.1:1, red.shade700 ≈ 3.5:1).
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _teachingNote!,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 44,
+            child: ElevatedButton.icon(
+              key: const ValueKey('quiz-continue'),
+              onPressed: _onContinue,
+              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+              label: Text(
+                _isLastQuestion ? 'See my rewards' : 'Continue',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                // Same onSurface pairing as the Why? label — guaranteed
+                // AA in both themes, unlike the accent (see above).
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                elevation: 0,
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  bool get _isLastQuestion => _currentIndex >= _shuffledQuestions.length - 1;
+
+  /// The authored explanation for the current question, falling back to the
+  /// AI explanation when no authored one exists. Null hides the panel.
+  ///
+  /// This is the teaching moment of the whole session: the child finds out
+  /// *why* the answer is what it is, not merely whether they scored.
+  String? get _teachingNote {
+    final authored = _currentQuestion.explanation?.trim() ?? '';
+    if (authored.isNotEmpty) return authored;
+    final ai = _aiExplanationText?.trim();
+    if (ai != null && ai.isNotEmpty) return ai;
+    return null;
   }
 
   Widget _buildQuizChip({
@@ -1134,7 +1261,9 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
-              color: color,
+              // Accent text on a 10% tint failed WCAG for bright hues
+              // (teal ≈ 2.7:1); ink derives from the tint instead.
+              color: InkTokens.onTint(color),
             ),
           ),
         ],

@@ -79,12 +79,15 @@ Working checklist for the "Full Product, UX, Visual and Engineering Improvement 
 ## Phase 6 — World map v2
 
 - [x] **Substantially already done by prior sessions** (outside this session's earlier visibility): `world_map_adventure_bar.dart`, `world_map_quest_lens.dart`, `world_map_living_board.dart`, `world_map_scene_layer.dart` extracted; responsive compact/expanded HUD; `WorldMapViewModel` pure logic. `world_map_screen.dart` reduced 5570 -> 4491 lines.
+- [x] **Living-world acknowledgment added 2026-10-06**: zone islands raise a persisted quest flag derived from `QuestSessionHistoryService`, the Quest Lens shows "You finished a quest here today", and the recommended zone's reason now comes from `RecommendationService` (real history) instead of the generic placeholder. Covered by `test/world_map/world_map_world_change_test.dart`.
 - [ ] Full modularisation per spec's exact target tree (`controllers/`, `layout/` subfolders) — not verified against current structure
 - [ ] Golden/state coverage for locked/available/recommended/in-progress/needs-review/boss-ready/mastered — partially covered by `WorldMapZoneState`/`WorldMapZoneStatus` in the view model; not verified end-to-end in the screen
 
 ## Phase 7 — Question/answer UI
 
+- [~] **Unified feedback structure — literacy slice done 2026-10-06.** `multiple_choice_game.dart` now shows the authored `explanation` after every answer in a "Why?" panel with a learner-paced **Continue** button replacing both blind timers, and defers session completion so the final question's feedback is no longer skipped. The other five games (numeracy/science/logic/story/motor) still run their own feedback widgets and timers.
 - [ ] Unified structure audit across literacy/numeracy/science/logic/storytelling — not started
+- [x] **Authored explanations are now reachable** (they were never displayed anywhere before) — see `docs/CONTENT_QUALITY_REPORT.md` for coverage; Story Springs (~46) and the NAPLAN bank (~42) need authoring.
 
 ## Phase 8 — Player Profile redesign
 
@@ -133,6 +136,35 @@ Working checklist for the "Full Product, UX, Visual and Engineering Improvement 
 - **Significant finding while looking at typography/text scale**: `main.dart` globally clamps effective text scale to 1.28x maximum, silently overriding a user's real OS accessibility text-size setting (e.g. 200%) app-wide. Directly contradicts the brief's own "do not block text scaling globally" rule. Deliberately did *not* fix this in the same pass — confirmed via the existing smoke test that the app has zero test coverage at any scaled size, so removing the clamp is safe for CI but very likely exposes real, currently-invisible overflow bugs across many screens that need the proper Phase 3 audit to find and fix, not a same-session blind change immediately before a deploy meant for live testing. Recorded as Phase 3's concrete starting point.
 - Not yet done: `docs/CURRENT_PRODUCT_AUDIT.md` formal write-up, screenshot baseline, the text-scale clamp fix + overflow audit, avatar renderer consolidation, question UI unification, full art-production programme.
 - User reported "lots of clipping" and "weird colours" on text entry fields from actually using the deployed app. Ran the app in a live browser dev session (first time this review did in-browser verification rather than static code/test review) and worked through the avatar creator and world map at phone width. Found and fixed two real bugs (hardcoded white TextField fill breaking dark mode; a genuine Positioned overlap between the World Select banner and Quest Lens on compact layouts), and investigated two more things that looked like bugs but were ruled out with evidence (a deliberately-scrollable action row; a text-duplication artifact traced to this session's own test methodology, not the app). Full detail in Phase 3 above. Continuing next session per the user's "work through it periodically" instruction.
+
+### 2026-10-08
+
+- **Screens game-feel pass (part 2 of the visual pass)**: new `lib/ui/widgets/extruded_card.dart` - `ExtrudedCard` (accent-derived extruded side face + AO shadow, zero colour literals) and `PunchIn` (one-shot easeOutBack feedback entrance, static under reduced motion). Wrapped every subject's question card (numeracy/science/logic/story + the shared literacy `QuestionCard`, which also gained an A3D-6 perspective flip-up entrance), the feedback widget in `ResponsiveQuizLayout` and the logic/story feedback call sites; the avatar creator's preview banner sits on an extruded slab with its character standing on an extruded pedestal disc; `AnimatedCharacter` head is sphere-shaded with a specular dot and a soft AO ground halo (leg-rim colour hoisted; inventory net -3).
+- **192/192 tests passing** (was 186; +6 `test/ui/widgets/extruded_card_test.dart`), format/analyze clean, `flutter build web --release` succeeds, colour inventory 2,444 uses / 90 files (down from 2,447).
+- **Quest briefing for every zone + content honesty (same day, second session):** new `lib/ui/components/zone_quest_intro.dart` (`ZoneQuestIntro` + `findZoneSkill`) wires the `QuestIntro` beat into numeracy/science/logic/story/motor practice screens; numeracy questions and motor arena configs now generate once per session instead of per rebuild; all "coming soon" placeholders (numeracy fake fallback question, three coming-soon empty screens, shop empty category) replaced with honest states and `placeholder_zone_screen.dart` deleted, locked by a new `test/tools/no_placeholder_text_test.dart` guard.
+- **Bugs the new tests exposed and fixed:** LogicGame header-name and progress-dot RenderFlex overflows at phone width (Flexible/ellipsis + FittedBox), MotorGame header overflow (Expanded centre), StoryGame page-flip feeding Curves.easeOutBack past Opacity 1.0 (clamped; debug-only assert), MotorGame countdown `Timer.periodic` never cancelled on dispose (now stored + cancelled).
+- **198/198 tests passing** (was 192; +5 quest-intro flow tests +1 placeholder guard), format/analyze clean, colour inventory 2,443 uses / 89 files, `flutter build web --release` green, and the build **deployed via wrangler to Cloudflare Pages** (`playbrightbound`, verified live with zero console errors).
+
+### 2026-10-07
+
+- Migrated **all five remaining zone results screens** (science, numeracy, logic, storytelling, motor) onto the shared `SessionCompletion.completeSession` orchestration → single idempotent `RewardTransactionService.apply()` → `RewardReveal`, so every zone now runs the same tested loop the literacy slice established.
+- Supporting fixes found while wiring it: dead achievement ids in the practice screens removed; `RewardTransactionService` now feeds the `stars_10`…`stars_500` achievements the live balance (nothing updated them before); hints plumb into the effort bonus on every zone (new 4th `onComplete` arg for science/numeracy games, 3-arg `onFinish` for logic/story); logic/story practice screens generate questions once per session instead of per rebuild; duplicated streak modals removed.
+- Added `test/features/zone_session_flow_test.dart` (4 tests: logic apply-once + history-once + reveal, logic replay, motor apply-once + replay, science hints-effort + replay) using the literacy suite's seeded-storage harness.
+- **168/168 tests passing** (was 164), format/analyze clean, `flutter build web --release` succeeds.
+
+- **World-map game-feel pass (Mario Party x NAPLAN, part 1 of the visual pass)**: shared `BoardPath` route geometry now drives `PathPainter`, the board track and pawn movement (one source of truth); pawn travel fixed from freeze-then-jump to per-frame route walking with a hop arc per island, hop-scaled duration, and a shadow that follows the route; added `BoardTilePainter` (extruded iso spaces per hop, gold NAPLAN question space mid-hop) and NAPLAN identity chips (quest-intro badge, question-card chip, quest-lens tag) via a new `Skill.naplanAreaLabel`.
+- Found and fixed a cold-start map bug while testing travel: the world map never called `SkillProvider.initializeSkills()`, so `totalStars` was 0 on a fresh open (grey routes, every zone but the first locked) - it now hydrates in a microtask, the pattern `ProfileStatsScreen` documents.
+- **186/186 tests passing** (was 168; +11 board-path math, +1 pawn-travel widget test, +6 NAPLAN identity), format/analyze clean, `flutter build web --release` succeeds. Remaining half of the visual pass: avatar creation, question screens, model 3D'ness.
+
+### 2026-10-06
+### 2026-10-06
+
+- Ran the mandated baseline first: format clean, analyze 1 pre-existing info (`onReorder` deprecation, local Flutter 3.47.5 vs CI's pinned 3.41.5), **138/138 tests**, release web build green.
+- Wrote `docs/CURRENT_STATE_AUDIT.md` (journey map, inventory, gaps, plan, regression risks, deferred list) instead of auditing for the whole session, then shipped **one complete vertical slice** of the core loop on the literacy route: quest intro → taught encounter → single reward transaction → premium reveal → persisted world change → explained next recommendation. Full detail in `CHANGELOG_CODEX.md` 2026-10-06.
+- Found and fixed four real defects while wiring it: the reward transaction's cosmetic-unlock false positives; the results screen/star-threshold mismatch (stars shown but not awarded at 40–49% and 90–94%); `MotionTokens.of(context)` read in `initState` (throws) in both new components; questions regenerated on every rebuild of the practice screen; plus the fake "coming soon" fallback question on the literacy route.
+- **164/164 tests passing** (was 138), format/analyze clean, `flutter build web --release` succeeds.
+- Screenshot evidence: **not captured** — the preview browser still cannot composite Flutter/CanvasKit frames in this environment (`preview_screenshot` reports "produced no frames"; the app itself boots cleanly with Hive/asset logs and no console errors). Verified behaviour through widget tests instead, including 3 viewports, 200% text and reduced motion. This remains a manual-check gap.
+- Opened `assets/sounds/` and found **no audio files at all** (`.keep` + a guide) — every cue logs "asset not bundled" at startup. Recorded as a release-blocking honesty item in `NEXT_STEPS.md` rather than silently ignored.
 
 ### 2026-09-16
 
