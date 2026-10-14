@@ -451,6 +451,7 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                                       height: 22,
                                       child: Image.asset(
                                           'assets/images/potion.PNG',
+                                          cacheWidth: 128,
                                           fit: BoxFit.contain),
                                     ),
                                     const SizedBox(width: 8),

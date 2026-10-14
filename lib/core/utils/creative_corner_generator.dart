@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:brightbound_adventures/features/literacy/models/question.dart';
 
 /// Question bank for Creative Corner zone.
@@ -562,6 +564,11 @@ class CreativeCornerQuestions {
 
   // ── Public API ────────────────────────────────────────────────────────────
 
+  /// Fixed pools would otherwise serve the identical first-N questions
+  /// session after session without variety — each request samples its pool
+  /// in shuffled order instead (audit: same treatment the science bank got).
+  static final Random _random = Random();
+
   static List<LiteracyQuestion> getBySkillId(String skillId,
       {int difficulty = 1}) {
     final all = {
@@ -574,7 +581,9 @@ class CreativeCornerQuestions {
         famousArtists;
 
     final filtered = all.where((q) => q.difficulty <= difficulty + 1).toList();
-    return filtered.isEmpty ? all : filtered;
+    final result =
+        List.of(filtered.isEmpty ? all : filtered)..shuffle(_random);
+    return result;
   }
 
   static List<LiteracyQuestion> getByDifficulty(

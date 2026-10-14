@@ -1,5 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+
+import 'package:brightbound_adventures/core/services/audio_manager.dart';
 
 /// Animated star burst effect for earning rewards
 class StarBurstAnimation extends StatefulWidget {
@@ -603,6 +606,252 @@ class _ConfettiParticle {
     required this.rotationSpeed,
     required this.size,
   });
+}
+
+/// A6 — Lottie overlay for the XP level-up moment.
+///
+/// Full-screen, auto-dismisses after the animation completes (~2 s),
+/// dismissible early by tap, and collapses to a **static** first frame
+/// under reduced motion (no motion, same content). Plays the level-up
+/// fanfare through AudioManager on launch (sound is gated by the audio
+/// settings and inert in the widget-test harness).
+class LevelUpOverlay extends StatefulWidget {
+  final int newLevel;
+  final VoidCallback? onDismiss;
+
+  const LevelUpOverlay({super.key, required this.newLevel, this.onDismiss});
+
+  @override
+  State<LevelUpOverlay> createState() => _LevelUpOverlayState();
+}
+
+class _LevelUpOverlayState extends State<LevelUpOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _reduceMotion = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+    AudioManager().playLevelUp();
+    Future<void>.delayed(const Duration(seconds: 3), () {
+      if (mounted && !_controller.isAnimating) _dismiss();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (_reduceMotion == reduce) return;
+    _reduceMotion = reduce;
+    if (reduce) {
+      // Static frame: park the controller at a fixed point in the file.
+      _controller.stop();
+      _controller.value = 0.6;
+    }
+  }
+
+  void _dismiss() {
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    widget.onDismiss?.call();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _dismiss,
+      child: Material(
+        color: Colors.black54,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset(
+                'assets/lottie/level_up.json',
+                width: 320,
+                height: 320,
+                repeat: !_reduceMotion,
+                animate: !_reduceMotion,
+                onLoaded: (composition) {
+                  _controller.duration = composition.duration;
+                  if (!_reduceMotion) {
+                    _controller.forward().then((_) {
+                      if (mounted) _dismiss();
+                    });
+                  }
+                },
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Colors.amber,
+                  size: 120,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Level ${widget.newLevel}! 🎉',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Tap anywhere to continue',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white70,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A6 — Lottie overlay for the badge/achievement unlock moment. Same
+/// contract as [LevelUpOverlay]: auto-dismiss, tap dismiss, static frame
+/// under reduced motion.
+class BadgeUnlockOverlay extends StatefulWidget {
+  final String achievementName;
+  final VoidCallback? onDismiss;
+
+  const BadgeUnlockOverlay({
+    super.key,
+    required this.achievementName,
+    this.onDismiss,
+  });
+
+  @override
+  State<BadgeUnlockOverlay> createState() => _BadgeUnlockOverlayState();
+}
+
+class _BadgeUnlockOverlayState extends State<BadgeUnlockOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _reduceMotion = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+    AudioManager().playUnlock();
+    Future<void>.delayed(const Duration(seconds: 3), () {
+      if (mounted && !_controller.isAnimating) _dismiss();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (_reduceMotion == reduce) return;
+    _reduceMotion = reduce;
+    if (reduce) {
+      _controller.stop();
+      _controller.value = 0.6;
+    }
+  }
+
+  void _dismiss() {
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    widget.onDismiss?.call();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _dismiss,
+      child: Material(
+        color: Colors.black54,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset(
+                'assets/lottie/badge_unlock.json',
+                width: 240,
+                height: 240,
+                repeat: !_reduceMotion,
+                animate: !_reduceMotion,
+                onLoaded: (composition) {
+                  _controller.duration = composition.duration;
+                  if (!_reduceMotion) {
+                    _controller.forward().then((_) {
+                      if (mounted) _dismiss();
+                    });
+                  }
+                },
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.emoji_events_rounded,
+                  color: Colors.amber,
+                  size: 120,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                widget.achievementName,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
+              ),
+              Text(
+                'Badge unlocked! Tap to continue',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white70,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Pushes the A6 level-up Lottie overlay as a fullscreen dialog route.
+Future<void> showLevelUpOverlay(BuildContext context, int newLevel) {
+  return Navigator.of(context, rootNavigator: true).push(
+    PageRouteBuilder<void>(
+      opaque: false,
+      barrierDismissible: true,
+      pageBuilder: (_, __, ___) => LevelUpOverlay(newLevel: newLevel),
+      transitionsBuilder: (_, animation, __, child) =>
+          FadeTransition(opacity: animation, child: child),
+    ),
+  );
+}
+
+/// Pushes the A6 badge-unlock Lottie overlay as a fullscreen dialog route.
+Future<void> showBadgeUnlockOverlay(
+    BuildContext context, String achievementName) {
+  return Navigator.of(context, rootNavigator: true).push(
+    PageRouteBuilder<void>(
+      opaque: false,
+      barrierDismissible: true,
+      pageBuilder: (_, __, ___) =>
+          BadgeUnlockOverlay(achievementName: achievementName),
+      transitionsBuilder: (_, animation, __, child) =>
+          FadeTransition(opacity: animation, child: child),
+    ),
+  );
 }
 
 /// Overlay helper to show reward animations

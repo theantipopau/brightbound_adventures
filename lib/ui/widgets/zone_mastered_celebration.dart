@@ -339,9 +339,11 @@ class _ZoneMasteredDialogState extends State<_ZoneMasteredDialog>
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
+                        // A3: mastery now plays the star-burst pose rather
+                        // than the generic proud expression.
                         context
                             .read<AvatarProvider>()
-                            .setEmotion(AvatarEmotion.proud);
+                            .setEmotion(AvatarEmotion.mastered);
                         Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(

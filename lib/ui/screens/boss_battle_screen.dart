@@ -192,8 +192,8 @@ class _BossBattleScreenState extends State<BossBattleScreen>
       return;
     }
     if (_bossHpRemaining <= 0) {
-      _awardXp();
       setState(() => _won = true);
+      _grantVictoryBounty().ignore();
       return;
     }
     if (_index < _questions.length - 1) {
@@ -204,14 +204,31 @@ class _BossBattleScreenState extends State<BossBattleScreen>
       });
     } else {
       // Ran out of questions — if boss still alive, player wins on attrition
-      _awardXp();
       setState(() => _won = true);
+      _grantVictoryBounty().ignore();
     }
   }
 
-  void _awardXp() {
-    final shopService = context.read<ShopService>();
-    shopService.addStars(75);
+  /// Victory bounty applied through the one reward transaction — no screen
+  /// mutates stars directly. The id is unique per victory (the bounty is
+  /// per win), so a rebuild/resume never re-earns it, while beating the
+  /// boss again in a fresh run does legitimately pay out again.
+  Future<void> _grantVictoryBounty() async {
+    // Capture providers synchronously — the state can be disposed while
+    // the transaction's awaits run, and reading across an await is unsafe.
+    final rewards = context.read<RewardTransactionService>();
+    final avatars = context.read<AvatarProvider>();
+    await rewards.apply(
+      QuestOutcome(
+        outcomeId: 'boss-victory-${DateTime.now().millisecondsSinceEpoch}',
+        xpEarned: 0,
+        correctAnswers: 0,
+        totalQuestions: 0,
+        accuracy: 0,
+        bonusStars: 75,
+      ),
+      avatarProvider: avatars,
+    );
   }
 
   void _restart() {

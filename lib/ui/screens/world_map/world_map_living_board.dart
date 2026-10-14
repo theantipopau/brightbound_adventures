@@ -7,6 +7,7 @@ import 'package:brightbound_adventures/ui/painters/board_tile_painter.dart';
 import 'package:brightbound_adventures/ui/painters/path_painter.dart';
 import 'package:brightbound_adventures/ui/painters/shadow_painter.dart';
 import 'package:brightbound_adventures/ui/painters/terrain_painter.dart';
+import 'parallax_map_layer.dart';
 
 /// Composition boundary for the world-map board.
 ///
@@ -28,6 +29,10 @@ class WorldMapLivingBoard extends StatelessWidget {
   final CustomPainter boardPainter;
   final Widget sceneLayer;
 
+  /// Live camera pan offset proxy driving the A1 parallax bands. Pass
+  /// Offset.zero (or omit) for a fully static background.
+  final Offset parallaxOffset;
+
   const WorldMapLivingBoard({
     super.key,
     required this.zones,
@@ -40,6 +45,7 @@ class WorldMapLivingBoard extends StatelessWidget {
     required this.size,
     required this.boardPainter,
     required this.sceneLayer,
+    this.parallaxOffset = Offset.zero,
   });
 
   @override
@@ -47,6 +53,11 @@ class WorldMapLivingBoard extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
+        // A1 parallax bands: sky/haze drifts at 0.15×, midground clouds at
+        // 0.40× the foreground camera motion (spec multipliers).
+        RepaintBoundary(
+          child: ParallaxMapLayer(panOffset: parallaxOffset),
+        ),
         _paintLayer(
           painter: boardPainter,
         ),
@@ -65,6 +76,7 @@ class WorldMapLivingBoard extends StatelessWidget {
             animation: pathAnimation,
             totalStars: totalStars,
           ),
+          animatesEveryFrame: true,
         ),
         // Board spaces sit on top of the painted track, below the scene.
         _paintLayer(
@@ -80,10 +92,16 @@ class WorldMapLivingBoard extends StatelessWidget {
           child: sceneLayer,
         ),
       ],
+      // The haze sits behind the board; keep everything painted after it so
+      // the soft gradient never bleeds over HUD elements (stack is clipped by
+      // the parent SafeArea already).
     );
   }
 
-  Widget _paintLayer({required CustomPainter painter}) {
+  Widget _paintLayer({
+    required CustomPainter painter,
+    bool animatesEveryFrame = false,
+  }) {
     return RepaintBoundary(
       child: Transform.scale(
         alignment: Alignment.center,
@@ -91,6 +109,11 @@ class WorldMapLivingBoard extends StatelessWidget {
         child: CustomPaint(
           painter: painter,
           size: size,
+          // Full-screen procedural layers are expensive to re-render —
+          // tell the framework each layer is worth raster-caching on its
+          // own boundary, and which ones tick every frame (memory audit).
+          isComplex: true,
+          willChange: animatesEveryFrame,
         ),
       ),
     );

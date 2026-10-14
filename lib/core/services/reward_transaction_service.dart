@@ -18,6 +18,7 @@ class QuestOutcome {
     required this.totalQuestions,
     required this.accuracy,
     this.zoneId,
+    this.bonusStars = 0,
   });
 
   /// Stable identity for this specific completion, e.g.
@@ -31,6 +32,11 @@ class QuestOutcome {
   final int totalQuestions;
   final double accuracy;
   final String? zoneId;
+
+  /// Flat activity bounty outside the session-star curve — e.g. the boss
+  /// battle's fixed victory prize. Applied inside the same transaction and
+  /// included in [RewardResult.starsAwarded]. Defaults to 0.
+  final int bonusStars;
 
   bool get isPerfectScore => accuracy >= 1.0;
 }
@@ -190,11 +196,17 @@ class RewardTransactionService extends ChangeNotifier {
     final newLevel = avatarProvider.avatar?.level ?? previousLevel;
     final leveledUp = newLevel > previousLevel;
 
-    final starsAwarded = await _shop.awardStarsForActivity(
+    final sessionStars = await _shop.awardStarsForActivity(
       score: outcome.correctAnswers,
       maxScore: outcome.totalQuestions,
       accuracy: outcome.accuracy,
     );
+    if (outcome.bonusStars > 0) {
+      // Flat activity bounty (boss victory prize etc.), additive to the
+      // session-star curve and persisted inside this one transaction.
+      await _shop.addStars(outcome.bonusStars);
+    }
+    final starsAwarded = sessionStars + outcome.bonusStars;
 
     // Star-count achievements track the live balance. Nothing else updated
     // them, so they could never unlock before this single award path existed.

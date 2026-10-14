@@ -7,6 +7,7 @@ import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/features/logic/widgets/logic_results_screen.dart';
 import 'package:brightbound_adventures/features/motor/widgets/motor_results_screen.dart';
+import 'package:brightbound_adventures/features/numeracy/widgets/numeracy_results_screen.dart';
 import 'package:brightbound_adventures/features/science/widgets/science_results_screen.dart';
 
 /// Zone coverage for the shared post-session loop: every migrated results
@@ -191,9 +192,10 @@ Future<void> _pumpResults(
   await tester.pump(const Duration(milliseconds: 50));
   await tester.pump(const Duration(milliseconds: 400));
   // Drain the results screens' Future.delayed animation beats so the test
-  // finishes with no live timers.
+  // finishes with no live timers, plus the A3 companion's level-up reaction
+  // reset timer (2.2 s) scheduled when the award crosses a level boundary.
   await tester.pump(const Duration(seconds: 1));
-  await tester.pump(const Duration(milliseconds: 200));
+  await tester.pump(const Duration(seconds: 3));
 }
 
 /// The perfect run every zone shares: 135 XP crosses into level 2 (35
@@ -407,6 +409,48 @@ void main() {
           reason: 're-opening a science result must not re-earn XP');
       expect(setup.shop.starBalance, 3,
           reason: 're-opening a science result must not re-earn stars');
+    });
+  });
+
+  group('Numeracy — Number Nebula (same shared loop as every zone)', () {
+    testWidgets(
+        'applies XP and stars exactly once — and replaying never double-awards',
+        (tester) async {
+      _viewport(tester, const Size(420, 900));
+      final setup = await _setup();
+      final skill = _firstZoneSkill(setup.skills, 'number_nebula');
+
+      Widget screen() => NumeracyResultsScreen(
+            skillName: skill.name,
+            skillId: skill.id,
+            sessionId: 'numeracy_flow_a',
+            correctAnswers: 10,
+            totalQuestions: 10,
+            accuracy: 1.0,
+            hintsUsed: 0,
+            onPlayAgain: () {},
+            onExit: () {},
+            zoneId: 'number_nebula',
+            zoneName: 'Number Nebula',
+          );
+
+      await _pumpResults(tester, setup: setup, screen: screen);
+
+      _expectPerfectReward(setup);
+      _expectRevealExplainsReward();
+
+      final xpAfterFirst = setup.avatar.avatar!.experiencePoints;
+      final starsAfterFirst = setup.shop.starBalance;
+
+      // Leave the screen entirely, then come back to the same completion
+      // (rebuild, resume, reopened results — all hit this path).
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _pumpResults(tester, setup: setup, screen: screen);
+
+      expect(setup.avatar.avatar!.experiencePoints, xpAfterFirst,
+          reason: 're-opening a numeracy result must not re-earn XP');
+      expect(setup.shop.starBalance, starsAfterFirst,
+          reason: 're-opening a numeracy result must not re-earn stars');
     });
   });
 }

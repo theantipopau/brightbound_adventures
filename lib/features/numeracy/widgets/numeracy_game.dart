@@ -22,6 +22,7 @@ import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/adventure_pattern_overlay.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/screen_shaker.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
+import 'package:brightbound_adventures/ui/widgets/companion_reactions.dart';
 import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
 
@@ -561,6 +562,14 @@ class _NumeracyGameState extends State<NumeracyGame>
                   ),
                 ),
 
+                // A3 companion corner: reactions fire from the answer
+                // callback, drift back to neutral on the reset timer.
+                const Positioned(
+                  top: 0,
+                  right: 0,
+                  child: QuizCompanionCorner(),
+                ),
+
                 // 2. Main Game Content
                 SafeArea(
                   child: ScreenShaker(
@@ -922,6 +931,7 @@ class _NumeracyGameState extends State<NumeracyGame>
                     ? const Icon(Icons.play_arrow,
                         color: Colors.white, size: 22)
                     : Image.asset('assets/images/questsandtasks.PNG',
+                        cacheWidth: 128,
                         fit: BoxFit.contain),
               ),
             ),

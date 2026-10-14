@@ -59,13 +59,33 @@ class PuzzlePeaksQuestionGenerator {
 
   static LogicQuestion _generateSingleQuestion(
       String skill, int difficulty, int index) {
-    if (difficulty <= 2) {
-      return _generateEasyQuestion(skill, difficulty, index);
-    } else if (difficulty <= 4) {
-      return _generateMediumQuestion(skill, difficulty, index);
-    } else {
-      return _generateHardQuestion(skill, difficulty, index);
-    }
+    final question = difficulty <= 2
+        ? _generateEasyQuestion(skill, difficulty, index)
+        : difficulty <= 4
+            ? _generateMediumQuestion(skill, difficulty, index)
+            : _generateHardQuestion(skill, difficulty, index);
+    return _shuffleAnswerToRandomSlot(question);
+  }
+
+  /// The easy templates author the correct answer as options[0]; a child
+  /// who learns that convention can pass by picking the first row every
+  /// time (audit finding). Serve the answer randomly placed instead.
+  static LogicQuestion _shuffleAnswerToRandomSlot(LogicQuestion q) {
+    if (q.correctIndex != 0 || q.options.length < 2) return q;
+    final options = List.of(q.options)..shuffle(_random);
+    return LogicQuestion(
+      id: q.id,
+      skillId: q.skillId,
+      question: q.question,
+      options: options,
+      correctIndex: options.indexOf(q.options[q.correctIndex]),
+      hint: q.hint,
+      explanation: q.explanation,
+      difficulty: q.difficulty,
+      type: q.type,
+      imageEmoji: q.imageEmoji,
+      sequenceItems: q.sequenceItems,
+    );
   }
 
   static LogicQuestion _generateEasyQuestion(

@@ -35,6 +35,13 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   String _selectedSort = 'recommended';
 
   @override
+  void dispose() {
+    // Leaving the zone fades out its ambient loop (A4 requirement).
+    AudioManager().stopMusic();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     // Trigger lazy initialization of skills when zone is first entered
@@ -43,6 +50,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
         context.read<SkillProvider>().initializeSkills();
       }
     });
+
+    // A4: zone ambience starts on entry and stops on exit. ids differ by
+    // case ('word-woods' vs 'word_woods' assets) so normalise.
+    AudioManager().playZoneMusic(widget.zoneId.replaceAll('-', '_'));
   }
 
   @override
@@ -152,7 +163,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                           width: 28,
                           height: 28,
                           child: Image.asset('assets/images/logo.png',
-                              fit: BoxFit.contain),
+                              cacheWidth: 128, fit: BoxFit.contain),
                         ),
                         const SizedBox(width: 6),
                         const Icon(Icons.chevron_right,
@@ -177,7 +188,9 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                         SizedBox(
                           width: 22,
                           height: 22,
-                          child: Image.asset('assets/images/questsandtasks.PNG',
+                          child: Image.asset(
+                              'assets/images/questsandtasks.PNG',
+                              cacheWidth: 128,
                               fit: BoxFit.contain),
                         ),
                       ],
@@ -702,6 +715,8 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
               skill.state == SkillState.mastered
                   ? 'assets/images/goldkey.PNG'
                   : 'assets/images/potion.PNG',
+              // ≤88 dp circle: decode capped to keep small icons cheap.
+              cacheWidth: 192,
               fit: BoxFit.contain,
             ),
           ),

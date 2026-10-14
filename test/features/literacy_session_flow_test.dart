@@ -383,6 +383,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
       await tester.pump(const Duration(milliseconds: 50));
       await tester.pump(const Duration(milliseconds: 400));
+
+      // A3: a level-up award schedules the companion's transient reaction
+      // (a 2.2 s auto-reset timer on AvatarProvider). Idle the fake clock
+      // past it so the final expectation sees a settled tree instead of a
+      // pending timer at dispose.
+      await tester.pump(const Duration(seconds: 3));
     }
 
     testWidgets('applies XP and stars once, and explains them in the reveal',

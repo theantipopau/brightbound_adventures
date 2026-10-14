@@ -463,6 +463,9 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                                                 BorderRadius.circular(14),
                                             child: Image.asset(
                                               'assets/images/logo.png',
+                                              // Same shared decode as main —
+                                              // 42–52 dp display, 256 px cap.
+                                              cacheWidth: 256,
                                               fit: BoxFit.cover,
                                               errorBuilder: (_, __, ___) =>
                                                   const Center(

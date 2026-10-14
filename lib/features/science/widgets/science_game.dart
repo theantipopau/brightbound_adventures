@@ -21,6 +21,7 @@ import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/adventure_pattern_overlay.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/screen_shaker.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
+import 'package:brightbound_adventures/ui/widgets/companion_reactions.dart';
 import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
 import 'package:brightbound_adventures/ui/themes/app_theme.dart';
@@ -674,6 +675,14 @@ class _ScienceGameState extends State<ScienceGame>
                   ),
                 ),
 
+                // A3 companion corner: reactions fire from the answer
+                // callback, drift back to neutral on the reset timer.
+                const Positioned(
+                  top: 0,
+                  right: 0,
+                  child: QuizCompanionCorner(),
+                ),
+
                 // 2. Main Game Content
                 SafeArea(
                   child: ScreenShaker(
@@ -1044,6 +1053,7 @@ class _ScienceGameState extends State<ScienceGame>
                 child: _gameController.state == GameState.paused
                     ? Icon(Icons.play_arrow, color: widget.themeColor, size: 22)
                     : Image.asset('assets/images/questsandtasks.PNG',
+                        cacheWidth: 128,
                         fit: BoxFit.contain),
               ),
             ),

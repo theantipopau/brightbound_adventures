@@ -13,6 +13,14 @@ enum AvatarEmotion {
   surprised,
   thinking,
   sad,
+  // v2.1 A3: companion reaction animation states. `celebrate` and
+  // `encourage` fire from the quiz answer callback (`happy`/`sad` map onto
+  // them); `levelUp` fires from XP level transitions; `mastered` fires
+  // when a zone/skill mastery celebration shows.
+  celebrate,
+  encourage,
+  levelUp,
+  mastered,
 }
 
 class AvatarProvider extends ChangeNotifier {
@@ -25,13 +33,25 @@ class AvatarProvider extends ChangeNotifier {
 
   Timer? _emotionResetTimer;
 
-  /// Set a transient emotion — automatically resets to neutral after [resetAfter].
+  /// Set a transient emotion — automatically resets to neutral after
+  /// [resetAfter].
   ///
   /// Each call replaces the pending reset timer, so rapid emotion changes
   /// never stack delayed callbacks, and [dispose] cancels any timer still
   /// outstanding (widget tests assert no timers survive the tree).
+  ///
+  /// Per-state default holds (motion spec A3): celebrate/encourage finish
+  /// their choreography (~0.6 s / 0.5 s) but linger a beat so the child can
+  /// see the reaction before the companion returns to idle.
   void setEmotion(AvatarEmotion emotion,
-      {Duration resetAfter = const Duration(seconds: 2)}) {
+      {Duration? resetAfter}) {
+    resetAfter ??= switch (emotion) {
+      AvatarEmotion.celebrate || AvatarEmotion.encourage =>
+        const Duration(milliseconds: 1400),
+      AvatarEmotion.levelUp || AvatarEmotion.mastered =>
+        const Duration(milliseconds: 2200),
+      _ => const Duration(seconds: 2),
+    };
     _emotionResetTimer?.cancel();
     _emotion = emotion;
     notifyListeners();
@@ -56,6 +76,14 @@ class AvatarProvider extends ChangeNotifier {
         return '🤔';
       case AvatarEmotion.sad:
         return '😟';
+      case AvatarEmotion.celebrate:
+        return '🎉';
+      case AvatarEmotion.encourage:
+        return '💪';
+      case AvatarEmotion.levelUp:
+        return '🚀';
+      case AvatarEmotion.mastered:
+        return '🌟';
       case AvatarEmotion.neutral:
         return '';
     }
@@ -195,6 +223,7 @@ class AvatarProvider extends ChangeNotifier {
       }
     }
 
+    final oldLevel = _avatar?.level ?? 1;
     final updated = _avatar!.copyWith(
       experiencePoints: newXP,
       level: newLevel,
@@ -205,6 +234,15 @@ class AvatarProvider extends ChangeNotifier {
 
     _avatar = updated;
     notifyListeners();
+
+    // A3: crossing a level boundary is the highest-emotion moment — the
+    // companion fires the full-screen hop + glow reaction and returns to
+    // idle cleanly afterwards (setEmotion's reset timer). Fires even when
+    // several levels are gained at once; reaching max is still a level-up.
+    if (newLevel > oldLevel) {
+      setEmotion(AvatarEmotion.levelUp,
+          resetAfter: const Duration(milliseconds: 2200));
+    }
   }
 
   void resetAvatar() {

@@ -624,8 +624,8 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
             icon: SizedBox(
               width: 22,
               height: 22,
-              child:
-                  Image.asset('assets/images/potion.PNG', fit: BoxFit.contain),
+              child: Image.asset('assets/images/potion.PNG',
+                  cacheWidth: 128, fit: BoxFit.contain),
             ),
             label: const Text(
               'Try Again',

@@ -22,6 +22,7 @@ dependencies:
   confetti: ^0.8.0
   flutter_tts: ^4.2.3
   audioplayers: ^6.5.1
+  lottie: ^3.6.0 # A6: level-up and badge-unlock Lottie overlays
   device_info_plus: ^12.3.0
   url_launcher: ^6.3.2
   package_info_plus: ^9.0.0
@@ -40,8 +41,25 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/lottie/
     - assets/images/zones/
+    - assets/images/zones/word-woods/
+    - assets/images/zones/number-nebula/
+    - assets/images/zones/math-facts/
+    - assets/images/zones/story-springs/
+    - assets/images/zones/science-explorers/
+    - assets/images/zones/creative-corner/
+    - assets/images/zones/puzzle-peaks/
+    - assets/images/zones/adventure-arena/
+    - assets/images/zones/effects/
     - assets/sounds/
+    - assets/sounds/sfx/
+    - assets/sounds/sfx/correct/
+    - assets/sounds/sfx/incorrect/
+    - assets/sounds/sfx/celebration/
+    - assets/sounds/sfx/ui/
+    - assets/sounds/music/
+    - assets/sounds/music/zones/
     - assets/fonts/
     - lib/core/data/
 

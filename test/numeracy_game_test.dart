@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:brightbound_adventures/core/services/adaptive_difficulty_service.dart';
+import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/features/numeracy/widgets/numeracy_game.dart';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
@@ -25,6 +26,7 @@ Future<void> _pumpNumeracyGame(
         ChangeNotifierProvider<AdaptiveDifficultyService>(
           create: (_) => AdaptiveDifficultyService(),
         ),
+        ChangeNotifierProvider<AvatarProvider>(create: (_) => AvatarProvider()),
       ],
       child: MaterialApp(
         home: NumeracyGame(
@@ -85,6 +87,9 @@ void main() {
             Provider<HapticService>(create: (_) => HapticService()),
             ChangeNotifierProvider<AdaptiveDifficultyService>(
               create: (_) => AdaptiveDifficultyService(),
+            ),
+            ChangeNotifierProvider<AvatarProvider>(
+              create: (_) => AvatarProvider(),
             ),
           ],
           child: MaterialApp(

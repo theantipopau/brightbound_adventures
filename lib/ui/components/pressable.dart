@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/ui/themes/motion_tokens.dart';
 
 /// Interaction state exposed by [Pressable] to its [Pressable.builder].
@@ -13,8 +14,10 @@ class PressableState {
     required this.enabled,
   });
 
-  /// Current press-scale value, animating between 1.0 (rest) and the
-  /// configured press scale (0.96 by default, from [MotionTokens.pressScale]).
+  /// Current scale multiplier applied to the surface: 1.0 at rest, dips to
+  /// the press scale on press-down, and bounces past 1.0 (through the
+  /// [MotionTokens.juiceOvershoot], 1.12) elastically on release — unless
+  /// reduced motion collapses everything to instant states.
   final double scale;
   final bool isPressed;
   final bool isHovered;
@@ -23,32 +26,15 @@ class PressableState {
 }
 
 /// A headless press/hover/focus interaction primitive: owns the gesture
-/// detector, keyboard activation, hover/focus tracking, and one
-/// [AnimationController] driving a press-scale value from [MotionTokens] —
-/// but draws nothing itself. Callers provide [builder] to render their own
-/// decoration (gradient, shadow, border, whatever) driven by the
-/// [PressableState] it receives.
+/// detector, keyboard activation, hover/focus tracking, the press and
+/// release "juice" choreography — but draws nothing itself. Callers provide
+/// [builder] to render their own decoration (gradient, shadow, border,
+/// whatever) driven by the [PressableState] it receives.
 ///
 /// This exists so every pressable surface in the app (buttons, cards,
 /// answer options, zone nodes) shares one interaction implementation
 /// instead of each hand-rolling its own `GestureDetector` +
 /// `AnimationController` + focus handling.
-///
-/// Example:
-/// ```dart
-/// Pressable(
-///   onPressed: () => print('tapped'),
-///   builder: (context, state, child) => AnimatedContainer(
-///     duration: MotionTokens.of(context).quick,
-///     transform: Matrix4.identity()..scale(state.scale),
-///     decoration: BoxDecoration(
-///       boxShadow: state.isPressed ? [] : AppShadows.sm(Colors.black),
-///     ),
-///     child: child,
-///   ),
-///   child: const Text('Press me'),
-/// )
-/// ```
 class Pressable extends StatefulWidget {
   const Pressable({
     super.key,
@@ -58,6 +44,7 @@ class Pressable extends StatefulWidget {
     this.child,
     this.enabled = true,
     this.enableHapticFeedback = true,
+    this.enableTapSound = true,
     this.onPressStart,
     this.semanticLabel,
     this.pressScale,
@@ -80,11 +67,13 @@ class Pressable extends StatefulWidget {
   /// has no effect since press-down never fires when [enabled] is false.
   final bool enableHapticFeedback;
 
+  /// Plays the bundled button-tap sound on press-down (A4/A5), gated by the
+  /// audio settings inside [AudioManager]. Test/browsers without the asset
+  /// fall back to haptics automatically.
+  final bool enableTapSound;
+
   /// Optional hook fired on press-down, before [onPressed] fires on
-  /// release — use for a sound effect or other side effect that should
-  /// happen at touch-down rather than on tap completion. Deliberately not
-  /// wired to a specific service (e.g. `SoundEffectsService`) so this
-  /// widget stays dependency-free; callers pass whatever they need.
+  /// release — use for other side effects that should happen at touch-down.
   final VoidCallback? onPressStart;
 
   final String? semanticLabel;
@@ -99,10 +88,21 @@ class Pressable extends StatefulWidget {
 }
 
 class _PressableState extends State<Pressable>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+    with TickerProviderStateMixin {
+  /// 0 = rest, 1 = fully pressed.
+  late final AnimationController _pressCtrl;
+
+  /// 0 = no bounce, 1 = bounce choreography complete.
+  late final AnimationController _bounceCtrl;
+
   bool _isHovered = false;
   bool _isFocused = false;
+
+  /// Pointer is physically down on this surface. Tracked independently of
+  /// the press controller's animated value because a quick tap-down/tap-up
+  /// can arrive while the press-down animation is still ramping — a value
+  /// snapshot would miss the release entirely and leave the button stuck.
+  bool _pointerDown = false;
 
   // Resolved once in didChangeDependencies and cached, not read via
   // MotionTokens.of(context) from inside gesture callbacks: calling
@@ -115,7 +115,8 @@ class _PressableState extends State<Pressable>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, value: 0);
+    _pressCtrl = AnimationController(vsync: this, value: 0);
+    _bounceCtrl = AnimationController(vsync: this, value: 0);
   }
 
   @override
@@ -126,21 +127,42 @@ class _PressableState extends State<Pressable>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pressCtrl.dispose();
+    _bounceCtrl.dispose();
     super.dispose();
   }
 
+  /// A5 button juice. Press-down is instant (the finger is already on the
+  /// surface — delay reads as lag). Release bounces from the pressed scale
+  /// up past rest to the juice overshoot (1.12) and settles with
+  /// elasticOut. Reduced motion collapses to instant state changes with no
+  /// scale, tilt, or bounce.
   void _setPressed(bool pressed) {
-    _controller.animateTo(
-      pressed ? 1.0 : 0.0,
-      duration: _tokens.instant,
-      curve: _tokens.standardCurve,
-    );
+    _pointerDown = pressed;
+    if (_tokens.reduced) {
+      _pressCtrl.value = pressed ? 1.0 : 0.0;
+      _bounceCtrl.value = 0.0;
+      return;
+    }
+    if (pressed) {
+      _bounceCtrl.stop();
+      _bounceCtrl.value = 0.0;
+      _pressCtrl.animateTo(1.0,
+          duration: _tokens.instant, curve: _tokens.exitCurve);
+      return;
+    }
+    _bounceCtrl.animateTo(1.0, duration: _tokens.juiceBounce).whenComplete(() {
+      if (mounted) _pressCtrl.value = 0.0;
+    });
   }
 
   void _onTapDown(TapDownDetails _) {
     if (!widget.enabled) return;
     _setPressed(true);
+    if (widget.enableTapSound) {
+      // Fire-and-forget: sound is feedback, never a gate for the action.
+      AudioManager().playButtonClick();
+    }
     if (widget.enableHapticFeedback) {
       HapticFeedback.selectionClick();
     }
@@ -150,10 +172,34 @@ class _PressableState extends State<Pressable>
   void _onTapUp(TapUpDetails _) => _setPressed(false);
   void _onTapCancel() => _setPressed(false);
 
+  /// Composite scale from the two controllers.
+  ///
+  /// Phase A (bounce 0 → 0.3): rise from the pressed scale to the overshoot
+  /// peak, easeOut. Phase B (bounce 0.3 → 1): settle back to rest with an
+  /// elastic tail. Outside the bounce the scale is just the press-scale.
+  double _scaleFor(MotionTokens tokens) {
+    final pressScale = widget.pressScale ?? tokens.pressScale;
+    final pressedScale = 1.0 - (_pressCtrl.value * (1.0 - pressScale));
+    if (_bounceCtrl.value <= 0.0) return pressedScale;
+
+    final overshoot = tokens.juiceOvershoot;
+    const peak = 0.3;
+    final t = _bounceCtrl.value;
+    double bounceScale;
+    if (t < peak) {
+      final u = t / peak;
+      bounceScale = pressScale + (overshoot - pressScale) * Curves.easeOut.transform(u);
+    } else {
+      final u = ((t - peak) / (1 - peak)).clamp(0.0, 1.0);
+      bounceScale = overshoot + (1.0 - overshoot) * Curves.elasticOut.transform(u);
+    }
+    // Blend out the pressed component as the bounce begins, so choreography
+    // owns the motion from the moment of release.
+    return pressedScale * 0.0 + bounceScale;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final pressScale = widget.pressScale ?? _tokens.pressScale;
-
     return FocusableActionDetector(
       enabled: widget.enabled,
       mouseCursor: widget.enabled
@@ -189,14 +235,13 @@ class _PressableState extends State<Pressable>
           onTap: widget.enabled ? widget.onPressed : null,
           onLongPress: widget.enabled ? widget.onLongPress : null,
           child: AnimatedBuilder(
-            animation: _controller,
+            animation: Listenable.merge([_pressCtrl, _bounceCtrl]),
             builder: (context, child) {
-              final scale = 1.0 - (_controller.value * (1.0 - pressScale));
               return widget.builder(
                 context,
                 PressableState(
-                  scale: scale,
-                  isPressed: _controller.value > 0,
+                  scale: _scaleFor(_tokens),
+                  isPressed: _pointerDown,
                   isHovered: _isHovered,
                   isFocused: _isFocused,
                   enabled: widget.enabled,

@@ -86,6 +86,32 @@ void main() {
       expect(result.newStreakMilestone, isFalse); // milestone list starts at 3
     });
 
+    test('bonusStars pays a flat activity bounty exactly once', () async {
+      final avatar = await _freshAvatarProvider();
+      final service = _service(prefs: prefs);
+
+      const outcome = QuestOutcome(
+        outcomeId: 'boss-1',
+        xpEarned: 0,
+        correctAnswers: 0,
+        totalQuestions: 0,
+        accuracy: 0.0,
+        bonusStars: 75,
+      );
+
+      final result = await service.apply(outcome, avatarProvider: avatar);
+
+      expect(result.starsAwarded, 75);
+      expect(ShopService().starBalance, 75);
+      expect(result.xpAwarded, 0);
+      expect(avatar.avatar!.experiencePoints, 0);
+
+      // Retrying the same outcome (cache hit) must not pay the bounty twice.
+      final replay = await service.apply(outcome, avatarProvider: avatar);
+      expect(replay.starsAwarded, 75);
+      expect(ShopService().starBalance, 75);
+    });
+
     test(
         'crossing a level boundary reports leveledUp with correct before/after',
         () async {

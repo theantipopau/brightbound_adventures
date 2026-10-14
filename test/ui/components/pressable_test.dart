@@ -98,10 +98,19 @@ void main() {
     await tester.pump(const Duration(milliseconds: 150));
     expect(lastScale, closeTo(0.9, 0.01));
 
+    // A5 juice release: the surface bounces UP past rest through the
+    // 1.12 overshoot, then settles elastically — a mid-flight frame sits
+    // above rest, and it returns to exactly 1.0 once the bounce completes.
     await gesture.up();
     await tester.pump(); // process the pointer-up
     await tester.pump(const Duration(milliseconds: 150));
-    expect(lastScale, closeTo(1.0, 0.01));
+    expect(lastScale, lessThan(1.13), reason: 'mid-bounce near the peak');
+    expect(lastScale, greaterThan(0.99),
+        reason: 'mid-bounce is above rest scale (juice overshoot)');
+
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(lastScale, closeTo(1.0, 0.01),
+        reason: 'the elastic settle returns to rest exactly');
   });
 
   testWidgets('reduced motion: press state still resolves without throwing',

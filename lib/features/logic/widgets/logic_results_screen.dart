@@ -471,19 +471,22 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
               ),
             ),
             const SizedBox(height: 8),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(
-                  '${widget.correctAnswers}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
+            // Scales down instead of overflowing at 200% text/small viewports.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    '${widget.correctAnswers}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
                 Text(
                   ' / ${widget.totalQuestions}',
                   style: const TextStyle(
@@ -493,6 +496,7 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
                   ),
                 ),
               ],
+            ),
             ),
             const SizedBox(height: 8),
             // Progress bar showing climb height
@@ -649,8 +653,8 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
             icon: SizedBox(
               width: 22,
               height: 22,
-              child:
-                  Image.asset('assets/images/potion.PNG', fit: BoxFit.contain),
+              child: Image.asset('assets/images/potion.PNG',
+                  cacheWidth: 128, fit: BoxFit.contain),
             ),
             label: const Text(
               'Climb Again',

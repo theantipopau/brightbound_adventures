@@ -155,6 +155,10 @@ Future<void> _probe(
         'EXCEPTIONS:\n${errors.join('\n---\n')}',
   );
 
+  // Idle past the A3 companion's reaction reset timers (celebrate/turns
+  // mastered/level-up: ≤ 2.2 s) so the disposed tree carries no pending
+  // timer — the reaction contract itself is covered in its own tests.
+  await tester.pump(const Duration(seconds: 3));
   await tester.pumpWidget(const SizedBox.shrink());
 }
 

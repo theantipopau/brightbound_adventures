@@ -1,3 +1,4 @@
+import 'dart:async' show Timer;
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +49,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   late AnimationController _floatController;
   late AnimationController _pathController;
   late AnimationController _avatarMoveController;
+
+  // A8: landing squash controller + dust puff cycle for the pawn hop.
+  late AnimationController _landCtrl;
+  int? _dustPuffFrame;
+  Timer? _dustPuffTimer;
+  bool _reducedMotion = false;
 
   // Keyboard focus
   final FocusNode _focusNode = FocusNode();
@@ -177,13 +184,20 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         _onAvatarArrived();
       }
     });
+
+    // A8: landing squash recovery — fast flatten (0–30%), elastic settle.
+    _landCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
   }
 
   void _syncAmbientAnimationState(BuildContext context) {
+    _reducedMotion = MediaQuery.of(context).disableAnimations;
     final shouldAnimate = !_preferStaticAmbientEffects &&
         !_isCompactLayout &&
         !_isShortViewport &&
-        !MediaQuery.of(context).disableAnimations;
+        !_reducedMotion;
     if (_ambientAnimationsRunning == shouldAnimate) return;
     _ambientAnimationsRunning = shouldAnimate;
     if (shouldAnimate) {
@@ -200,10 +214,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     if (_audioSetupDone) {
       _audioManager.stopMusic();
     }
+    _dustPuffTimer?.cancel();
     _entranceController.dispose();
     _floatController.dispose();
     _pathController.dispose();
     _avatarMoveController.dispose();
+    _landCtrl.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -458,6 +474,27 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       _isMoving = false;
     });
 
+    // A8: landing feedback — one dust puff cycle + the elastic-ish
+    // squash recovery on the pawn. Skipped entirely under reduced motion.
+    _dustPuffTimer?.cancel();
+    _dustPuffFrame = null;
+    if (!_reducedMotion) {
+      _landCtrl.forward(from: 0);
+      _dustPuffFrame = 1;
+      _dustPuffTimer = Timer(const Duration(milliseconds: 140), () {
+        if (!mounted) return;
+        setState(() {
+          _dustPuffFrame = 2;
+        });
+      });
+      _dustPuffTimer = Timer(const Duration(milliseconds: 300), () {
+        if (!mounted) return;
+        setState(() {
+          _dustPuffFrame = null;
+        });
+      });
+    }
+
     // Navigate to zone after a brief pause
     if (targetZone != null) {
       Future.delayed(const Duration(milliseconds: 400), () {
@@ -465,6 +502,28 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           Navigator.pushNamed(context, '/${_zones[targetZone].id}');
         }
       });
+    }
+  }
+
+  /// Zone ids already unlocked on the previous build — used to fire the
+  /// A4 discovery shimmer exactly once per newly-unlocked zone.
+  Set<String> _lastUnlockedZoneIds = const {};
+
+  void _detectNewZoneUnlocks(List<ZoneData> zones, int totalStars) {
+    final nowUnlocked = {
+      for (final zone in zones)
+        if (totalStars >= zone.requiredStars) zone.id,
+    };
+    final newly = nowUnlocked.difference(_lastUnlockedZoneIds).toList()
+      ..sort();
+    // First build hydrates the baseline silently — no shimmer at app start.
+    if (_lastUnlockedZoneIds.isEmpty) {
+      _lastUnlockedZoneIds = nowUnlocked;
+      return;
+    }
+    _lastUnlockedZoneIds = nowUnlocked;
+    if (newly.isNotEmpty) {
+      _audioManager.playUnlock();
     }
   }
 
@@ -477,6 +536,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           final totalStars = skillProvider.isInitialized
               ? _calculateTotalStars(skillProvider)
               : 0;
+          _detectNewZoneUnlocks(_zones, totalStars);
 
           if (avatar == null) {
             return _buildNoAvatarScreen();
@@ -568,6 +628,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                                 // island with a little arc on each.
                                 final Offset avatarScreenOffset;
                                 final double hopHeight;
+                                final double? hopPhase;
                                 if (travelling) {
                                   final travelPath =
                                       BoardPath.betweenZoneIndexes(
@@ -585,10 +646,12 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                                   final located = travelPath.locate(eased);
                                   hopHeight =
                                       -40 * math.sin(located.localT * math.pi);
+                                  hopPhase = located.localT;
                                 } else {
                                   avatarScreenOffset = screenPositions[
                                       _zones[_currentZoneIndex].id]!;
                                   hopHeight = 0;
+                                  hopPhase = null;
                                 }
 
                                 return WorldMapLivingBoard(
@@ -600,6 +663,15 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                                   totalStars: totalStars,
                                   mapZoom: _mapZoom,
                                   size: mapSize,
+                                  // A1: the board fills the viewport, so the
+                                  // camera pan proxy is where the pawn stands
+                                  // relative to the board centre — background
+                                  // bands drift against pawn travel, clamped
+                                  // to the spec's subtle ~12 px maximum.
+                                  parallaxOffset: _parallaxDrift(
+                                    avatarScreenOffset,
+                                    mapSize,
+                                  ),
                                   boardPainter: WorldMapBoardPainter(
                                     zones: _zones,
                                     positions: screenPositions,
@@ -647,6 +719,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                                           constraints,
                                           groundOffset: avatarScreenOffset,
                                           hopHeight: hopHeight,
+                                          hopPhase: hopPhase,
                                         ),
                                       ),
                                     ],
@@ -965,23 +1038,27 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   }
 
   String _zoneLandmarkAsset(ZoneData zone) {
+    // A2: authored clay/toy landmark sprites, one per zone, produced by
+    // tool/generate_zone_sprites.py in the exact hue families of the badges.
+    // Missing-asset fallback is unchanged (Icon auto_awesome via errorBuilder
+    // in _ZoneIsland), so a failed bundle can never break the map.
     switch (zone.id) {
       case 'word-woods':
-        return 'assets/images/scroll.PNG';
+        return 'assets/images/zones/word-woods/zone_word-woods_landmark.png';
       case 'number-nebula':
-        return 'assets/images/bluecrystal.PNG';
+        return 'assets/images/zones/number-nebula/zone_number-nebula_landmark.png';
       case 'math-facts':
-        return 'assets/images/goldpile.PNG';
+        return 'assets/images/zones/math-facts/zone_math-facts_landmark.png';
       case 'story-springs':
-        return 'assets/images/questsandtasks.PNG';
+        return 'assets/images/zones/story-springs/zone_story-springs_landmark.png';
       case 'science-explorers':
-        return 'assets/images/greencrystal.PNG';
+        return 'assets/images/zones/science-explorers/zone_science-explorers_landmark.png';
       case 'creative-corner':
-        return 'assets/images/pinkcrystal.PNG';
+        return 'assets/images/zones/creative-corner/zone_creative-corner_landmark.png';
       case 'puzzle-peaks':
-        return 'assets/images/chest_closed.PNG';
+        return 'assets/images/zones/puzzle-peaks/zone_puzzle-peaks_landmark.png';
       case 'adventure-arena':
-        return 'assets/images/goldkey.PNG';
+        return 'assets/images/zones/adventure-arena/zone_adventure-arena_landmark.png';
       default:
         return 'assets/images/logo.png';
     }
@@ -1124,6 +1201,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     BoxConstraints constraints, {
     required Offset groundOffset,
     required double hopHeight,
+    double? hopPhase,
   }) {
     // Where the pawn's feet touch the board: the shared route position
     // during travel, the zone anchor otherwise. [hopHeight] is the
@@ -1149,12 +1227,17 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       top: top,
       child: IgnorePointer(
         ignoring: false,
-        child: _build3DAvatar(avatar, _isMoving),
+        child: _build3DAvatar(
+          avatar,
+          _isMoving,
+          hopPhase: hopPhase,
+        ),
       ),
     );
   }
 
-  Widget _build3DAvatar(Avatar avatar, bool isMoving) {
+  Widget _build3DAvatar(Avatar avatar, bool isMoving,
+      {double? hopPhase}) {
     // Scale avatar down slightly on higher-elevation zones for depth perception.
     // Elevation range 0.0 (Word Woods) → 1.6 (Adventure Arena).
     final double destElevation = _isMoving && _targetZoneIndex != null
@@ -1166,10 +1249,48 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     final double elevOpacity = 1.0 - (destElevation * 0.04).clamp(0.0, 0.20);
 
     return AnimatedBuilder(
-      animation: _floatController,
+      animation: Listenable.merge([_floatController, _landCtrl]),
       builder: (context, child) {
         final bounce =
             isMoving ? 0.0 : math.sin(_floatController.value * math.pi) * 3;
+
+        // A8 squash-and-stretch: stretch on take-off, normal through the
+        // arc, squash at landing, then an elastic recovery. Disabled with
+        // reduced motion (the pawn just moves without deformation).
+        const double takeOffEnd = 0.18;
+        const double landingStart = 0.80;
+        double squashX = 1.0;
+        double squashY = 1.0;
+        if (!_reducedMotion) {
+          final phase = hopPhase;
+          if (isMoving && phase != null) {
+            if (phase < takeOffEnd) {
+              final t = (phase / takeOffEnd).clamp(0.0, 1.0);
+              squashY = 1.0 + 0.20 * (1 - t);
+              squashX = 1.0 - 0.15 * (1 - t);
+            } else if (phase > landingStart) {
+              final t = ((phase - landingStart) / (1 - landingStart))
+                  .clamp(0.0, 1.0);
+              squashY = 1.0 - 0.20 * t;
+              squashX = 1.0 + 0.20 * t;
+            }
+          }
+          if (_landCtrl.isAnimating) {
+            final t = _landCtrl.value;
+            if (t < 0.3) {
+              // Impact squash: flatten fast (scaleY 0.8, scaleX 1.2).
+              final u = t / 0.3;
+              squashY = math.min(squashY, 1.0 - 0.20 * u);
+              squashX = math.max(squashX, 1.0 + 0.20 * u);
+            } else {
+              // Bounce recovery on an elastic tail, easing back to 1.0.
+              final u = ((t - 0.3) / 0.7).clamp(0.0, 1.0);
+              final recover = Curves.elasticOut.transform(u);
+              squashY = math.min(squashY, 0.8 + 0.2 * recover);
+              squashX = math.max(squashX, 1.2 - 0.2 * recover);
+            }
+          }
+        }
 
         return GestureDetector(
           onTap: () => _showAvatarInfo(context, avatar),
@@ -1178,17 +1299,65 @@ class _WorldMapScreenState extends State<WorldMapScreen>
             child: Transform.scale(
               scale: elevScale,
               alignment: Alignment.bottomCenter,
-              child: Transform.translate(
-                offset: Offset(0, bounce),
-                child: _BoardGameAvatarPawn(
-                  avatar: avatar,
-                  isMoving: isMoving,
+              child: Transform.scale(
+                scaleX: squashX,
+                scaleY: squashY,
+                alignment: Alignment.bottomCenter,
+                child: Transform.translate(
+                  offset: Offset(0, bounce),
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    clipBehavior: Clip.none,
+                    children: [
+                      _BoardGameAvatarPawn(
+                        avatar: avatar,
+                        isMoving: isMoving,
+                      ),
+                      if (_dustPuffFrame != null && !_reducedMotion)
+                        // A8 landing dust: two-frame puff sprite at the feet.
+                        Positioned(
+                          bottom: -6,
+                          child: IgnorePointer(
+                            child: Opacity(
+                              opacity: 1.0 - _landCtrl.value * 0.6,
+                              child: Builder(builder: (context) {
+                                final frame =
+                                    _dustPuffFrame == 1 ? 1 : 2;
+                                return Image.asset(
+                                  'assets/images/zones/effects/'
+                                  'zone_dust_puff_$frame.png',
+                                  width: 44,
+                                  height: 44,
+                                  filterQuality: FilterQuality.medium,
+                                  errorBuilder: (_, __, ___) =>
+                                      const SizedBox.shrink(),
+                                );
+                              }),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         );
       },
+    );
+  }
+
+  /// A1 parallax camera-pan proxy. The board fits the viewport, so the
+  /// closest equivalent of "camera pan" is the pawn's offset from the board
+  /// centre. Scaled down so the background bands only ever drift the subtle
+  /// maximum (~12 px) from the visual direction spec, never more.
+  Offset _parallaxDrift(Offset pawnScreenOffset, Size mapSize) {
+    final centre = Offset(mapSize.width / 2, mapSize.height / 2);
+    final drift = pawnScreenOffset - centre;
+    // 0.08 of the pawn displacement, clamped to ±12 px on each axis.
+    return Offset(
+      (drift.dx * 0.08).clamp(-12.0, 12.0),
+      (drift.dy * 0.08).clamp(-12.0, 12.0),
     );
   }
 
@@ -2648,7 +2817,13 @@ class _ZoneIslandState extends State<_ZoneIsland> {
           child: MouseRegion(
             onEnter: (_) => setState(() => _isHovered = true),
             onExit: (_) => setState(() => _isHovered = false),
-            child: Semantics(
+            child: Tooltip(
+              // A7: desktop hover affordance — name + unlock requirement.
+              message: widget.isUnlocked
+                  ? '${widget.zone.name} — unlocked ✅'
+                  : '${widget.zone.name} — needs ${widget.zone.requiredStars} stars to unlock',
+              waitDuration: const Duration(milliseconds: 450),
+              child: Semantics(
               button: true,
               selected: widget.isSelected,
               label:
@@ -2662,7 +2837,12 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(28),
-                  onTap: widget.onTap,
+                  // A5: zone card taps share the button-tap cue (gated by
+                  // the audio settings; inert in the test harness).
+                  onTap: () {
+                    AudioManager().playButtonClick();
+                    widget.onTap();
+                  },
                   onLongPress: widget.onTap,
                   splashColor: widget.zone.color.withValues(alpha: 0.3),
                   highlightColor: widget.zone.color.withValues(alpha: 0.1),
@@ -2824,47 +3004,30 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                 }),
 
                               if (widget.isUnlocked)
+                                // A2: hero landmark, authored per zone in the
+                                // clay/toy style. Sits just above the island
+                                // base so it reads as standing ON the island.
                                 Positioned(
-                                  left: 16,
-                                  top: 42,
+                                  left: 0,
+                                  right: 0,
+                                  top: 64,
                                   child: Transform.rotate(
                                     angle: math.sin(
                                             widget.floatAnimation.value *
                                                 math.pi *
                                                 2) *
                                         0.08,
-                                    child: Container(
-                                      width: 38,
-                                      height: 38,
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.94),
-                                        borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(
-                                          color: widget.zone.color
-                                              .withValues(alpha: 0.35),
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: widget.zone.color
-                                                .withValues(alpha: 0.22),
-                                            blurRadius: 10,
-                                            offset: const Offset(0, 5),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Image.asset(
-                                        widget.landmarkAsset,
-                                        fit: BoxFit.contain,
-                                        filterQuality: FilterQuality.medium,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Icon(
-                                          Icons.auto_awesome_rounded,
-                                          color: widget.zone.color,
-                                          size: 22,
-                                        ),
+                                    child: Image.asset(
+                                      widget.landmarkAsset,
+                                      width: 104,
+                                      height: 104,
+                                      fit: BoxFit.contain,
+                                      filterQuality: FilterQuality.medium,
+                                      cacheWidth: 208,
+                                      errorBuilder: (_, __, ___) => Icon(
+                                        Icons.auto_awesome_rounded,
+                                        color: widget.zone.color,
+                                        size: 60,
                                       ),
                                     ),
                                   ),
@@ -3471,6 +3634,7 @@ class _ZoneIslandState extends State<_ZoneIsland> {
               ),
             ),
           ),
+          ), // close the A7 Tooltip wrapper
         );
       },
     );

@@ -64,6 +64,13 @@ class MotionTokens {
   /// reduced motion.
   Curve get elasticCurve => reduced ? Curves.easeOut : Curves.elasticOut;
 
+  /// A5 button juice: the overshoot peak a release bounce reaches —
+  /// briefly 12% larger than rest before settling elastically.
+  double get juiceOvershoot => reduced ? 1.0 : 1.12;
+
+  /// A5 button juice: total release-bounce duration (overshoot + settle).
+  Duration get juiceBounce => reduced ? _instant : const Duration(milliseconds: 450);
+
   // --- Distances -----------------------------------------------------------
 
   /// Standard press-down scale for buttons/answer options.

@@ -158,7 +158,8 @@ class _SkillCardState extends State<SkillCard>
                   child: SizedBox(
                     width: 82,
                     height: 82,
-                    child: Image.asset(_getStateAsset(), fit: BoxFit.contain),
+                    child: Image.asset(_getStateAsset(),
+                        cacheWidth: 192, fit: BoxFit.contain),
                   ),
                 ),
               ),
@@ -613,6 +614,7 @@ class ZoneProgressCard extends StatelessWidget {
                     height: 42,
                     child: Image.asset(
                       'assets/images/questsandtasks.PNG',
+                      cacheWidth: 128,
                       fit: BoxFit.contain,
                     ),
                   ),

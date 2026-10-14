@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
+import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/reward_transaction_service.dart';
 import 'package:brightbound_adventures/features/world_map/services/recommendation_service.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/widgets/reward_animations.dart';
 
 /// The one choreographed reward moment for a completed quest.
 ///
@@ -93,13 +95,41 @@ class _RewardRevealState extends State<RewardReveal>
       duration: tokens.celebration,
     );
     _controller = controller;
+
+    // A4: the reveal's two headline moments get their own sound — level-up
+    // fanfare and streak milestone burst — played once, gated by the audio
+    // settings toggle inside AudioManager.
+    final audio = AudioManager();
+    if (widget.result.leveledUp) {
+      audio.playLevelUp();
+    } else if (widget.result.newStreakMilestone) {
+      audio.playStreak(widget.result.currentStreak);
+    }
+
+    // A6: when this completion crosses a level, the Lottie level-up
+    // overlay plays on top of the reveal (auto-dismisses, tap-dismisses).
+    if (widget.result.leveledUp) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          showLevelUpOverlay(context, widget.result.newLevel);
+        }
+      });
+    }
+
     if (tokens.reduced) {
       // Informational content: show the finished state immediately.
       controller.value = 1.0;
       widget.onRevealComplete?.call();
     } else {
       controller.forward().whenComplete(() {
-        if (mounted) widget.onRevealComplete?.call();
+        if (mounted) {
+          // A6: badge/achievement unlocks play right after the choreography.
+          final unlockNames = widget.unlockNames;
+          if (unlockNames.isNotEmpty) {
+            showBadgeUnlockOverlay(context, unlockNames.first);
+          }
+          widget.onRevealComplete?.call();
+        }
       });
     }
   }

@@ -175,11 +175,11 @@ class _JuicyButtonState extends State<JuicyButton>
       builder: (context, state, child) {
         final hoverScale =
             (state.isHovered || state.isFocused) && !disabled ? 1.02 : 1.0;
-        // Tilt derived from the same press-scale value Pressable already
-        // animates, instead of a second parallel AnimationController: at
-        // full press (scale == pressScale == 0.9) this reaches the same
-        // -0.03 rad the original two-tween implementation used.
-        final tilt = -(1.0 - state.scale) * 0.3;
+        // A5 tilt: exactly ±2° at full press (0.1 scale deviation × 0.35
+        // rad factor). Derived from the same press-scale value Pressable
+        // animates, so the bounce-through-1.12 release also carries the
+        // tilt naturally and reduced motion collapses tilt to zero.
+        final tilt = -(1.0 - state.scale) * 0.35;
         return AnimatedBuilder(
           animation: _shimmerController,
           builder: (context, _) {

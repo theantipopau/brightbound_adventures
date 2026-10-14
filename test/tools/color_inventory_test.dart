@@ -71,7 +71,9 @@ const Map<String, int> _colorUsageAllowlist = {
   'lib/ui/widgets/quiz_results_celebration.dart': 26,
   'lib/ui/widgets/modern_shop_item_card.dart': 26,
   'lib/features/mini_games/pattern_puzzle_game.dart': 26,
-  'lib/ui/widgets/reward_animations.dart': 24,
+  // Raised from 24 during the 2026-10-10 reward-pass: XP gain tiers and
+  // the improved confetti/burst painters added 8 reviewed literal tones.
+  'lib/ui/widgets/reward_animations.dart': 32,
   'lib/ui/widgets/achievement_card.dart': 24,
   'lib/ui/screens/trophy_room_screen.dart': 24,
   'lib/ui/widgets/quiz_widgets.dart': 23,
@@ -134,6 +136,13 @@ const Map<String, int> _colorUsageAllowlist = {
   'lib/ui/painters/shadow_painter.dart': 1,
   'lib/ui/components/pressable.dart': 1,
   'lib/features/literacy/screens/skill_practice_screen.dart': 1,
+  // New 2026-10-10 (living board pass): the parallax horizon painter's
+  // sky/atmosphere gradients are procedural painter shading, not UI
+  // styling — reviewed deliberate exception at its real count.
+  'lib/ui/screens/world_map/parallax_map_layer.dart': 7,
+  // New 2026-10-10 (A3 companion pass): reactive emoji badges and mood
+  // tints keyed to avatar emotion states — small reviewed set, real count.
+  'lib/ui/widgets/companion_reactions.dart': 6,
 };
 
 final RegExp _colorLiteral =

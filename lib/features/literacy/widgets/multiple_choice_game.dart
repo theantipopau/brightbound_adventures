@@ -21,6 +21,7 @@ import 'package:brightbound_adventures/ui/widgets/difficulty_indicator.dart';
 import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 import 'package:brightbound_adventures/ui/widgets/star_burst_overlay.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_answer_option.dart';
+import 'package:brightbound_adventures/ui/widgets/companion_reactions.dart';
 import 'package:brightbound_adventures/ui/widgets/quiz_widgets.dart';
 import 'package:brightbound_adventures/ui/widgets/juicy_button.dart';
 import 'package:brightbound_adventures/ui/widgets/visual_effects/adventure_pattern_overlay.dart';
@@ -472,6 +473,15 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                   ),
                 ),
 
+                // A3 companion corner: celebrate/encourage reactions fire
+                // from the answer callback below, off into neutral on the
+                // provider's reset timer.
+                const Positioned(
+                  top: 0,
+                  right: 0,
+                  child: QuizCompanionCorner(),
+                ),
+
                 // 2. Main Game Content
                 SafeArea(
                   child: ScreenShaker(
@@ -905,6 +915,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                 child: _gameController.state == GameState.paused
                     ? Icon(Icons.play_arrow, color: widget.themeColor, size: 22)
                     : Image.asset('assets/images/questsandtasks.PNG',
+                        cacheWidth: 128,
                         fit: BoxFit.contain),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 
@@ -375,7 +376,14 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
         },
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: canTap ? widget.onTap : null,
+          // A5: every answer tap plays the button-tap sound (gated by the
+          // audio settings inside AudioManager; inert in tests).
+          onTap: canTap
+              ? () {
+                  AudioManager().playButtonClick();
+                  widget.onTap?.call();
+                }
+              : null,
           child: Semantics(
             button: true,
             enabled: canTap,
