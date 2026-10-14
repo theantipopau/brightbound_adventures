@@ -956,6 +956,609 @@ class ScienceQuestionBank {
       explanation:
           'Greenhouse gases (CO₂, methane, water vapour) let sunlight in but trap some heat from escaping back to space, warming Earth\'s surface.',
     ),
+
+    // ── Audit B3 expansion: 38 Australian-Curriculum questions to take the
+    // bank from 62 to 100+. Slots rebalance physical sciences (was 4/6/2
+    // across difficulties) and deepen biology. ─────────────────────────────
+
+    // BIOLOGY additions
+    ScienceQuestion(
+      id: 'bank_bio_026',
+      skillId: 'skill_biological_sciences',
+      question: 'Which of these animals lays eggs? 🥚',
+      options: ['Dolphin', 'Koala', 'Platypus', 'Bat'],
+      correctIndex: 2,
+      difficulty: 1,
+      topic: 'Animal Reproduction',
+      hint: 'Only one kind of mammal in the world hatches from an egg.',
+      explanation:
+          'The platypus and the echidna are monotremes — mammals that lay eggs. All the others give birth to live young.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_027',
+      skillId: 'skill_biological_sciences',
+      question: 'What is a baby kangaroo called? 🦘',
+      options: ['Cub', 'Joey', 'Kitten', 'Chick'],
+      correctIndex: 1,
+      difficulty: 1,
+      topic: 'Animal Babies',
+      hint: 'Kangaroo mums carry this tiny baby inside their pouch.',
+      explanation:
+          'A baby kangaroo is called a joey. Born the size of a jellybean, it lives in its mother\'s pouch where it drinks milk and grows.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_028',
+      skillId: 'skill_biological_sciences',
+      question: 'What do green plants need to turn sunlight into food? 🌻',
+      options: [
+        'Only soil',
+        'Only shade',
+        'Only pet food',
+        'Sunlight, water and air'
+      ],
+      correctIndex: 3,
+      difficulty: 1,
+      topic: 'Photosynthesis',
+      hint: 'Plants drink water and breathe air, too.',
+      explanation:
+          'Photosynthesis is how plants make their own food using sunlight, water and carbon dioxide — and they give off oxygen for us to breathe.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_029',
+      skillId: 'skill_biological_sciences',
+      question: 'An animal that eats only plants is called a: 🐄',
+      options: ['Herbivore', 'Carnivore', 'Omnivore', 'Producer'],
+      correctIndex: 0,
+      difficulty: 2,
+      topic: 'Food Chains',
+      hint: 'Wombats and wallabies eat this way.',
+      explanation:
+          'Herbivores eat only plants. Carnivores eat other animals, and omnivores eat both.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_030',
+      skillId: 'skill_biological_sciences',
+      question: 'Which of these animals hunts others for its dinner? 🦊',
+      options: ['Wombat', 'Rabbit', 'Dingo', 'Flying fox'],
+      correctIndex: 2,
+      difficulty: 2,
+      topic: 'Food Chains',
+      hint: 'You can hear this one howl in the outback at night.',
+      explanation:
+          'Dingoes are carnivores — they hunt small animals. The others eat grass, leaves or fruit.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_031',
+      skillId: 'skill_biological_sciences',
+      question: 'What do bees gather from flowers to make honey? 🐝',
+      options: [
+        'Rain drops',
+        'Nectar and pollen',
+        'Tree bark',
+        'Soil crumbs'
+      ],
+      correctIndex: 1,
+      difficulty: 2,
+      topic: 'Pollination',
+      hint: 'Bees visit flower after flower collecting the sweet stuff.',
+      explanation:
+          'Bees sip sweet nectar and carry pollen on their bodies. As they move between flowers they pollinate them — helping plants make seeds.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_032',
+      skillId: 'skill_biological_sciences',
+      question: 'What does the word habitat mean? 🏞',
+      options: [
+        'The natural home where a living thing finds food, water and shelter',
+        'The food an animal likes best',
+        'A group of wild animals',
+        'A kind of weather'
+      ],
+      correctIndex: 0,
+      difficulty: 2,
+      topic: 'Habitats',
+      hint: 'Wetland, desert and reef are all examples of one.',
+      explanation:
+          'A habitat is the natural home of a plant or animal — the place where it can find everything it needs to survive.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_033',
+      skillId: 'skill_biological_sciences',
+      question: 'Why do stick insects look exactly like twigs? 🐜',
+      options: [
+        'To decorate trees',
+        'To gather more honey',
+        'To soak up extra sunshine',
+        'To hide from animals that might eat them'
+      ],
+      correctIndex: 3,
+      difficulty: 3,
+      topic: 'Adaptations',
+      hint: 'Blending in is a survival trick called camouflage.',
+      explanation:
+          'This is camouflage — an adaptation. Insects that look like twigs are hard for hungry birds to spot, so they survive and have babies.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_034',
+      skillId: 'skill_biological_sciences',
+      question: 'How does a bilby cope with hot desert days? 🌵',
+      options: [
+        'Its huge ears help release body heat',
+        'It hibernates all through summer',
+        'It swims in billabongs to cool off',
+        'It migrates to New Zealand'
+      ],
+      correctIndex: 0,
+      difficulty: 3,
+      topic: 'Adaptations',
+      hint: 'Think of big, thin cooling fins — like a radiator.',
+      explanation:
+          'Bilbies rest in deep, cool burrows by day and come out at night. Their large, thin ears also pass heat away — clever desert adaptations.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_035',
+      skillId: 'skill_biological_sciences',
+      question: 'What do decomposers such as fungi and bacteria do? 🍄',
+      options: [
+        'Hunt living animals',
+        'Make sugar from sunlight',
+        'Break down dead material and return nutrients to the soil',
+        'Plant brand-new seeds'
+      ],
+      correctIndex: 2,
+      difficulty: 3,
+      topic: 'Decomposers and Nutrient Cycles',
+      hint: 'They are the tidy-up crew of the forest floor.',
+      explanation:
+          'Decomposers recycle nutrients from dead material back into the soil, so plants can grow again. Without them the world would pile up with waste.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_036',
+      skillId: 'skill_biological_sciences',
+      question: 'How does a platypus find food in dark, muddy water? 🦦',
+      options: [
+        'It barks loudly like a dog',
+        'It senses the tiny electric signals of prey with its bill',
+        'It follows air bubbles',
+        'It tastes the water with its webbed feet'
+      ],
+      correctIndex: 1,
+      difficulty: 3,
+      topic: 'Animal Senses',
+      hint: 'Its bill is not a nose — it is a sensor.',
+      explanation:
+          'The platypus bill has electroreceptors that detect the faint electric pulses made by yabbies and larvae. With its eyes shut underwater, it hunts by feel and electricity — a very unusual sense.',
+    ),
+    ScienceQuestion(
+      id: 'bank_bio_037',
+      skillId: 'skill_biological_sciences',
+      question: 'What is a baby frog called? 🐸',
+      options: ['Tadpole', 'Puppy', 'Fry', 'Chick'],
+      correctIndex: 0,
+      difficulty: 1,
+      topic: 'Life Cycles',
+      hint: 'It swims with gills long before it can hop.',
+      explanation:
+          'Frogs hatch from eggs as tadpoles, then grow legs and lungs and become hopping adults — a change called metamorphosis.',
+    ),
+
+    // EARTH & SPACE additions
+    ScienceQuestion(
+      id: 'bank_earth_018',
+      skillId: 'skill_earth_sciences',
+      question: 'Which star is at the centre of our Solar System? ☀️',
+      options: ['The Moon', 'The Milky Way', 'Polaris', 'The Sun'],
+      correctIndex: 3,
+      difficulty: 1,
+      topic: 'Space',
+      hint: 'It rises every single morning.',
+      explanation:
+          'The Sun is our closest star. Earth and the other planets orbit around it.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_019',
+      skillId: 'skill_earth_sciences',
+      question: 'The path a planet follows around the Sun is called its:',
+      options: ['Trunk', 'Crater', 'Orbit', 'Tunnel'],
+      correctIndex: 2,
+      difficulty: 2,
+      topic: 'Space',
+      hint: 'Earth travels this path once every year.',
+      explanation:
+          'An orbit is the curved path a planet follows around the Sun. Earth finishes one orbit about every 365 days — one year.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_020',
+      skillId: 'skill_earth_sciences',
+      question: 'What is weather? 🌦',
+      options: [
+        'The name of the Sun',
+        'What the air and sky are doing right now, such as rain or wind',
+        'A type of cloud',
+        'The ocean current'
+      ],
+      correctIndex: 1,
+      difficulty: 1,
+      topic: 'Weather',
+      hint: 'Sunny yesterday, cloudy today — you are describing this.',
+      explanation:
+          'Weather is what the atmosphere is doing at a place and time — the temperature, rain, wind and clouds we observe.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_021',
+      skillId: 'skill_earth_sciences',
+      question: 'What is the water cycle? 💦',
+      options: [
+        'Water moving around between the sea, the air and the land',
+        'Rain only',
+        'Water flowing through pipes to our homes',
+        'Snow that never melts'
+      ],
+      correctIndex: 0,
+      difficulty: 2,
+      topic: 'Water Cycle',
+      hint: 'Evaporation, condensation and precipitation are its stages.',
+      explanation:
+          'The water cycle never stops: water evaporates from the sea, condenses into clouds, falls as rain, and runs back to the sea — round and round.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_022',
+      skillId: 'skill_earth_sciences',
+      question: 'Which of these is the largest ocean on Earth? 🌊',
+      options: [
+        'Bass Strait',
+        'Lake Eyre',
+        'Pacific Ocean',
+        'Sydney Harbour'
+      ],
+      correctIndex: 2,
+      difficulty: 1,
+      topic: 'Oceans',
+      hint: 'The Coral Sea is only a small part of it.',
+      explanation:
+          'The Pacific Ocean is the biggest ocean on Earth — so big it holds the deepest point, the Mariana Trench.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_023',
+      skillId: 'skill_earth_sciences',
+      question: 'What do we call the different shapes the Moon shows each month? 🌙',
+      options: [
+        'Moon shadows',
+        'Moon phases',
+        'Star signs',
+        'Eclipse shadows'
+      ],
+      correctIndex: 1,
+      difficulty: 2,
+      topic: 'Moon Phases',
+      hint: 'New moon, half moon and full moon are names for them.',
+      explanation:
+          'As the Moon orbits Earth, the lit part we can see changes shape. These are the phases of the Moon, and one full cycle takes about a month.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_024',
+      skillId: 'skill_earth_sciences',
+      question: 'What is soil made from? 🏞',
+      options: [
+        'Only sand',
+        'Water alone',
+        'Plastic pellets',
+        'Crushed rock, rotting plants, water and air'
+      ],
+      correctIndex: 3,
+      difficulty: 2,
+      topic: 'Soil',
+      hint: 'Worms help mix it up.',
+      explanation:
+          'Soil is weathered rock mixed with organic matter, water and air — and it is teeming with living things such as worms and fungi.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_025',
+      skillId: 'skill_earth_sciences',
+      question: 'What causes day and night? 🌞',
+      options: [
+        'Earth spinning on its axis',
+        'The Sun moving behind clouds',
+        'The Moon blocking the Sun',
+        'Earth jumping closer to the Sun'
+      ],
+      correctIndex: 0,
+      difficulty: 2,
+      topic: 'Day and Night',
+      hint: 'One full spin takes 24 hours.',
+      explanation:
+          'Earth rotates once every 24 hours. The side facing the Sun has daytime, while the side facing away has night.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_026',
+      skillId: 'skill_earth_sciences',
+      question: 'What is a cyclone? 🌀',
+      options: [
+        'A kind of cloud shape',
+        'A huge storm of strong winds spiralling around a calm centre',
+        'A gentle sea breeze',
+        'A wave from a distant storm'
+      ],
+      correctIndex: 1,
+      difficulty: 3,
+      topic: 'Extreme Weather',
+      hint: 'Northern Australia prepares for them each summer.',
+      explanation:
+          'Cyclones are large tropical storms with very strong winds spiralling around a calm centre called the eye. People secure their homes and move to safety before one arrives.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_027',
+      skillId: 'skill_earth_sciences',
+      question: 'What are fossils? 🦴',
+      options: [
+        'Rocks carved by wind',
+        'Crystals that glow in the dark',
+        'Remains or traces of living things preserved in rock',
+        'Fresh animal tracks in sand'
+      ],
+      correctIndex: 2,
+      difficulty: 2,
+      topic: 'Fossils',
+      hint: 'Think of dinosaur skeletons in museum stone.',
+      explanation:
+          'Fossils form when the remains or traces of living things are preserved in rock over millions of years. Australian fossils tell us about life from long ago.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_028',
+      skillId: 'skill_earth_sciences',
+      question: 'What causes the ocean tides to rise and fall? 🌊',
+      options: [
+        'The gravity of the Moon and the Sun pulling on the water',
+        'Big fish swimming together',
+        'Underwater earthquakes every day',
+        'Ships pushing water ahead of them'
+      ],
+      correctIndex: 0,
+      difficulty: 3,
+      topic: 'Tides',
+      hint: 'It tracks the Moon — high and low, twice a day.',
+      explanation:
+          'Tides rise and fall mainly because the Moon\'s gravity pulls on Earth\'s oceans. The Sun pulls too, and together their tug creates the daily pattern.',
+    ),
+    ScienceQuestion(
+      id: 'bank_earth_029',
+      skillId: 'skill_earth_sciences',
+      question: 'Which planet is closest to the Sun? 🚀',
+      options: ['Venus', 'Earth', 'Mercury', 'Mars'],
+      correctIndex: 2,
+      difficulty: 1,
+      topic: 'Space',
+      hint: 'It is named after the swift Roman messenger god.',
+      explanation:
+          'Mercury is the closest planet to the Sun, whipping around its orbit in only 88 days.',
+    ),
+
+    // PHYSICAL SCIENCES additions
+    ScienceQuestion(
+      id: 'bank_phys_016',
+      skillId: 'skill_physical_sciences',
+      question: 'What do we call light bouncing back off a surface, like a mirror? 🪞',
+      options: ['Absorption', 'Reflection', 'Refraction', 'Insulation'],
+      correctIndex: 1,
+      difficulty: 1,
+      topic: 'Light',
+      hint: 'You see yourself doing it in a mirror.',
+      explanation:
+          'Reflection is light bouncing off a surface. Smooth, shiny surfaces like mirrors reflect light so clearly you can see yourself.',
+    ),
+    ScienceQuestion(
+      id: 'bank_phys_017',
+      skillId: 'skill_physical_sciences',
+      question: 'Which of these lets electricity flow through it easily? ⚡',
+      options: [
+        'A copper wire',
+        'A rubber band',
+        'A wooden ruler',
+        'A glass jar'
+      ],
+      correctIndex: 0,
+      difficulty: 1,
+      topic: 'Conductors',
+      hint: 'The wires in your house are made of this.',
+      explanation:
+          'Copper is a good conductor — electricity flows along it easily. That is why power cords use copper inside plastic insulation.',
+    ),
+    ScienceQuestion(
+      id: 'bank_phys_018',
+      skillId: 'skill_physical_sciences',
+      question: 'What is friction? 🛞',
+      options: [
+        'A type of light beam',
+        'A form of sound',
+        'A force between rubbing surfaces that slows them down',
+        'A planet\'s pull on an object'
+      ],
+      correctIndex: 2,
+      difficulty: 2,
+      topic: 'Forces',
+      hint: 'Rub your hands together and feel the warmth.',
+      explanation:
+          'Friction is the force created when two surfaces slide against each other. It slows movement down and can even make heat.',
+    ),
+    ScienceQuestion(
+      id: 'bank_phys_019',
+      skillId: 'skill_physical_sciences',
+      question: 'Sounds are made when objects do what? 🔊',
+      options: ['Glow', 'Melt', 'Freeze', 'Vibrate'],
+      correctIndex: 3,
+      difficulty: 1,
+      topic: 'Sound',
+      hint: 'A drum skin wiggles backwards and forwards when you hit it.',
+      explanation:
+          'Every sound starts with a vibration — something moving backwards and forwards very fast. Those vibrations travel through the air as sound waves to your ear.',
+    ),
+    ScienceQuestion(
+      id: 'bank_phys_020',
+      skillId: 'skill_physical_sciences',
+      question: 'Which of these moves the fastest? 🚀',
+      options: [
+        'Light through empty space',
+        'Sound through air',
+        'A jet plane',
+        'A cyclist racing downhill'
+      ],
+      correctIndex: 0,
+      difficulty: 3,
+      topic: 'Speed of Light',
+      hint: 'Nothing in the universe moves faster.',
+      explanation:
+          'Light travels about 300,000 kilometres every second through space — the fastest anything can travel. Sound is far, far slower.',
+    ),
+    ScienceQuestion(
+      id: 'bank_phys_021',
+      skillId: 'skill_physical_sciences',
+      question: 'Which of these objects will a magnet pick up? 🧲',
+      options: [
+        'A plastic bottle',
+        'An iron nail',
+        'A wooden spoon',
+        'A glass marble'
+      ],
+      correctIndex: 1,
+      difficulty: 2,
+      topic: 'Magnets',
+      hint: 'Try this experiment at home — carefully.',
+      explanation:
+          'Magnets attract materials containing iron. Plastic, wood and glass are not magnetic at all.',
+    ),
+    ScienceQuestion(
+      id: 'bank_phys_022',
+      skillId: 'skill_physical_sciences',
+      question: 'What does an insulator do? 🧤',
+      options: [
+        'Speeds up electrical currents',
+        'Turns objects into magnets',
+        'Stops heat or electricity passing through easily',
+        'Blocks all sound'
+      ],
+      correctIndex: 2,
+      difficulty: 2,
+      topic: 'Insulators and Conductors',
+      hint: 'Winter gloves and power cords are both wrapped in one.',
+      explanation:
+          'Insulators slow the flow of heat and electricity. That is why cables are covered in rubber or plastic — to keep people safe.',
+    ),
+    ScienceQuestion(
+      id: 'bank_phys_023',
+      skillId: 'skill_physical_sciences',
+      question: 'A metal spoon left in hot soup becomes hot. What is happening?',
+      options: [
+        'The spoon makes its own heat',
+        'Heat energy travels up the metal — this is conduction',
+        'Sunlight inside the soup',
+        'Magnetism warms the handle'
+      ],
+      correctIndex: 1,
+      difficulty: 3,
+      topic: 'Heat Transfer',
+      hint: 'The heat creeps along the solid spoon, particle by particle.',
+      explanation:
+          'Metal conducts heat well: fast-moving, hot particles pass their energy along the spoon to the cooler end. This transfer is called conduction.',
+    ),
+    ScienceQuestion(
+      id: 'bank_phys_024',
+      skillId: 'skill_physical_sciences',
+      question: 'What does gravity do? 🍎',
+      options: [
+        'Pushes objects apart',
+        'Makes objects glow',
+        'Freezes things in place',
+        'Pulls objects towards each other'
+      ],
+      correctIndex: 3,
+      difficulty: 1,
+      topic: 'Gravity',
+      hint: 'It is why dropped toast always lands on the floor.',
+      explanation:
+          'Gravity is a force that pulls objects towards each other. Earth\'s gravity is huge, so dropped things fall downwards.',
+    ),
+    ScienceQuestion(
+      id: 'bank_phys_025',
+      skillId: 'skill_physical_sciences',
+      question: 'Which of these machines uses an electromagnet for its heavy lifting? 🏗',
+      options: [
+        'A scrap-metal yard crane',
+        'A wooden clothes peg',
+        'A glass measuring jug',
+        'A paper drinking straw'
+      ],
+      correctIndex: 0,
+      difficulty: 3,
+      topic: 'Electromagnets',
+      hint: 'The magnet switches off whenever the load must drop.',
+      explanation:
+          'An electromagnet is a magnet that works only while electricity flows. Scrapyard cranes switch the current on to hold steel cars and off to release them.',
+    ),
+
+    // ENVIRONMENT additions (Earth sciences)
+    ScienceQuestion(
+      id: 'bank_env_006',
+      skillId: 'skill_earth_sciences',
+      question: 'Which bin should a used soft-drink can go into? ♻️',
+      options: [
+        'The general waste bin',
+        'The green waste bin',
+        'The yellow-lidded recycling bin',
+        'Down the stormwater drain'
+      ],
+      correctIndex: 2,
+      difficulty: 1,
+      topic: 'Recycling',
+      hint: 'Look for the yellow lid.',
+      explanation:
+          'Metal cans are collected for recycling and made into new cans and other products. Recycling saves raw materials and energy.',
+    ),
+    ScienceQuestion(
+      id: 'bank_env_007',
+      skillId: 'skill_earth_sciences',
+      question: 'What is solar energy? ☀️',
+      options: [
+        'Energy drilled from deep underground',
+        'Energy captured from sunlight',
+        'Energy from burning rubbish',
+        'Energy from lightning strikes'
+      ],
+      correctIndex: 1,
+      difficulty: 2,
+      topic: 'Renewable Energy',
+      hint: 'Solar panels on roofs gather it.',
+      explanation:
+          'Solar panels turn sunlight into electricity. Because sunlight will never run out, solar energy is a renewable resource.',
+    ),
+    ScienceQuestion(
+      id: 'bank_env_008',
+      skillId: 'skill_earth_sciences',
+      question: 'Which energy source cannot be replaced within a human lifetime?',
+      options: ['Wind', 'Sunlight', 'Wave power', 'Coal'],
+      correctIndex: 3,
+      difficulty: 3,
+      topic: 'Renewable Resources',
+      hint: 'It took millions of years to form underground.',
+      explanation:
+          'Coal formed from ancient plants over millions of years, so once it is burnt it is gone. Wind, sunlight and waves keep renewing themselves.',
+    ),
+    ScienceQuestion(
+      id: 'bank_env_009',
+      skillId: 'skill_earth_sciences',
+      question: 'Why are national parks protected? 🐨',
+      options: [
+        'So native animals and plants have safe places to live',
+        'To hide damaged forests',
+        'To make room for larger cities',
+        'To trap more heat'
+      ],
+      correctIndex: 0,
+      difficulty: 2,
+      topic: 'Conservation',
+      hint: 'They are safe homes for wildlife — playgrounds for people, too.',
+      explanation:
+          'National parks conserve habitats and biodiversity so native species can thrive, while everyone can still enjoy and learn about nature.',
+    ),
   ];
 
   // ── Public API ──────────────────────────────────────────────────────────────
@@ -986,6 +1589,10 @@ class ScienceQuestionBank {
 
     return fallback.take(count).toList();
   }
+
+  /// Unmodifiable snapshot of the full bank — used by audit gates that
+  /// check uniqueness and valid answer keys.
+  static List<ScienceQuestion> get all => List.unmodifiable(_all);
 
   /// Returns the total number of questions in the bank.
   static int get totalCount => _all.length;

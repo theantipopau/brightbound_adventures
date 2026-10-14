@@ -106,7 +106,12 @@ class AustralianNAPLANQuestions {
       },
     ];
 
-    final nums = _getNumberPair(difficulty, 1, 10);
+    final nums = _getNumberPair(
+      difficulty,
+      1,
+      10,
+      category: 'y1-addition-d$difficulty',
+    );
     final scenario = scenarios[_random.nextInt(scenarios.length)];
     final question = scenario['context']!
         .replaceAll('{a}', '${nums[0]}')
@@ -202,7 +207,12 @@ class AustralianNAPLANQuestions {
       },
     ];
 
-    final nums = _getSubtractionPair(difficulty, 1, 10);
+    final nums = _getSubtractionPair(
+      difficulty,
+      1,
+      20,
+      category: 'y1-subtraction-d$difficulty',
+    );
     final scenario = scenarios[_random.nextInt(scenarios.length)];
     final question = scenario['context']!
         .replaceAll('{a}', '${nums[0]}')
@@ -218,56 +228,110 @@ class AustralianNAPLANQuestions {
   }
 
   static Map<String, dynamic> _year1Counting(int difficulty) {
-    final scenarios = [
-      'Count by twos: 2, 4, 6, 8, ?',
-      'Count by fives: 5, 10, 15, 20, ?',
-      'What number comes after 19?',
-      'What number comes before 30?',
-      'Skip count by tens: 10, 20, 30, ?',
-    ];
-
-    final answers = [10, 25, 20, 29, 40];
-    final index = _random.nextInt(scenarios.length);
-
+    // B1: parameterised counting — skip patterns and neighbour-look-ups
+    // drawn from a wide deterministic space, so the topic now supports
+    // hundreds of unique questions instead of five fixed texts.
+    final useSkip = _random.nextBool();
+    if (useSkip) {
+      // 3 steps × 71 starting terms × 2 shown-run lengths = 142 combos,
+      // unique-index drawn so every next term stays ≤ 100. Runs show ≥ 2
+      // terms so the step is always inferable and the answer unambiguous.
+      const steps = [2, 5, 10];
+      const stepSpaces = [47, 17, 7];
+      final combo = _getUniqueDraw('y1-counting-skip-d$difficulty', 71 * 2);
+      var within = combo % 71;
+      final shownCount = 2 + combo ~/ 71; // 2..3 shown terms
+      var step = 0;
+      for (var s = 0; s < steps.length; s++) {
+        if (within < stepSpaces[s]) {
+          step = steps[s];
+          break;
+        }
+        within -= stepSpaces[s];
+      }
+      final start = step + step * within;
+      final run = <String>[];
+      for (var i = 0; i < shownCount; i++) {
+        run.add('${start + step * i}');
+      }
+      final answer = start + step * shownCount;
+      return {
+        'question': 'Skip count: ${run.join(', ')}, ?',
+        'answer': answer,
+        'type': 'counting',
+        'difficulty': difficulty,
+        'theme': 'patterns',
+      };
+    }
+    // Neighbour look-ups: after/before across a 5–119 ladder (230 combos).
+    final combo = _getUniqueDraw('y1-counting-neighbour-d$difficulty', 230);
+    final after = combo < 115;
+    final n = 5 + combo % 115;
     return {
-      'question': scenarios[index],
-      'answer': answers[index],
+      'question': 'What number comes ${after ? 'after' : 'before'} $n?',
+      'answer': after ? n + 1 : n - 1,
       'type': 'counting',
       'difficulty': difficulty,
+      'theme': 'place',
     };
   }
 
   static Map<String, dynamic> _year1Money(int difficulty) {
-    final scenarios = [
-      {
-        'context':
-            'A paddle pop costs \$2. You have a \$5 note. How much change?',
-        'answer': 3
-      },
-      {
-        'context': 'Chips cost \$1 and a drink costs \$2. How much for both?',
-        'answer': 3
-      },
-      {
-        'context': 'You have three \$1 coins. How many dollars do you have?',
-        'answer': 3
-      },
-      {
-        'context': 'A sausage roll is \$4. How many \$1 coins do you need?',
-        'answer': 4
-      },
-      {
-        'context':
-            'Mum gives you \$5. You spend \$2 at the canteen. Money left?',
-        'answer': 3
-      },
+    // B1: parameterised tuckshop money — no 5c coins, whole-dollar prices,
+    // every branch drawn through the unique-draw memory so no text
+    // repeats within a difficulty row.
+    const items = [
+      'paddle pop',
+      'sausage roll',
+      'meat pie',
+      'apple',
+      'juice box',
+      'banana',
     ];
+    const flavours = ['chocolate', 'strawberry', 'banana', 'raspberry'];
+    final scenario = _random.nextInt(3);
 
-    final scenario = scenarios[_random.nextInt(scenarios.length)];
-
+    if (scenario == 0) {
+      // Buy two different items: 30 ordered item pairs × 16 price pairs.
+      final combo = _getUniqueDraw('y1-money-buy-d$difficulty', 30 * 16);
+      final first = items[combo ~/ 80];
+      final second =
+          items[(combo ~/ 80 + 1 + (combo % 80) ~/ 16) % items.length];
+      final a = ((combo % 16) ~/ 4) + 1;
+      final b = (combo % 4) + 1;
+      return {
+        'question':
+            'A $first costs \$$a. A $second costs \$$b. How much for both?',
+        'answer': a + b,
+        'type': 'money',
+        'difficulty': difficulty,
+        'theme': 'currency',
+      };
+    }
+    if (scenario == 1) {
+      // Change from a note after buying an item: 3 notes × 4 prices × 6 items.
+      const notes = [5, 10, 20];
+      final combo = _getUniqueDraw('y1-money-change-d$difficulty', 3 * 4 * 6);
+      final note = notes[combo ~/ 24];
+      final price = ((combo ~/ 6) % 4) + 1; // 1..4, always less than any note
+      final item = items[combo % items.length];
+      return {
+        'question': 'A $item costs \$$price. You pay with a \$$note note. '
+            'How much change?',
+        'answer': note - price,
+        'type': 'money',
+        'difficulty': difficulty,
+        'theme': 'currency',
+      };
+    }
+    // Coin-counting: milk flavours, whole-dollar coin piles (2..12 coins).
+    final combo = _getUniqueDraw('y1-money-coins-d$difficulty', 11 * 4);
+    final coins = 2 + combo ~/ 4;
+    final flavourChoice = flavours[combo % 4];
     return {
-      'question': scenario['context'],
-      'answer': scenario['answer'],
+      'question': 'Each $flavourChoice paddle pop costs \$1. You buy $coins '
+          'paddle pops. How many dollars?',
+      'answer': coins,
       'type': 'money',
       'difficulty': difficulty,
       'theme': 'currency',
@@ -372,7 +436,12 @@ class AustralianNAPLANQuestions {
       },
     ];
 
-    final nums = _getNumberPair(difficulty, 2, 12);
+    final nums = _getNumberPair(
+      difficulty,
+      2,
+      12,
+      category: 'y3-multiplication-d$difficulty',
+    );
     final scenario = scenarios[_random.nextInt(scenarios.length)];
     final question = scenario['context']!
         .replaceAll('{a}', '${nums[0]}')
@@ -388,9 +457,15 @@ class AustralianNAPLANQuestions {
   }
 
   static Map<String, dynamic> _year3Division(int difficulty) {
-    final divisor =
-        difficulty == 1 ? _random.nextInt(4) + 2 : _random.nextInt(8) + 3;
-    final quotient = _random.nextInt(8) + 2;
+    // B1: (divisor, quotient) drawn by unique index so no text repeats in
+    // a row: d1 divisor 2–10 × quotient 2–10, d2 3–10 × 2–11, d3 3–10 × 2–12.
+    final divisorMin = difficulty == 1 ? 2 : 3;
+    final quotientMax = difficulty == 2 ? 11 : 10;
+    final quotCells = quotientMax - 1;
+    final combo = _getUniqueDraw(
+        'y3-division-d$difficulty', (11 - divisorMin) * quotCells);
+    final divisor = divisorMin + combo ~/ quotCells;
+    final quotient = 2 + combo % quotCells;
     final dividend = divisor * quotient;
 
     final scenarios = [
@@ -473,181 +548,109 @@ class AustralianNAPLANQuestions {
   }
 
   static Map<String, dynamic> _year3Fractions(int difficulty) {
-    final scenarios = [
-      // Original scenarios
-      {
-        'context': 'You eat 1/2 of a lamington. What fraction is left?',
-        'answer': '1/2',
-        'theme': 'food'
-      },
-      {
-        'context':
-            'A pizza is cut into 4 equal pieces. You eat 1 piece. What fraction did you eat?',
-        'answer': '1/4',
-        'theme': 'food'
-      },
-      {
-        'context':
-            'There are 8 slices of watermelon. You eat 2. What fraction did you eat?',
-        'answer': '1/4',
-        'theme': 'food'
-      },
-      {
-        'context':
-            'A chocolate bar has 6 pieces. You eat 3. What fraction did you eat?',
-        'answer': '1/2',
-        'theme': 'food'
-      },
-      // New scenarios (expansion)
-      {
-        'context':
-            'A cake is cut into 6 equal pieces. You take 2 pieces. What fraction is that?',
-        'answer': '1/3',
-        'theme': 'food'
-      },
-      {
-        'context':
-            'Your class has 20 students. 5 have blue eyes. What fraction have blue eyes?',
-        'answer': '1/4',
-        'theme': 'school'
-      },
-      {
-        'context':
-            'A ribbon is 10 metres long. You cut off 5 metres. What fraction did you cut?',
-        'answer': '1/2',
-        'theme': 'craft'
-      },
-      {
-        'context':
-            'There are 12 biscuits in a packet. You eat 3. What fraction did you eat?',
-        'answer': '1/4',
-        'theme': 'food'
-      },
-      {
-        'context':
-            'A hour has 60 minutes. 15 minutes is what fraction of an hour?',
-        'answer': '1/4',
-        'theme': 'time'
-      },
-      {
-        'context':
-            'A metre has 100 centimetres. 25 centimetres is what fraction?',
-        'answer': '1/4',
-        'theme': 'measurement'
-      },
-      {
-        'context':
-            'There are 8 flowers. 4 are red and 4 are blue. Red flowers are what fraction?',
-        'answer': '1/2',
-        'theme': 'nature'
-      },
-      {
-        'context':
-            'A book has 100 pages. You read 50 pages. What fraction have you read?',
-        'answer': '1/2',
-        'theme': 'reading'
-      },
+    // B1: parameterised unit fractions — wholes and pieces eaten drawn by
+    // unique index across the 56 valid pairs, so texts never repeat within
+    // a difficulty row; answers are reduced fractions.
+    const wholesOptions = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
+    const contexts = [
+      'A watermelon is cut into {w} equal slices. You eat {p} of them. What fraction did you eat?',
+      'A fruit loaf holds {w} slices. You share {p} of them at play lunch. What fraction was shared?',
+      'A recipe makes {w} pikelets. You eat {p} of them. What fraction is gone?',
     ];
-
-    final scenario = scenarios[_random.nextInt(scenarios.length)];
-
+    var remain = _getUniqueDraw('y3-fractions-d$difficulty', 56);
+    var wholes = wholesOptions.first;
+    var eaten = 1;
+    for (final w in wholesOptions) {
+      if (remain < w - 1) {
+        wholes = w;
+        eaten = 1 + remain;
+        break;
+      }
+      remain -= w - 1;
+    }
+    var gcdA = eaten;
+    var gcdB = wholes;
+    while (gcdA != 0) {
+      final r = gcdB % gcdA;
+      gcdB = gcdA;
+      gcdA = r;
+    }
+    final scenario = contexts[_random.nextInt(contexts.length)];
     return {
-      'question': scenario['context'],
-      'answer': scenario['answer'],
+      'question': scenario
+          .replaceAll('{w}', '$wholes')
+          .replaceAll('{p}', '$eaten'),
+      'answer': '${eaten ~/ gcdB}/${wholes ~/ gcdB}',
       'type': 'fractions',
       'difficulty': difficulty,
-      'theme': scenario['theme'],
+      'theme': 'food',
     };
   }
 
   static Map<String, dynamic> _year3Measurement(int difficulty) {
-    final scenarios = [
-      // Original scenarios
-      {
-        'context': 'The classroom is 10 metres long. How many centimetres?',
-        'answer': 1000,
-        'unit': 'cm'
-      },
-      {
-        'context':
-            'A cricket pitch is 20 metres long. That\'s how many centimetres?',
-        'answer': 2000,
-        'unit': 'cm'
-      },
-      {
-        'context':
-            'Your water bottle holds 500 millilitres. How many litres is that?',
-        'answer': 0.5,
-        'unit': 'L'
-      },
-      {
-        'context': 'The pool is 50 metres long. In centimetres?',
-        'answer': 5000,
-        'unit': 'cm'
-      },
-      {
-        'context':
-            'A packet of Tim Tams weighs 200 grams. That\'s how many kilograms?',
-        'answer': 0.2,
-        'unit': 'kg'
-      },
-      // New scenarios (expansion)
-      {
-        'context':
-            'A kangaroo is 2 metres tall. A koala is 60 centimetres tall. Difference in centimetres?',
-        'answer': 140,
-        'unit': 'cm'
-      },
-      {
-        'context': 'A beach is 3 kilometres long. How many metres is that?',
-        'answer': 3000,
-        'unit': 'm'
-      },
-      {
-        'context': 'Your backpack weighs 2.5 kilograms. How many grams?',
-        'answer': 2500,
-        'unit': 'g'
-      },
-      {
-        'context': 'A milk carton holds 1 litre. How many millilitres?',
-        'answer': 1000,
-        'unit': 'mL'
-      },
-      {
-        'context':
-            'The school oval is 150 metres long and 120 metres wide. What\'s the perimeter?',
-        'answer': 540,
-        'unit': 'm'
-      },
-      {
-        'context':
-            'A lamington weighs 25 grams. How much do 10 lamingtons weigh in grams?',
-        'answer': 250,
-        'unit': 'g'
-      },
-      {
-        'context':
-            'A recipe needs 250 millilitres of milk. How much in litres?',
-        'answer': 0.25,
-        'unit': 'L'
-      },
-      {
-        'context':
-            'The Great Barrier Reef is 2,300 kilometres long. How many metres?',
-        'answer': 2300000,
-        'unit': 'm'
-      },
+    // B1: parameterised conversions — the value is drawn by unique index
+    // within each unit family so texts never repeat within a difficulty row.
+    const lengthNouns = [
+      'classroom',
+      'rope',
+      'jetty',
+      'fence',
+      'hall',
+      'path',
     ];
-
-    final scenario = scenarios[_random.nextInt(scenarios.length)];
-
-    return {
-      'question': scenario['context'],
-      'answer': scenario['answer'],
-      'type': 'measurement',
-      'difficulty': difficulty,
-      'unit': scenario['unit'],
-    };
+    const areaNouns = ['oval', 'paddock', 'carpet', 'court'];
+    switch (_random.nextInt(4)) {
+      case 0: // metres → centimetres
+        final combo = _getUniqueDraw(
+            'y3-measure-m-d$difficulty', 99 * lengthNouns.length);
+        final metres = 1 + combo ~/ lengthNouns.length;
+        final noun = lengthNouns[combo % lengthNouns.length];
+        return {
+          'question':
+              'The $noun is $metres metres long. How many centimetres?',
+          'answer': metres * 100,
+          'type': 'measurement',
+          'difficulty': difficulty,
+          'unit': 'cm',
+        };
+      case 1: // millilitres → litres
+        final combo = _getUniqueDraw('y3-measure-ml-d$difficulty', 29);
+        final millilitres = (1 + combo) * 100; // 100..2900 mL
+        return {
+          'question': 'A milk bottle holds $millilitres millilitres. '
+              'How many litres is that?',
+          'answer': millilitres / 1000,
+          'type': 'measurement',
+          'difficulty': difficulty,
+          'unit': 'L',
+        };
+      case 2: // grams → kilograms
+        final combo = _getUniqueDraw('y3-measure-g-d$difficulty', 28);
+        final grams = (1 + combo) * 100; // 100..2800 g
+        return {
+          'question':
+              'A parcel weighs $grams grams. How many kilograms is that?',
+          'answer': grams / 1000,
+          'type': 'measurement',
+          'difficulty': difficulty,
+          'unit': 'kg',
+        };
+      default: // rectangle perimeter in metres
+        final combo = _getUniqueDraw(
+            'y3-measure-peri-d$difficulty', 900 * areaNouns.length);
+        final rest = combo ~/ areaNouns.length;
+        final length = 10 + rest ~/ 30; // 10..39 m
+        final width = 10 + rest % 30; // 10..39 m
+        final noun = areaNouns[combo % areaNouns.length];
+        return {
+          'question': 'The $noun is $length metres long and $width metres '
+              'wide. What is the perimeter?',
+          'answer': 2 * (length + width),
+          'type': 'measurement',
+          'difficulty': difficulty,
+          'unit': 'm',
+        };
+    }
   }
 
   // ==================== LITERACY ====================
@@ -958,32 +961,92 @@ class AustralianNAPLANQuestions {
 
   // ==================== HELPER METHODS ====================
 
-  static List<int> _getNumberPair(int difficulty, int min, int max) {
+  /// Recently served (a, b) number pairs, keyed by generator category, so
+  /// a child never sees the same pair (and therefore the same question
+  /// text) twice in a row alongside the same scenario. Pool is capped so
+  /// the memory stays banded per topic rather than global.
+  static final Map<String, Set<String>> _recentPairs = {};
+
+  /// Clears all anti-repetition memory. Bounds are per play session, so a
+  /// new session (or a fresh test) starts with the full parameter space
+  /// available again.
+  static void resetSessionMemory() => _recentPairs.clear();
+
+  static List<int> _getNumberPair(
+    int difficulty,
+    int min,
+    int max, {
+    String category = 'default',
+  }) {
+    final memory = _recentPairs.putIfAbsent(category, () => <String>{});
+    List<int> pair;
+    var attempts = 0;
+    do {
+      pair = _drawNumberPair(difficulty, min, max);
+      attempts++;
+    } while (memory.contains('${pair[0]},${pair[1]}') &&
+        attempts < 40); // saturate: accept a repeat rather than hang
+    memory.add('${pair[0]},${pair[1]}');
+    return pair;
+  }
+
+  /// B1: single-number unique draws backed by the same per-category memory
+  /// as pair draws. Guarantees distinct parameter values until the space
+  /// is honestly exhausted — used by the narrow generators (counting,
+  /// money, division, fractions, measurement) so their texts never repeat
+  /// within a difficulty row without needing oversized question pools.
+  static int _getUniqueDraw(String category, int spaceSize) {
+    final memory = _recentPairs.putIfAbsent(category, () => <String>{});
+    int value;
+    var attempts = 0;
+    do {
+      value = _random.nextInt(spaceSize);
+      attempts++;
+    } while (!memory.add('$value') && attempts < 40);
+    return value;
+  }
+
+  // Pair capacity is sized per difficulty so sampling a topic never
+  // saturates: easy = 10 cells (100 pairs), medium = 14 (196), hard = the
+  // full template range plus headroom (256). Combined with per-category,
+  // per-difficulty pair memory this keeps every served text unique until
+  // its topic row is genuinely exhausted.
+  static List<int> _drawNumberPair(int difficulty, int min, int max) {
     switch (difficulty) {
       case 1: // Easy
-        final a = _random.nextInt(5) + min;
-        final b = _random.nextInt(5) + min;
+        final a = _random.nextInt(10) + min;
+        final b = _random.nextInt(10) + min;
         return [a, b];
       case 2: // Medium
-        final a = _random.nextInt(8) + min;
-        final b = _random.nextInt(8) + min;
+        final a = _random.nextInt(14) + min;
+        final b = _random.nextInt(14) + min;
         return [a, b];
       case 3: // Hard
-        final a = _random.nextInt(max - min) + min;
-        final b = _random.nextInt(max - min) + min;
+        final a = _random.nextInt(max - min + 8) + min;
+        final b = _random.nextInt(max - min + 8) + min;
         return [a, b];
       default:
         return [_random.nextInt(max) + min, _random.nextInt(max) + min];
     }
   }
 
-  static List<int> _getSubtractionPair(int difficulty, int min, int max) {
-    final nums = _getNumberPair(difficulty, min, max);
-    // Ensure a >= b for valid subtraction
-    if (nums[0] < nums[1]) {
-      return [nums[1], nums[0]];
+  static List<int> _getSubtractionPair(int difficulty, int min, int max,
+      {String category = 'default'}) {
+    // Normalise FIRST, then dedupe: (2,5) and (5,2) render as the same
+    // subtraction text, so the pair memory must key the ordered form.
+    // B1: pairs are drawn by unique index over the ordered (a >= b) space,
+    // so every pair within a row is distinct until the space is exhausted.
+    final width = max - min + 1;
+    final space = width * (width + 1) ~/ 2;
+    var remain = _getUniqueDraw(category, space);
+    var a = min;
+    var rowSize = 1;
+    while (remain >= rowSize) {
+      remain -= rowSize;
+      rowSize++;
+      a++;
     }
-    return nums;
+    return [a, min + remain];
   }
 
   /// Australian-specific cultural references

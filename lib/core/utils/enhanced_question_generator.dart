@@ -6,7 +6,9 @@ abstract class EnhancedQuestionGenerator {
 
   /// Pool of recently used questions to avoid repetition (stores question IDs)
   static final Set<String> _recentQuestions = {};
-  static const int _maxRecentQuestions = 50;
+  // Audit B2: raised from 50 — a session can run 60+ questions before the
+  // recent pool turns over twice within a day of play.
+  static const int _maxRecentQuestions = 200;
 
   /// Track recently used values to ensure variety
   static final Map<String, List<dynamic>> _recentValues = {};
