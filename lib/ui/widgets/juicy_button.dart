@@ -273,12 +273,15 @@ class _JuicyButtonState extends State<JuicyButton>
         // Flexible + ellipsis so a narrow fixed-size button (icon-dock
         // style usage) shrinks the label instead of overflowing its
         // bounds — mainAxisSize.min alone does not let Row content
-        // shrink below its natural width.
+        // shrink below its natural width. Labels with an explicit '\n'
+        // (e.g. the world-map action bar: 'Next\nQuest') render on two
+        // centred lines; the old maxLines:1 collapsed them to 'My…' etc.
         Flexible(
           child: Text(
             widget.label,
-            maxLines: 1,
+            maxLines: widget.label.contains('\n') ? 2 : 1,
             overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: AppTheme.fontPrimary,
               fontSize: widget.fontSize,

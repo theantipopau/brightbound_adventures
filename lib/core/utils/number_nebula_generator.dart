@@ -755,7 +755,17 @@ class NumberNebulaQuestionGenerator {
 
     if (naplan.containsKey('options')) {
       options.addAll((naplan['options'] as List).map((e) => e.toString()));
-      correctIndex = options.indexOf(naplan['answer'].toString());
+      // Cross-referenced against the curated NAPLAN JSON bank (which stores
+      // correct_index directly): never trust a re-derived index blindly.
+      // Prefer an explicit correct_index when the caller supplies one,
+      // otherwise fall back to the answer-text lookup with a safe default.
+      final explicit = naplan['correct_index'] ?? naplan['correctIndex'];
+      if (explicit is int && explicit >= 0 && explicit < options.length) {
+        correctIndex = explicit;
+      } else {
+        final found = options.indexOf(naplan['answer'].toString());
+        correctIndex = found >= 0 ? found : 0;
+      }
     } else {
       // Generate options if none provided
       final answer = int.tryParse(naplan['answer'].toString()) ?? 0;
@@ -770,14 +780,20 @@ class NumberNebulaQuestionGenerator {
       correctIndex = options.indexOf(answer.toString());
     }
 
+    // Curated NAPLAN JSON entries carry a hint but no separate explanation;
+    // fall back so the "why" surface never renders empty.
+    final hint = naplan['hint']?.toString();
+    final explanation =
+        naplan['explanation']?.toString() ?? hint ?? 'Well done — keep going!';
     return NumeracyQuestion(
       id: id,
       skillId: skillId,
       question: naplan['question'] ?? 'No question text',
       options: options,
       correctIndex: correctIndex,
-      difficulty: naplan['difficulty'] ?? 1,
-      explanation: naplan['explanation'],
+      difficulty: (naplan['difficulty'] as int?) ?? 1,
+      hint: hint,
+      explanation: explanation,
     );
   }
 

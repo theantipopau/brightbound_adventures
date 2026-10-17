@@ -110,3 +110,7 @@ app.*.map.json
 # Local agent tooling scratch
 .freebuff/
 .qa/
+
+# API worker deps + compiled output (rebuild via `npm install && npx tsc`)
+brightbound-api/node_modules/
+brightbound-api/src/index.js

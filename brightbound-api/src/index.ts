@@ -108,6 +108,69 @@ function generateUUID(): string {
   return crypto.randomUUID();
 }
 
+// ============================================================================
+// Rate Limiting (per-isolate, in-memory sliding window)
+//
+// Workers run many isolates, so this is best-effort abuse friction rather
+// than a global counter — it stops single-connection brute force against
+// the auth endpoints, which is the actual threat here. A global limiter
+// would need a Durable Object or KV with all its latency/cost tradeoffs.
+// ============================================================================
+
+interface RateBucket {
+  timestamps: number[];
+}
+
+const rateBuckets = new Map<string, RateBucket>();
+
+const RATE_LIMITS: Record<string, { max: number; windowMs: number }> = {
+  // 10 attempts/minute per IP on each auth endpoint.
+  auth: { max: 10, windowMs: 60_000 },
+  // Everything else: generous burst cap so classroom bulk-enrolment
+  // (30 students at once) never trips it, but scrapers do.
+  default: { max: 120, windowMs: 60_000 },
+};
+
+function rateLimitResponse(retryAfterSec: number): Response {
+  return addCorsHeaders(
+    new Response(JSON.stringify({ error: 'Too many requests, slow down' }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': String(retryAfterSec),
+      },
+    })
+  );
+}
+
+function checkRateLimit(req: any, bucket: keyof typeof RATE_LIMITS = 'default'): Response | null {
+  const ip = req.headers?.get?.('CF-Connecting-IP') ?? 'unknown';
+  const key = `${bucket}:${ip}`;
+  const now = Date.now();
+  const { max, windowMs } = RATE_LIMITS[bucket];
+  let entry = rateBuckets.get(key);
+  if (!entry) {
+    entry = { timestamps: [] };
+    rateBuckets.set(key, entry);
+  }
+  entry.timestamps = entry.timestamps.filter(t => now - t < windowMs);
+  if (entry.timestamps.length >= max) {
+    const oldest = entry.timestamps[0];
+    return rateLimitResponse(Math.ceil((windowMs - (now - oldest)) / 1000));
+  }
+  entry.timestamps.push(now);
+  // Bound memory: drop idle buckets opportunistically.
+  if (rateBuckets.size > 5000) {
+    for (const [k, v] of rateBuckets) {
+      if (v.timestamps.length === 0 || now - v.timestamps[v.timestamps.length - 1] > windowMs) {
+        rateBuckets.delete(k);
+      }
+      if (rateBuckets.size <= 4000) break;
+    }
+  }
+  return null;
+}
+
 async function getAuthorizedTeacherId(env: Env, token?: string | null): Promise<string | null> {
   if (!token) return null;
   const authToken = await env.DB.prepare(
@@ -224,6 +287,8 @@ async function initializeDatabase(db: D1Database): Promise<void> {
 // Register Teacher
 router.post('/api/teachers/register', async (req: any, env: Env) => {
   try {
+    const limited = checkRateLimit(req, 'auth');
+    if (limited) return limited;
     const { email, password, fullName, schoolName, schoolDistrict, gradeSpecialty, phoneNumber } = await req.json();
 
     // Validation
@@ -291,6 +356,8 @@ router.post('/api/teachers/register', async (req: any, env: Env) => {
 // Login Teacher
 router.post('/api/teachers/login', async (req: any, env: Env) => {
   try {
+    const limited = checkRateLimit(req, 'auth');
+    if (limited) return limited;
     const { email, password } = await req.json();
 
     if (!email || !password) {
@@ -483,6 +550,12 @@ router.post('/api/teachers/:teacherId/change-password', async (req: any, env: En
 
 router.post('/api/teachers/reset-password-request', async (req: any) => {
   try {
+    // NOTE: no reset email is wired up yet — this endpoint intentionally
+    // returns a generic success (anti-enumeration) and is rate-limited so
+    // it cannot be abused for email-oracle probing. Do not return
+    // per-email results here when delivery is implemented.
+    const limited = checkRateLimit(req, 'auth');
+    if (limited) return limited;
     const { email } = await req.json();
     if (!email) {
       return errorResponse('Email is required', 400);

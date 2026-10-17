@@ -260,9 +260,13 @@ class _SkillPracticeScreenState extends State<SkillPracticeScreen> {
     if (_questions.isEmpty) {
       // Honest empty state: no fake questions, no placeholder bait.
       return Scaffold(
+        // Single-back empty state: the explicit "Back to Zone" button
+        // below is the only back action (AppBar chevron removed).
         appBar: AppBar(
           title: Text(widget.skill.name),
           backgroundColor: widget.themeColor,
+          automaticallyImplyLeading: false,
+          centerTitle: true,
         ),
         body: Center(
           child: Padding(

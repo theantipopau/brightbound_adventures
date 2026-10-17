@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:brightbound_adventures/core/services/audio_manager.dart';
 
 /// Sound Effects Manager for UI feedback sounds
 /// Handles button clicks, success/error sounds, and UI interactions
@@ -31,25 +32,34 @@ class SoundEffectsService {
   /// Check if sound effects are enabled
   bool get isEnabled => _isEnabled;
 
-  /// Play button click sound
+  /// Play button click sound (real bundled asset via AudioManager).
   Future<void> playButtonClick() async {
     if (!_isEnabled) return;
-    await SystemSound.play(SystemSoundType.click);
+    try {
+      await AudioManager().playButtonClick();
+    } catch (_) {
+      await SystemSound.play(SystemSoundType.click);
+    }
   }
 
-  /// Play success sound (correct answer, achievement)
+  /// Play success sound (real correct-answer chime + haptics).
   Future<void> playSuccess() async {
     if (!_isEnabled) return;
-    await SystemSound.play(SystemSoundType.click);
-    // In a full implementation, you'd use audioplayers package
-    // and load custom sound files from assets/sounds/
+    try {
+      await AudioManager().playCorrectAnswer();
+    } catch (_) {
+      await SystemSound.play(SystemSoundType.click);
+    }
   }
 
-  /// Play error sound (incorrect answer)
+  /// Play error sound (real wrong-answer buzz + haptics).
   Future<void> playError() async {
     if (!_isEnabled) return;
-    await HapticFeedback.lightImpact();
-    // Would play error.mp3 in full implementation
+    try {
+      await AudioManager().playIncorrectAnswer();
+    } catch (_) {
+      await HapticFeedback.lightImpact();
+    }
   }
 
   /// Play UI interaction sound (toggle, swipe)
@@ -58,18 +68,24 @@ class SoundEffectsService {
     await HapticFeedback.selectionClick();
   }
 
-  /// Play star earned sound
+  /// Play star earned sound (real unlock chime).
   Future<void> playStarEarned() async {
     if (!_isEnabled) return;
-    await SystemSound.play(SystemSoundType.click);
-    // Would play star.mp3 in full implementation
+    try {
+      await AudioManager().playUnlock();
+    } catch (_) {
+      await SystemSound.play(SystemSoundType.click);
+    }
   }
 
-  /// Play level complete sound
+  /// Play level complete sound (real level-up fanfare).
   Future<void> playLevelComplete() async {
     if (!_isEnabled) return;
-    await SystemSound.play(SystemSoundType.click);
-    // Would play level_complete.mp3 in full implementation
+    try {
+      await AudioManager().playLevelUp();
+    } catch (_) {
+      await SystemSound.play(SystemSoundType.click);
+    }
   }
 
   /// Play navigation sound

@@ -22,8 +22,8 @@ void main() {
     'assets/sounds/sfx/ui/click.wav',
     'assets/sounds/sfx/ui/whoosh.wav',
     'assets/sounds/sfx/ui/popup.wav',
-    'assets/sounds/music/menu.wav',
-    'assets/sounds/music/splash.wav',
+    'assets/sounds/music/menu.mp3',
+    'assets/sounds/music/splash.mp3',
   ];
 
   const zones = <String>[
@@ -46,7 +46,7 @@ void main() {
 
   test('all eight zones ship ambient loops', () async {
     for (final zone in zones) {
-      final path = 'assets/sounds/music/zones/$zone.wav';
+      final path = 'assets/sounds/music/zones/$zone.mp3';
       final data = await rootBundle.load(path);
       expect(data.lengthInBytes, greaterThan(0), reason: path);
     }

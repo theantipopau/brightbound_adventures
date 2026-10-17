@@ -446,7 +446,7 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
                         color: Colors.white.withValues(alpha: 0.35),
                         width: 1.5),
                   ),
-                  child: Image.asset('assets/images/scroll.PNG',
+                  child: Image.asset('assets/images/scroll.webp',
                       fit: BoxFit.contain),
                 ),
               ),

@@ -341,7 +341,7 @@ class WorldTokens {
 
   /// Generated badge art for this world (tool/generate_zone_assets.py).
   /// Falls back to [emoji] at the call site via ZoneBadge's errorBuilder.
-  String get badgeAsset => 'assets/images/zones/$zoneId.png';
+  String get badgeAsset => 'assets/images/zones/$zoneId.webp';
 
   BoxDecoration cardDecoration({bool hovered = false}) => BoxDecoration(
         gradient: LinearGradient(

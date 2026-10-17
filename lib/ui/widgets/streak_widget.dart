@@ -21,7 +21,6 @@ class _StreakWidgetState extends State<StreakWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _glowAnimation;
 
   @override
   void initState() {
@@ -39,13 +38,6 @@ class _StreakWidgetState extends State<StreakWidget>
       curve: Curves.easeInOut,
     ));
 
-    _glowAnimation = Tween<double>(
-      begin: 2.0,
-      end: 8.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
   }
 
   @override
@@ -91,10 +83,14 @@ class _StreakWidgetState extends State<StreakWidget>
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
+            // Static blur: the old code animated blurRadius 2→8 every
+            // frame, re-rasterizing the shadow continuously. The pulse
+            // feel now comes from _scaleAnimation on the emoji (cheap
+            // transform) with the glow fixed at a soft mid value.
             boxShadow: [
               BoxShadow(
                 color: color.withValues(alpha: 0.5),
-                blurRadius: _glowAnimation.value,
+                blurRadius: 6,
                 spreadRadius: 1,
               ),
             ],
@@ -149,10 +145,11 @@ class _StreakWidgetState extends State<StreakWidget>
               color: color.withValues(alpha: 0.5),
               width: 2,
             ),
+            // Static blur (see note above): pulse comes from scale.
             boxShadow: [
               BoxShadow(
                 color: color.withValues(alpha: 0.3),
-                blurRadius: _glowAnimation.value,
+                blurRadius: 6,
                 spreadRadius: 0,
               ),
             ],
@@ -453,11 +450,13 @@ class _EnhancedStreakWidgetState extends State<EnhancedStreakWidget>
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
+            // Static blur (see note above): pulse comes from the
+            // animated alpha + the widget's scale, not shadow shape.
             boxShadow: [
               BoxShadow(
                 color: color.withValues(
                     alpha: 0.3 + (_pulseAnimation.value * 0.4)),
-                blurRadius: 12 + (_pulseAnimation.value * 8),
+                blurRadius: 16,
                 spreadRadius: 1,
               ),
             ],

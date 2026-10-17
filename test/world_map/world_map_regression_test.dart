@@ -15,6 +15,7 @@
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
 import 'package:brightbound_adventures/ui/screens/world_map_screen.dart';
+import 'package:brightbound_adventures/ui/screens/world_map/world_map_quest_lens.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/ui/widgets/animated_character.dart';
 import 'package:flutter/material.dart';
@@ -90,28 +91,16 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1600)); // entrance anim
   }
 
-  /// Fails on any *unexpected* exception raised during the pump above.
-  ///
-  /// Two pre-existing overflows are allowlisted by exact size + message so
-  /// this net still catches anything new or larger:
-  ///
-  /// 1. At the desktop breakpoint (1366x768, non-compact layout branch) a
-  ///    zone-card Column overflows its fixed-height box by exactly 1.00
-  ///    logical pixel. Invisible in release builds (RenderFlex overflow
-  ///    only asserts in debug), reproduces regardless of theme. Not worth
-  ///    patching blindly without knowing which of the many Columns in the
-  ///    non-compact branch is 1px too tall.
+  /// Fails on ANY exception raised during the pump above — there are no
+  /// allowlisted overflows. (A former 1px desktop overflow in the adventure
+  /// bar identity Column was traced to its true cause — the 1.5px border
+  /// eats 3px of the 58px box, leaving 45px for 46px of font-metric text —
+  /// and fixed with pinned 1.25 line heights, so the allowlist was removed
+  /// rather than carried forward.)
   void expectNoUnknownException(WidgetTester tester, Size size) {
-    final allowedForSize = <String>[
-      if (size == const Size(1366, 768))
-        'overflowed by 1.00 pixels on the bottom',
-    ];
     Object? exception;
     while ((exception = tester.takeException()) != null) {
-      final message = exception.toString();
-      final isKnown = allowedForSize.any(message.contains);
-      expect(isKnown, isTrue,
-          reason: 'Unexpected exception at $size: $exception');
+      fail('Unexpected exception at $size: $exception');
     }
   }
 
@@ -155,6 +144,22 @@ void main() {
         expectNoUnknownException(tester, size);
       });
 
+      // The quick-zone rail duplicates island labels above the action dock;
+      // it shows on wide layouts (room to spare) and hides on compact
+      // (phones), where world names live once on the islands ringing the
+      // map instead of crowding Mini Games / Star Shop.
+      testWidgets(
+          'quick-zone rail shows on wide, hides on compact ($label)',
+          (tester) async {
+        await pumpWorldMap(tester, size: size, themeMode: mode);
+
+        expect(
+          find.byKey(const ValueKey('quick-zone-rail')),
+          size.width < 980 ? findsNothing : findsOneWidget,
+        );
+        expectNoUnknownException(tester, size);
+      });
+
       if (size.width < 980) {
         testWidgets('compact map exposes the adventure menu ($label)',
             (tester) async {
@@ -169,21 +174,35 @@ void main() {
           expectNoUnknownException(tester, size);
         });
 
+        // Compact renders a slim summary bar above the dock (the floating
+        // lens covered ~40% of a 390px map); details open as a sheet.
         testWidgets(
-            'compact quest lens expands without losing its action ($label)',
+            'compact quest bar opens details without losing action ($label)',
             (tester) async {
           await pumpWorldMap(tester, size: size, themeMode: mode);
 
-          expect(find.byTooltip('Expand quest details'), findsOneWidget);
-          await tester.tap(find.byTooltip('Expand quest details'));
-          await tester.pump();
+          expect(
+            find.byKey(const ValueKey('compact-quest-bar')),
+            findsOneWidget,
+          );
+          expect(find.byType(WorldMapQuestLens), findsNothing);
 
+          // Timed pumps, not pumpAndSettle: the map's ambient animations
+          // never settle, so pumpAndSettle times out.
+          await tester.tap(find.byTooltip('Quest details'));
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 500));
+
+          expect(find.text('Enter Zone'), findsWidgets);
           expect(find.byTooltip('Collapse quest details'), findsOneWidget);
-          expect(find.text('Enter Zone'), findsOneWidget);
 
-          await tester.tap(find.byTooltip('Collapse quest details'));
+          Navigator.of(tester.element(find.text('Enter Zone').first)).pop();
           await tester.pump();
-          expect(find.byTooltip('Expand quest details'), findsOneWidget);
+          await tester.pump(const Duration(milliseconds: 500));
+          expect(
+            find.byKey(const ValueKey('compact-quest-bar')),
+            findsOneWidget,
+          );
           expectNoUnknownException(tester, size);
         });
       }
@@ -227,8 +246,7 @@ void main() {
       expectNoUnknownException(tester, const Size(360, 640));
     });
 
-    testWidgets('compact quest lens expands without losing its action ($label)',
-        (tester) async {
+    testWidgets('compact quest bar opens details ($label)', (tester) async {
       await pumpWorldMap(
         tester,
         size: const Size(360, 640),
@@ -236,12 +254,16 @@ void main() {
         textScaler: const TextScaler.linear(2.0),
       );
 
-      expect(find.byTooltip('Expand quest details'), findsOneWidget);
-      await tester.tap(find.byTooltip('Expand quest details'));
+      expect(
+        find.byKey(const ValueKey('compact-quest-bar')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byTooltip('Quest details'));
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byTooltip('Collapse quest details'), findsOneWidget);
-      expect(find.text('Enter Zone'), findsOneWidget);
+      expect(find.text('Enter Zone'), findsWidgets);
       expectNoUnknownException(tester, const Size(360, 640));
     });
   }

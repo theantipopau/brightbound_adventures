@@ -31,6 +31,10 @@ class _ModernShopItemCardState extends State<ModernShopItemCard>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
+    // Affordable-but-unowned items breathe gently so the child can see at
+    // a glance what their stars can actually buy. Started once here;
+    // the build gates the pulse amplitude on purchase state.
+    _pulseController.repeat(reverse: true);
   }
 
   @override
@@ -81,7 +85,11 @@ class _ModernShopItemCardState extends State<ModernShopItemCard>
       child: AnimatedBuilder(
         animation: _pulseController,
         builder: (context, child) {
-          final pulse = isPurchased ? 0.0 : _pulseController.value * 0.05;
+          // Only affordable, unowned items breathe — owned ones rest and
+          // locked ones stay still behind their lock overlay.
+          final pulse = (!isPurchased && canAfford)
+              ? _pulseController.value * 0.05
+              : 0.0;
 
           return GestureDetector(
             onTap: widget.onTap,

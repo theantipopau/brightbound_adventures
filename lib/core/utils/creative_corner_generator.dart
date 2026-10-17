@@ -581,9 +581,24 @@ class CreativeCornerQuestions {
         famousArtists;
 
     final filtered = all.where((q) => q.difficulty <= difficulty + 1).toList();
-    final result =
+    final sampled =
         List.of(filtered.isEmpty ? all : filtered)..shuffle(_random);
-    return result;
+    // Shuffle option order per question: the authored banks pin most
+    // answers to slot 1/2, which is position-guessable without this.
+    return sampled.map((q) {
+      final options = List<String>.of(q.options)..shuffle(_random);
+      return LiteracyQuestion(
+        id: q.id,
+        skillId: q.skillId,
+        question: q.question,
+        options: options,
+        correctIndex: options.indexOf(q.options[q.correctIndex]),
+        hint: q.hint,
+        explanation: q.explanation,
+        difficulty: q.difficulty,
+        metadata: q.metadata,
+      );
+    }).toList();
   }
 
   static List<LiteracyQuestion> getByDifficulty(

@@ -9,7 +9,7 @@ background, subtle rim light):
   assets/images/zones/<zone_id>/zone_<zone_id>_path.png        (path segment)
   assets/images/zones/<zone_id>/zone_<zone_id>_accent.png      (accent prop)
 
-plus assets/images/zones/effects/zone_dust_puff_1.png / _2.png for A8.
+plus assets/images/zones/effects/zone_dust_puff_1.webp / _2.png for A8.
 
 Sprites are drawn at 4x supersampling and Lanczos-downsampled. All colours
 come from the zone hue families in WorldTokens, sun-washed 20% lighter.
@@ -509,16 +509,16 @@ def main():
         zdir = os.path.join(OUT, zone)
         os.makedirs(zdir, exist_ok=True)
         make_tile_base(primary).save(os.path.join(
-            zdir, f'zone_{zone}_tile_base.png'))
+            zdir, f'zone_{zone}_tile_base.webp'))
         make_landmark(zone, primary, secondary, wood).save(os.path.join(
-            zdir, f'zone_{zone}_landmark.png'))
+            zdir, f'zone_{zone}_landmark.webp'))
         make_path(zone, primary).save(os.path.join(zdir,
-                                                   f'zone_{zone}_path.png'))
+                                                   f'zone_{zone}_path.webp'))
         make_accent(zone, primary, secondary, wood).save(os.path.join(
-            zdir, f'zone_{zone}_accent.png'))
+            zdir, f'zone_{zone}_accent.webp'))
         print(f'{zone}: 4 sprites')
-    make_dust_puff(1).save(os.path.join(EFFECTS, 'zone_dust_puff_1.png'))
-    make_dust_puff(2).save(os.path.join(EFFECTS, 'zone_dust_puff_2.png'))
+    make_dust_puff(1).save(os.path.join(EFFECTS, 'zone_dust_puff_1.webp'))
+    make_dust_puff(2).save(os.path.join(EFFECTS, 'zone_dust_puff_2.webp'))
     print('effects: 2 dust puff frames')
 
 

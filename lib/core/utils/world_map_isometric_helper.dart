@@ -60,10 +60,16 @@ class WorldMapIsometricHelper {
   ///
   /// • `bottomUIReserve` matches the actual footprint of the quick-zone rail
   ///   + action buttons in world_map_screen.dart:
-  ///     – Non-compact (≥ 980 px wide): rail/action stack occupies roughly the
-  ///       lower 152 px, and islands extend below their anchor. Use 236 px.
-  ///     – Compact (< 980 px wide): stacked controls need a larger gutter.
-  ///       Use 292 px for a comfortable buffer.
+  ///     – Non-compact (≥ 980 px wide): rail (bottom:96 h:56) + action dock
+  ///       (~120 px single row + padding) stack to ~210 px; islands extend
+  ///       below their anchor. Use 264 px.
+  ///     – Compact (< 980 px wide): quest summary + action dock fused
+  ///       into ONE bottom-sheet card (6 + 56 + 9 + 56 + 10 ≈ 137 px +
+  ///       bottom:16 ≈ 153 px footprint); the quick-zone rail is hidden
+  ///       on compact and quest details live in a bottom sheet. Use
+  ///       172 px so the bottom-row islands (Word Woods / Number
+  ///       Nebula, y≈0.85) ring the map above the card with breathing
+  ///       room, including 200% text scale.
   static Offset gridToScreen(
     IsometricPosition pos,
     Size screenSize,
@@ -80,8 +86,9 @@ class WorldMapIsometricHelper {
     final topReserve = (screenSize.height * 0.19).clamp(128.0, 178.0);
 
     // Bottom reserve: clears the quick-zone rail + action buttons.
+    // Keep in sync with the vMax guards in _buildZoneItem/_buildAvatarItem.
     final isCompact = screenSize.width < 980;
-    final bottomUIReserve = isCompact ? 292.0 : 236.0;
+    final bottomUIReserve = isCompact ? 172.0 : 264.0;
 
     final usableWidth = screenSize.width - leftReserve - rightReserve;
     final usableHeight = (screenSize.height - topReserve - bottomUIReserve)

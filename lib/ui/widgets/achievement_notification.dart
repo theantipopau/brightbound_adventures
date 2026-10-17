@@ -161,13 +161,16 @@ class _AchievementNotificationState extends State<AchievementNotification>
                               color: Colors.white.withValues(alpha: 0.5),
                               width: 3,
                             ),
+                            // Static blur/spread (animated alpha kept):
+                            // animating blurRadius re-rasterizes the shadow
+                            // every frame; alpha-only animation is cheap.
                             boxShadow: [
                               BoxShadow(
                                 color: tierColor.withValues(
                                   alpha: _glowAnimation.value * 0.6,
                                 ),
-                                blurRadius: 20 * _glowAnimation.value,
-                                spreadRadius: 5 * _glowAnimation.value,
+                                blurRadius: 16,
+                                spreadRadius: 4,
                               ),
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.3),

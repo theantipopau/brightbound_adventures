@@ -485,7 +485,7 @@ class _SplashScreenState extends State<SplashScreen>
                                             // Actual logo image
                                             ClipOval(
                                               child: Image.asset(
-                                                'assets/images/logo.png',
+                                                'assets/images/logo.webp',
                                                 // Audit memory fix: the
                                                 // full-res decode of this
                                                 // asset is 6 MB; it is never

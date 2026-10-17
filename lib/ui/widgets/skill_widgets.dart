@@ -89,13 +89,13 @@ class _SkillCardState extends State<SkillCard>
   String _getStateAsset() {
     switch (widget.skill.state) {
       case SkillState.mastered:
-        return 'assets/images/goldkey.PNG';
+        return 'assets/images/goldkey.webp';
       case SkillState.practising:
-        return 'assets/images/scroll.PNG';
+        return 'assets/images/scroll.webp';
       case SkillState.introduced:
-        return 'assets/images/potion.PNG';
+        return 'assets/images/potion.webp';
       case SkillState.locked:
-        return 'assets/images/chest_closed.PNG';
+        return 'assets/images/chest_closed.webp';
     }
   }
 
@@ -613,7 +613,7 @@ class ZoneProgressCard extends StatelessWidget {
                     width: 42,
                     height: 42,
                     child: Image.asset(
-                      'assets/images/questsandtasks.PNG',
+                      'assets/images/questsandtasks.webp',
                       cacheWidth: 128,
                       fit: BoxFit.contain,
                     ),

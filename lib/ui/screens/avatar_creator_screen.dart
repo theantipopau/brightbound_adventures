@@ -552,34 +552,34 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     switch (characterId) {
       case 'bear':
       case 'deer':
-        return 'assets/images/logpile.PNG';
+        return 'assets/images/logpile.webp';
       case 'fox':
       case 'wolf':
-        return 'assets/images/goldkey.PNG';
+        return 'assets/images/goldkey.webp';
       case 'rabbit':
       case 'cat':
-        return 'assets/images/pinkcrystal.PNG';
+        return 'assets/images/pinkcrystal.webp';
       case 'penguin':
-        return 'assets/images/bluecrystal.PNG';
+        return 'assets/images/bluecrystal.webp';
       case 'koala':
       case 'panda':
-        return 'assets/images/greencrystal.PNG';
+        return 'assets/images/greencrystal.webp';
       case 'owl':
-        return 'assets/images/scroll.PNG';
+        return 'assets/images/scroll.webp';
       case 'otter':
-        return 'assets/images/potion.PNG';
+        return 'assets/images/potion.webp';
       case 'tiger':
-        return 'assets/images/goldpile.PNG';
+        return 'assets/images/goldpile.webp';
       case 'quokka':
-        return 'assets/images/questsandtasks.PNG';
+        return 'assets/images/questsandtasks.webp';
       case 'platypus':
-        return 'assets/images/bluecrystal.PNG';
+        return 'assets/images/bluecrystal.webp';
       case 'turtle':
-        return 'assets/images/greencrystal.PNG';
+        return 'assets/images/greencrystal.webp';
       case 'dragon':
-        return 'assets/images/chest_open.PNG';
+        return 'assets/images/chest_open.webp';
       default:
-        return 'assets/images/chest_closed.PNG';
+        return 'assets/images/chest_closed.webp';
     }
   }
 
@@ -1376,6 +1376,15 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                                           decoration: BoxDecoration(
                                             color: character['color'],
                                             shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: (character['color']
+                                                        as Color)
+                                                    .withValues(alpha: 0.55),
+                                                blurRadius: 10,
+                                                spreadRadius: 2,
+                                              ),
+                                            ],
                                           ),
                                           child: const Icon(Icons.check,
                                               color: Colors.white, size: 18),
@@ -2055,6 +2064,11 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               ),
               SizedBox(height: isCompact ? 8 : 16), // Reduced from 12:24
 
+              // Hero stats — game-like character sheet. Values are fixed
+              // flavor per hero (derived from the id hash), not progression.
+              _buildHeroStatsCard(isCompact),
+              SizedBox(height: isCompact ? 8 : 16),
+
               // Ready message
               Container(
                 padding:
@@ -2129,6 +2143,108 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
           ),
         ),
       ],
+    );
+  }
+
+  static const Map<String, String> _statIcons = {
+    'Brave': '⚔️',
+    'Kind': '💛',
+    'Witty': '🔮',
+  };
+
+  /// Fixed flavor stats per hero id — stable across sessions (id hash),
+  /// presented as a game character sheet, not earned progression.
+  Map<String, int> _heroStats(String id) {
+    var hash = 0;
+    for (final unit in id.codeUnits) {
+      hash = (hash * 31 + unit) % 997;
+    }
+    int stat(int seed) => 62 + ((hash * (seed * 2 + 1)) % 37);
+    return {'Brave': stat(3), 'Kind': stat(5), 'Witty': stat(7)};
+  }
+
+  Widget _buildHeroStatsCard(bool isCompact) {
+    final stats = _heroStats(_selectedCharacter);
+    final accent = _getStepColor(_currentStep);
+    return Container(
+      padding: EdgeInsets.all(isCompact ? 12 : 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: accent.withValues(alpha: 0.25), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '⭐ Hero Stats',
+            style: TextStyle(
+              fontSize: isCompact ? 15 : 17,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: isCompact ? 8 : 10),
+          for (final entry in stats.entries)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Text(_statIcons[entry.key] ?? '⭐'),
+                  const SizedBox(width: 6),
+                  SizedBox(
+                    width: 52,
+                    child: Text(
+                      entry.key,
+                      style: TextStyle(
+                        fontSize: isCompact ? 12 : 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: entry.value / 100),
+                        duration: const Duration(milliseconds: 800),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, _) {
+                          return LinearProgressIndicator(
+                            minHeight: 10,
+                            value: value,
+                            backgroundColor: Colors.blueGrey.shade100,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(accent),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      '${entry.value}',
+                      textAlign: TextAlign.end,
+                      style: TextStyle(
+                        fontSize: isCompact ? 12 : 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 

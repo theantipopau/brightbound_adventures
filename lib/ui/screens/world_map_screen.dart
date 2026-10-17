@@ -565,18 +565,25 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                             constraints.maxWidth < 980 || _isShortViewport;
                         _syncAmbientAnimationState(context);
 
-                        // Scale based on the smaller dimension so islands
-                        // never exceed 1× their design size, which prevents
-                        // visual bleed outside layout boxes.
+                        // Scale HUD chrome from BOTH dimensions so narrow
+                        // widths shrink it too: the old height-only formula
+                        // stayed at 1.0 on tall phones (e.g. 390x844) and
+                        // clipped HUD panels horizontally. Width is the
+                        // binding constraint below ~480px; height above it.
+                        // Never exceeds 1× design size so Transform.scale
+                        // cannot bleed islands outside Positioned boxes.
+                        final widthScale =
+                            (constraints.maxWidth / 480).clamp(0.70, 1.0);
                         if (isPortrait) {
-                          // Portrait: avoid growing above 1.0 so Transform.scale
-                          // does not bleed islands outside their Positioned boxes.
-                          _uiScale =
-                              (constraints.maxHeight / 800).clamp(0.70, 1.0);
+                          _uiScale = math
+                              .min(constraints.maxHeight / 800, widthScale)
+                              .clamp(0.70, 1.0);
                         } else {
                           // Landscape: reference 760px so common laptop heights
                           // (768, 800, 900) stay ≤ 1.05.
-                          _uiScale = (shortest / 760).clamp(0.75, 1.0);
+                          _uiScale = math
+                              .min(shortest / 760, widthScale)
+                              .clamp(0.70, 1.0);
                         }
 
                         final mapSize = Size(
@@ -765,7 +772,18 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                               uiScale: _uiScale,
                             ),
 
-                            if (!_isShortViewport)
+                            // The quick-zone rail is hidden on compact/phone
+                            // layouts: its 8 zone-name chips duplicated the
+                            // island labels directly above the action dock,
+                            // stacking three tappable rows (rail + wrapped
+                            // dock) into one crowded strip where world names
+                            // visually collided with Mini Games / Star Shop.
+                            // The islands themselves are tappable with full
+                            // semantics (name, lock state, mastery), so on
+                            // phones the world names live once, on the
+                            // islands ringing the map. Wide layouts keep the
+                            // rail — there is room and it aids scanning.
+                            if (!_isShortViewport && !_isCompactLayout)
                               _buildQuickZoneRail(
                                 totalStars,
                                 compact: _isCompactLayout,
@@ -1044,23 +1062,23 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     // in _ZoneIsland), so a failed bundle can never break the map.
     switch (zone.id) {
       case 'word-woods':
-        return 'assets/images/zones/word-woods/zone_word-woods_landmark.png';
+        return 'assets/images/zones/word-woods/zone_word-woods_landmark.webp';
       case 'number-nebula':
-        return 'assets/images/zones/number-nebula/zone_number-nebula_landmark.png';
+        return 'assets/images/zones/number-nebula/zone_number-nebula_landmark.webp';
       case 'math-facts':
-        return 'assets/images/zones/math-facts/zone_math-facts_landmark.png';
+        return 'assets/images/zones/math-facts/zone_math-facts_landmark.webp';
       case 'story-springs':
-        return 'assets/images/zones/story-springs/zone_story-springs_landmark.png';
+        return 'assets/images/zones/story-springs/zone_story-springs_landmark.webp';
       case 'science-explorers':
-        return 'assets/images/zones/science-explorers/zone_science-explorers_landmark.png';
+        return 'assets/images/zones/science-explorers/zone_science-explorers_landmark.webp';
       case 'creative-corner':
-        return 'assets/images/zones/creative-corner/zone_creative-corner_landmark.png';
+        return 'assets/images/zones/creative-corner/zone_creative-corner_landmark.webp';
       case 'puzzle-peaks':
-        return 'assets/images/zones/puzzle-peaks/zone_puzzle-peaks_landmark.png';
+        return 'assets/images/zones/puzzle-peaks/zone_puzzle-peaks_landmark.webp';
       case 'adventure-arena':
-        return 'assets/images/zones/adventure-arena/zone_adventure-arena_landmark.png';
+        return 'assets/images/zones/adventure-arena/zone_adventure-arena_landmark.webp';
       default:
-        return 'assets/images/logo.png';
+        return 'assets/images/logo.webp';
     }
   }
 
@@ -1109,10 +1127,13 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     // Vertical: gridToScreen already handles HUD + bottom-UI clearance via its
     // topReserve and bottomUIReserve. The clamp here is a last-resort safety
     // guard to prevent islands from exceeding the physical screen boundaries.
+    // Values mirror bottomUIReserve in WorldMapIsometricHelper (172/264):
+    // the compact quest + dock fuse into one slim card, so the map gets
+    // the space back and bottom-row world names ring the map above it.
     final vMin = 4.0;
     final vMax = math.max(
       vMin,
-      constraints.maxHeight - baseHeight - (_isCompactLayout ? 300.0 : 246.0),
+      constraints.maxHeight - baseHeight - (_isCompactLayout ? 172.0 : 264.0),
     );
     final left = (screenPos.dx - (baseWidth / 2)).clamp(hMin, hMax).toDouble();
     final top = (screenPos.dy - (baseHeight * 0.55) + (1 - progress) * 50)
@@ -1129,6 +1150,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           scale: entranceScale,
           alignment: Alignment.bottomCenter,
           child: _ZoneIsland(
+            // Stable key powers the chrome-overlap regression net.
+            key: ValueKey('zone-island-${zone.id}'),
             zone: zone,
             statusLabel: zoneStatus.label,
             isUnlocked: isUnlocked,
@@ -1209,15 +1232,16 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     final screenPos = groundOffset;
     final arcHeight = hopHeight;
 
-    final left = (screenPos.dx - 46)
-        .clamp(6.0, math.max(6.0, constraints.maxWidth - 98.0))
+    // Half-width/height track the 116x156 pawn box above.
+    final left = (screenPos.dx - 58)
+        .clamp(6.0, math.max(6.0, constraints.maxWidth - 122.0))
         .toDouble();
-    final top = (screenPos.dy - 96 + arcHeight)
+    final top = (screenPos.dy - 117 + arcHeight)
         .clamp(
           4.0,
           math.max(
             4.0,
-            constraints.maxHeight - 128.0 - (_isCompactLayout ? 300.0 : 246.0),
+            constraints.maxHeight - 162.0 - (_isCompactLayout ? 172.0 : 264.0),
           ),
         )
         .toDouble();
@@ -1313,6 +1337,32 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                         avatar: avatar,
                         isMoving: isMoving,
                       ),
+                      // Travel trail: while hopping between islands the pawn
+                      // kicks up alternating dust frames, driven by the move
+                      // controller (rebuilt via the ambient float ticker).
+                      // Cheaper than particles and reuses the A8 sprites.
+                      if (isMoving &&
+                          _dustPuffFrame == null &&
+                          !_reducedMotion)
+                        Positioned(
+                          bottom: -10,
+                          child: IgnorePointer(
+                            child: Opacity(
+                              opacity: 0.45,
+                              child: Image.asset(
+                                'assets/images/zones/effects/'
+                                'zone_dust_puff_${(_avatarMoveController.value * 6).floor() % 2 + 1}.webp',
+                                width: 34,
+                                height: 34,
+                                cacheWidth: 68,
+                                cacheHeight: 68,
+                                filterQuality: FilterQuality.medium,
+                                errorBuilder: (_, __, ___) =>
+                                    const SizedBox.shrink(),
+                              ),
+                            ),
+                          ),
+                        ),
                       if (_dustPuffFrame != null && !_reducedMotion)
                         // A8 landing dust: two-frame puff sprite at the feet.
                         Positioned(
@@ -1325,9 +1375,11 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                                     _dustPuffFrame == 1 ? 1 : 2;
                                 return Image.asset(
                                   'assets/images/zones/effects/'
-                                  'zone_dust_puff_$frame.png',
+                                  'zone_dust_puff_$frame.webp',
                                   width: 44,
                                   height: 44,
+                                  cacheWidth: 88,
+                                  cacheHeight: 88,
                                   filterQuality: FilterQuality.medium,
                                   errorBuilder: (_, __, ___) =>
                                       const SizedBox.shrink(),
@@ -1445,7 +1497,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                     ),
                     child: Center(
                       child: ZoneBadge(
-                        asset: 'assets/images/zones/${selected.id}.png',
+                        asset: 'assets/images/zones/${selected.id}.webp',
                         emoji: selected.emoji,
                         size: 32,
                       ),
@@ -1558,18 +1610,40 @@ class _WorldMapScreenState extends State<WorldMapScreen>
 
   Widget _buildBottomActions(int totalStars, SkillProvider skillProvider,
       {required bool compact, required double uiScale}) {
-    final isNarrow = MediaQuery.of(context).size.width < 900;
+    // Compact owns its dock inside the fused WorldMapCompactBottomSheet
+    // (quest + actions in one card); a second dock here would double the
+    // chrome and re-cover the map.
+    if (compact) return const SizedBox.shrink();
+    // Match the outer compact breakpoint (constraints.maxWidth < 980),
+    // not a separate MediaQuery threshold: the old <900 check disagreed
+    // with compact in the 900-980 band and picked the wrong variant.
+    final isNarrow = compact;
     final recommendedIndex = _recommendedZoneIndex(totalStars, skillProvider);
     final recommendedZone = _zones[recommendedIndex];
 
-    final actionsRow = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
+    // Narrow (phone) uses a SINGLE slim horizontal scroll row: the old
+    // wrapping 2-row dock (~156px + padding) ate the map's vertical budget
+    // and stacked world-name islands directly against Mini Games / Star
+    // Shop. One 56px row + padding ≈ 76px total leaves the islands room to
+    // ring the map above the dock. Slim padding/font keep every label
+    // ('My Achievements' included) unclipped; a leading pep label + edge
+    // fade signals the scroll so kids discover it. Wide keeps fixed-width
+    // uniform buttons in a centred row.
+    double? nw(double wide) => isNarrow ? null : wide;
+    final dockFont = isNarrow ? 14.0 : 16.0;
+    const dockPad =
+        EdgeInsets.symmetric(horizontal: 14, vertical: 0);
+    final actionButtons = <Widget>[
         JuicyButton(
           label: 'Next\nQuest',
           emoji: recommendedZone.emoji,
-          width: 138,
-          height: 64,
+          width: nw(138),
+          height: isNarrow ? 56 : 64,
+          fontSize: dockFont,
+          // Slim padding on BOTH variants: the default 28px horizontal
+          // padding left 'Achievements' (≈136px content) exactly 136px in
+          // its 164px button, clipping to 'My Achieve…' on wide too.
+          padding: dockPad,
           color: recommendedZone.color,
           onPressed: () {
             setState(() => _selectedZoneIndex = recommendedIndex);
@@ -1577,47 +1651,97 @@ class _WorldMapScreenState extends State<WorldMapScreen>
           },
           shimmer: recommendedIndex != _currentZoneIndex,
         ),
-        const SizedBox(width: 16),
         JuicyButton(
           label: 'Daily\nChallenge',
           emoji: '🎯',
-          width: 148,
-          height: 64,
+          width: nw(148),
+          height: isNarrow ? 56 : 64,
+          fontSize: dockFont,
+          // Slim padding on BOTH variants: the default 28px horizontal
+          // padding left 'Achievements' (≈136px content) exactly 136px in
+          // its 164px button, clipping to 'My Achieve…' on wide too.
+          padding: dockPad,
           color: Colors.orange,
           onPressed: () => _showDailyChallenges(),
           shimmer: true,
         ),
-        const SizedBox(width: 16),
         JuicyButton(
           label: 'Mini\nGames',
           emoji: '🎮',
-          width: 148,
-          height: 64,
+          width: nw(148),
+          height: isNarrow ? 56 : 64,
+          fontSize: dockFont,
+          // Slim padding on BOTH variants: the default 28px horizontal
+          // padding left 'Achievements' (≈136px content) exactly 136px in
+          // its 164px button, clipping to 'My Achieve…' on wide too.
+          padding: dockPad,
           color: AppColors.secondary,
           onPressed: () => _showMiniGamesMenu(),
         ),
-        const SizedBox(width: 16),
         JuicyButton(
           label: 'Star\nShop',
           emoji: '🛍️',
-          width: 136,
-          height: 64,
+          width: nw(136),
+          height: isNarrow ? 56 : 64,
+          fontSize: dockFont,
+          // Slim padding on BOTH variants: the default 28px horizontal
+          // padding left 'Achievements' (≈136px content) exactly 136px in
+          // its 164px button, clipping to 'My Achieve…' on wide too.
+          padding: dockPad,
           color: Colors.teal,
           onPressed: () => _showShop(),
         ),
-        const SizedBox(width: 16),
         JuicyButton(
           label: 'My\nAchievements',
           emoji: '🏆',
-          width: 164,
-          height: 64,
+          width: nw(164),
+          height: isNarrow ? 56 : 64,
+          fontSize: dockFont,
+          // Slim padding on BOTH variants: the default 28px horizontal
+          // padding left 'Achievements' (≈136px content) exactly 136px in
+          // its 164px button, clipping to 'My Achieve…' on wide too.
+          padding: dockPad,
           color: AppColors.reward,
           onPressed: () => _showAchievements(),
         ),
-      ],
+    ];
+
+    List<Widget> spaced(double gap) => [
+          for (var i = 0; i < actionButtons.length; i++) ...[
+            if (i > 0) SizedBox(width: gap),
+            actionButtons[i],
+          ],
+        ];
+
+    final actionsRow = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: spaced(16),
+    );
+    // Narrow: one slim scroll row with a 'Play' pep label and end fade.
+    // The Row is wrapped in an IntrinsicHeight-free horizontal scroll so
+    // the dock height stays exactly one button (56px) + padding.
+    final actionsStrip = SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: Text('▶ Play',
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textSecondary)),
+          ),
+          ...spaced(8),
+          const SizedBox(width: 4),
+        ],
+      ),
     );
 
     return Positioned(
+      // Stable key powers the chrome-overlap regression net.
+      key: const ValueKey('action-dock'),
       bottom: compact ? 16 : 20,
       left: 16,
       right: 16,
@@ -1647,17 +1771,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               ),
             ],
           ),
-          child: isNarrow
-              ? SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  clipBehavior: Clip.none,
-                  physics: const BouncingScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: actionsRow,
-                  ),
-                )
-              : actionsRow,
+          child: isNarrow ? actionsStrip : actionsRow,
         ),
       ),
     );
@@ -1752,6 +1866,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
   Widget _buildQuickZoneRail(int totalStars,
       {required bool compact, required double uiScale}) {
     return Positioned(
+      key: const ValueKey('quick-zone-rail'),
       bottom: compact ? 152 : 96,
       left: 16,
       right: 16,
@@ -1826,7 +1941,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             ZoneBadge(
-                              asset: 'assets/images/zones/${zone.id}.png',
+                              asset: 'assets/images/zones/${zone.id}.webp',
                               emoji: zone.emoji,
                               size: 20,
                             ),
@@ -1901,6 +2016,49 @@ class _WorldMapScreenState extends State<WorldMapScreen>
         ? null
         : unlockService.getUnlockDescription(nextReward);
 
+    void primaryAction() {
+      if (isUnlocked) {
+        _moveToZone(_selectedZoneIndex);
+      } else {
+        _showLockedDialog(selected, totalStars);
+      }
+    }
+
+    // Compact: quest summary + action dock fused into one bottom-sheet
+    // card. The old floating top-right lens covered ~40% of a 390px map
+    // and buried the top-right islands; full details open as a modal
+    // bottom sheet instead.
+    if (compact) {
+      final recommendedIndex =
+          _recommendedZoneIndex(totalStars, skillProvider);
+      final recommendedZone = _zones[recommendedIndex];
+      return WorldMapCompactBottomSheet(
+        selected: selected,
+        status: zoneStatus,
+        stats: stats,
+        isUnlocked: isUnlocked,
+        isCurrentZone: _currentZoneIndex == _selectedZoneIndex,
+        isMoving: _isMoving,
+        uiScale: uiScale,
+        recommendedZone: recommendedZone,
+        recommendShimmer: recommendedIndex != _currentZoneIndex,
+        onPrimaryAction: primaryAction,
+        onExpand: () => _showQuestSheet(
+          totalStars,
+          skillProvider,
+          uiScale: uiScale,
+        ),
+        onNextQuest: () {
+          setState(() => _selectedZoneIndex = recommendedIndex);
+          _moveToZone(recommendedIndex);
+        },
+        onDaily: () => _showDailyChallenges(),
+        onMiniGames: () => _showMiniGamesMenu(),
+        onShop: () => _showShop(),
+        onAchievements: () => _showAchievements(),
+      );
+    }
+
     return WorldMapQuestLens(
       selected: selected,
       status: zoneStatus,
@@ -1924,13 +2082,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       onToggleExpanded: () => setState(
         () => _questLensExpanded = !_questLensExpanded,
       ),
-      onPrimaryAction: () {
-        if (isUnlocked) {
-          _moveToZone(_selectedZoneIndex);
-        } else {
-          _showLockedDialog(selected, totalStars);
-        }
-      },
+      onPrimaryAction: primaryAction,
       onRewardPreview: nextReward == null
           ? null
           : () => _showRewardPreview(
@@ -1938,6 +2090,109 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                 requirement: rewardRequirement,
                 progress: rewardProgress,
               ),
+    );
+  }
+
+  /// Full quest details for the compact summary bar, as a drag-dismissable
+  /// bottom sheet reusing the lens card (always expanded here).
+  void _showQuestSheet(
+    int totalStars,
+    SkillProvider skillProvider, {
+    required double uiScale,
+  }) {
+    final selected = _zones[_selectedZoneIndex];
+    final zoneStatus = _zoneStatusForIndex(
+      _selectedZoneIndex,
+      totalStars,
+      skillProvider,
+    );
+    final isUnlocked = zoneStatus.state != WorldMapZoneState.locked;
+    final stats = skillProvider.getZoneStats(selected.skillZoneId);
+    final progress =
+        _zoneProgressFraction(stats.masteredSkills, stats.totalSkills);
+    final unlockService = context.read<CosmeticUnlockService>();
+    final nextUnlockables = unlockService.getNextUnlockables();
+    final nextReward =
+        nextUnlockables.isNotEmpty ? nextUnlockables.first : null;
+    final nextSkill = stats.nextSkill;
+    final rewardXp = 25 + (stats.masteredSkills * 10);
+    final rewardProgress =
+        nextReward == null ? 0.0 : unlockService.getUnlockProgress(nextReward);
+    final rewardRequirement = nextReward == null
+        ? null
+        : unlockService.getUnlockDescription(nextReward);
+    final isCurrent = _currentZoneIndex == _selectedZoneIndex;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 16,
+            left: 16,
+            right: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 5,
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.75),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: WorldMapQuestLens(
+                    selected: selected,
+                    status: zoneStatus,
+                    stats: stats,
+                    progress: progress,
+                    rewardXp: rewardXp,
+                    nextReward: nextReward,
+                    rewardProgress: rewardProgress,
+                    rewardRequirement: rewardRequirement,
+                    nextSkillName: nextSkill?.name,
+                    moodText: _zoneMoodText(selected),
+                    featureIcons: _zoneFeatureIcons(selected),
+                    featureTags: _zoneFeatureTags(selected),
+                    isUnlocked: isUnlocked,
+                    compact: true,
+                    uiScale: 1.0,
+                    expanded: true,
+                    isMoving: _isMoving,
+                    isCurrentZone: isCurrent,
+                    recentNote: _recentActivityNote(selected.id),
+                    // In the sheet the chevron acts as close.
+                    onToggleExpanded: () =>
+                        Navigator.pop(sheetContext),
+                    onPrimaryAction: () {
+                      Navigator.pop(sheetContext);
+                      if (isUnlocked) {
+                        _moveToZone(_selectedZoneIndex);
+                      } else {
+                        _showLockedDialog(selected, totalStars);
+                      }
+                    },
+                    onRewardPreview: nextReward == null
+                        ? null
+                        : () => _showRewardPreview(
+                              nextReward,
+                              requirement: rewardRequirement,
+                              progress: rewardProgress,
+                            ),
+                  ).buildCard(sheetContext, expanded: true),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -2534,10 +2789,17 @@ class _BoardGameAvatarPawn extends StatelessWidget {
     return Semantics(
       button: true,
       label: '${avatar.name}, level ${avatar.level}, map character',
+      // Presence: islands are 160x180, so the pawn must stand clearly
+      // taller than island furniture. At 116x156 with a big head, hero
+      // halo ring and level badge it reads as the player character, not
+      // another map token.
       child: SizedBox(
-        width: 92,
-        height: 128,
-        child: Stack(
+        width: 116,
+        height: 156,
+        // Own repaint layer: squash-and-stretch reticks every frame while
+        // travelling; without this the repaint climbs to the map Stack.
+        child: RepaintBoundary(
+          child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
             Positioned(
@@ -2548,8 +2810,8 @@ class _BoardGameAvatarPawn extends StatelessWidget {
                   ..setEntry(3, 2, 0.001)
                   ..rotateX(-0.96),
                 child: Container(
-                  width: 74,
-                  height: 28,
+                  width: 84,
+                  height: 30,
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
                       colors: [
@@ -2566,8 +2828,8 @@ class _BoardGameAvatarPawn extends StatelessWidget {
             Positioned(
               bottom: 8,
               child: Container(
-                width: 68,
-                height: 24,
+                width: 76,
+                height: 26,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -2599,8 +2861,8 @@ class _BoardGameAvatarPawn extends StatelessWidget {
             Positioned(
               bottom: 20,
               child: Container(
-                width: 56,
-                height: 50,
+                width: 62,
+                height: 56,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -2638,11 +2900,34 @@ class _BoardGameAvatarPawn extends StatelessWidget {
                 ),
               ),
             ),
+            // Hero halo: a soft gold ring behind the head that marks the
+            // player at a glance, even in a crowded archipelago.
             Positioned(
-              bottom: 48,
+              bottom: 50,
               child: Container(
-                width: 74,
-                height: 74,
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.amber.shade200.withValues(alpha: 0.85),
+                    width: 3,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.amber.withValues(alpha: 0.35),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 56,
+              child: Container(
+                width: 92,
+                height: 92,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
@@ -2659,9 +2944,9 @@ class _BoardGameAvatarPawn extends StatelessWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: outfitColor.withValues(alpha: 0.34),
-                      blurRadius: 18,
-                      spreadRadius: 1,
+                      color: outfitColor.withValues(alpha: 0.42),
+                      blurRadius: 22,
+                      spreadRadius: 2,
                       offset: const Offset(0, 8),
                     ),
                     BoxShadow(
@@ -2675,7 +2960,7 @@ class _BoardGameAvatarPawn extends StatelessWidget {
                 child: AnimatedCharacter(
                   character: avatar.baseCharacter,
                   skinColor: avatar.skinColor,
-                  size: 68,
+                  size: 84,
                   animation: isMoving
                       ? CharacterAnimation.walking
                       : CharacterAnimation.idle,
@@ -2684,8 +2969,8 @@ class _BoardGameAvatarPawn extends StatelessWidget {
               ),
             ),
             Positioned(
-              bottom: 34,
-              right: 4,
+              bottom: 38,
+              right: 2,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
@@ -2714,7 +2999,7 @@ class _BoardGameAvatarPawn extends StatelessWidget {
             Positioned(
               bottom: 0,
               child: Container(
-                constraints: const BoxConstraints(maxWidth: 86),
+                constraints: const BoxConstraints(maxWidth: 98),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
@@ -2747,7 +3032,8 @@ class _BoardGameAvatarPawn extends StatelessWidget {
               ),
             ),
           ],
-        ),
+          ), // close pawn Stack
+        ), // close pawn RepaintBoundary
       ),
     );
   }
@@ -2774,6 +3060,7 @@ class _ZoneIsland extends StatefulWidget {
   final int completedQuestCount;
 
   const _ZoneIsland({
+    super.key,
     required this.zone,
     required this.statusLabel,
     required this.isUnlocked,
@@ -2799,6 +3086,12 @@ class _ZoneIslandState extends State<_ZoneIsland> {
   @override
   Widget build(BuildContext context) {
     final foreground = Theme.of(context).colorScheme.onSurface;
+    // Compact (phone) declutter: the 8 islands each carry landmark +
+    // floating icons + shimmer + rings + badges, which turns the small map
+    // into visual noise and crowds the world names. Below ~0.95 scale we
+    // drop the purely decorative floating asset icons and the shimmer
+    // sweep; landmark + name + stars + status carry the information.
+    final compactChrome = widget.visualScale < 0.95;
     return AnimatedBuilder(
       animation: widget.floatAnimation,
       builder: (context, child) {
@@ -2814,7 +3107,10 @@ class _ZoneIslandState extends State<_ZoneIsland> {
 
         return Transform.translate(
           offset: Offset(0, float),
-          child: MouseRegion(
+          // Own repaint layer: the float offset reticks every frame and
+          // without this the repaint climbs to the whole map Stack.
+          child: RepaintBoundary(
+            child: MouseRegion(
             onEnter: (_) => setState(() => _isHovered = true),
             onExit: (_) => setState(() => _isHovered = false),
             child: Tooltip(
@@ -2831,85 +3127,166 @@ class _ZoneIslandState extends State<_ZoneIsland> {
               hint: widget.isUnlocked
                   ? 'Double tap to travel to this zone'
                   : 'Earn more stars to unlock this zone',
-              child: Material(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(28),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(28),
-                  // A5: zone card taps share the button-tap cue (gated by
-                  // the audio settings; inert in the test harness).
-                  onTap: () {
-                    AudioManager().playButtonClick();
-                    widget.onTap();
-                  },
-                  onLongPress: widget.onTap,
-                  splashColor: widget.zone.color.withValues(alpha: 0.3),
-                  highlightColor: widget.zone.color.withValues(alpha: 0.1),
-                  child: Transform.scale(
-                    scale: widget.visualScale * selectionPulse,
-                    alignment: Alignment.center,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Throbbing focus halo for keyboard navigation.
-                        // Grows outward via Transform.scale rather than a
-                        // negative Container margin (which always fails
-                        // Container's margin.isNonNegative assertion).
-                        if (widget.isSelected)
-                          Positioned.fill(
-                            child: AnimatedBuilder(
-                              animation: widget.floatAnimation,
-                              builder: (context, _) {
-                                final pulse = 0.6 +
-                                    (math.sin(widget.floatAnimation.value *
-                                            math.pi *
-                                            4) *
-                                        0.4);
-                                return Transform.scale(
-                                  scale: 1.0 + (pulse * 0.12),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white
-                                            .withValues(alpha: pulse * 0.6),
-                                        width: 2,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: widget.zone.color
-                                              .withValues(alpha: pulse * 0.4),
-                                          blurRadius: 20 * pulse,
-                                          spreadRadius: 8 * pulse,
-                                        ),
-                                      ],
-                                    ),
+              child: Transform.scale(
+                scale: widget.visualScale * selectionPulse,
+                alignment: Alignment.center,
+                // Unclipped composition: the selection/hover glow
+                // (blur 50 + spread 14) and the current-zone pulse
+                // rings (expanding past the island diagonal) paint
+                // outside the 160x180 card, so they sit here — outside
+                // the clipped Material — instead of being cut with a
+                // hard edge. The Material keeps its clip so the ink
+                // splash stays inside the rounded card.
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
+                  children: [
+                    if (widget.isSelected || _isHovered)
+                      Container(
+                        width: 160,
+                        height: 180,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: widget.zone.color.withValues(
+                                  alpha: _isHovered ? 1.0 : 0.8),
+                              blurRadius: widget.isSelected
+                                  ? 50
+                                  : (_isHovered ? 45 : 30),
+                              spreadRadius: widget.isSelected
+                                  ? 14
+                                  : (_isHovered ? 12 : 8),
+                            ),
+                            BoxShadow(
+                              color: widget.zone.color
+                                  .withValues(alpha: 0.3),
+                              blurRadius: _isHovered ? 60 : 40,
+                              spreadRadius: _isHovered ? 20 : 12,
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (widget.isCurrentZone)
+                      Positioned.fill(
+                        child: AnimatedBuilder(
+                          animation: widget.floatAnimation,
+                          builder: (_, __) {
+                            final t1 = widget.floatAnimation.value;
+                            final t2 =
+                                (widget.floatAnimation.value + 0.5) % 1.0;
+                            return Stack(children: [
+                              _PulseRing(
+                                  progress: t1,
+                                  color: widget.zone.color),
+                              _PulseRing(
+                                  progress: t2,
+                                  color: widget.zone.color),
+                            ]);
+                          },
+                        ),
+                      ),
+                    // Current-zone badge: straddles the top edge (top
+                    // -14 + shadow), so it lives out here rather than
+                    // under the clip, which cut its top 2px + shadow.
+                    if (widget.isCurrentZone)
+                      Positioned(
+                        top: -14,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white,
+                                Colors.amber.shade100,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.amber
+                                    .withValues(alpha: 0.6),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: const Text(
+                            '📍 HERE',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.4,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    // Keyboard-focus halo: grows ~12% past the card, so
+                    // it lives out here rather than under the clip.
+                    if (widget.isSelected)
+                      Positioned.fill(
+                        child: AnimatedBuilder(
+                          animation: widget.floatAnimation,
+                          builder: (context, _) {
+                            final pulse = 0.6 +
+                                (math.sin(widget.floatAnimation.value *
+                                        math.pi *
+                                        4) *
+                                    0.4);
+                            return Transform.scale(
+                              scale: 1.0 + (pulse * 0.12),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white
+                                        .withValues(alpha: pulse * 0.6),
+                                    width: 2,
                                   ),
-                                );
-                              },
-                            ),
-                          ),
-                        // Expanding pulse ring for the zone where the avatar currently stands
-                        if (widget.isCurrentZone)
-                          Positioned.fill(
-                            child: AnimatedBuilder(
-                              animation: widget.floatAnimation,
-                              builder: (_, __) {
-                                // Two rings offset by half a cycle create a continuous wave
-                                final t1 = widget.floatAnimation.value;
-                                final t2 =
-                                    (widget.floatAnimation.value + 0.5) % 1.0;
-                                return Stack(children: [
-                                  _PulseRing(
-                                      progress: t1, color: widget.zone.color),
-                                  _PulseRing(
-                                      progress: t2, color: widget.zone.color),
-                                ]);
-                              },
-                            ),
-                          ),
-                        // Main island container
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: widget.zone.color.withValues(
+                                          alpha: pulse * 0.4),
+                                      blurRadius: 20 * pulse,
+                                      spreadRadius: 8 * pulse,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(28),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(28),
+                        // A5: zone card taps share the button-tap cue
+                        // (gated by the audio settings; inert in the test
+                        // harness).
+                        onTap: () {
+                          AudioManager().playButtonClick();
+                          widget.onTap();
+                        },
+                        onLongPress: widget.onTap,
+                        splashColor:
+                            widget.zone.color.withValues(alpha: 0.3),
+                        highlightColor:
+                            widget.zone.color.withValues(alpha: 0.1),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                        // Main island container. The selection/hover glow
+                        // and the current-zone pulse rings live in the
+                        // unclipped outer composition above (they paint
+                        // outside the card); only the white selection
+                        // border stays here, inside the clip.
                         Container(
                           width: 160,
                           height: 180,
@@ -2920,32 +3297,12 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                     color: Colors.white,
                                     width: 5,
                                   ),
-                                  boxShadow: [
-                                    // Primary glow
-                                    BoxShadow(
-                                      color: widget.zone.color.withValues(
-                                          alpha: _isHovered ? 1.0 : 0.8),
-                                      blurRadius: widget.isSelected
-                                          ? 50
-                                          : (_isHovered ? 45 : 30),
-                                      spreadRadius: widget.isSelected
-                                          ? 14
-                                          : (_isHovered ? 12 : 8),
-                                    ),
-                                    // Secondary glow
-                                    BoxShadow(
-                                      color: widget.zone.color
-                                          .withValues(alpha: 0.3),
-                                      blurRadius: _isHovered ? 60 : 40,
-                                      spreadRadius: _isHovered ? 20 : 12,
-                                    ),
-                                  ],
                                 )
                               : null,
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              if (widget.isUnlocked)
+                              if (widget.isUnlocked && !compactChrome)
                                 ...List.generate(widget.assetIcons.length,
                                     (index) {
                                   final offsets = [
@@ -3091,7 +3448,9 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                               ),
 
                               // Animated progress ring surrounding island body
-                              if (widget.isUnlocked)
+                              // (wide only: on phones it is visual noise
+                              // around an already busy island).
+                              if (widget.isUnlocked && !compactChrome)
                                 Positioned(
                                   bottom: 27,
                                   left: 0,
@@ -3204,7 +3563,9 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                       child: Stack(
                                         children: [
                                           // Shimmer effect for unlocked zones - enhanced
-                                          if (widget.isUnlocked)
+                                          // (off on compact: noise over signal).
+                                          if (widget.isUnlocked &&
+                                              !compactChrome)
                                             Positioned.fill(
                                               child: AnimatedBuilder(
                                                 animation:
@@ -3280,7 +3641,7 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                                         // fixed-height badge.
                                                         child: widget.isUnlocked
                                                             ? ZoneBadge(
-                                                                asset: 'assets/images/zones/${widget.zone.id}.png',
+                                                                asset: 'assets/images/zones/${widget.zone.id}.webp',
                                                                 emoji: widget
                                                                     .zone.emoji,
                                                                 size: 48,
@@ -3398,7 +3759,10 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                 ),
                               ),
 
-                              if (widget.isUnlocked)
+                              // Compact declutter: the star pill duplicates the
+                              // stars row inside the island body — hide it on
+                              // phones so the name has room to breathe.
+                              if (widget.isUnlocked && !compactChrome)
                                 Positioned(
                                   right: 8,
                                   top: 8,
@@ -3524,43 +3888,6 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                                   ),
                                 ),
 
-                              // Current zone indicator - enhanced
-                              if (widget.isCurrentZone)
-                                Positioned(
-                                  top: -2,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.white,
-                                          Colors.amber.shade100,
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.amber
-                                              .withValues(alpha: 0.6),
-                                          blurRadius: 8,
-                                          spreadRadius: 2,
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Text(
-                                      '📍 HERE',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 0.4,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                  ),
-                                ),
 
                               // Locked indicator - enhanced
                               if (!widget.isUnlocked)
@@ -3631,10 +3958,13 @@ class _ZoneIslandState extends State<_ZoneIsland> {
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
-          ), // close the A7 Tooltip wrapper
+          ),
+          ),
+          ),
+          ), // close the A7 Tooltip wrapper + island RepaintBoundary
         );
       },
     );

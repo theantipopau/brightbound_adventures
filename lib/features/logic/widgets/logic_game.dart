@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:brightbound_adventures/core/utils/game_keyboard_handler.dart';
 import 'dart:math' as math;
 import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
@@ -8,6 +9,7 @@ import 'package:brightbound_adventures/core/services/ai_learning_assistant_servi
 import 'package:brightbound_adventures/core/services/haptic_service.dart';
 import 'package:brightbound_adventures/core/services/quiz_preferences_service.dart';
 import 'package:brightbound_adventures/ui/themes/app_theme.dart';
+import 'package:brightbound_adventures/ui/widgets/companion_reactions.dart';
 import 'package:brightbound_adventures/ui/widgets/confetti_burst.dart';
 import 'package:brightbound_adventures/ui/widgets/extruded_card.dart';
 import '../models/question.dart';
@@ -35,7 +37,8 @@ class LogicGame extends StatefulWidget {
   State<LogicGame> createState() => _LogicGameState();
 }
 
-class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
+class _LogicGameState extends State<LogicGame>
+    with TickerProviderStateMixin, GameKeyboardHandler {
   int _currentIndex = 0;
   int _correctAnswers = 0;
   int _currentStreak = 0;
@@ -164,6 +167,10 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
       if (_isCorrect) {
         _correctAnswers++;
         _currentStreak++;
+        avatarProvider.setEmotion(
+          _currentStreak >= 3 ? AvatarEmotion.proud : AvatarEmotion.happy,
+          resetAfter: const Duration(milliseconds: 1800),
+        );
         _celebrationController.forward(from: 0);
 
         hapticService.onCorrectAnswer();
@@ -177,6 +184,8 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
         _currentStreak = 0;
         hapticService.onWrongAnswer();
         _audioManager.playIncorrectAnswer();
+        avatarProvider.setEmotion(AvatarEmotion.sad,
+            resetAfter: const Duration(milliseconds: 800));
       }
     });
 
@@ -227,7 +236,20 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardListener(
+      focusNode: _focusNode,
+      onKeyEvent: (event) => handleGameKeyPress(
+        event,
+        isAnswered: _showFeedback,
+        selectedIndex: _selectedAnswer,
+        optionCount: _currentQuestion.options.length,
+        onSelectOption: (i) => setState(() => _selectedAnswer = i),
+        onSubmitAnswer: () {
+          if (_selectedAnswer != null) _selectAnswer(_selectedAnswer!);
+        },
+        onTogglePause: () => Navigator.of(context).maybePop(),
+      ),
+      child: Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -245,6 +267,14 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
             children: [
               // Mountain background
               _buildMountainBackground(),
+
+              // Companion reacts to every answer (celebrate/encourage),
+              // matching the numeracy/science/literacy quiz screens.
+              const Positioned(
+                top: 0,
+                right: 0,
+                child: QuizCompanionCorner(),
+              ),
 
               // Main content
               Column(
@@ -265,6 +295,7 @@ class _LogicGameState extends State<LogicGame> with TickerProviderStateMixin {
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -1003,6 +1034,10 @@ class _StarBurstPainter extends CustomPainter {
     return path;
   }
 
+  // Burst rays are deterministic (seeded Random(42)): only progress
+  // changes the painting, so only repaint when it moves. The old
+  // unconditional `=> true` repainted on every parent rebuild.
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _StarBurstPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }

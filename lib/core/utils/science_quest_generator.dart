@@ -52,19 +52,21 @@ class ScienceQuestGenerator {
       difficulty: difficulty,
       count: count ~/ 2,
     );
-    final aiConverted = aiRaw
-        .map((aq) => ScienceQuestion(
+    final aiConverted = aiRaw.map((aq) {
+      final options = List<String>.of(aq.options)..shuffle(_random);
+      final correct = aq.options[aq.correctIndex];
+      return ScienceQuestion(
               id: 'ai_sci_${aq.question.hashCode.abs()}',
               skillId: skillId.isEmpty ? 'skill_biological_sciences' : skillId,
               question: aq.question,
-              options: aq.options,
-              correctIndex: aq.correctIndex,
+              options: options,
+              correctIndex: options.indexOf(correct),
               difficulty: difficulty,
               topic: 'AI Generated',
               hint: aq.hint,
               explanation: aq.explanation,
-            ))
-        .toList();
+            );
+    }).toList();
 
     // 2. Fill remainder from the static bank.
     final needed = count - aiConverted.length;

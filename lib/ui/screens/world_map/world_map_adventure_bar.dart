@@ -204,6 +204,8 @@ class WorldMapAdventureBar extends StatelessWidget {
     required Widget child,
   }) {
     return Positioned(
+      // Stable key powers the chrome-overlap regression net.
+      key: const ValueKey('top-hud'),
       top: top,
       left: left,
       right: right,
@@ -271,6 +273,13 @@ class WorldMapAdventureBar extends StatelessWidget {
                         style: AppTypography.bodyLarge.copyWith(
                           color: semantic.textPrimary,
                           fontWeight: FontWeight.w900,
+                          // Pinned line height: the identity box budgets
+                          // 45px for these two lines (58px height minus
+                          // 10px padding minus 3px border); the default
+                          // font-metric height totalled 46px and overflowed
+                          // by exactly 1px. 1.25 caps both lines at 40px
+                          // on every font instead of hoping metrics fit.
+                          height: 1.25,
                         ),
                       ),
                       Text(
@@ -280,6 +289,7 @@ class WorldMapAdventureBar extends StatelessWidget {
                         style: AppTypography.bodySmall.copyWith(
                           color: semantic.textSecondary,
                           fontWeight: FontWeight.w700,
+                          height: 1.25,
                         ),
                       ),
                     ],

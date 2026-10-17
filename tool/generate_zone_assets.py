@@ -4,7 +4,7 @@ Procedurally draws, at 4x supersampling and downsamples with Lanczos:
   * assets/images/zones/<zone-id>.png  - circular zone badge, radial zone
     gradient, gloss, ring, and a white emblem silhouette (mask-based so
     emblems can have true cut-outs).
-  * assets/images/wordmark.png         - "BrightBound ADVENTURES" wordmark in
+  * assets/images/wordmark.webp         - "BrightBound ADVENTURES" wordmark in
     the app's bundled Fredoka/Comfortaa fonts, white with navy stroke.
 
 Colors mirror WorldTokens in lib/ui/themes/app_theme.dart exactly.
@@ -272,10 +272,10 @@ def build_wordmark():
 def main():
     os.makedirs(ZONE_DIR, exist_ok=True)
     for zone, (primary, secondary) in ZONES.items():
-        out = os.path.join(ZONE_DIR, f'{zone}.png')
+        out = os.path.join(ZONE_DIR, f'{zone}.webp')
         build_badge(zone, primary, secondary).save(out)
         print('wrote', out)
-    wm = os.path.join(OUT_DIR, 'wordmark.png')
+    wm = os.path.join(OUT_DIR, 'wordmark.webp')
     build_wordmark().save(wm)
     print('wrote', wm)
 

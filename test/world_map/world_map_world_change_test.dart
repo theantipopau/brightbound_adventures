@@ -137,6 +137,8 @@ void main() {
     expect(find.text('Quest done'), findsOneWidget);
   });
 
+  // Compact shows a slim summary bar; the acknowledgement lives in the
+  // quest sheet (timed pumps: ambient map animations never settle).
   testWidgets('the quest lens acknowledges what happened in this zone',
       (tester) async {
     SharedPreferences.setMockInitialValues(const {});
@@ -144,6 +146,10 @@ void main() {
     await history.recordSession(_session());
 
     await _pumpMap(tester, history: history);
+
+    await tester.tap(find.byTooltip('Quest details'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(
       find.textContaining('finished a quest here today'),

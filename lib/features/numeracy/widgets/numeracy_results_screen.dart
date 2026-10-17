@@ -450,7 +450,7 @@ class _NumeracyResultsScreenState extends State<NumeracyResultsScreen>
                                       width: 22,
                                       height: 22,
                                       child: Image.asset(
-                                          'assets/images/potion.PNG',
+                                          'assets/images/potion.webp',
                                           cacheWidth: 128,
                                           fit: BoxFit.contain),
                                     ),

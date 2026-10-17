@@ -98,21 +98,42 @@ class WordWoodsQuestionGenerator {
 
     final options = List<String>.from(data['options']);
     final answerStr = data['answer']?.toString();
-    int correctIdx = 0;
-
-    if (answerStr != null) {
-      correctIdx = options.indexOf(answerStr);
+    // Prefer an explicit index when the bank supplies one (curated NAPLAN
+    // JSON shape); otherwise resolve via answer text with a safe fallback.
+    final explicit = data['correct_index'] ?? data['correctIndex'];
+    int correctIdx;
+    if (explicit is int && explicit >= 0 && explicit < options.length) {
+      // Shuffle answer positions so the correct slot varies per question.
+      final answer = options[explicit];
+      options.shuffle(_random);
+      correctIdx = options.indexOf(answer);
+      if (correctIdx == -1) correctIdx = 0;
+    } else {
+      options.shuffle(_random);
+      correctIdx = answerStr == null ? 0 : options.indexOf(answerStr);
       if (correctIdx == -1) correctIdx = 0;
     }
-
+    // Reading banks return a separate passage field; keep it visible by
+    // prepending it to the question text instead of silently dropping it.
+    final passage = data['passage']?.toString();
+    final stem = data['question'] as String;
+    final questionText =
+        passage == null || passage.isEmpty ? stem : '$passage\n\n$stem';
+    // Most NAPLAN literacy maps carry no hint/explanation yet (see
+    // CONTENT_QUALITY_REPORT §2/§5). Fall back to the authored explanation
+    // when present so the "why" surface never renders empty.
+    final explanation = data['explanation'] as String?;
+    final hint = data['hint'] as String? ??
+        explanation ??
+        'This is a NAPLAN-style practice question.';
     return LiteracyQuestion(
-      id: 'naplan_lit_${topic}_${difficulty}_$index',
+      id: 'naplan_lit_${topic}_${difficulty}_${index}_${_random.nextInt(1 << 20)}',
       skillId: skill,
-      question: data['question'] as String,
+      question: questionText,
       options: options,
       correctIndex: correctIdx,
-      explanation: data['explanation'] as String?,
-      hint: 'This is a NAPLAN-style practice question.',
+      explanation: explanation ?? hint,
+      hint: hint,
       difficulty: difficulty,
     );
   }
@@ -162,12 +183,13 @@ class WordWoodsQuestionGenerator {
         letters.removeWhere((l) => l == correct);
         letters.shuffle(Random());
 
+        final phonicsOptions = [correct, ...letters.take(3)]..shuffle(_random);
         return LiteracyQuestion(
           id: 'easy_phonics_${word}_$index',
           skillId: 'phonics',
           question: 'What letter does "$word" start with?',
-          options: [correct, ...letters.take(3)],
-          correctIndex: 0,
+          options: phonicsOptions,
+          correctIndex: phonicsOptions.indexOf(correct),
           hint: 'Say the word slowly: $word',
           explanation: '"$word" starts with the letter $correct!',
           difficulty: 1,

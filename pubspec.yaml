@@ -78,14 +78,8 @@ flutter:
         - asset: assets/fonts/Comfortaa-Bold.ttf
           weight: 700
 
+    # Emoji glyphs have no meaningful weight variants — a single Regular
+    # cut (was 5 weights / 4.3MB, now 861KB) renders identically.
     - family: NotoEmoji
       fonts:
-        - asset: assets/fonts/NotoEmoji-Light.ttf
-          weight: 300
         - asset: assets/fonts/NotoEmoji-Regular.ttf
-        - asset: assets/fonts/NotoEmoji-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/NotoEmoji-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/NotoEmoji-Bold.ttf
-          weight: 700

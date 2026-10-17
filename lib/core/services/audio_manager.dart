@@ -50,17 +50,20 @@ class AudioManager extends ChangeNotifier {
     'sounds/sfx/ui/click.wav',
     'sounds/sfx/ui/whoosh.wav',
     'sounds/sfx/ui/popup.wav',
-    'sounds/music/menu.wav',
-    'sounds/music/splash.wav',
+    // Music ships as MP3 (transcoded from the generator's WAV output at
+    // 96k mono — 1.5MB total vs 5.2MB as WAV). SFX stay WAV (tiny). If you
+    // re-run tool/generate_audio_assets.py, re-transcode music to .mp3.
+    'sounds/music/menu.mp3',
+    'sounds/music/splash.mp3',
     // All eight zones ship ambience now (task A4).
-    'sounds/music/zones/word_woods.wav',
-    'sounds/music/zones/number_nebula.wav',
-    'sounds/music/zones/math_facts.wav',
-    'sounds/music/zones/story_springs.wav',
-    'sounds/music/zones/science_explorers.wav',
-    'sounds/music/zones/creative_corner.wav',
-    'sounds/music/zones/puzzle_peaks.wav',
-    'sounds/music/zones/adventure_arena.wav',
+    'sounds/music/zones/word_woods.mp3',
+    'sounds/music/zones/number_nebula.mp3',
+    'sounds/music/zones/math_facts.mp3',
+    'sounds/music/zones/story_springs.mp3',
+    'sounds/music/zones/science_explorers.mp3',
+    'sounds/music/zones/creative_corner.mp3',
+    'sounds/music/zones/puzzle_peaks.mp3',
+    'sounds/music/zones/adventure_arena.mp3',
   ];
 
   bool get isMusicEnabled => _isMusicEnabled;
@@ -192,11 +195,10 @@ class AudioManager extends ChangeNotifier {
 
   /// Play zone-specific ambient music (looping, quiet focus audio)
   Future<void> playZoneMusic(String zoneId) async {
-    // Some common variations just in case
+    // Music ships as MP3 only (WAVs were transcoded away); underscore and
+    // hyphen spellings both occur across call sites, so try both.
     final variations = [
-      'sounds/music/zones/$zoneId.wav',
       'sounds/music/zones/$zoneId.mp3',
-      'sounds/music/zones/${zoneId.replaceAll('_', '-')}.wav',
       'sounds/music/zones/${zoneId.replaceAll('_', '-')}.mp3',
     ];
 
@@ -209,8 +211,8 @@ class AudioManager extends ChangeNotifier {
   }
 
   /// Play menu/world map music
-  Future<void> playMenuMusic() => playMusic('sounds/music/menu.wav');
-  Future<void> playSplashMusic() => playMusic('sounds/music/splash.wav');
+  Future<void> playMenuMusic() => playMusic('sounds/music/menu.mp3');
+  Future<void> playSplashMusic() => playMusic('sounds/music/splash.mp3');
 
   Future<void> stopMusic() async {
     await _musicPlayer.stop();
@@ -286,14 +288,22 @@ class AudioManager extends ChangeNotifier {
   Future<void> playWhoosh() => playSfx('sounds/sfx/ui/whoosh.wav');
   Future<void> playPopup() => playSfx('sounds/sfx/ui/popup.wav');
 
-  /// Play answer feedback sounds
+  /// Play answer feedback sounds.
+  ///
+  /// Haptics fire on the success path too (previously they only fired as
+  /// a fallback when an asset was missing): correct = medium pop,
+  /// incorrect = heavy thud. HapticFeedback is a no-op on web, so no
+  /// platform guard is needed. Covers all 7 quiz games at once since
+  /// they all route through these two methods.
   Future<void> playCorrectAnswer([int? variation]) {
     final num = variation ?? (DateTime.now().millisecond % 3) + 1;
+    HapticFeedback.mediumImpact();
     return playSfx('sounds/sfx/correct/correct$num.wav');
   }
 
   Future<void> playIncorrectAnswer([int? variation]) {
     final num = variation ?? (DateTime.now().millisecond % 2) + 1;
+    HapticFeedback.heavyImpact();
     return playSfx('sounds/sfx/incorrect/wrong$num.wav');
   }
 
@@ -311,8 +321,15 @@ class AudioManager extends ChangeNotifier {
     return Future.value();
   }
 
-  Future<void> playLevelUp() => playSfx('sounds/sfx/celebration/levelup.wav');
-  Future<void> playUnlock() => playSfx('sounds/sfx/celebration/unlock.wav');
+  Future<void> playLevelUp() {
+    HapticFeedback.heavyImpact();
+    return playSfx('sounds/sfx/celebration/levelup.wav');
+  }
+
+  Future<void> playUnlock() {
+    HapticFeedback.mediumImpact();
+    return playSfx('sounds/sfx/celebration/unlock.wav');
+  }
 
   void _updateVolumes() {
     _musicPlayer.setVolume(_musicVolume);

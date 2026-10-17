@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/images/logo.png" alt="BrightBound Adventures logo" width="210" />
+  <img src="assets/images/logo.webp" alt="BrightBound Adventures logo" width="210" />
 
   # BrightBound Adventures
 
@@ -25,10 +25,10 @@ world map -> quest -> practise -> XP and stars -> visible rewards -> next quest
 Children create a companion, explore an isometric board-game world, practise literacy, numeracy, science, logic, storytelling, and motor skills, then spend earned stars on cosmetic rewards.
 
 <div align="center">
-  <img src="assets/images/questsandtasks.PNG" alt="Quest scroll" width="120" />
-  <img src="assets/images/chest_closed.PNG" alt="Reward chest" width="120" />
-  <img src="assets/images/goldpile.PNG" alt="Gold reward" width="120" />
-  <img src="assets/images/pinkcrystal.PNG" alt="Collectible crystal" width="120" />
+  <img src="assets/images/questsandtasks.webp" alt="Quest scroll" width="120" />
+  <img src="assets/images/chest_closed.webp" alt="Reward chest" width="120" />
+  <img src="assets/images/goldpile.webp" alt="Gold reward" width="120" />
+  <img src="assets/images/pinkcrystal.webp" alt="Collectible crystal" width="120" />
 </div>
 
 ## What is playable
@@ -65,11 +65,11 @@ Children create a companion, explore an isometric board-game world, practise lit
 BrightBound bundles Fredoka, Comfortaa, Noto Emoji, distinct zone palettes, layered surfaces, reward art, and event-driven celebrations. v2.1 focuses on a cohesive token system, authored zone art, a rebuilt map, and equally intentional light and dark compositions.
 
 <div align="center">
-  <img src="assets/images/bluecrystal.PNG" alt="Blue crystal" width="84" />
-  <img src="assets/images/greencrystal.PNG" alt="Green crystal" width="84" />
-  <img src="assets/images/goldkey.PNG" alt="Golden key" width="84" />
-  <img src="assets/images/potion.PNG" alt="Potion" width="84" />
-  <img src="assets/images/scroll.PNG" alt="Scroll" width="84" />
+  <img src="assets/images/bluecrystal.webp" alt="Blue crystal" width="84" />
+  <img src="assets/images/greencrystal.webp" alt="Green crystal" width="84" />
+  <img src="assets/images/goldkey.webp" alt="Golden key" width="84" />
+  <img src="assets/images/potion.webp" alt="Potion" width="84" />
+  <img src="assets/images/scroll.webp" alt="Scroll" width="84" />
 </div>
 
 ## Privacy, accessibility, and platforms

@@ -626,7 +626,7 @@ class _MotorResultsScreenState extends State<MotorResultsScreen>
             icon: SizedBox(
               width: 22,
               height: 22,
-              child: Image.asset('assets/images/potion.PNG',
+              child: Image.asset('assets/images/potion.webp',
                   cacheWidth: 128, fit: BoxFit.contain),
             ),
             label: const Text(

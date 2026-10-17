@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/core/models/index.dart';
 import 'package:brightbound_adventures/core/services/index.dart';
+import 'package:brightbound_adventures/core/services/question_loader_service.dart';
+import 'package:brightbound_adventures/core/utils/naplan_curated_bank.dart';
 import 'package:brightbound_adventures/core/utils/number_nebula_generator.dart';
 import 'package:brightbound_adventures/features/numeracy/models/question.dart';
 import 'package:brightbound_adventures/features/numeracy/widgets/numeracy_game.dart';
@@ -53,6 +55,51 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
     super.initState();
     _startSessionIdentity();
     _questions = _getQuestionsForSkill();
+    // Cross-reference the curated NAPLAN JSON bank
+    // (`lib/core/data/naplan_year3_numeracy.json`): merge up to 3 vetted
+    // questions into the generic generator set. Async and intro-gated so
+    // the set never swaps under a child mid-quest (see CONTENT_QUALITY §4).
+    _mergeCuratedNaplan();
+  }
+
+  Future<void> _mergeCuratedNaplan() async {
+    // Capture the session so a late load never bleeds into the next quest.
+    final sessionId = _sessionId;
+    late final int difficulty;
+    try {
+      difficulty = context
+          .read<AdaptiveDifficultyService>()
+          .getDifficultyForSkill(widget.skill.id);
+    } catch (_) {
+      return;
+    }
+    late final List<NumeracyQuestion> curated;
+    try {
+      final loaded = await QuestionLoaderService()
+          .loadQuestions('naplan_year3_numeracy.json');
+      curated = NaplanCuratedBank.pickForSkill(
+        loaded.questions,
+        skillId: widget.skill.id,
+        skillName: widget.skill.name,
+        targetDifficulty: difficulty,
+        count: 3,
+      );
+    } catch (_) {
+      // Offline bundle / test harness without the asset: keep the
+      // synchronous generator set rather than failing the quest.
+      return;
+    }
+    if (curated.isEmpty || !mounted) return;
+    if (sessionId != _sessionId || !_intro || _showResults) return;
+    setState(() {
+      final ids = curated.map((q) => q.id).toSet();
+      final base = _questions.where((q) => !ids.contains(q.id)).toList();
+      // Keep the session length stable: curated questions replace tail
+      // slots instead of growing the quest.
+      final keep = (_questions.length - curated.length).clamp(0, base.length);
+      _questions =
+          [...base.take(keep), ...curated].take(_questions.length).toList();
+    });
   }
 
   void _startSessionIdentity() {
@@ -145,6 +192,7 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
       _hintsUsed = 0;
       _questions = _getQuestionsForSkill();
     });
+    _mergeCuratedNaplan();
   }
 
   void _exitToZone() {
@@ -176,9 +224,13 @@ class _NumeracyPracticeScreenState extends State<NumeracyPracticeScreen> {
       // Honest empty state: no fake questions, no placeholder bait. Shown
       // before the briefing — there is nothing to start yet.
       return Scaffold(
+        // Single-back empty state: the explicit "Back to Zone" button
+        // below is the only back action (AppBar chevron removed).
         appBar: AppBar(
           title: Text(widget.skill.name),
           backgroundColor: widget.themeColor,
+          automaticallyImplyLeading: false,
+          centerTitle: true,
         ),
         body: Center(
           child: Column(

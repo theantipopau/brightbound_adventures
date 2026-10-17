@@ -44,15 +44,19 @@ class TerrainPainter extends CustomPainter {
     final left = Offset(floorCenter.dx - _halfWidth, floorCenter.dy);
     const depthOffset = Offset(0, _extrusionDepth);
 
-    // 1. Ambient glow (unchanged) plus a tighter ambient-occlusion ellipse
-    // hugging the extruded underside, which is what actually sells the
-    // island as a solid floating object rather than a flat patch.
+    // 1. Ambient glow plus a tighter ambient-occlusion ellipse hugging
+    // the extruded underside, which is what actually sells the island
+    // as a solid floating object rather than a flat patch.
+    // Kept tight on purpose: the old 350x200 wash overlapped every
+    // neighbour on phones (island centres sit ~40-70px apart at 360px
+    // wide), turning the archipelago into one muddy blob. This stays
+    // just under the island footprint so adjacent biomes stay readable.
     final glowPaint = Paint()
-      ..color = color.withValues(alpha: 0.25)
+      ..color = color.withValues(alpha: 0.16)
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22);
     canvas.drawOval(
-      Rect.fromCenter(center: floorCenter, width: 350, height: 200),
+      Rect.fromCenter(center: floorCenter, width: 250, height: 140),
       glowPaint,
     );
 
@@ -104,7 +108,10 @@ class TerrainPainter extends CustomPainter {
       ..close();
     canvas.drawPath(rightFace, rightFacePaint);
 
-    // 3. Top face (the original diamond), lit and drawn last.
+    // 3. Top face: layered base + sunlit centre + specular sheen, drawn
+    // last. The base stays translucent so neighbouring biomes read through
+    // at the seams; the lit centre + sheen sell the form without new hues
+    // (zone colour + white only, per this file's palette).
     final terrainPaint = Paint()
       ..color = _shade(color, 0.06).withValues(alpha: 0.32)
       ..style = PaintingStyle.fill;
@@ -115,6 +122,46 @@ class TerrainPainter extends CustomPainter {
       ..lineTo(left.dx, left.dy)
       ..close();
     canvas.drawPath(path, terrainPaint);
+    // Sunlit centre: a smaller inset diamond, lighter and a touch more
+    // opaque, faking a top-left light falloff across the platform.
+    final lightPath = Path()
+      ..moveTo(top.dx, top.dy + 14)
+      ..lineTo(right.dx - 28, right.dy)
+      ..lineTo(bottom.dx, bottom.dy - 14)
+      ..lineTo(left.dx + 28, left.dy)
+      ..close();
+    canvas.drawPath(
+      lightPath,
+      Paint()
+        ..color = _shade(color, 0.16).withValues(alpha: 0.28)
+        ..style = PaintingStyle.fill,
+    );
+    // Specular sheen: soft white ellipse near the top edge.
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: floorCenter + const Offset(-24, -34),
+        width: 120,
+        height: 34,
+      ),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.10)
+        ..style = PaintingStyle.fill
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+    );
+
+    // 3b. Sun-catch speckles: a few deterministic white grains across the
+    // lit centre so large flat biomes don't read as empty plastic.
+    final specklePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.16)
+      ..style = PaintingStyle.fill;
+    final speckleSeed = zoneId.hashCode;
+    for (int i = 0; i < 9; i++) {
+      final sx = floorCenter.dx +
+          (((speckleSeed >> (i * 3)) & 15) - 7.5) * 12;
+      final sy = floorCenter.dy +
+          (((speckleSeed >> (i * 2 + 1)) & 7) - 3.5) * 10;
+      canvas.drawCircle(Offset(sx, sy), 2.2, specklePaint);
+    }
 
     // 4. Rim inset - a slightly darker stroke just inside the top face's
     // edge, giving the platform a defined, tactile border.
@@ -217,6 +264,52 @@ class TerrainPainter extends CustomPainter {
           bookPaint,
         );
       }
+    } else if (zoneId == 'science-explorers') {
+      // Lab bench - flask dots alternating the zone colour with white
+      // (both already in the file's palette: no new direct colours).
+      for (int i = 0; i < 16; i++) {
+        final x = center.dx + (i % 4 - 1.5) * 38;
+        final y = center.dy + (i ~/ 4 - 1.5) * 26;
+        final dotPaint = Paint()
+          ..color = (i.isEven ? Colors.white : color)
+              .withValues(alpha: 0.30)
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(Offset(x, y), i.isEven ? 3.5 : 2.5, dotPaint);
+        if (i % 4 == 0) {
+          canvas.drawCircle(
+            Offset(x + 8, y + 6),
+            5,
+            Paint()
+              ..color = color.withValues(alpha: 0.28)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2,
+          );
+        }
+      }
+    } else if (zoneId == 'creative-corner') {
+      // Confetti dots + a paint-stroke wave for art and music, in the
+      // zone colour and white (both already in the file's palette).
+      for (int i = 0; i < 16; i++) {
+        final x = center.dx + (i % 4 - 1.5) * 38;
+        final y = center.dy + (i ~/ 4 - 1.5) * 26;
+        final dotPaint = Paint()
+          ..color = (i.isEven ? color : Colors.white)
+              .withValues(alpha: 0.32)
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(Offset(x, y), 3.5, dotPaint);
+      }
+      final wavePaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.25)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round;
+      final wave = Path()
+        ..moveTo(center.dx - 60, center.dy + 18);
+      for (int j = 0; j < 5; j++) {
+        final x = center.dx - 60 + j * 26;
+        wave.quadraticBezierTo(x + 8, center.dy + 8, x + 16, center.dy + 18);
+      }
+      canvas.drawPath(wave, wavePaint);
     } else if (zoneId == 'puzzle-peaks') {
       // Puzzle pieces pattern
       for (int i = 0; i < 12; i++) {

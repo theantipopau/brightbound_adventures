@@ -462,7 +462,7 @@ class _WorldEntryScreenState extends State<WorldEntryScreen>
                                             borderRadius:
                                                 BorderRadius.circular(14),
                                             child: Image.asset(
-                                              'assets/images/logo.png',
+                                              'assets/images/logo.webp',
                                               // Same shared decode as main —
                                               // 42–52 dp display, 256 px cap.
                                               cacheWidth: 256,

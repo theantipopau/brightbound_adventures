@@ -49,10 +49,24 @@ class LiteracySkillQuestions {
       return [];
     }
 
-    // Return count questions, cycling through if needed
+    // Sampled without list-order repetition, with per-question option
+    // order shuffled so fixed-bank correctIndex values cannot be memorised.
+    final pool = List<LiteracyQuestion>.of(questions)..shuffle();
     final result = <LiteracyQuestion>[];
     for (int i = 0; i < count; i++) {
-      result.add(questions[i % questions.length]);
+      final q = pool[i % pool.length];
+      final options = List<String>.of(q.options)..shuffle();
+      result.add(LiteracyQuestion(
+        id: '${q.id}_s$i',
+        skillId: q.skillId,
+        question: q.question,
+        options: options,
+        correctIndex: options.indexOf(q.options[q.correctIndex]),
+        hint: q.hint,
+        explanation: q.explanation,
+        difficulty: q.difficulty,
+        metadata: q.metadata,
+      ));
     }
     return result;
   }

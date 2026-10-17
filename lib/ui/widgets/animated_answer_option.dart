@@ -213,11 +213,14 @@ class _AnimatedAnswerOptionState extends State<AnimatedAnswerOption>
 
   List<BoxShadow> _getOptionShadow(bool canTap) {
     if (widget.state == AnswerState.correct) {
+      // Correct answers earn the strongest glow on the screen: a lifted,
+      // golden-green halo so the win moment reads instantly at a glance.
       return [
         BoxShadow(
-          color: AppColors.correctFeedbackBorder.withValues(alpha: 0.18),
-          blurRadius: _reduceMotion ? 8 : 12,
-          offset: const Offset(0, 4),
+          color: AppColors.correctFeedbackBorder.withValues(alpha: 0.32),
+          blurRadius: _reduceMotion ? 8 : 18,
+          offset: const Offset(0, 6),
+          spreadRadius: 1,
         ),
       ];
     }
@@ -633,7 +636,12 @@ class _QuestionCardState extends State<QuestionCard>
                     width: 86,
                     height: 86,
                     child: Image.asset(
-                      'assets/images/scroll.PNG',
+                      'assets/images/scroll.webp',
+                      // Decorative 86px watermark: decode at 2x instead of
+                      // full-res so each question card doesn't pay a full
+                      // UI-thread decode per rebuild.
+                      cacheWidth: 172,
+                      cacheHeight: 172,
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => Icon(
                         Icons.auto_stories_rounded,

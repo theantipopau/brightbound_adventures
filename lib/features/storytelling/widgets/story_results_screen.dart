@@ -624,7 +624,7 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
             icon: SizedBox(
               width: 22,
               height: 22,
-              child: Image.asset('assets/images/potion.PNG',
+              child: Image.asset('assets/images/potion.webp',
                   cacheWidth: 128, fit: BoxFit.contain),
             ),
             label: const Text(
@@ -698,7 +698,11 @@ class _ConfettiPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  // Particles are deterministic (seeded Random(42)): only progress
+  // changes the painting, so only repaint when it moves. The old
+  // unconditional `=> true` repainted on every parent rebuild.
+  bool shouldRepaint(covariant _ConfettiPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
 
 class _ConfettiParticle {

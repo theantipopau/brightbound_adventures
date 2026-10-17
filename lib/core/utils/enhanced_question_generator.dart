@@ -78,7 +78,9 @@ abstract class EnhancedQuestionGenerator {
     return num;
   }
 
-  /// Shuffle a list and ensure first item isn't the answer (for better UX)
+  /// Uniform shuffle: every slot (including first) is equally likely to hold
+  /// the correct answer. A previous revision deliberately kept the answer out
+  /// of slot 0, which taught position-guessing; randomness must be unbiased.
   static List<T> smartShuffle<T>(List<T> options, T correctAnswer) {
     final unique = <T>[];
     for (final option in options) {
@@ -87,17 +89,9 @@ abstract class EnhancedQuestionGenerator {
       }
     }
     if (!unique.contains(correctAnswer)) {
-      unique.insert(0, correctAnswer);
+      unique.add(correctAnswer);
     }
-
     final shuffled = List<T>.from(unique)..shuffle(_random);
-    // If correct answer is first, swap with a random other position
-    if (shuffled.first == correctAnswer && shuffled.length > 1) {
-      final swapIdx = 1 + _random.nextInt(shuffled.length - 1);
-      final temp = shuffled[0];
-      shuffled[0] = shuffled[swapIdx];
-      shuffled[swapIdx] = temp;
-    }
     return shuffled;
   }
 

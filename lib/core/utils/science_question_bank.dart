@@ -1579,7 +1579,21 @@ class ScienceQuestionBank {
     }).toList()
       ..shuffle(_random);
 
-    if (filtered.length >= count) return filtered.take(count).toList();
+    List<ScienceQuestion> withShuffledOptions(List<ScienceQuestion> qs) => qs.map((q) {
+      final options = List<String>.of(q.options)..shuffle(_random);
+      return ScienceQuestion(
+        id: q.id,
+        skillId: q.skillId,
+        question: q.question,
+        options: options,
+        correctIndex: options.indexOf(q.options[q.correctIndex]),
+        difficulty: q.difficulty,
+        topic: q.topic,
+        explanation: q.explanation,
+        hint: q.hint,
+      );
+    }).toList();
+    if (filtered.length >= count) return withShuffledOptions(filtered.take(count).toList());
 
     // Fall back to all questions for the skill if not enough at this difficulty
     final fallback = _all.where((q) {
@@ -1587,7 +1601,7 @@ class ScienceQuestionBank {
     }).toList()
       ..shuffle(_random);
 
-    return fallback.take(count).toList();
+    return withShuffledOptions(fallback.take(count).toList());
   }
 
   /// Unmodifiable snapshot of the full bank — used by audit gates that

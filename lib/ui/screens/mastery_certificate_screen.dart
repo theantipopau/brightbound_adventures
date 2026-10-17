@@ -72,7 +72,8 @@ class MasteryCertificateScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Column(
+                    child: SingleChildScrollView(
+                      child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
@@ -165,35 +166,27 @@ class MasteryCertificateScreen extends StatelessWidget {
                           ],
                         ),
                       ],
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.arrow_back),
-                        label: const Text('Back'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('Share/export coming in next update.'),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.workspace_premium),
-                        label: const Text('Celebrate'),
-                      ),
-                    ),
-                  ],
+                // Single-back layout: the AppBar chevron above is the only
+                // way back. The old bottom "Back" duplicated it, so the
+                // footer is now one centered Celebrate action.
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Share/export coming in next update.'),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.workspace_premium),
+                    label: const Text('Celebrate'),
+                  ),
                 ),
               ],
             ),

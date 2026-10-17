@@ -55,9 +55,13 @@ class ExtrudedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
+    // Reserve [depth] below the face so the extruded side paints inside
+    // our own box instead of bleeding 6px into the next card in a Column.
+    return Padding(
+      padding: EdgeInsets.only(bottom: depth),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
         Positioned(
           left: 0,
           right: 0,
@@ -82,7 +86,8 @@ class ExtrudedCard extends StatelessWidget {
           ),
         ),
         child,
-      ],
+        ],
+      ),
     );
   }
 }

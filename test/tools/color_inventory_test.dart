@@ -26,7 +26,9 @@ const Map<String, int> _colorUsageAllowlist = {
   'lib/ui/themes/app_theme.dart': 158,
   'lib/ui/widgets/fantasy_map.dart': 126,
   'lib/ui/screens/parent_dashboard_screen.dart': 118,
-  'lib/ui/screens/avatar_creator_screen.dart': 118,
+  // Raised from 118 for the review-step Hero Stats card (white card,
+  // track grey, soft shadow — 3 reviewed literals in game-sheet styling).
+  'lib/ui/screens/avatar_creator_screen.dart': 121,
   'lib/ui/screens/mini_games_screen.dart': 72,
   'lib/features/logic/widgets/logic_game.dart': 67,
   'lib/ui/themes/zone_palettes.dart': 64,
@@ -108,7 +110,12 @@ const Map<String, int> _colorUsageAllowlist = {
   'lib/ui/painters/board_tile_painter.dart': 7,
   'lib/core/services/animation_service.dart': 9,
   'lib/features/motor/models/motor_game.dart': 8,
-  'lib/ui/painters/terrain_painter.dart': 7,
+  // Two previously untextured biomes (science-explorers, creative-corner)
+  // gained painter textures reusing the file's existing white/zone-colour
+  // palette: +3 direct uses (7 -> 10), all inside _drawBiomeTexture.
+  // Island fidelity pass: sunlit inset diamond + white specular sheen +
+  // white sun-catch speckles on the top face (10 -> 12), same palette.
+  'lib/ui/painters/terrain_painter.dart': 12,
   'lib/core/services/streak_enhanced_service.dart': 7,
   'lib/ui/widgets/tracing_widget.dart': 6,
   'lib/features/science/screens/science_practice_screen.dart': 6,
@@ -140,6 +147,12 @@ const Map<String, int> _colorUsageAllowlist = {
   // sky/atmosphere gradients are procedural painter shading, not UI
   // styling — reviewed deliberate exception at its real count.
   'lib/ui/screens/world_map/parallax_map_layer.dart': 7,
+  // Compact bottom sheet (quest + dock fused into one card): the five
+  // action-button identity colours moved here verbatim from the old
+  // standalone dock in world_map_screen.dart (orange daily, secondary
+  // mini-games, teal shop, reward achievements + textSecondary caption).
+  // Same set, new home — reviewed at its real count.
+  'lib/ui/screens/world_map/world_map_quest_lens.dart': 5,
   // New 2026-10-10 (A3 companion pass): reactive emoji badges and mood
   // tints keyed to avatar emotion states — small reviewed set, real count.
   'lib/ui/widgets/companion_reactions.dart': 6,

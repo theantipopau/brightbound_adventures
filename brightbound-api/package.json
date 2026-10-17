@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "keywords": [
     "cloudflare",
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240123.0",
     "typescript": "^5.3.3",
+    "vitest": "^5.0.4",
     "wrangler": "^3.26.0"
   }
 }

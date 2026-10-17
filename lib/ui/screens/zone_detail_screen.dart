@@ -59,18 +59,11 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final worldTokens = WorldTokens.fromZoneId(widget.zoneId);
+    // Single-header layout: the pinned SliverAppBar below owns the only
+    // back button + collapsed title. An outer AppBar here used to stack a
+    // second back chevron above the sliver's, reading as "multiple backs".
     return Scaffold(
       backgroundColor: worldTokens.primaryColor.withValues(alpha: 0.06),
-      appBar: AppBar(
-        title: Text(widget.zoneName),
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: worldTokens.headerGradient,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-      ),
       body: Consumer<SkillProvider>(
         builder: (context, skillProvider, _) {
           if (!skillProvider.isInitialized) {
@@ -109,7 +102,14 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                 expandedHeight: 200,
                 floating: false,
                 pinned: true,
+                centerTitle: true,
+                title: Text(
+                  widget.zoneName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 leading: IconButton(
+                  tooltip: 'Back',
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -162,7 +162,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                         SizedBox(
                           width: 28,
                           height: 28,
-                          child: Image.asset('assets/images/logo.png',
+                          child: Image.asset('assets/images/logo.webp',
                               cacheWidth: 128, fit: BoxFit.contain),
                         ),
                         const SizedBox(width: 6),
@@ -189,7 +189,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                           width: 22,
                           height: 22,
                           child: Image.asset(
-                              'assets/images/questsandtasks.PNG',
+                              'assets/images/questsandtasks.webp',
                               cacheWidth: 128,
                               fit: BoxFit.contain),
                         ),
@@ -713,8 +713,8 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
             padding: const EdgeInsets.all(16),
             child: Image.asset(
               skill.state == SkillState.mastered
-                  ? 'assets/images/goldkey.PNG'
-                  : 'assets/images/potion.PNG',
+                  ? 'assets/images/goldkey.webp'
+                  : 'assets/images/potion.webp',
               // ≤88 dp circle: decode capped to keep small icons cheap.
               cacheWidth: 192,
               fit: BoxFit.contain,

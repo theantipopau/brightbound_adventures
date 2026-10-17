@@ -22,19 +22,21 @@ class PuzzlePeaksQuestionGenerator {
       difficulty: difficulty,
       count: count * 2 ~/ 5,
     );
-    final aiConverted = aiRaw
-        .map((aq) => LogicQuestion(
+    final aiConverted = aiRaw.map((aq) {
+      final aiOptions = List<String>.of(aq.options)..shuffle(_random);
+      final aiCorrect = aq.options[aq.correctIndex];
+      return LogicQuestion(
               id: 'ai_logic_${aq.question.hashCode.abs()}',
               skillId: skill,
               question: aq.question,
-              options: aq.options,
-              correctIndex: aq.correctIndex,
+              options: aiOptions,
+              correctIndex: aiOptions.indexOf(aiCorrect),
               hint: aq.hint,
               explanation: aq.explanation,
               difficulty: difficulty,
               type: LogicQuestionType.logicPuzzle,
-            ))
-        .toList();
+            );
+    }).toList();
 
     // 2. Static bank questions
     final needed = count - aiConverted.length;
@@ -67,11 +69,11 @@ class PuzzlePeaksQuestionGenerator {
     return _shuffleAnswerToRandomSlot(question);
   }
 
-  /// The easy templates author the correct answer as options[0]; a child
-  /// who learns that convention can pass by picking the first row every
-  /// time (audit finding). Serve the answer randomly placed instead.
+  /// All authored templates pin the answer to a fixed slot (usually
+  /// options[0]); serve every question with the answer randomly placed so
+  /// position-guessing can never pass a session.
   static LogicQuestion _shuffleAnswerToRandomSlot(LogicQuestion q) {
-    if (q.correctIndex != 0 || q.options.length < 2) return q;
+    if (q.options.length < 2) return q;
     final options = List.of(q.options)..shuffle(_random);
     return LogicQuestion(
       id: q.id,

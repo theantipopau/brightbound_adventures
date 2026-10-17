@@ -353,6 +353,20 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
             !_showFeedback &&
             _currentQuestion.type != StoryQuestionType.sequencing) {
           _selectAnswer(_selectedAnswer ?? -1);
+        } else if (!_showFeedback &&
+            _currentQuestion.type != StoryQuestionType.sequencing &&
+            (key == LogicalKeyboardKey.digit1 ||
+                key == LogicalKeyboardKey.digit2 ||
+                key == LogicalKeyboardKey.digit3 ||
+                key == LogicalKeyboardKey.digit4)) {
+          final digit = key == LogicalKeyboardKey.digit1
+              ? 0
+              : key == LogicalKeyboardKey.digit2
+                  ? 1
+                  : key == LogicalKeyboardKey.digit3
+                      ? 2
+                      : 3;
+          _selectAnswer(digit);
         }
       },
       child: Scaffold(
@@ -439,7 +453,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
                   border: Border.all(
                       color: Colors.white.withValues(alpha: 0.35), width: 1.5),
                 ),
-                child: Image.asset('assets/images/scroll.PNG',
+                child: Image.asset('assets/images/scroll.webp',
                     fit: BoxFit.contain),
               ),
             ),
@@ -1066,7 +1080,11 @@ class _SparklePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  // Sparkles are deterministic (seeded Random(42)): only progress
+  // changes the painting, so only repaint when it moves. The old
+  // unconditional `=> true` repainted on every parent rebuild.
+  bool shouldRepaint(covariant _SparklePainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
 
 class _Sparkle {

@@ -381,10 +381,8 @@ class LevelUpAnimation extends StatefulWidget {
 class _LevelUpAnimationState extends State<LevelUpAnimation>
     with TickerProviderStateMixin {
   late AnimationController _mainController;
-  late AnimationController _glowController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _rotateAnimation;
-  late Animation<double> _glowAnimation;
   final List<_ConfettiParticle> _confetti = [];
 
   @override
@@ -395,11 +393,6 @@ class _LevelUpAnimationState extends State<LevelUpAnimation>
       vsync: this,
       duration: const Duration(milliseconds: 2500),
     );
-
-    _glowController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    )..repeat(reverse: true);
 
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
@@ -430,11 +423,6 @@ class _LevelUpAnimationState extends State<LevelUpAnimation>
       parent: _mainController,
       curve: const Interval(0, 0.3, curve: Curves.easeOut),
     ));
-
-    _glowAnimation = Tween<double>(
-      begin: 10,
-      end: 30,
-    ).animate(_glowController);
 
     // Create confetti
     final random = math.Random();
@@ -467,14 +455,13 @@ class _LevelUpAnimationState extends State<LevelUpAnimation>
   @override
   void dispose() {
     _mainController.dispose();
-    _glowController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([_mainController, _glowController]),
+      animation: _mainController,
       builder: (context, child) {
         return Stack(
           alignment: Alignment.center,
@@ -526,11 +513,14 @@ class _LevelUpAnimationState extends State<LevelUpAnimation>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
+                    // Static blur: the old 10→30 animated blur re-rasterized
+                    // the shadow every frame. Glow pulse now reads from the
+                    // scale/opacity animation with blur fixed at mid value.
                     boxShadow: [
                       BoxShadow(
                         color: Colors.amber.withValues(alpha: 0.8),
-                        blurRadius: _glowAnimation.value,
-                        spreadRadius: _glowAnimation.value / 3,
+                        blurRadius: 20,
+                        spreadRadius: 7,
                       ),
                     ],
                     border: Border.all(

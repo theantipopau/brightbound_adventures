@@ -91,6 +91,7 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                           children: [
                             Text(
                               '🎮 Mini Games',
+                              textAlign: TextAlign.center,
                               textScaler:
                                   MediaQuery.textScalerOf(context).clamp(
                                       maxScaleFactor: 1.3),
@@ -103,6 +104,7 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                             SizedBox(height: 4),
                             Text(
                               'Quick games to boost your skills!',
+                              textAlign: TextAlign.center,
                               textScaler:
                                   MediaQuery.textScalerOf(context).clamp(
                                       maxScaleFactor: 1.3),

@@ -442,6 +442,23 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
               }
             } else if (key == LogicalKeyboardKey.enter && !_answered) {
               _selectAnswer(_selectedIndex ?? -1);
+            } else if (!_answered &&
+                (key == LogicalKeyboardKey.digit1 ||
+                    key == LogicalKeyboardKey.digit2 ||
+                    key == LogicalKeyboardKey.digit3 ||
+                    key == LogicalKeyboardKey.digit4 ||
+                    key == LogicalKeyboardKey.numpad1 ||
+                    key == LogicalKeyboardKey.numpad2 ||
+                    key == LogicalKeyboardKey.numpad3 ||
+                    key == LogicalKeyboardKey.numpad4)) {
+              final digit = key == LogicalKeyboardKey.digit1 || key == LogicalKeyboardKey.numpad1
+                  ? 0
+                  : key == LogicalKeyboardKey.digit2 || key == LogicalKeyboardKey.numpad2
+                      ? 1
+                      : key == LogicalKeyboardKey.digit3 || key == LogicalKeyboardKey.numpad3
+                          ? 2
+                          : 3;
+              _selectAnswer(digit);
             } else if (key == LogicalKeyboardKey.escape) {
               _togglePause();
             }
@@ -890,7 +907,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                       color: widget.themeColor.withValues(alpha: 0.3),
                       width: 1.5),
                 ),
-                child: Image.asset('assets/images/scroll.PNG',
+                child: Image.asset('assets/images/scroll.webp',
                     fit: BoxFit.contain),
               ),
             ),
@@ -914,7 +931,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                 ),
                 child: _gameController.state == GameState.paused
                     ? Icon(Icons.play_arrow, color: widget.themeColor, size: 22)
-                    : Image.asset('assets/images/questsandtasks.PNG',
+                    : Image.asset('assets/images/questsandtasks.webp',
                         cacheWidth: 128,
                         fit: BoxFit.contain),
               ),

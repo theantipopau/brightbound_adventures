@@ -548,16 +548,21 @@ class AustralianNAPLANQuestions {
   }
 
   static Map<String, dynamic> _year3Fractions(int difficulty) {
-    // B1: parameterised unit fractions — wholes and pieces eaten drawn by
-    // unique index across the 56 valid pairs, so texts never repeat within
-    // a difficulty row; answers are reduced fractions.
+    // B1: parameterised unit fractions — (wholes, eaten, context) drawn by
+    // unique index across the full 56-pair x 3-context space (168), so
+    // texts never repeat within a difficulty row; answers are reduced
+    // fractions. The context used to be picked by a separate random draw
+    // outside the unique window, which left 50-draw samples flaky near the
+    // 56-pair ceiling (cross-referenced against the curated NAPLAN JSON
+    // bank, whose fractions entries are all distinct texts).
     const wholesOptions = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
     const contexts = [
       'A watermelon is cut into {w} equal slices. You eat {p} of them. What fraction did you eat?',
       'A fruit loaf holds {w} slices. You share {p} of them at play lunch. What fraction was shared?',
       'A recipe makes {w} pikelets. You eat {p} of them. What fraction is gone?',
     ];
-    var remain = _getUniqueDraw('y3-fractions-d$difficulty', 56);
+    final combo = _getUniqueDraw('y3-fractions-d$difficulty', 56 * 3);
+    var remain = combo ~/ 3;
     var wholes = wholesOptions.first;
     var eaten = 1;
     for (final w in wholesOptions) {
@@ -575,7 +580,7 @@ class AustralianNAPLANQuestions {
       gcdB = gcdA;
       gcdA = r;
     }
-    final scenario = contexts[_random.nextInt(contexts.length)];
+    final scenario = contexts[combo % 3];
     return {
       'question': scenario
           .replaceAll('{w}', '$wholes')

@@ -697,7 +697,23 @@ class PuzzlePeaksQuestionBank {
     }).toList()
       ..shuffle(_random);
 
-    if (filtered.length >= count) return filtered.take(count).toList();
+    List<LogicQuestion> withShuffledOptions(List<LogicQuestion> qs) => qs.map((q) {
+      final options = List<String>.of(q.options)..shuffle(_random);
+      return LogicQuestion(
+        id: q.id,
+        skillId: q.skillId,
+        question: q.question,
+        options: options,
+        correctIndex: options.indexOf(q.options[q.correctIndex]),
+        hint: q.hint,
+        explanation: q.explanation,
+        difficulty: q.difficulty,
+        type: q.type,
+        imageEmoji: q.imageEmoji,
+        sequenceItems: q.sequenceItems,
+      );
+    }).toList();
+    if (filtered.length >= count) return withShuffledOptions(filtered.take(count).toList());
 
     // Broaden to all questions if not enough at this difficulty/skill
     final broader = _all
@@ -707,7 +723,7 @@ class PuzzlePeaksQuestionBank {
             q.skillId.contains('skill'))
         .toList()
       ..shuffle(_random);
-    return broader.take(count).toList();
+    return withShuffledOptions(broader.take(count).toList());
   }
 
   static int get totalCount => _all.length;

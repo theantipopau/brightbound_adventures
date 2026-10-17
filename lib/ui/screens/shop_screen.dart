@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
 import 'package:brightbound_adventures/core/services/shop_service.dart';
+import 'package:brightbound_adventures/core/services/audio_manager.dart';
 import 'package:brightbound_adventures/core/services/avatar_provider.dart';
+import 'package:brightbound_adventures/ui/widgets/reward_animations.dart';
 import 'package:brightbound_adventures/core/models/shop_item.dart';
 import 'package:brightbound_adventures/ui/widgets/modern_shop_item_card.dart';
 
@@ -212,21 +214,21 @@ class _ShopScreenState extends State<ShopScreen>
               final compact = constraints.maxWidth < 720;
               final tiles = [
                 _buildGearTile(
-                  asset: 'assets/images/inventory.PNG',
+                  asset: 'assets/images/inventory.webp',
                   label: 'Inventory',
                   value: '$owned/$total owned',
                   color: Colors.amber,
                   onTap: () => _tabController.animateTo(0),
                 ),
                 _buildGearTile(
-                  asset: 'assets/images/chest_open.PNG',
+                  asset: 'assets/images/chest_open.webp',
                   label: 'Current Outfit',
                   value: outfitName,
                   color: Colors.purpleAccent,
                   onTap: () => Navigator.pushNamed(context, '/avatar-creator'),
                 ),
                 _buildGearTile(
-                  asset: 'assets/images/goldpile.PNG',
+                  asset: 'assets/images/goldpile.webp',
                   label: 'Star Balance',
                   value: '${shop.starBalance} ready',
                   color: Colors.orange,
@@ -629,6 +631,12 @@ class _ShopScreenState extends State<ShopScreen>
 
       if (success) {
         await _unlockAvatarReward(item);
+        // Purchase fanfare: unlock chime + star burst, so spending stars
+        // feels rewarding rather than ending in a bare snackbar.
+        AudioManager().playUnlock();
+        if (mounted) {
+          RewardAnimationOverlay.showStarBurst(context, starCount: 3);
+        }
         _showPurchaseSuccess(item);
       } else {
         _showPurchaseError();

@@ -20,10 +20,16 @@ class ZoneBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // cacheWidth/Height decode at ~2x display size: the 53KB zone PNGs
+    // were decoded full-res on the UI thread once per island per frame
+    // during ambient animation. 2x keeps retina crispness on web.
+    final cacheSize = (size * 2).round();
     return Image.asset(
       asset,
       width: size,
       height: size,
+      cacheWidth: cacheSize,
+      cacheHeight: cacheSize,
       fit: BoxFit.contain,
       filterQuality: FilterQuality.medium,
       errorBuilder: (_, __, ___) => SizedBox(
