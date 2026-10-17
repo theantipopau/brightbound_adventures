@@ -141,10 +141,10 @@ class _MidgroundCloudPainter extends CustomPainter {
 
       // Three overlapping puffs per cloud for a chunky, rounded silhouette.
       canvas.drawCircle(centre, radius, paint);
-      canvas.drawCircle(centre.translate(-radius * 0.8, radius * 0.25),
-          radius * 0.7, paint);
-      canvas.drawCircle(centre.translate(radius * 0.75, radius * 0.3),
-          radius * 0.65, paint);
+      canvas.drawCircle(
+          centre.translate(-radius * 0.8, radius * 0.25), radius * 0.7, paint);
+      canvas.drawCircle(
+          centre.translate(radius * 0.75, radius * 0.3), radius * 0.65, paint);
     }
   }
 

@@ -14,8 +14,8 @@ class AudioManager extends ChangeNotifier {
   /// run meaningfully there — playing leaves pending timers and fails the
   /// pending-timer invariant. Reactions still fire (haptics) so behaviour
   /// is exercised without spinning up a real audio device.
-  static final bool _inTestHarness = !kIsWeb &&
-      Platform.environment.containsKey('FLUTTER_TEST');
+  static final bool _inTestHarness =
+      !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
   static bool get inTestHarness => _inTestHarness;
 

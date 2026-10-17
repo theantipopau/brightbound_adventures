@@ -55,105 +55,105 @@ class MasteryCertificate extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Header
-                  const Text(
-                    'CERTIFICATE OF ACHIEVEMENT',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.indigo,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // "Presented to"
-                  const Text(
-                    'This certificate is proudly presented to',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Student name
-                  Text(
-                    studentName,
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Achievement
-                  Text(
-                    _getAchievementText(),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Achievement name with emoji
-                  Text(
-                    '${_getEmoji()} $achievementName ${_getEmoji()}',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.deepPurple,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Stars earned
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('⭐⭐⭐⭐⭐', style: TextStyle(fontSize: 20)),
-                      const SizedBox(width: 10),
-                      Text(
-                        '$starsEarned Stars Earned',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber,
-                        ),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Header
+                    const Text(
+                      'CERTIFICATE OF ACHIEVEMENT',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo,
+                        letterSpacing: 2,
                       ),
-                      const SizedBox(width: 10),
-                      const Text('⭐⭐⭐⭐⭐', style: TextStyle(fontSize: 20)),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Date
-                  Text(
-                    date,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
                     ),
-                  ),
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 20),
 
-                  // BrightBound signature
-                  const Text(
-                    'BrightBound Adventures',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.indigo,
+                    // "Presented to"
+                    const Text(
+                      'This certificate is proudly presented to',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 10),
+
+                    // Student name
+                    Text(
+                      studentName,
+                      style: const TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Achievement
+                    Text(
+                      _getAchievementText(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Achievement name with emoji
+                    Text(
+                      '${_getEmoji()} $achievementName ${_getEmoji()}',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Stars earned
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('⭐⭐⭐⭐⭐', style: TextStyle(fontSize: 20)),
+                        const SizedBox(width: 10),
+                        Text(
+                          '$starsEarned Stars Earned',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text('⭐⭐⭐⭐⭐', style: TextStyle(fontSize: 20)),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Date
+                    Text(
+                      date,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // BrightBound signature
+                    const Text(
+                      'BrightBound Adventures',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -305,10 +305,9 @@ class CertificateDialog extends StatelessWidget {
           children: [
             Text(
               '🏆 Congratulations! 🏆',
-              textScaler: MediaQuery.textScalerOf(context).clamp(
-                  maxScaleFactor: 1.3),
-              style: const TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.bold),
+              textScaler:
+                  MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.3),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Flexible(

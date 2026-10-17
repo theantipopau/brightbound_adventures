@@ -13,10 +13,18 @@ import 'package:brightbound_adventures/features/numeracy/models/question.dart';
 /// a valid `correct_index`, unique options, a hint, and a topic this bridge
 /// knows how to route to a Number Nebula skill.
 class NaplanCuratedBank {
-/// JSON topic -> skill-id fragments used by `NumberNebulaQuestionGenerator`
-/// and `NumeracyPracticeScreen._getQuestionsForSkill`.
+  /// JSON topic -> skill-id fragments used by `NumberNebulaQuestionGenerator`
+  /// and `NumeracyPracticeScreen._getQuestionsForSkill`.
   static const Map<String, List<String>> topicSkillHints = {
-    'number': ['addition', 'subtraction', 'multiplication', 'division', 'counting', 'place_value', 'number'],
+    'number': [
+      'addition',
+      'subtraction',
+      'multiplication',
+      'division',
+      'counting',
+      'place_value',
+      'number'
+    ],
     'money': ['money'],
     'geometry': ['geometry', 'shapes'],
     'time': ['time'],
@@ -46,8 +54,8 @@ class NaplanCuratedBank {
     return (curatedDifficulty - targetDifficulty).abs() <= 1;
   }
 
-/// Converts one curated `Question` into a playable `NumeracyQuestion`.
-/// The JSON `correct_index` is preserved verbatim
+  /// Converts one curated `Question` into a playable `NumeracyQuestion`.
+  /// The JSON `correct_index` is preserved verbatim
   /// (never re-derived from answer text), the JSON `hint` is kept, and the
   /// explanation falls back to the hint so the "why" surface never renders
   /// empty for curated questions.

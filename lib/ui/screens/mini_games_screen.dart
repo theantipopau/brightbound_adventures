@@ -92,9 +92,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                             Text(
                               '🎮 Mini Games',
                               textAlign: TextAlign.center,
-                              textScaler:
-                                  MediaQuery.textScalerOf(context).clamp(
-                                      maxScaleFactor: 1.3),
+                              textScaler: MediaQuery.textScalerOf(context)
+                                  .clamp(maxScaleFactor: 1.3),
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 32,
@@ -105,9 +104,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                             Text(
                               'Quick games to boost your skills!',
                               textAlign: TextAlign.center,
-                              textScaler:
-                                  MediaQuery.textScalerOf(context).clamp(
-                                      maxScaleFactor: 1.3),
+                              textScaler: MediaQuery.textScalerOf(context)
+                                  .clamp(maxScaleFactor: 1.3),
                               style: TextStyle(
                                 color: Colors.white70,
                                 fontSize: 15,
@@ -173,7 +171,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                                 color: Colors.deepPurple,
                                 game: () => Navigator.push(
                                   context,
-                                  MaterialPageRoute(
+                                  ZoneEntryRoute(
+                                    context: context,
                                     builder: (context) => MemoryMatchGame(
                                         difficulty: _selectedDifficulty),
                                   ),
@@ -205,7 +204,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                                 color: Colors.indigo,
                                 game: () => Navigator.push(
                                   context,
-                                  MaterialPageRoute(
+                                  ZoneEntryRoute(
+                                    context: context,
                                     builder: (context) => PatternPuzzleGame(
                                         difficulty: _selectedDifficulty),
                                   ),
@@ -219,7 +219,8 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                                 color: Colors.teal,
                                 game: () => Navigator.push(
                                   context,
-                                  MaterialPageRoute(
+                                  ZoneEntryRoute(
+                                    context: context,
                                     builder: (context) => WordSearchGame(
                                         difficulty: _selectedDifficulty),
                                   ),
@@ -387,9 +388,9 @@ class _MiniGamesScreenState extends State<MiniGamesScreen>
                             final textScale = MediaQuery.textScalerOf(context)
                                 .scale(1)
                                 .clamp(1.0, 2.0);
-                            final compact = cardConstraints.maxHeight <
-                                    260 * textScale ||
-                                cardConstraints.maxWidth < 220;
+                            final compact =
+                                cardConstraints.maxHeight < 260 * textScale ||
+                                    cardConstraints.maxWidth < 220;
                             final iconSize = compact ? 42.0 : 56.0;
                             final iconPadding = compact ? 12.0 : 16.0;
                             final titleSize = compact ? 18.0 : 21.0;
@@ -914,7 +915,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                             vertical: 20,
                           ),
                           shape: RoundedRectangleBorder(
-                            side: const BorderSide(color: Colors.white, width: 2),
+                            side:
+                                const BorderSide(color: Colors.white, width: 2),
                             borderRadius: BorderRadius.circular(30),
                           ),
                           elevation: 8,
@@ -1319,7 +1321,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(
+                    ZoneEntryRoute(
+                      context: context,
                       builder: (context) =>
                           GameScreen(gameType: widget.gameType),
                     ),

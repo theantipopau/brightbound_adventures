@@ -477,24 +477,24 @@ class _StoryResultsScreenState extends State<StoryResultsScreen>
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(
-                  '${widget.correctAnswers}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
+                children: [
+                  Text(
+                    '${widget.correctAnswers}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  ' / ${widget.totalQuestions}',
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w500,
+                  Text(
+                    ' / ${widget.totalQuestions}',
+                    style: const TextStyle(
+                      color: Colors.white60,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
               ),
             ),
             const SizedBox(height: 8),

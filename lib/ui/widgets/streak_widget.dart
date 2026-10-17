@@ -37,7 +37,6 @@ class _StreakWidgetState extends State<StreakWidget>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-
   }
 
   @override

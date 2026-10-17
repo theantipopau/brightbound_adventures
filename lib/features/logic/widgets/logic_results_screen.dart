@@ -487,16 +487,16 @@ class _LogicResultsScreenState extends State<LogicResultsScreen>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                Text(
-                  ' / ${widget.totalQuestions}',
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w500,
+                  Text(
+                    ' / ${widget.totalQuestions}',
+                    style: const TextStyle(
+                      color: Colors.white60,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
             ),
             const SizedBox(height: 8),
             // Progress bar showing climb height

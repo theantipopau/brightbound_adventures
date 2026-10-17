@@ -147,83 +147,23 @@ class _StreakMilestoneModalState extends State<StreakMilestoneModal>
                 ),
                 child: SingleChildScrollView(
                   child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Giant emoji
-                    Text(
-                      _streakEmoji,
-                      style: const TextStyle(fontSize: 72),
-                    ),
-                    const SizedBox(height: 12),
-                    // Streak days badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _accentColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: _accentColor.withValues(alpha: 0.4),
-                          width: 1.5,
-                        ),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Giant emoji
+                      Text(
+                        _streakEmoji,
+                        style: const TextStyle(fontSize: 72),
                       ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.local_fire_department,
-                                color: _accentColor, size: 20),
-                            const SizedBox(width: 6),
-                            Text(
-                              '${widget.streakDays} DAY STREAK',
-                              style: TextStyle(
-                                color: InkTokens.onTint(_accentColor),
-                                fontWeight: FontWeight.w900,
-                                fontSize: 15,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _headline,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF1A1A2E),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _subline,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Color(0xFF555577),
-                        height: 1.5,
-                      ),
-                    ),
-                    if (widget.bonusStars > 0) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
+                      // Streak days badge
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
+                            horizontal: 16, vertical: 6),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFFFFD700).withValues(alpha: 0.2),
-                              const Color(0xFFFFAA00).withValues(alpha: 0.2),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
+                          color: _accentColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color:
-                                const Color(0xFFFFD700).withValues(alpha: 0.6),
+                            color: _accentColor.withValues(alpha: 0.4),
                             width: 1.5,
                           ),
                         ),
@@ -232,45 +172,105 @@ class _StreakMilestoneModalState extends State<StreakMilestoneModal>
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('⭐', style: TextStyle(fontSize: 24)),
-                              const SizedBox(width: 8),
+                              Icon(Icons.local_fire_department,
+                                  color: _accentColor, size: 20),
+                              const SizedBox(width: 6),
                               Text(
-                                '+${widget.bonusStars} Bonus Stars!',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 18,
-                                  color: Color(0xFFCC8800),
+                                '${widget.streakDays} DAY STREAK',
+                                style: TextStyle(
+                                  color: InkTokens.onTint(_accentColor),
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                  letterSpacing: 1.2,
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ],
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: widget.onDismiss,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _accentColor,
-                          foregroundColor: InkTokens.on(_accentColor),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
+                      const SizedBox(height: 16),
+                      Text(
+                        _headline,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1A1A2E),
                         ),
-                        child: const Text(
-                          'Keep Going! 🚀',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _subline,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Color(0xFF555577),
+                          height: 1.5,
+                        ),
+                      ),
+                      if (widget.bonusStars > 0) ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFFFFD700).withValues(alpha: 0.2),
+                                const Color(0xFFFFAA00).withValues(alpha: 0.2),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.6),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('⭐', style: TextStyle(fontSize: 24)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '+${widget.bonusStars} Bonus Stars!',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 18,
+                                    color: Color(0xFFCC8800),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: widget.onDismiss,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _accentColor,
+                            foregroundColor: InkTokens.on(_accentColor),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Keep Going! 🚀',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
                   ),
                 ),
               ),

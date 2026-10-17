@@ -43,12 +43,13 @@ class AvatarProvider extends ChangeNotifier {
   /// Per-state default holds (motion spec A3): celebrate/encourage finish
   /// their choreography (~0.6 s / 0.5 s) but linger a beat so the child can
   /// see the reaction before the companion returns to idle.
-  void setEmotion(AvatarEmotion emotion,
-      {Duration? resetAfter}) {
+  void setEmotion(AvatarEmotion emotion, {Duration? resetAfter}) {
     resetAfter ??= switch (emotion) {
-      AvatarEmotion.celebrate || AvatarEmotion.encourage =>
+      AvatarEmotion.celebrate ||
+      AvatarEmotion.encourage =>
         const Duration(milliseconds: 1400),
-      AvatarEmotion.levelUp || AvatarEmotion.mastered =>
+      AvatarEmotion.levelUp ||
+      AvatarEmotion.mastered =>
         const Duration(milliseconds: 2200),
       _ => const Duration(seconds: 2),
     };

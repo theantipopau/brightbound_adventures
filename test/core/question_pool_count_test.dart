@@ -21,8 +21,7 @@ void main() {
 
   setUp(() => AustralianNAPLANQuestions.resetSessionMemory());
 
-  test('all question banks produce ≥ 1,000 unique question texts overall',
-      () {
+  test('all question banks produce ≥ 1,000 unique question texts overall', () {
     final unique = <String>{};
 
     void draw(String Function() template) {
@@ -95,21 +94,22 @@ void main() {
     for (final difficulty in difficulties) {
       for (final topic in year1Numeracy) {
         for (var i = 0; i < 50; i++) {
-          add('y1-num/$topic/d$difficulty',
-              AustralianNAPLANQuestions.generateYear1Numeracy(topic,
-                  difficulty));
+          add(
+              'y1-num/$topic/d$difficulty',
+              AustralianNAPLANQuestions.generateYear1Numeracy(
+                  topic, difficulty));
         }
       }
       for (final topic in year3Numeracy) {
         for (var i = 0; i < 50; i++) {
-          add('y3-num/$topic/d$difficulty',
-              AustralianNAPLANQuestions.generateYear3Numeracy(topic,
-                  difficulty));
+          add(
+              'y3-num/$topic/d$difficulty',
+              AustralianNAPLANQuestions.generateYear3Numeracy(
+                  topic, difficulty));
         }
       }
     }
 
-    expect(duplicates, isNull,
-        reason: 'first duplicate found: $duplicates');
+    expect(duplicates, isNull, reason: 'first duplicate found: $duplicates');
   });
 }

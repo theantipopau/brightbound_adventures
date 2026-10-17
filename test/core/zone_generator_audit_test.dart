@@ -48,10 +48,10 @@ void main() {
     test('getBySkillId samples the pool instead of serving list order', () {
       final draws = <String>[];
       for (var i = 0; i < 3; i++) {
-        draws.add(CreativeCornerQuestions.getBySkillId('skill_music',
-                difficulty: 5)
-            .map((q) => q.id)
-            .join('|'));
+        draws.add(
+            CreativeCornerQuestions.getBySkillId('skill_music', difficulty: 5)
+                .map((q) => q.id)
+                .join('|'));
       }
       expect(draws.toSet().length, greaterThanOrEqualTo(2),
           reason:
@@ -69,7 +69,8 @@ void main() {
       final texts = <String>{};
       var answerNotFirst = 0;
       for (final q in questions) {
-        expect(ids.add(q.id), isTrue, reason: 'duplicate id in-session: ${q.id}');
+        expect(ids.add(q.id), isTrue,
+            reason: 'duplicate id in-session: ${q.id}');
         expect(texts.add(q.question), isTrue,
             reason: 'duplicate text in-session: ${q.question}');
         expect(q.options.length, greaterThanOrEqualTo(2));
@@ -94,7 +95,8 @@ void main() {
       final ids = <String>{};
       final texts = <String>{};
       for (final q in questions) {
-        expect(ids.add(q.id), isTrue, reason: 'duplicate id in-session: ${q.id}');
+        expect(ids.add(q.id), isTrue,
+            reason: 'duplicate id in-session: ${q.id}');
         expect(texts.add(q.question), isTrue,
             reason: 'duplicate text in-session: ${q.question}');
         expect(q.options.length, greaterThanOrEqualTo(2));
@@ -117,10 +119,8 @@ void main() {
 
       // Difficulty brackets by construction: every easy config is <= 0.9x,
       // every hard config is >= 1.8x — regressions to those brackets fail.
-      final easy = AdventureArenaGenerator.generate(
-          skill: 's', difficulty: 1);
-      final hard = AdventureArenaGenerator.generate(
-          skill: 's', difficulty: 5);
+      final easy = AdventureArenaGenerator.generate(skill: 's', difficulty: 1);
+      final hard = AdventureArenaGenerator.generate(skill: 's', difficulty: 5);
       expect(easy.difficultyMultiplier, lessThanOrEqualTo(0.9));
       expect(hard.difficultyMultiplier, greaterThanOrEqualTo(1.8));
     });

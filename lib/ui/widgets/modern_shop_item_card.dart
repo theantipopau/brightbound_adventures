@@ -87,9 +87,8 @@ class _ModernShopItemCardState extends State<ModernShopItemCard>
         builder: (context, child) {
           // Only affordable, unowned items breathe — owned ones rest and
           // locked ones stay still behind their lock overlay.
-          final pulse = (!isPurchased && canAfford)
-              ? _pulseController.value * 0.05
-              : 0.0;
+          final pulse =
+              (!isPurchased && canAfford) ? _pulseController.value * 0.05 : 0.0;
 
           return GestureDetector(
             onTap: widget.onTap,

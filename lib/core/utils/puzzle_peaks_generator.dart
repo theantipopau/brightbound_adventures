@@ -26,16 +26,16 @@ class PuzzlePeaksQuestionGenerator {
       final aiOptions = List<String>.of(aq.options)..shuffle(_random);
       final aiCorrect = aq.options[aq.correctIndex];
       return LogicQuestion(
-              id: 'ai_logic_${aq.question.hashCode.abs()}',
-              skillId: skill,
-              question: aq.question,
-              options: aiOptions,
-              correctIndex: aiOptions.indexOf(aiCorrect),
-              hint: aq.hint,
-              explanation: aq.explanation,
-              difficulty: difficulty,
-              type: LogicQuestionType.logicPuzzle,
-            );
+        id: 'ai_logic_${aq.question.hashCode.abs()}',
+        skillId: skill,
+        question: aq.question,
+        options: aiOptions,
+        correctIndex: aiOptions.indexOf(aiCorrect),
+        hint: aq.hint,
+        explanation: aq.explanation,
+        difficulty: difficulty,
+        type: LogicQuestionType.logicPuzzle,
+      );
     }).toList();
 
     // 2. Static bank questions

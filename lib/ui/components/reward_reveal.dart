@@ -408,8 +408,8 @@ class _RewardRevealState extends State<RewardReveal>
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerRight,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: (semantic?.info ?? accent).withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(999),

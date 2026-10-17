@@ -62,30 +62,30 @@ class ExtrudedCard extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-        Positioned(
-          left: 0,
-          right: 0,
-          top: depth,
-          bottom: -depth,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [_side, _sideDark],
-              ),
-              borderRadius: radius,
-              boxShadow: [
-                BoxShadow(
-                  color: _side.withValues(alpha: shadowStrength),
-                  blurRadius: 14,
-                  offset: Offset(0, depth + 4),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: depth,
+            bottom: -depth,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [_side, _sideDark],
                 ),
-              ],
+                borderRadius: radius,
+                boxShadow: [
+                  BoxShadow(
+                    color: _side.withValues(alpha: shadowStrength),
+                    blurRadius: 14,
+                    offset: Offset(0, depth + 4),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        child,
+          child,
         ],
       ),
     );

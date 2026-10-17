@@ -118,114 +118,114 @@ class _LevelUpDialogState extends State<LevelUpDialog>
               ),
               child: SingleChildScrollView(
                 child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Trophy Icon
-                  const Text(
-                    '🏆',
-                    style: TextStyle(fontSize: 80),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Title
-                  const Text(
-                    'LEVEL UP!',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Trophy Icon
+                    const Text(
+                      '🏆',
+                      style: TextStyle(fontSize: 80),
                     ),
-                  ),
 
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 16),
 
-                  // Level display
-                  Text(
-                    'Level ${widget.result.oldLevel} ➜ Level ${widget.result.newLevel}',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.amber.shade300,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // XP gained
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            '⭐',
-                            style: TextStyle(fontSize: 24),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '+${widget.result.xpGained} XP',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Encouraging message
-                  Text(
-                    _getEncouragingMessage(widget.result.newLevel),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Continue button
-                  ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber.shade600,
-                      foregroundColor: InkTokens.on(Colors.amber.shade600),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 48,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      elevation: 8,
-                    ),
-                    child: const Text(
-                      'Continue Adventure!',
+                    // Title
+                    const Text(
+                      'LEVEL UP!',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 2,
                       ),
                     ),
-                  ),
-                ],
-              ),
+
+                    const SizedBox(height: 8),
+
+                    // Level display
+                    Text(
+                      'Level ${widget.result.oldLevel} ➜ Level ${widget.result.newLevel}',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.amber.shade300,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // XP gained
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              '⭐',
+                              style: TextStyle(fontSize: 24),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '+${widget.result.xpGained} XP',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Encouraging message
+                    Text(
+                      _getEncouragingMessage(widget.result.newLevel),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Continue button
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber.shade600,
+                        foregroundColor: InkTokens.on(Colors.amber.shade600),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 48,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 8,
+                      ),
+                      child: const Text(
+                        'Continue Adventure!',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

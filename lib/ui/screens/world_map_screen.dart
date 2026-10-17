@@ -514,8 +514,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
       for (final zone in zones)
         if (totalStars >= zone.requiredStars) zone.id,
     };
-    final newly = nowUnlocked.difference(_lastUnlockedZoneIds).toList()
-      ..sort();
+    final newly = nowUnlocked.difference(_lastUnlockedZoneIds).toList()..sort();
     // First build hydrates the baseline silently — no shimmer at app start.
     if (_lastUnlockedZoneIds.isEmpty) {
       _lastUnlockedZoneIds = nowUnlocked;
@@ -1260,8 +1259,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     );
   }
 
-  Widget _build3DAvatar(Avatar avatar, bool isMoving,
-      {double? hopPhase}) {
+  Widget _build3DAvatar(Avatar avatar, bool isMoving, {double? hopPhase}) {
     // Scale avatar down slightly on higher-elevation zones for depth perception.
     // Elevation range 0.0 (Word Woods) → 1.6 (Adventure Arena).
     final double destElevation = _isMoving && _targetZoneIndex != null
@@ -1293,8 +1291,8 @@ class _WorldMapScreenState extends State<WorldMapScreen>
               squashY = 1.0 + 0.20 * (1 - t);
               squashX = 1.0 - 0.15 * (1 - t);
             } else if (phase > landingStart) {
-              final t = ((phase - landingStart) / (1 - landingStart))
-                  .clamp(0.0, 1.0);
+              final t =
+                  ((phase - landingStart) / (1 - landingStart)).clamp(0.0, 1.0);
               squashY = 1.0 - 0.20 * t;
               squashX = 1.0 + 0.20 * t;
             }
@@ -1341,9 +1339,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                       // kicks up alternating dust frames, driven by the move
                       // controller (rebuilt via the ambient float ticker).
                       // Cheaper than particles and reuses the A8 sprites.
-                      if (isMoving &&
-                          _dustPuffFrame == null &&
-                          !_reducedMotion)
+                      if (isMoving && _dustPuffFrame == null && !_reducedMotion)
                         Positioned(
                           bottom: -10,
                           child: IgnorePointer(
@@ -1371,8 +1367,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                             child: Opacity(
                               opacity: 1.0 - _landCtrl.value * 0.6,
                               child: Builder(builder: (context) {
-                                final frame =
-                                    _dustPuffFrame == 1 ? 1 : 2;
+                                final frame = _dustPuffFrame == 1 ? 1 : 2;
                                 return Image.asset(
                                   'assets/images/zones/effects/'
                                   'zone_dust_puff_$frame.webp',
@@ -1631,79 +1626,78 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     // uniform buttons in a centred row.
     double? nw(double wide) => isNarrow ? null : wide;
     final dockFont = isNarrow ? 14.0 : 16.0;
-    const dockPad =
-        EdgeInsets.symmetric(horizontal: 14, vertical: 0);
+    const dockPad = EdgeInsets.symmetric(horizontal: 14, vertical: 0);
     final actionButtons = <Widget>[
-        JuicyButton(
-          label: 'Next\nQuest',
-          emoji: recommendedZone.emoji,
-          width: nw(138),
-          height: isNarrow ? 56 : 64,
-          fontSize: dockFont,
-          // Slim padding on BOTH variants: the default 28px horizontal
-          // padding left 'Achievements' (≈136px content) exactly 136px in
-          // its 164px button, clipping to 'My Achieve…' on wide too.
-          padding: dockPad,
-          color: recommendedZone.color,
-          onPressed: () {
-            setState(() => _selectedZoneIndex = recommendedIndex);
-            _moveToZone(recommendedIndex);
-          },
-          shimmer: recommendedIndex != _currentZoneIndex,
-        ),
-        JuicyButton(
-          label: 'Daily\nChallenge',
-          emoji: '🎯',
-          width: nw(148),
-          height: isNarrow ? 56 : 64,
-          fontSize: dockFont,
-          // Slim padding on BOTH variants: the default 28px horizontal
-          // padding left 'Achievements' (≈136px content) exactly 136px in
-          // its 164px button, clipping to 'My Achieve…' on wide too.
-          padding: dockPad,
-          color: Colors.orange,
-          onPressed: () => _showDailyChallenges(),
-          shimmer: true,
-        ),
-        JuicyButton(
-          label: 'Mini\nGames',
-          emoji: '🎮',
-          width: nw(148),
-          height: isNarrow ? 56 : 64,
-          fontSize: dockFont,
-          // Slim padding on BOTH variants: the default 28px horizontal
-          // padding left 'Achievements' (≈136px content) exactly 136px in
-          // its 164px button, clipping to 'My Achieve…' on wide too.
-          padding: dockPad,
-          color: AppColors.secondary,
-          onPressed: () => _showMiniGamesMenu(),
-        ),
-        JuicyButton(
-          label: 'Star\nShop',
-          emoji: '🛍️',
-          width: nw(136),
-          height: isNarrow ? 56 : 64,
-          fontSize: dockFont,
-          // Slim padding on BOTH variants: the default 28px horizontal
-          // padding left 'Achievements' (≈136px content) exactly 136px in
-          // its 164px button, clipping to 'My Achieve…' on wide too.
-          padding: dockPad,
-          color: Colors.teal,
-          onPressed: () => _showShop(),
-        ),
-        JuicyButton(
-          label: 'My\nAchievements',
-          emoji: '🏆',
-          width: nw(164),
-          height: isNarrow ? 56 : 64,
-          fontSize: dockFont,
-          // Slim padding on BOTH variants: the default 28px horizontal
-          // padding left 'Achievements' (≈136px content) exactly 136px in
-          // its 164px button, clipping to 'My Achieve…' on wide too.
-          padding: dockPad,
-          color: AppColors.reward,
-          onPressed: () => _showAchievements(),
-        ),
+      JuicyButton(
+        label: 'Next\nQuest',
+        emoji: recommendedZone.emoji,
+        width: nw(138),
+        height: isNarrow ? 56 : 64,
+        fontSize: dockFont,
+        // Slim padding on BOTH variants: the default 28px horizontal
+        // padding left 'Achievements' (≈136px content) exactly 136px in
+        // its 164px button, clipping to 'My Achieve…' on wide too.
+        padding: dockPad,
+        color: recommendedZone.color,
+        onPressed: () {
+          setState(() => _selectedZoneIndex = recommendedIndex);
+          _moveToZone(recommendedIndex);
+        },
+        shimmer: recommendedIndex != _currentZoneIndex,
+      ),
+      JuicyButton(
+        label: 'Daily\nChallenge',
+        emoji: '🎯',
+        width: nw(148),
+        height: isNarrow ? 56 : 64,
+        fontSize: dockFont,
+        // Slim padding on BOTH variants: the default 28px horizontal
+        // padding left 'Achievements' (≈136px content) exactly 136px in
+        // its 164px button, clipping to 'My Achieve…' on wide too.
+        padding: dockPad,
+        color: Colors.orange,
+        onPressed: () => _showDailyChallenges(),
+        shimmer: true,
+      ),
+      JuicyButton(
+        label: 'Mini\nGames',
+        emoji: '🎮',
+        width: nw(148),
+        height: isNarrow ? 56 : 64,
+        fontSize: dockFont,
+        // Slim padding on BOTH variants: the default 28px horizontal
+        // padding left 'Achievements' (≈136px content) exactly 136px in
+        // its 164px button, clipping to 'My Achieve…' on wide too.
+        padding: dockPad,
+        color: AppColors.secondary,
+        onPressed: () => _showMiniGamesMenu(),
+      ),
+      JuicyButton(
+        label: 'Star\nShop',
+        emoji: '🛍️',
+        width: nw(136),
+        height: isNarrow ? 56 : 64,
+        fontSize: dockFont,
+        // Slim padding on BOTH variants: the default 28px horizontal
+        // padding left 'Achievements' (≈136px content) exactly 136px in
+        // its 164px button, clipping to 'My Achieve…' on wide too.
+        padding: dockPad,
+        color: Colors.teal,
+        onPressed: () => _showShop(),
+      ),
+      JuicyButton(
+        label: 'My\nAchievements',
+        emoji: '🏆',
+        width: nw(164),
+        height: isNarrow ? 56 : 64,
+        fontSize: dockFont,
+        // Slim padding on BOTH variants: the default 28px horizontal
+        // padding left 'Achievements' (≈136px content) exactly 136px in
+        // its 164px button, clipping to 'My Achieve…' on wide too.
+        padding: dockPad,
+        color: AppColors.reward,
+        onPressed: () => _showAchievements(),
+      ),
     ];
 
     List<Widget> spaced(double gap) => [
@@ -2029,8 +2023,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
     // and buried the top-right islands; full details open as a modal
     // bottom sheet instead.
     if (compact) {
-      final recommendedIndex =
-          _recommendedZoneIndex(totalStars, skillProvider);
+      final recommendedIndex = _recommendedZoneIndex(totalStars, skillProvider);
       final recommendedZone = _zones[recommendedIndex];
       return WorldMapCompactBottomSheet(
         selected: selected,
@@ -2169,8 +2162,7 @@ class _WorldMapScreenState extends State<WorldMapScreen>
                     isCurrentZone: isCurrent,
                     recentNote: _recentActivityNote(selected.id),
                     // In the sheet the chevron acts as close.
-                    onToggleExpanded: () =>
-                        Navigator.pop(sheetContext),
+                    onToggleExpanded: () => Navigator.pop(sheetContext),
                     onPrimaryAction: () {
                       Navigator.pop(sheetContext);
                       if (isUnlocked) {
@@ -2800,238 +2792,240 @@ class _BoardGameAvatarPawn extends StatelessWidget {
         // travelling; without this the repaint climbs to the map Stack.
         child: RepaintBoundary(
           child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            Positioned(
-              bottom: 0,
-              child: Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.identity()
-                  ..setEntry(3, 2, 0.001)
-                  ..rotateX(-0.96),
+            alignment: Alignment.bottomCenter,
+            children: [
+              Positioned(
+                bottom: 0,
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..rotateX(-0.96),
+                  child: Container(
+                    width: 84,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.black.withValues(alpha: 0.34),
+                          Colors.black.withValues(alpha: 0.12),
+                          Colors.transparent,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 8,
                 child: Container(
-                  width: 84,
-                  height: 30,
+                  width: 76,
+                  height: 26,
                   decoration: BoxDecoration(
-                    gradient: RadialGradient(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withValues(alpha: 0.34),
-                        Colors.black.withValues(alpha: 0.12),
-                        Colors.transparent,
+                        outfitColor.withValues(alpha: 0.95),
+                        outfitColor.withValues(alpha: 0.62),
+                        Color.lerp(outfitColor, Colors.black, 0.22)!,
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(999),
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: Radius.circular(999),
+                      top: Radius.circular(18),
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.55),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: outfitColor.withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 8,
-              child: Container(
-                width: 76,
-                height: 26,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      outfitColor.withValues(alpha: 0.95),
-                      outfitColor.withValues(alpha: 0.62),
-                      Color.lerp(outfitColor, Colors.black, 0.22)!,
+              Positioned(
+                bottom: 20,
+                child: Container(
+                  width: 62,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        outfitColor.withValues(alpha: 0.88),
+                        AppColors.secondary.withValues(alpha: 0.84),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.62),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: outfitColor.withValues(alpha: 0.24),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
                     ],
                   ),
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(999),
-                    top: Radius.circular(18),
-                  ),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.55),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: outfitColor.withValues(alpha: 0.35),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 20,
-              child: Container(
-                width: 62,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      outfitColor.withValues(alpha: 0.88),
-                      AppColors.secondary.withValues(alpha: 0.84),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.62),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: outfitColor.withValues(alpha: 0.24),
-                      blurRadius: 12,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Container(
-                    width: 18,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.16),
-                      borderRadius: const BorderRadius.horizontal(
-                        left: Radius.circular(20),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Container(
+                      width: 18,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.16),
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(20),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            // Hero halo: a soft gold ring behind the head that marks the
-            // player at a glance, even in a crowded archipelago.
-            Positioned(
-              bottom: 50,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.amber.shade200.withValues(alpha: 0.85),
-                    width: 3,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.amber.withValues(alpha: 0.35),
-                      blurRadius: 16,
-                      spreadRadius: 2,
+              // Hero halo: a soft gold ring behind the head that marks the
+              // player at a glance, even in a crowded archipelago.
+              Positioned(
+                bottom: 50,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.amber.shade200.withValues(alpha: 0.85),
+                      width: 3,
                     ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 56,
-              child: Container(
-                width: 92,
-                height: 92,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    center: const Alignment(-0.35, -0.45),
-                    colors: [
-                      Colors.white.withValues(alpha: 0.98),
-                      outfitColor.withValues(alpha: 0.22),
-                      AppColors.secondary.withValues(alpha: 0.18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.amber.withValues(alpha: 0.35),
+                        blurRadius: 16,
+                        spreadRadius: 2,
+                      ),
                     ],
                   ),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.82),
-                    width: 3,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: outfitColor.withValues(alpha: 0.42),
-                      blurRadius: 22,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 8),
-                    ),
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.58),
-                      blurRadius: 8,
-                      spreadRadius: -3,
-                      offset: const Offset(-4, -5),
-                    ),
-                  ],
-                ),
-                child: AnimatedCharacter(
-                  character: avatar.baseCharacter,
-                  skinColor: avatar.skinColor,
-                  size: 84,
-                  animation: isMoving
-                      ? CharacterAnimation.walking
-                      : CharacterAnimation.idle,
-                  showParticles: false,
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 38,
-              right: 2,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade400,
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: Colors.white, width: 1.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.18),
-                      blurRadius: 7,
-                      offset: const Offset(0, 3),
+              Positioned(
+                bottom: 56,
+                child: Container(
+                  width: 92,
+                  height: 92,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      center: const Alignment(-0.35, -0.45),
+                      colors: [
+                        Colors.white.withValues(alpha: 0.98),
+                        outfitColor.withValues(alpha: 0.22),
+                        AppColors.secondary.withValues(alpha: 0.18),
+                      ],
                     ),
-                  ],
-                ),
-                child: Text(
-                  '${avatar.level}',
-                  style: TextStyle(
-                    color: InkTokens.on(Colors.amber.shade400),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    fontFamily: AppTheme.fontPrimary,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.82),
+                      width: 3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: outfitColor.withValues(alpha: 0.42),
+                        blurRadius: 22,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 8),
+                      ),
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: 0.58),
+                        blurRadius: 8,
+                        spreadRadius: -3,
+                        offset: const Offset(-4, -5),
+                      ),
+                    ],
+                  ),
+                  child: AnimatedCharacter(
+                    character: avatar.baseCharacter,
+                    skinColor: avatar.skinColor,
+                    size: 84,
+                    animation: isMoving
+                        ? CharacterAnimation.walking
+                        : CharacterAnimation.idle,
+                    showParticles: false,
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 0,
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 98),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.secondary],
+              Positioned(
+                bottom: 38,
+                right: 2,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade400,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: Colors.white, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.18),
+                        blurRadius: 7,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.65),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                  child: Text(
+                    '${avatar.level}',
+                    style: TextStyle(
+                      color: InkTokens.on(Colors.amber.shade400),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      fontFamily: AppTheme.fontPrimary,
                     ),
-                  ],
-                ),
-                child: Text(
-                  avatar.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-            ),
-          ],
+              Positioned(
+                bottom: 0,
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 98),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.secondary],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.65),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    avatar.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ), // close pawn Stack
         ), // close pawn RepaintBoundary
       ),
@@ -3111,859 +3105,927 @@ class _ZoneIslandState extends State<_ZoneIsland> {
           // without this the repaint climbs to the whole map Stack.
           child: RepaintBoundary(
             child: MouseRegion(
-            onEnter: (_) => setState(() => _isHovered = true),
-            onExit: (_) => setState(() => _isHovered = false),
-            child: Tooltip(
-              // A7: desktop hover affordance — name + unlock requirement.
-              message: widget.isUnlocked
-                  ? '${widget.zone.name} — unlocked ✅'
-                  : '${widget.zone.name} — needs ${widget.zone.requiredStars} stars to unlock',
-              waitDuration: const Duration(milliseconds: 450),
-              child: Semantics(
-              button: true,
-              selected: widget.isSelected,
-              label:
-                  '${widget.zone.name}, ${widget.isUnlocked ? 'unlocked' : 'locked'}, ${widget.starsEarned} of ${widget.totalSkills} skills mastered',
-              hint: widget.isUnlocked
-                  ? 'Double tap to travel to this zone'
-                  : 'Earn more stars to unlock this zone',
-              child: Transform.scale(
-                scale: widget.visualScale * selectionPulse,
-                alignment: Alignment.center,
-                // Unclipped composition: the selection/hover glow
-                // (blur 50 + spread 14) and the current-zone pulse
-                // rings (expanding past the island diagonal) paint
-                // outside the 160x180 card, so they sit here — outside
-                // the clipped Material — instead of being cut with a
-                // hard edge. The Material keeps its clip so the ink
-                // splash stays inside the rounded card.
-                child: Stack(
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.none,
-                  children: [
-                    if (widget.isSelected || _isHovered)
-                      Container(
-                        width: 160,
-                        height: 180,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(28),
-                          boxShadow: [
-                            BoxShadow(
-                              color: widget.zone.color.withValues(
-                                  alpha: _isHovered ? 1.0 : 0.8),
-                              blurRadius: widget.isSelected
-                                  ? 50
-                                  : (_isHovered ? 45 : 30),
-                              spreadRadius: widget.isSelected
-                                  ? 14
-                                  : (_isHovered ? 12 : 8),
-                            ),
-                            BoxShadow(
-                              color: widget.zone.color
-                                  .withValues(alpha: 0.3),
-                              blurRadius: _isHovered ? 60 : 40,
-                              spreadRadius: _isHovered ? 20 : 12,
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (widget.isCurrentZone)
-                      Positioned.fill(
-                        child: AnimatedBuilder(
-                          animation: widget.floatAnimation,
-                          builder: (_, __) {
-                            final t1 = widget.floatAnimation.value;
-                            final t2 =
-                                (widget.floatAnimation.value + 0.5) % 1.0;
-                            return Stack(children: [
-                              _PulseRing(
-                                  progress: t1,
-                                  color: widget.zone.color),
-                              _PulseRing(
-                                  progress: t2,
-                                  color: widget.zone.color),
-                            ]);
-                          },
-                        ),
-                      ),
-                    // Current-zone badge: straddles the top edge (top
-                    // -14 + shadow), so it lives out here rather than
-                    // under the clip, which cut its top 2px + shadow.
-                    if (widget.isCurrentZone)
-                      Positioned(
-                        top: -14,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.white,
-                                Colors.amber.shade100,
+              onEnter: (_) => setState(() => _isHovered = true),
+              onExit: (_) => setState(() => _isHovered = false),
+              child: Tooltip(
+                // A7: desktop hover affordance — name + unlock requirement.
+                message: widget.isUnlocked
+                    ? '${widget.zone.name} — unlocked ✅'
+                    : '${widget.zone.name} — needs ${widget.zone.requiredStars} stars to unlock',
+                waitDuration: const Duration(milliseconds: 450),
+                child: Semantics(
+                  button: true,
+                  selected: widget.isSelected,
+                  label:
+                      '${widget.zone.name}, ${widget.isUnlocked ? 'unlocked' : 'locked'}, ${widget.starsEarned} of ${widget.totalSkills} skills mastered',
+                  hint: widget.isUnlocked
+                      ? 'Double tap to travel to this zone'
+                      : 'Earn more stars to unlock this zone',
+                  child: Transform.scale(
+                    scale: widget.visualScale * selectionPulse,
+                    alignment: Alignment.center,
+                    // Unclipped composition: the selection/hover glow
+                    // (blur 50 + spread 14) and the current-zone pulse
+                    // rings (expanding past the island diagonal) paint
+                    // outside the 160x180 card, so they sit here — outside
+                    // the clipped Material — instead of being cut with a
+                    // hard edge. The Material keeps its clip so the ink
+                    // splash stays inside the rounded card.
+                    child: Stack(
+                      alignment: Alignment.center,
+                      clipBehavior: Clip.none,
+                      children: [
+                        if (widget.isSelected || _isHovered)
+                          Container(
+                            width: 160,
+                            height: 180,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: widget.zone.color.withValues(
+                                      alpha: _isHovered ? 1.0 : 0.8),
+                                  blurRadius: widget.isSelected
+                                      ? 50
+                                      : (_isHovered ? 45 : 30),
+                                  spreadRadius: widget.isSelected
+                                      ? 14
+                                      : (_isHovered ? 12 : 8),
+                                ),
+                                BoxShadow(
+                                  color:
+                                      widget.zone.color.withValues(alpha: 0.3),
+                                  blurRadius: _isHovered ? 60 : 40,
+                                  spreadRadius: _isHovered ? 20 : 12,
+                                ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.amber
-                                    .withValues(alpha: 0.6),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
                           ),
-                          child: const Text(
-                            '📍 HERE',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.4,
-                              color: AppColors.textPrimary,
+                        if (widget.isCurrentZone)
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: widget.floatAnimation,
+                              builder: (_, __) {
+                                final t1 = widget.floatAnimation.value;
+                                final t2 =
+                                    (widget.floatAnimation.value + 0.5) % 1.0;
+                                return Stack(children: [
+                                  _PulseRing(
+                                      progress: t1, color: widget.zone.color),
+                                  _PulseRing(
+                                      progress: t2, color: widget.zone.color),
+                                ]);
+                              },
                             ),
                           ),
-                        ),
-                      ),
-                    // Keyboard-focus halo: grows ~12% past the card, so
-                    // it lives out here rather than under the clip.
-                    if (widget.isSelected)
-                      Positioned.fill(
-                        child: AnimatedBuilder(
-                          animation: widget.floatAnimation,
-                          builder: (context, _) {
-                            final pulse = 0.6 +
-                                (math.sin(widget.floatAnimation.value *
-                                        math.pi *
-                                        4) *
-                                    0.4);
-                            return Transform.scale(
-                              scale: 1.0 + (pulse * 0.12),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white
-                                        .withValues(alpha: pulse * 0.6),
-                                    width: 2,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: widget.zone.color.withValues(
-                                          alpha: pulse * 0.4),
-                                      blurRadius: 20 * pulse,
-                                      spreadRadius: 8 * pulse,
-                                    ),
+                        // Current-zone badge: straddles the top edge (top
+                        // -14 + shadow), so it lives out here rather than
+                        // under the clip, which cut its top 2px + shadow.
+                        if (widget.isCurrentZone)
+                          Positioned(
+                            top: -14,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.white,
+                                    Colors.amber.shade100,
                                   ],
                                 ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.amber.withValues(alpha: 0.6),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                    Material(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(28),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(28),
-                        // A5: zone card taps share the button-tap cue
-                        // (gated by the audio settings; inert in the test
-                        // harness).
-                        onTap: () {
-                          AudioManager().playButtonClick();
-                          widget.onTap();
-                        },
-                        onLongPress: widget.onTap,
-                        splashColor:
-                            widget.zone.color.withValues(alpha: 0.3),
-                        highlightColor:
-                            widget.zone.color.withValues(alpha: 0.1),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                        // Main island container. The selection/hover glow
-                        // and the current-zone pulse rings live in the
-                        // unclipped outer composition above (they paint
-                        // outside the card); only the white selection
-                        // border stays here, inside the clip.
-                        Container(
-                          width: 160,
-                          height: 180,
-                          decoration: (widget.isSelected || _isHovered)
-                              ? BoxDecoration(
-                                  borderRadius: BorderRadius.circular(28),
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 5,
-                                  ),
-                                )
-                              : null,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              if (widget.isUnlocked && !compactChrome)
-                                ...List.generate(widget.assetIcons.length,
-                                    (index) {
-                                  final offsets = [
-                                    const Offset(-44, -28),
-                                    const Offset(42, -12),
-                                    const Offset(0, 32),
-                                  ];
-                                  final offset =
-                                      offsets[index % offsets.length];
-                                  return Positioned(
-                                    left: 80 + offset.dx,
-                                    top: 70 + offset.dy,
-                                    child: Transform.translate(
-                                      offset: Offset(
-                                        math.sin(widget.floatAnimation.value *
-                                                    math.pi *
-                                                    2 +
-                                                index) *
-                                            3,
-                                        math.cos(widget.floatAnimation.value *
-                                                    math.pi *
-                                                    2 +
-                                                index) *
-                                            2,
-                                      ),
-                                      child: Container(
-                                        width: 28,
-                                        height: 28,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white
-                                              .withValues(alpha: 0.92),
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: widget.zone.color
-                                                .withValues(alpha: 0.4),
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: widget.zone.color
-                                                  .withValues(alpha: 0.18),
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 4),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            widget.assetIcons[index],
-                                            style:
-                                                const TextStyle(fontSize: 13),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }),
-
-                              if (widget.isUnlocked)
-                                // A2: hero landmark, authored per zone in the
-                                // clay/toy style. Sits just above the island
-                                // base so it reads as standing ON the island.
-                                Positioned(
-                                  left: 0,
-                                  right: 0,
-                                  top: 64,
-                                  child: Transform.rotate(
-                                    angle: math.sin(
-                                            widget.floatAnimation.value *
-                                                math.pi *
-                                                2) *
-                                        0.08,
-                                    child: Image.asset(
-                                      widget.landmarkAsset,
-                                      width: 104,
-                                      height: 104,
-                                      fit: BoxFit.contain,
-                                      filterQuality: FilterQuality.medium,
-                                      cacheWidth: 208,
-                                      errorBuilder: (_, __, ___) => Icon(
-                                        Icons.auto_awesome_rounded,
-                                        color: widget.zone.color,
-                                        size: 60,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                              // Enhanced island shadow with depth
-                              Positioned(
-                                bottom: 0,
-                                child: Container(
-                                  width: 120,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    gradient: RadialGradient(
-                                      colors: [
-                                        Colors.black.withValues(alpha: 0.35),
-                                        Colors.black.withValues(alpha: 0.1),
-                                        Colors.transparent,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(60),
-                                  ),
+                              child: const Text(
+                                '📍 HERE',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.4,
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
-
-                              // Island base with better 3D effect
-                              Positioned(
-                                bottom: 20,
-                                child: Container(
-                                  width: 130,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        widget.isUnlocked
-                                            ? widget.zone.color
-                                                .withValues(alpha: 0.8)
-                                            : Colors.grey
-                                                .withValues(alpha: 0.6),
-                                        widget.isUnlocked
-                                            ? widget.zone.color
-                                                .withValues(alpha: 0.5)
-                                            : Colors.grey
-                                                .withValues(alpha: 0.4),
-                                      ],
-                                    ),
-                                    borderRadius: const BorderRadius.vertical(
-                                      bottom: Radius.circular(60),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.black.withValues(alpha: 0.2),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 5),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-
-                              // Animated progress ring surrounding island body
-                              // (wide only: on phones it is visual noise
-                              // around an already busy island).
-                              if (widget.isUnlocked && !compactChrome)
-                                Positioned(
-                                  bottom: 27,
-                                  left: 0,
-                                  right: 0,
-                                  child: Center(
-                                    child: SizedBox(
-                                      width: 146,
-                                      height: 131,
-                                      child: AnimatedBuilder(
-                                        animation: widget.floatAnimation,
-                                        builder: (context, _) => CustomPaint(
-                                          painter: _ZoneProgressRingPainter(
-                                            progress: widget.totalSkills > 0
-                                                ? (widget.starsEarned /
-                                                        widget.totalSkills)
-                                                    .clamp(0.0, 1.0)
-                                                : 0.0,
-                                            color: widget.zone.color,
-                                            animationValue:
-                                                widget.floatAnimation.value,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                              // Main island body with glow
-                              Positioned(
-                                bottom: 35,
-                                child: Container(
-                                  width: 130,
-                                  height: 115,
-                                  decoration: BoxDecoration(
-                                    gradient: RadialGradient(
-                                      center: const Alignment(0, -0.4),
-                                      colors: widget.isUnlocked
-                                          ? [
-                                              widget.zone.color
-                                                  .withValues(alpha: 1.0),
-                                              widget.zone.color
-                                                  .withValues(alpha: 0.95),
-                                              widget.zone.color
-                                                  .withValues(alpha: 0.85),
-                                            ]
-                                          : [
-                                              Colors.grey.shade400,
-                                              Colors.grey.shade600,
-                                              Colors.grey.shade700,
-                                            ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(28),
-                                    border: Border.all(
-                                      color: widget.isCurrentZone
-                                          ? Colors.white
-                                          : Colors.white.withValues(alpha: 0.7),
-                                      width: widget.isCurrentZone ? 6 : 3.5,
-                                    ),
-                                    boxShadow: [
-                                      // Inner glow
-                                      BoxShadow(
-                                        color: (widget.isUnlocked
-                                                ? widget.zone.color
-                                                : Colors.grey)
-                                            .withValues(alpha: 0.7),
-                                        blurRadius:
-                                            widget.isCurrentZone ? 35 : 20,
-                                        spreadRadius:
-                                            widget.isCurrentZone ? 8 : 4,
-                                      ),
-                                      // Outer shadow for depth
-                                      BoxShadow(
-                                        color: Colors.black
-                                            .withValues(alpha: 0.25),
-                                        blurRadius: 16,
-                                        offset: const Offset(0, 8),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ColorFiltered(
-                                    colorFilter: widget.isUnlocked
-                                        ? const ColorFilter.mode(
-                                            Colors.transparent,
-                                            BlendMode.srcOver,
-                                          )
-                                        : const ColorFilter.matrix(<double>[
-                                            0.2126,
-                                            0.7152,
-                                            0.0722,
-                                            0,
-                                            0,
-                                            0.2126,
-                                            0.7152,
-                                            0.0722,
-                                            0,
-                                            0,
-                                            0.2126,
-                                            0.7152,
-                                            0.0722,
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-                                            1,
-                                            0,
-                                          ]),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(25),
-                                      child: Stack(
-                                        children: [
-                                          // Shimmer effect for unlocked zones - enhanced
-                                          // (off on compact: noise over signal).
-                                          if (widget.isUnlocked &&
-                                              !compactChrome)
-                                            Positioned.fill(
-                                              child: AnimatedBuilder(
-                                                animation:
-                                                    widget.floatAnimation,
-                                                builder: (context, child) {
-                                                  return Container(
-                                                    decoration: BoxDecoration(
-                                                      gradient: LinearGradient(
-                                                        begin:
-                                                            Alignment.topLeft,
-                                                        end: Alignment
-                                                            .bottomRight,
-                                                        colors: [
-                                                          Colors.white
-                                                              .withValues(
-                                                                  alpha: 0.0),
-                                                          Colors.white
-                                                              .withValues(
-                                                                  alpha: 0.2),
-                                                          Colors.white
-                                                              .withValues(
-                                                                  alpha: 0.0),
-                                                        ],
-                                                        stops: [
-                                                          widget.floatAnimation
-                                                                  .value -
-                                                              0.3,
-                                                          widget.floatAnimation
-                                                              .value,
-                                                          widget.floatAnimation
-                                                                  .value +
-                                                              0.3,
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                          // Content - centered both horizontally and vertically
-                                          Center(
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                // Emoji or lock with bounce animation
-                                                AnimatedBuilder(
-                                                  animation:
-                                                      widget.floatAnimation,
-                                                  builder: (context, _) {
-                                                    final scale = 0.95 +
-                                                        math.sin(widget
-                                                                    .floatAnimation
-                                                                    .value *
-                                                                3.14159) *
-                                                            0.08;
-                                                    return Transform.scale(
-                                                      scale: scale,
-                                                      child: Hero(
-                                                        tag:
-                                                            'zone_icon_${widget.zone.id}',
-                                                        // Unlocked islands show the generated
-                                                        // badge art (emoji fallback inside
-                                                        // ZoneBadge). The locked glyph keeps the
-                                                        // fixed-size rule: decorative icon, not
-                                                        // reading content, so it must not scale
-                                                        // with the platform text setting — at
-                                                        // 200% text the old 44px emoji doubled
-                                                        // and alone overflowed the island's
-                                                        // fixed-height badge.
-                                                        child: widget.isUnlocked
-                                                            ? ZoneBadge(
-                                                                asset: 'assets/images/zones/${widget.zone.id}.webp',
-                                                                emoji: widget
-                                                                    .zone.emoji,
-                                                                size: 48,
-                                                              )
-                                                            : const Text(
-                                                                '🔒',
-                                                                textScaler:
-                                                                    TextScaler
-                                                                        .noScaling,
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 32,
-                                                                  decoration:
-                                                                      TextDecoration
-                                                                          .none, // Essential for Hero text flight
-                                                                ),
-                                                              ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                                // 4px, not 6px: at some
-                                                // viewport/scale combinations
-                                                // the full column (icon +
-                                                // name + stars) exceeded its
-                                                // fixed-height container by a
-                                                // couple of px otherwise.
-                                                const SizedBox(height: 4),
-                                                // Zone name – full name with auto-scale
-                                                SizedBox(
-                                                  width: 110,
-                                                  child: FittedBox(
-                                                    fit: BoxFit.scaleDown,
-                                                    child: Text(
-                                                      widget.zone.name,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 11,
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        letterSpacing: 0.3,
-                                                        shadows: [
-                                                          Shadow(
-                                                            color: Color(
-                                                                0x99000000),
-                                                            blurRadius: 8,
-                                                            offset:
-                                                                Offset(0, 2),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                // Stars progress - only show if unlocked
-                                                if (widget.isUnlocked)
-                                                  Padding(
-                                                    // 4px, not 6px: see the
-                                                    // matching note above the
-                                                    // icon/name gap in this
-                                                    // Column — full-scale
-                                                    // landscape layouts were
-                                                    // clipping this content by
-                                                    // a hair otherwise.
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 4),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children:
-                                                          List.generate(3, (i) {
-                                                        // Safely calculate stars - avoid division by zero
-                                                        final maxStarsPerSection =
-                                                            widget.totalSkills >
-                                                                    0
-                                                                ? widget.totalSkills /
-                                                                    3
-                                                                : 1;
-                                                        final filled = i <
-                                                            (widget.starsEarned /
-                                                                    maxStarsPerSection)
-                                                                .ceil();
-                                                        return Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      2),
-                                                          child: Icon(
-                                                            filled
-                                                                ? Icons.star
-                                                                : Icons
-                                                                    .star_border,
-                                                            size: 14,
-                                                            color: Colors
-                                                                .amber.shade300,
-                                                          ),
-                                                        );
-                                                      }),
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // Compact declutter: the star pill duplicates the
-                              // stars row inside the island body — hide it on
-                              // phones so the name has room to breathe.
-                              if (widget.isUnlocked && !compactChrome)
-                                Positioned(
-                                  right: 8,
-                                  top: 8,
+                            ),
+                          ),
+                        // Keyboard-focus halo: grows ~12% past the card, so
+                        // it lives out here rather than under the clip.
+                        if (widget.isSelected)
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: widget.floatAnimation,
+                              builder: (context, _) {
+                                final pulse = 0.6 +
+                                    (math.sin(widget.floatAnimation.value *
+                                            math.pi *
+                                            4) *
+                                        0.4);
+                                return Transform.scale(
+                                  scale: 1.0 + (pulse * 0.12),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.white,
-                                          Colors.amber.shade100,
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
+                                      shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: Colors.amber.shade400,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      '⭐ ${widget.starsEarned}/${widget.totalSkills}',
-                                      style: const TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w900,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                              if (widget.statusLabel != 'Available' &&
-                                  widget.statusLabel != 'Locked')
-                                Positioned(
-                                  left: 10,
-                                  top: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 7,
-                                      vertical: 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: widget.zone.color,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color:
-                                            foreground.withValues(alpha: 0.8),
+                                        color: Colors.white
+                                            .withValues(alpha: pulse * 0.6),
+                                        width: 2,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
                                           color: widget.zone.color
-                                              .withValues(alpha: 0.35),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
+                                              .withValues(alpha: pulse * 0.4),
+                                          blurRadius: 20 * pulse,
+                                          spreadRadius: 8 * pulse,
                                         ),
                                       ],
                                     ),
-                                    child: Text(
-                                      widget.statusLabel,
-                                      style: TextStyle(
-                                        color: foreground,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
                                   ),
-                                ),
-
-                              // Persisted world change: a zone the child has
-                              // actually finished a quest in raises a flag.
-                              // It is derived from session history, so it
-                              // survives reloads, and it uses an icon *and*
-                              // words rather than colour alone.
-                              if (widget.isUnlocked &&
-                                  widget.completedQuestCount > 0)
-                                Positioned(
-                                  left: 10,
-                                  top: widget.statusLabel != 'Available' &&
-                                          widget.statusLabel != 'Locked'
-                                      ? 32
-                                      : 8,
-                                  child: Semantics(
-                                    label:
-                                        'Quest complete flag raised at ${widget.zone.name}',
-                                    child: ExcludeSemantics(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 7,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: widget.zone.color
-                                              .withValues(alpha: 0.16),
+                                );
+                              },
+                            ),
+                          ),
+                        Material(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(28),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(28),
+                            // A5: zone card taps share the button-tap cue
+                            // (gated by the audio settings; inert in the test
+                            // harness).
+                            onTap: () {
+                              AudioManager().playButtonClick();
+                              widget.onTap();
+                            },
+                            onLongPress: widget.onTap,
+                            splashColor:
+                                widget.zone.color.withValues(alpha: 0.3),
+                            highlightColor:
+                                widget.zone.color.withValues(alpha: 0.1),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                // Main island container. The selection/hover glow
+                                // and the current-zone pulse rings live in the
+                                // unclipped outer composition above (they paint
+                                // outside the card); only the white selection
+                                // border stays here, inside the clip.
+                                Container(
+                                  width: 160,
+                                  height: 180,
+                                  decoration: (widget.isSelected || _isHovered)
+                                      ? BoxDecoration(
                                           borderRadius:
-                                              BorderRadius.circular(10),
+                                              BorderRadius.circular(28),
                                           border: Border.all(
-                                            color: widget.zone.color
-                                                .withValues(alpha: 0.65),
+                                            color: Colors.white,
+                                            width: 5,
+                                          ),
+                                        )
+                                      : null,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      if (widget.isUnlocked && !compactChrome)
+                                        ...List.generate(
+                                            widget.assetIcons.length, (index) {
+                                          final offsets = [
+                                            const Offset(-44, -28),
+                                            const Offset(42, -12),
+                                            const Offset(0, 32),
+                                          ];
+                                          final offset =
+                                              offsets[index % offsets.length];
+                                          return Positioned(
+                                            left: 80 + offset.dx,
+                                            top: 70 + offset.dy,
+                                            child: Transform.translate(
+                                              offset: Offset(
+                                                math.sin(widget.floatAnimation
+                                                                .value *
+                                                            math.pi *
+                                                            2 +
+                                                        index) *
+                                                    3,
+                                                math.cos(widget.floatAnimation
+                                                                .value *
+                                                            math.pi *
+                                                            2 +
+                                                        index) *
+                                                    2,
+                                              ),
+                                              child: Container(
+                                                width: 28,
+                                                height: 28,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.92),
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: widget.zone.color
+                                                        .withValues(alpha: 0.4),
+                                                  ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: widget.zone.color
+                                                          .withValues(
+                                                              alpha: 0.18),
+                                                      blurRadius: 8,
+                                                      offset:
+                                                          const Offset(0, 4),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    widget.assetIcons[index],
+                                                    style: const TextStyle(
+                                                        fontSize: 13),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }),
+
+                                      if (widget.isUnlocked)
+                                        // A2: hero landmark, authored per zone in the
+                                        // clay/toy style. Sits just above the island
+                                        // base so it reads as standing ON the island.
+                                        Positioned(
+                                          left: 0,
+                                          right: 0,
+                                          top: 64,
+                                          child: Transform.rotate(
+                                            angle: math.sin(widget
+                                                        .floatAnimation.value *
+                                                    math.pi *
+                                                    2) *
+                                                0.08,
+                                            child: Image.asset(
+                                              widget.landmarkAsset,
+                                              width: 104,
+                                              height: 104,
+                                              fit: BoxFit.contain,
+                                              filterQuality:
+                                                  FilterQuality.medium,
+                                              cacheWidth: 208,
+                                              errorBuilder: (_, __, ___) =>
+                                                  Icon(
+                                                Icons.auto_awesome_rounded,
+                                                color: widget.zone.color,
+                                                size: 60,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Text('🚩',
-                                                textScaler:
-                                                    TextScaler.noScaling,
-                                                style: TextStyle(fontSize: 10)),
-                                            const SizedBox(width: 3),
-                                            Text(
-                                              widget.completedQuestCount == 1
-                                                  ? 'Quest done'
-                                                  : '${widget.completedQuestCount} quests',
+
+                                      // Enhanced island shadow with depth
+                                      Positioned(
+                                        bottom: 0,
+                                        child: Container(
+                                          width: 120,
+                                          height: 30,
+                                          decoration: BoxDecoration(
+                                            gradient: RadialGradient(
+                                              colors: [
+                                                Colors.black
+                                                    .withValues(alpha: 0.35),
+                                                Colors.black
+                                                    .withValues(alpha: 0.1),
+                                                Colors.transparent,
+                                              ],
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(60),
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Island base with better 3D effect
+                                      Positioned(
+                                        bottom: 20,
+                                        child: Container(
+                                          width: 130,
+                                          height: 42,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                widget.isUnlocked
+                                                    ? widget.zone.color
+                                                        .withValues(alpha: 0.8)
+                                                    : Colors.grey
+                                                        .withValues(alpha: 0.6),
+                                                widget.isUnlocked
+                                                    ? widget.zone.color
+                                                        .withValues(alpha: 0.5)
+                                                    : Colors.grey
+                                                        .withValues(alpha: 0.4),
+                                              ],
+                                            ),
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                              bottom: Radius.circular(60),
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.2),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 5),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Animated progress ring surrounding island body
+                                      // (wide only: on phones it is visual noise
+                                      // around an already busy island).
+                                      if (widget.isUnlocked && !compactChrome)
+                                        Positioned(
+                                          bottom: 27,
+                                          left: 0,
+                                          right: 0,
+                                          child: Center(
+                                            child: SizedBox(
+                                              width: 146,
+                                              height: 131,
+                                              child: AnimatedBuilder(
+                                                animation:
+                                                    widget.floatAnimation,
+                                                builder: (context, _) =>
+                                                    CustomPaint(
+                                                  painter:
+                                                      _ZoneProgressRingPainter(
+                                                    progress: widget
+                                                                .totalSkills >
+                                                            0
+                                                        ? (widget.starsEarned /
+                                                                widget
+                                                                    .totalSkills)
+                                                            .clamp(0.0, 1.0)
+                                                        : 0.0,
+                                                    color: widget.zone.color,
+                                                    animationValue: widget
+                                                        .floatAnimation.value,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                      // Main island body with glow
+                                      Positioned(
+                                        bottom: 35,
+                                        child: Container(
+                                          width: 130,
+                                          height: 115,
+                                          decoration: BoxDecoration(
+                                            gradient: RadialGradient(
+                                              center: const Alignment(0, -0.4),
+                                              colors: widget.isUnlocked
+                                                  ? [
+                                                      widget.zone.color
+                                                          .withValues(
+                                                              alpha: 1.0),
+                                                      widget.zone.color
+                                                          .withValues(
+                                                              alpha: 0.95),
+                                                      widget.zone.color
+                                                          .withValues(
+                                                              alpha: 0.85),
+                                                    ]
+                                                  : [
+                                                      Colors.grey.shade400,
+                                                      Colors.grey.shade600,
+                                                      Colors.grey.shade700,
+                                                    ],
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(28),
+                                            border: Border.all(
+                                              color: widget.isCurrentZone
+                                                  ? Colors.white
+                                                  : Colors.white
+                                                      .withValues(alpha: 0.7),
+                                              width: widget.isCurrentZone
+                                                  ? 6
+                                                  : 3.5,
+                                            ),
+                                            boxShadow: [
+                                              // Inner glow
+                                              BoxShadow(
+                                                color: (widget.isUnlocked
+                                                        ? widget.zone.color
+                                                        : Colors.grey)
+                                                    .withValues(alpha: 0.7),
+                                                blurRadius: widget.isCurrentZone
+                                                    ? 35
+                                                    : 20,
+                                                spreadRadius:
+                                                    widget.isCurrentZone
+                                                        ? 8
+                                                        : 4,
+                                              ),
+                                              // Outer shadow for depth
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.25),
+                                                blurRadius: 16,
+                                                offset: const Offset(0, 8),
+                                              ),
+                                            ],
+                                          ),
+                                          child: ColorFiltered(
+                                            colorFilter: widget.isUnlocked
+                                                ? const ColorFilter.mode(
+                                                    Colors.transparent,
+                                                    BlendMode.srcOver,
+                                                  )
+                                                : const ColorFilter
+                                                    .matrix(<double>[
+                                                    0.2126,
+                                                    0.7152,
+                                                    0.0722,
+                                                    0,
+                                                    0,
+                                                    0.2126,
+                                                    0.7152,
+                                                    0.0722,
+                                                    0,
+                                                    0,
+                                                    0.2126,
+                                                    0.7152,
+                                                    0.0722,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    1,
+                                                    0,
+                                                  ]),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(25),
+                                              child: Stack(
+                                                children: [
+                                                  // Shimmer effect for unlocked zones - enhanced
+                                                  // (off on compact: noise over signal).
+                                                  if (widget.isUnlocked &&
+                                                      !compactChrome)
+                                                    Positioned.fill(
+                                                      child: AnimatedBuilder(
+                                                        animation: widget
+                                                            .floatAnimation,
+                                                        builder:
+                                                            (context, child) {
+                                                          return Container(
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              gradient:
+                                                                  LinearGradient(
+                                                                begin: Alignment
+                                                                    .topLeft,
+                                                                end: Alignment
+                                                                    .bottomRight,
+                                                                colors: [
+                                                                  Colors.white
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.0),
+                                                                  Colors.white
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.2),
+                                                                  Colors.white
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.0),
+                                                                ],
+                                                                stops: [
+                                                                  widget.floatAnimation
+                                                                          .value -
+                                                                      0.3,
+                                                                  widget
+                                                                      .floatAnimation
+                                                                      .value,
+                                                                  widget.floatAnimation
+                                                                          .value +
+                                                                      0.3,
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                                  // Content - centered both horizontally and vertically
+                                                  Center(
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        // Emoji or lock with bounce animation
+                                                        AnimatedBuilder(
+                                                          animation: widget
+                                                              .floatAnimation,
+                                                          builder:
+                                                              (context, _) {
+                                                            final scale = 0.95 +
+                                                                math.sin(widget
+                                                                            .floatAnimation
+                                                                            .value *
+                                                                        3.14159) *
+                                                                    0.08;
+                                                            return Transform
+                                                                .scale(
+                                                              scale: scale,
+                                                              child: Hero(
+                                                                tag:
+                                                                    'zone_icon_${widget.zone.id}',
+                                                                // Unlocked islands show the generated
+                                                                // badge art (emoji fallback inside
+                                                                // ZoneBadge). The locked glyph keeps the
+                                                                // fixed-size rule: decorative icon, not
+                                                                // reading content, so it must not scale
+                                                                // with the platform text setting — at
+                                                                // 200% text the old 44px emoji doubled
+                                                                // and alone overflowed the island's
+                                                                // fixed-height badge.
+                                                                child: widget
+                                                                        .isUnlocked
+                                                                    ? ZoneBadge(
+                                                                        asset:
+                                                                            'assets/images/zones/${widget.zone.id}.webp',
+                                                                        emoji: widget
+                                                                            .zone
+                                                                            .emoji,
+                                                                        size:
+                                                                            48,
+                                                                      )
+                                                                    : const Text(
+                                                                        '🔒',
+                                                                        textScaler:
+                                                                            TextScaler.noScaling,
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              32,
+                                                                          decoration:
+                                                                              TextDecoration.none, // Essential for Hero text flight
+                                                                        ),
+                                                                      ),
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
+                                                        // 4px, not 6px: at some
+                                                        // viewport/scale combinations
+                                                        // the full column (icon +
+                                                        // name + stars) exceeded its
+                                                        // fixed-height container by a
+                                                        // couple of px otherwise.
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        // Zone name – full name with auto-scale
+                                                        SizedBox(
+                                                          width: 110,
+                                                          child: FittedBox(
+                                                            fit: BoxFit
+                                                                .scaleDown,
+                                                            child: Text(
+                                                              widget.zone.name,
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                              style:
+                                                                  const TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize: 11,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w900,
+                                                                letterSpacing:
+                                                                    0.3,
+                                                                shadows: [
+                                                                  Shadow(
+                                                                    color: Color(
+                                                                        0x99000000),
+                                                                    blurRadius:
+                                                                        8,
+                                                                    offset:
+                                                                        Offset(
+                                                                            0,
+                                                                            2),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        // Stars progress - only show if unlocked
+                                                        if (widget.isUnlocked)
+                                                          Padding(
+                                                            // 4px, not 6px: see the
+                                                            // matching note above the
+                                                            // icon/name gap in this
+                                                            // Column — full-scale
+                                                            // landscape layouts were
+                                                            // clipping this content by
+                                                            // a hair otherwise.
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    top: 4),
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              children:
+                                                                  List.generate(
+                                                                      3, (i) {
+                                                                // Safely calculate stars - avoid division by zero
+                                                                final maxStarsPerSection =
+                                                                    widget.totalSkills >
+                                                                            0
+                                                                        ? widget.totalSkills /
+                                                                            3
+                                                                        : 1;
+                                                                final filled = i <
+                                                                    (widget.starsEarned /
+                                                                            maxStarsPerSection)
+                                                                        .ceil();
+                                                                return Padding(
+                                                                  padding: const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          2),
+                                                                  child: Icon(
+                                                                    filled
+                                                                        ? Icons
+                                                                            .star
+                                                                        : Icons
+                                                                            .star_border,
+                                                                    size: 14,
+                                                                    color: Colors
+                                                                        .amber
+                                                                        .shade300,
+                                                                  ),
+                                                                );
+                                                              }),
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Compact declutter: the star pill duplicates the
+                                      // stars row inside the island body — hide it on
+                                      // phones so the name has room to breathe.
+                                      if (widget.isUnlocked && !compactChrome)
+                                        Positioned(
+                                          right: 8,
+                                          top: 8,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  Colors.white,
+                                                  Colors.amber.shade100,
+                                                ],
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: Colors.amber.shade400,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              '⭐ ${widget.starsEarned}/${widget.totalSkills}',
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w900,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                      if (widget.statusLabel != 'Available' &&
+                                          widget.statusLabel != 'Locked')
+                                        Positioned(
+                                          left: 10,
+                                          top: 8,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 7,
+                                              vertical: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: widget.zone.color,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              border: Border.all(
+                                                color: foreground.withValues(
+                                                    alpha: 0.8),
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: widget.zone.color
+                                                      .withValues(alpha: 0.35),
+                                                  blurRadius: 6,
+                                                  offset: const Offset(0, 2),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Text(
+                                              widget.statusLabel,
                                               style: TextStyle(
                                                 color: foreground,
                                                 fontSize: 9,
                                                 fontWeight: FontWeight.w900,
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-
-                              // Locked indicator - enhanced
-                              if (!widget.isUnlocked)
-                                Positioned.fill(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(28),
-                                      color:
-                                          Colors.black.withValues(alpha: 0.22),
-                                    ),
-                                    child: Center(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black
-                                              .withValues(alpha: 0.45),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          border: Border.all(
-                                            color: Colors.white
-                                                .withValues(alpha: 0.35),
                                           ),
                                         ),
-                                        child: Text(
-                                          '${widget.zone.requiredStars}⭐ to unlock',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w800,
+
+                                      // Persisted world change: a zone the child has
+                                      // actually finished a quest in raises a flag.
+                                      // It is derived from session history, so it
+                                      // survives reloads, and it uses an icon *and*
+                                      // words rather than colour alone.
+                                      if (widget.isUnlocked &&
+                                          widget.completedQuestCount > 0)
+                                        Positioned(
+                                          left: 10,
+                                          top: widget.statusLabel !=
+                                                      'Available' &&
+                                                  widget.statusLabel != 'Locked'
+                                              ? 32
+                                              : 8,
+                                          child: Semantics(
+                                            label:
+                                                'Quest complete flag raised at ${widget.zone.name}',
+                                            child: ExcludeSemantics(
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 7,
+                                                  vertical: 3,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: widget.zone.color
+                                                      .withValues(alpha: 0.16),
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  border: Border.all(
+                                                    color: widget.zone.color
+                                                        .withValues(
+                                                            alpha: 0.65),
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    const Text('🚩',
+                                                        textScaler: TextScaler
+                                                            .noScaling,
+                                                        style: TextStyle(
+                                                            fontSize: 10)),
+                                                    const SizedBox(width: 3),
+                                                    Text(
+                                                      widget.completedQuestCount ==
+                                                              1
+                                                          ? 'Quest done'
+                                                          : '${widget.completedQuestCount} quests',
+                                                      style: TextStyle(
+                                                        color: foreground,
+                                                        fontSize: 9,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
 
-                              if (!widget.isUnlocked)
-                                Positioned(
-                                  top: 6,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.shade400,
-                                      borderRadius: BorderRadius.circular(10),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color:
-                                              Colors.red.withValues(alpha: 0.4),
-                                          blurRadius: 6,
-                                          spreadRadius: 1,
+                                      // Locked indicator - enhanced
+                                      if (!widget.isUnlocked)
+                                        Positioned.fill(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(28),
+                                              color: Colors.black
+                                                  .withValues(alpha: 0.22),
+                                            ),
+                                            child: Center(
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.45),
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  border: Border.all(
+                                                    color: Colors.white
+                                                        .withValues(
+                                                            alpha: 0.35),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  '${widget.zone.requiredStars}⭐ to unlock',
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                      ],
-                                    ),
-                                    child: const Text(
-                                      '🔒',
-                                      style: TextStyle(fontSize: 14),
-                                    ),
+
+                                      if (!widget.isUnlocked)
+                                        Positioned(
+                                          top: 6,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.shade400,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.red
+                                                      .withValues(alpha: 0.4),
+                                                  blurRadius: 6,
+                                                  spreadRadius: 1,
+                                                ),
+                                              ],
+                                            ),
+                                            child: const Text(
+                                              '🔒',
+                                              style: TextStyle(fontSize: 14),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-          ),
-          ),
-          ),
           ), // close the A7 Tooltip wrapper + island RepaintBoundary
         );
       },

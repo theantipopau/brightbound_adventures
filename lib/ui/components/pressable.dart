@@ -87,8 +87,7 @@ class Pressable extends StatefulWidget {
   State<Pressable> createState() => _PressableState();
 }
 
-class _PressableState extends State<Pressable>
-    with TickerProviderStateMixin {
+class _PressableState extends State<Pressable> with TickerProviderStateMixin {
   /// 0 = rest, 1 = fully pressed.
   late final AnimationController _pressCtrl;
 
@@ -188,10 +187,12 @@ class _PressableState extends State<Pressable>
     double bounceScale;
     if (t < peak) {
       final u = t / peak;
-      bounceScale = pressScale + (overshoot - pressScale) * Curves.easeOut.transform(u);
+      bounceScale =
+          pressScale + (overshoot - pressScale) * Curves.easeOut.transform(u);
     } else {
       final u = ((t - peak) / (1 - peak)).clamp(0.0, 1.0);
-      bounceScale = overshoot + (1.0 - overshoot) * Curves.elasticOut.transform(u);
+      bounceScale =
+          overshoot + (1.0 - overshoot) * Curves.elasticOut.transform(u);
     }
     // Blend out the pressed component as the bounce begins, so choreography
     // owns the motion from the moment of release.

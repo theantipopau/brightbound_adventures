@@ -148,8 +148,7 @@ void main() {
       // it shows on wide layouts (room to spare) and hides on compact
       // (phones), where world names live once on the islands ringing the
       // map instead of crowding Mini Games / Star Shop.
-      testWidgets(
-          'quick-zone rail shows on wide, hides on compact ($label)',
+      testWidgets('quick-zone rail shows on wide, hides on compact ($label)',
           (tester) async {
         await pumpWorldMap(tester, size: size, themeMode: mode);
 

@@ -451,11 +451,14 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                     key == LogicalKeyboardKey.numpad2 ||
                     key == LogicalKeyboardKey.numpad3 ||
                     key == LogicalKeyboardKey.numpad4)) {
-              final digit = key == LogicalKeyboardKey.digit1 || key == LogicalKeyboardKey.numpad1
+              final digit = key == LogicalKeyboardKey.digit1 ||
+                      key == LogicalKeyboardKey.numpad1
                   ? 0
-                  : key == LogicalKeyboardKey.digit2 || key == LogicalKeyboardKey.numpad2
+                  : key == LogicalKeyboardKey.digit2 ||
+                          key == LogicalKeyboardKey.numpad2
                       ? 1
-                      : key == LogicalKeyboardKey.digit3 || key == LogicalKeyboardKey.numpad3
+                      : key == LogicalKeyboardKey.digit3 ||
+                              key == LogicalKeyboardKey.numpad3
                           ? 2
                           : 3;
               _selectAnswer(digit);
@@ -932,8 +935,7 @@ class _MultipleChoiceGameState extends State<MultipleChoiceGame>
                 child: _gameController.state == GameState.paused
                     ? Icon(Icons.play_arrow, color: widget.themeColor, size: 22)
                     : Image.asset('assets/images/questsandtasks.webp',
-                        cacheWidth: 128,
-                        fit: BoxFit.contain),
+                        cacheWidth: 128, fit: BoxFit.contain),
               ),
             ),
           ),

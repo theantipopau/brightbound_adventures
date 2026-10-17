@@ -250,52 +250,52 @@ class _LogicGameState extends State<LogicGame>
         onTogglePause: () => Navigator.of(context).maybePop(),
       ),
       child: Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF2C3E50), // Dark slate
-              Color(0xFF34495E), // Wet asphalt
-              Color(0xFF5D6D7E), // Grey blue
-            ],
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF2C3E50), // Dark slate
+                Color(0xFF34495E), // Wet asphalt
+                Color(0xFF5D6D7E), // Grey blue
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // Mountain background
-              _buildMountainBackground(),
+          child: SafeArea(
+            child: Stack(
+              children: [
+                // Mountain background
+                _buildMountainBackground(),
 
-              // Companion reacts to every answer (celebrate/encourage),
-              // matching the numeracy/science/literacy quiz screens.
-              const Positioned(
-                top: 0,
-                right: 0,
-                child: QuizCompanionCorner(),
-              ),
+                // Companion reacts to every answer (celebrate/encourage),
+                // matching the numeracy/science/literacy quiz screens.
+                const Positioned(
+                  top: 0,
+                  right: 0,
+                  child: QuizCompanionCorner(),
+                ),
 
-              // Main content
-              Column(
-                children: [
-                  _buildHeader(),
-                  Expanded(
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: _buildQuestionCard(),
+                // Main content
+                Column(
+                  children: [
+                    _buildHeader(),
+                    Expanded(
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: _buildQuestionCard(),
+                      ),
                     ),
-                  ),
-                  _buildProgressBar(),
-                ],
-              ),
+                    _buildProgressBar(),
+                  ],
+                ),
 
-              // Celebration effect
-              if (_showFeedback && _isCorrect) _buildCelebration(),
-            ],
+                // Celebration effect
+                if (_showFeedback && _isCorrect) _buildCelebration(),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -683,9 +683,7 @@ class _LogicGameState extends State<LogicGame>
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _isCorrect
-            ? Colors.green.shade900
-            : Colors.deepOrange.shade900,
+        color: _isCorrect ? Colors.green.shade900 : Colors.deepOrange.shade900,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _isCorrect ? Colors.green : Colors.orange,

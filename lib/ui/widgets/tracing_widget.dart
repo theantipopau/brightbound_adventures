@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:brightbound_adventures/ui/themes/app_theme.dart';
 
 class TracingWidget extends StatefulWidget {
   final String character;
@@ -73,9 +74,12 @@ class _TracingWidgetState extends State<TracingWidget> {
                   style: TextStyle(
                     fontSize: 200,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade200,
-                    fontFamily:
-                        'Fredoka', // Assuming this font exists or use default
+                    // Faint guide glyph in both modes: pinned grey.shade200
+                    // vanished into light cards and glared on dark ones.
+                    color: Theme.of(context).colorScheme.onSurface.withValues(
+                          alpha: 0.08,
+                        ),
+                    fontFamily: AppTheme.fontPrimary,
                   ),
                 ),
               ),

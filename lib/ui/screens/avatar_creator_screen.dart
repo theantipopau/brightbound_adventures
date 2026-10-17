@@ -296,7 +296,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
 
   Future<void> _createAvatar() async {
     if (!_hasValidName) {
-      ScaffoldMessenger.of(context).showSnackBar(        SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
           content: const Row(
             children: [
               Icon(Icons.warning, color: Colors.white),
@@ -308,7 +309,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
           // is near-white, which measured ~1.6:1 on cyan.
           backgroundColor: AppColors.textPrimary,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -508,7 +510,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                             ],
                           ),
                         ),
-                        _buildNavigationButtons(isCompact: isSmallScreen),
+                        _buildNavigationButtons(context,
+                            isCompact: isSmallScreen),
                       ],
                     ),
                   ),
@@ -758,7 +761,8 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 gradient: LinearGradient(
                   colors: [
                     face,
-                    Color.lerp(face, selectedCharacter['color'] as Color, 0.10)!,
+                    Color.lerp(
+                        face, selectedCharacter['color'] as Color, 0.10)!,
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -962,8 +966,12 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
               SizedBox(height: isTinyScreen ? 8 : (isCompact ? 12 : 24)),
 
               ShaderMask(
+                // Deepened ramp (primaryDark start): raw primary-pink read
+                // ≈2.7:1 on the light step tint, just under the 3:1 large-
+                // text bar — the ramp keeps its pink→purple character while
+                // both ends now clear it (pinned in contrast_audit_test).
                 shaderCallback: (bounds) => const LinearGradient(
-                  colors: [AppColors.primary, AppColors.secondary],
+                  colors: [AppColors.primaryDark, AppColors.secondary],
                 ).createShader(bounds),
                 child: Text(
                   'Welcome, Adventurer!',
@@ -1089,49 +1097,65 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                 ),
               ),
               const SizedBox(height: 10),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: hasValidName
-                      ? AppColors.success.withValues(alpha: 0.12)
-                      : Colors.orange.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: hasValidName
-                        ? AppColors.success.withValues(alpha: 0.35)
-                        : Colors.orange.withValues(alpha: 0.35),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        hasValidName ? '✅ Ready!' : '✍️ Add 2+ letters',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: hasValidName
-                              ? AppColors.success
-                              : Colors.orange.shade800,
-                          fontWeight: FontWeight.w700,
-                          fontSize: isTinyScreen ? 12 : 13,
+              Builder(
+                builder: (chipContext) {
+                  // Chip inks: raw success-green (#00C853 ≈ 2:1) and
+                  // orange.shade800 (≈ 3.4:1) on the tinted chip both miss
+                  // WCAG AA 4.5:1 for this small text, and grey.shade700
+                  // fails the counter in dark mode — so both inks are
+                  // theme-aware (measured pairs in contrast_audit_test).
+                  final isDarkChip =
+                      Theme.of(chipContext).brightness == Brightness.dark;
+                  final statusInk = hasValidName
+                      ? (isDarkChip
+                          ? semantic.success
+                          : const Color(0xFF0B6B32))
+                      : (isDarkChip
+                          ? semantic.warning
+                          : const Color(0xFF8D4E00));
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: hasValidName
+                          ? AppColors.success.withValues(alpha: 0.12)
+                          : Colors.orange.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: hasValidName
+                            ? AppColors.success.withValues(alpha: 0.35)
+                            : Colors.orange.withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            hasValidName ? '✅ Ready!' : '✍️ Add 2+ letters',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: statusInk,
+                              fontWeight: FontWeight.w700,
+                              fontSize: isTinyScreen ? 12 : 13,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '$nameLength/16',
+                          style: TextStyle(
+                            color: semantic.textSecondary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: isTinyScreen ? 11 : 12,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '$nameLength/16',
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontWeight: FontWeight.w700,
-                        fontSize: isTinyScreen ? 11 : 12,
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
               SizedBox(height: isCompact ? 16 : 24),
 
@@ -2066,7 +2090,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
 
               // Hero stats — game-like character sheet. Values are fixed
               // flavor per hero (derived from the id hash), not progression.
-              _buildHeroStatsCard(isCompact),
+              _buildHeroStatsCard(context, isCompact),
               SizedBox(height: isCompact ? 8 : 16),
 
               // Ready message
@@ -2163,13 +2187,15 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     return {'Brave': stat(3), 'Kind': stat(5), 'Witty': stat(7)};
   }
 
-  Widget _buildHeroStatsCard(bool isCompact) {
+  Widget _buildHeroStatsCard(BuildContext context, bool isCompact) {
     final stats = _heroStats(_selectedCharacter);
     final accent = _getStepColor(_currentStep);
     return Container(
       padding: EdgeInsets.all(isCompact ? 12 : 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        // Theme surface, not pinned white: in dark mode a pure-white
+        // card glares against the tinted gradient background.
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: accent.withValues(alpha: 0.25), width: 2),
         boxShadow: [
@@ -2221,8 +2247,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                             minHeight: 10,
                             value: value,
                             backgroundColor: Colors.blueGrey.shade100,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(accent),
+                            valueColor: AlwaysStoppedAnimation<Color>(accent),
                           );
                         },
                       ),
@@ -2248,11 +2273,14 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
     );
   }
 
-  Widget _buildNavigationButtons({bool isCompact = false}) {
+  Widget _buildNavigationButtons(BuildContext context,
+      {bool isCompact = false}) {
     return Container(
       padding: EdgeInsets.all(isCompact ? 12 : 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        // Theme surface, not pinned white: in dark mode the old white
+        // slab clashed with the tinted gradient behind it.
+        color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -2295,8 +2323,7 @@ class _AvatarCreatorScreenState extends State<AvatarCreatorScreen>
                           style: TextStyle(
                             fontSize: compact ? 13 : 16,
                             fontWeight: FontWeight.bold,
-                            color:
-                                _stepLabelInk(_getStepColor(_currentStep)),
+                            color: _stepLabelInk(_getStepColor(_currentStep)),
                           ),
                         ),
                       ],

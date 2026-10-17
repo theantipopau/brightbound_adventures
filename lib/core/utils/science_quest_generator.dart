@@ -56,16 +56,16 @@ class ScienceQuestGenerator {
       final options = List<String>.of(aq.options)..shuffle(_random);
       final correct = aq.options[aq.correctIndex];
       return ScienceQuestion(
-              id: 'ai_sci_${aq.question.hashCode.abs()}',
-              skillId: skillId.isEmpty ? 'skill_biological_sciences' : skillId,
-              question: aq.question,
-              options: options,
-              correctIndex: options.indexOf(correct),
-              difficulty: difficulty,
-              topic: 'AI Generated',
-              hint: aq.hint,
-              explanation: aq.explanation,
-            );
+        id: 'ai_sci_${aq.question.hashCode.abs()}',
+        skillId: skillId.isEmpty ? 'skill_biological_sciences' : skillId,
+        question: aq.question,
+        options: options,
+        correctIndex: options.indexOf(correct),
+        difficulty: difficulty,
+        topic: 'AI Generated',
+        hint: aq.hint,
+        explanation: aq.explanation,
+      );
     }).toList();
 
     // 2. Fill remainder from the static bank.

@@ -678,46 +678,46 @@ class _MotorGameState extends State<MotorGame> with TickerProviderStateMixin {
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Get Ready!',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Get Ready!',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.orange.withValues(alpha: 0.3),
-                border: Border.all(color: Colors.orange, width: 4),
-              ),
-              child: Center(
-                child: Text(
-                  '$_countdown',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 56,
-                    fontWeight: FontWeight.bold,
+              const SizedBox(height: 24),
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.orange.withValues(alpha: 0.3),
+                  border: Border.all(color: Colors.orange, width: 4),
+                ),
+                child: Center(
+                  child: Text(
+                    '$_countdown',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 56,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              widget.config.description,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 18,
+              const SizedBox(height: 24),
+              Text(
+                widget.config.description,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 18,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            ],
           ),
         ),
       ),
@@ -837,12 +837,14 @@ class _ArenaPainter extends CustomPainter {
       ..color = Colors.white.withValues(alpha: 0.05)
       ..strokeWidth = 2;
     final gap = energyRadius * 0.6;
-    canvas.drawLine(Offset(0, center.dy), Offset(center.dx - gap, center.dy), hair);
     canvas.drawLine(
-        Offset(center.dx + gap, center.dy), Offset(size.width, center.dy), hair);
-    canvas.drawLine(Offset(center.dx, 0), Offset(center.dx, center.dy - gap), hair);
+        Offset(0, center.dy), Offset(center.dx - gap, center.dy), hair);
+    canvas.drawLine(Offset(center.dx + gap, center.dy),
+        Offset(size.width, center.dy), hair);
     canvas.drawLine(
-        Offset(center.dx, center.dy + gap), Offset(center.dx, size.height), hair);
+        Offset(center.dx, 0), Offset(center.dx, center.dy - gap), hair);
+    canvas.drawLine(Offset(center.dx, center.dy + gap),
+        Offset(center.dx, size.height), hair);
 
     // Deterministic sparkle grid.
     final dot = Paint()..color = Colors.white.withValues(alpha: 0.08);
@@ -862,17 +864,26 @@ class _ArenaPainter extends CustomPainter {
     const inset = 16.0;
     const len = 28.0;
     final corners = <(Offset, Offset, Offset)>[
-      (Offset(inset, inset), const Offset(inset + len, inset),
-          const Offset(inset, inset + len)),
-      (Offset(size.width - inset, inset),
-          Offset(size.width - inset - len, inset),
-          Offset(size.width - inset, inset + len)),
-      (Offset(inset, size.height - inset),
-          Offset(inset + len, size.height - inset),
-          Offset(inset, size.height - inset - len)),
-      (Offset(size.width - inset, size.height - inset),
-          Offset(size.width - inset - len, size.height - inset),
-          Offset(size.width - inset, size.height - inset - len)),
+      (
+        Offset(inset, inset),
+        const Offset(inset + len, inset),
+        const Offset(inset, inset + len)
+      ),
+      (
+        Offset(size.width - inset, inset),
+        Offset(size.width - inset - len, inset),
+        Offset(size.width - inset, inset + len)
+      ),
+      (
+        Offset(inset, size.height - inset),
+        Offset(inset + len, size.height - inset),
+        Offset(inset, size.height - inset - len)
+      ),
+      (
+        Offset(size.width - inset, size.height - inset),
+        Offset(size.width - inset - len, size.height - inset),
+        Offset(size.width - inset, size.height - inset - len)
+      ),
     ];
     for (final (corner, hEnd, vEnd) in corners) {
       canvas.drawLine(corner, hEnd, bracket);

@@ -323,7 +323,8 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                     Text(
                       challenge.description,
                       style: TextStyle(
-                        fontSize: 12,                      color: Colors.grey[600],
+                        fontSize: 12,
+                        color: Colors.grey[600],
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

@@ -952,8 +952,7 @@ class _NumeracyGameState extends State<NumeracyGame>
                     ? const Icon(Icons.play_arrow,
                         color: Colors.white, size: 22)
                     : Image.asset('assets/images/questsandtasks.webp',
-                        cacheWidth: 128,
-                        fit: BoxFit.contain),
+                        cacheWidth: 128, fit: BoxFit.contain),
               ),
             ),
           ),

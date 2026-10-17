@@ -364,66 +364,67 @@ class _WordSearchGameState extends State<WordSearchGame> {
         ),
         body: SingleChildScrollView(
           child: Column(
-          children: [
-            // Stats
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.teal.withValues(alpha: 0.1),
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 16,
-                runSpacing: 8,
-                children: [
-                  Text(
-                    '✅ ${_foundWords.length}/${_wordsToFind.length} Words',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '⭐ Score: $_score',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-
-            // Word list
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _wordsToFind.map((word) {
-                  final isFound = _foundWords.contains(word);
-                  return Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: isFound
-                          ? Colors.green.withValues(alpha: 0.2)
-                          : Colors.grey.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isFound ? Colors.green : Colors.grey,
-                        width: 2,
-                      ),
+            children: [
+              // Stats
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: Colors.teal.withValues(alpha: 0.1),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 16,
+                  runSpacing: 8,
+                  children: [
+                    Text(
+                      '✅ ${_foundWords.length}/${_wordsToFind.length} Words',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    child: Text(
-                      word,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: isFound ? Colors.green[800] : Colors.grey[800],
-                        decoration: isFound ? TextDecoration.lineThrough : null,
-                      ),
+                    Text(
+                      '⭐ Score: $_score',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                  );
-                }).toList(),
+                  ],
+                ),
               ),
-            ),
 
-            // Grid
-            Center(
+              // Word list
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _wordsToFind.map((word) {
+                    final isFound = _foundWords.contains(word);
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isFound
+                            ? Colors.green.withValues(alpha: 0.2)
+                            : Colors.grey.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isFound ? Colors.green : Colors.grey,
+                          width: 2,
+                        ),
+                      ),
+                      child: Text(
+                        word,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isFound ? Colors.green[800] : Colors.grey[800],
+                          decoration:
+                              isFound ? TextDecoration.lineThrough : null,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              // Grid
+              Center(
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Padding(
@@ -487,52 +488,52 @@ class _WordSearchGameState extends State<WordSearchGame> {
                 ),
               ),
 
-            // Check button
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _selectedCells.isEmpty ? null : _checkWord,
+              // Check button
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _selectedCells.isEmpty ? null : _checkWord,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          foregroundColor: InkTokens.on(Colors.teal),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Check Word',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedCells.clear();
+                        });
+                      },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        foregroundColor: InkTokens.on(Colors.teal),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: Colors.grey,
+                        foregroundColor: InkTokens.on(Colors.grey),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16, horizontal: 24),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        'Check Word',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
+                      child: const Text('Clear'),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _selectedCells.clear();
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      foregroundColor: InkTokens.on(Colors.grey),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 24),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text('Clear'),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );

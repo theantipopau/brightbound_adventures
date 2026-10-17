@@ -2,7 +2,8 @@ import 'package:brightbound_adventures/ui/screens/world_map/parallax_map_layer.d
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-Widget _host({bool disableAnimations = false, Size size = const Size(800, 600)}) {
+Widget _host(
+    {bool disableAnimations = false, Size size = const Size(800, 600)}) {
   return MediaQuery(
     data: MediaQueryData(size: size, disableAnimations: disableAnimations),
     child: Directionality(
@@ -35,8 +36,7 @@ void main() {
     await tester.pumpWidget(_host(size: const Size(400, 300)));
     // Every translation below the parallax widget is a camera-drift offset;
     // none may exceed the spec's subtle ~12 px maximum on either axis.
-    final translations = tester.widgetList<Transform>(
-        find.descendant(
+    final translations = tester.widgetList<Transform>(find.descendant(
       of: find.byType(ParallaxMapLayer),
       matching: find.byType(Transform),
     ));

@@ -141,8 +141,7 @@ void main() {
   // unevenly, equal progress steps moved unequal distances (about 2.5x
   // between a short and a long hop), which read as the pawn jerking at
   // every waypoint. Arc-length mapping keeps per-step distance ~uniform.
-  test('travel pace is uniform: equal progress steps move equal distances',
-      () {
+  test('travel pace is uniform: equal progress steps move equal distances', () {
     final uneven = <Offset>[
       const Offset(0, 0),
       const Offset(100, 0),

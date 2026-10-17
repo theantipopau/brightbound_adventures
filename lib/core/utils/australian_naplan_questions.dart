@@ -582,9 +582,8 @@ class AustralianNAPLANQuestions {
     }
     final scenario = contexts[combo % 3];
     return {
-      'question': scenario
-          .replaceAll('{w}', '$wholes')
-          .replaceAll('{p}', '$eaten'),
+      'question':
+          scenario.replaceAll('{w}', '$wholes').replaceAll('{p}', '$eaten'),
       'answer': '${eaten ~/ gcdB}/${wholes ~/ gcdB}',
       'type': 'fractions',
       'difficulty': difficulty,
@@ -611,8 +610,7 @@ class AustralianNAPLANQuestions {
         final metres = 1 + combo ~/ lengthNouns.length;
         final noun = lengthNouns[combo % lengthNouns.length];
         return {
-          'question':
-              'The $noun is $metres metres long. How many centimetres?',
+          'question': 'The $noun is $metres metres long. How many centimetres?',
           'answer': metres * 100,
           'type': 'measurement',
           'difficulty': difficulty,

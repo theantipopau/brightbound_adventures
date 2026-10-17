@@ -74,98 +74,98 @@ class MasteryCertificateScreen extends StatelessWidget {
                     ),
                     child: SingleChildScrollView(
                       child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'CERTIFICATE OF MASTERY',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.4,
-                            color: Color(0xFF4A4F73),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 14),
-                        Container(
-                          height: 2,
-                          width: 180,
-                          color: themeColor.withValues(alpha: 0.45),
-                        ),
-                        const SizedBox(height: 22),
-                        const Text(
-                          'This certifies that',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF666A88),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          studentName,
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w900,
-                            color: themeColor,
-                            letterSpacing: 0.4,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'has successfully mastered',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF666A88),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          zoneName,
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF2A2D45),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: themeColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'Outstanding Learning Achievement',
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'CERTIFICATE OF MASTERY',
                             style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF3E4463),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.4,
+                              color: Color(0xFF4A4F73),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 14),
+                          Container(
+                            height: 2,
+                            width: 180,
+                            color: themeColor.withValues(alpha: 0.45),
+                          ),
+                          const SizedBox(height: 22),
+                          const Text(
+                            'This certifies that',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF666A88),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 26),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _SignatureBlock(
-                                title: 'Issued On',
-                                value: issuedOn,
+                          const SizedBox(height: 10),
+                          Text(
+                            studentName,
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                              color: themeColor,
+                              letterSpacing: 0.4,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'has successfully mastered',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF666A88),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            zoneName,
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF2A2D45),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: themeColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'Outstanding Learning Achievement',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF3E4463),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _SignatureBlock(
-                                title: 'Certificate ID',
-                                value: certificateId,
+                          ),
+                          const SizedBox(height: 26),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _SignatureBlock(
+                                  title: 'Issued On',
+                                  value: issuedOn,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _SignatureBlock(
+                                  title: 'Certificate ID',
+                                  value: certificateId,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),

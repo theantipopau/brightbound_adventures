@@ -1031,12 +1031,7 @@ class ScienceQuestionBank {
       id: 'bank_bio_031',
       skillId: 'skill_biological_sciences',
       question: 'What do bees gather from flowers to make honey? 🐝',
-      options: [
-        'Rain drops',
-        'Nectar and pollen',
-        'Tree bark',
-        'Soil crumbs'
-      ],
+      options: ['Rain drops', 'Nectar and pollen', 'Tree bark', 'Soil crumbs'],
       correctIndex: 1,
       difficulty: 2,
       topic: 'Pollination',
@@ -1205,12 +1200,7 @@ class ScienceQuestionBank {
       id: 'bank_earth_022',
       skillId: 'skill_earth_sciences',
       question: 'Which of these is the largest ocean on Earth? 🌊',
-      options: [
-        'Bass Strait',
-        'Lake Eyre',
-        'Pacific Ocean',
-        'Sydney Harbour'
-      ],
+      options: ['Bass Strait', 'Lake Eyre', 'Pacific Ocean', 'Sydney Harbour'],
       correctIndex: 2,
       difficulty: 1,
       topic: 'Oceans',
@@ -1221,13 +1211,9 @@ class ScienceQuestionBank {
     ScienceQuestion(
       id: 'bank_earth_023',
       skillId: 'skill_earth_sciences',
-      question: 'What do we call the different shapes the Moon shows each month? 🌙',
-      options: [
-        'Moon shadows',
-        'Moon phases',
-        'Star signs',
-        'Eclipse shadows'
-      ],
+      question:
+          'What do we call the different shapes the Moon shows each month? 🌙',
+      options: ['Moon shadows', 'Moon phases', 'Star signs', 'Eclipse shadows'],
       correctIndex: 1,
       difficulty: 2,
       topic: 'Moon Phases',
@@ -1337,7 +1323,8 @@ class ScienceQuestionBank {
     ScienceQuestion(
       id: 'bank_phys_016',
       skillId: 'skill_physical_sciences',
-      question: 'What do we call light bouncing back off a surface, like a mirror? 🪞',
+      question:
+          'What do we call light bouncing back off a surface, like a mirror? 🪞',
       options: ['Absorption', 'Reflection', 'Refraction', 'Insulation'],
       correctIndex: 1,
       difficulty: 1,
@@ -1446,7 +1433,8 @@ class ScienceQuestionBank {
     ScienceQuestion(
       id: 'bank_phys_023',
       skillId: 'skill_physical_sciences',
-      question: 'A metal spoon left in hot soup becomes hot. What is happening?',
+      question:
+          'A metal spoon left in hot soup becomes hot. What is happening?',
       options: [
         'The spoon makes its own heat',
         'Heat energy travels up the metal — this is conduction',
@@ -1480,7 +1468,8 @@ class ScienceQuestionBank {
     ScienceQuestion(
       id: 'bank_phys_025',
       skillId: 'skill_physical_sciences',
-      question: 'Which of these machines uses an electromagnet for its heavy lifting? 🏗',
+      question:
+          'Which of these machines uses an electromagnet for its heavy lifting? 🏗',
       options: [
         'A scrap-metal yard crane',
         'A wooden clothes peg',
@@ -1533,7 +1522,8 @@ class ScienceQuestionBank {
     ScienceQuestion(
       id: 'bank_env_008',
       skillId: 'skill_earth_sciences',
-      question: 'Which energy source cannot be replaced within a human lifetime?',
+      question:
+          'Which energy source cannot be replaced within a human lifetime?',
       options: ['Wind', 'Sunlight', 'Wave power', 'Coal'],
       correctIndex: 3,
       difficulty: 3,
@@ -1579,21 +1569,24 @@ class ScienceQuestionBank {
     }).toList()
       ..shuffle(_random);
 
-    List<ScienceQuestion> withShuffledOptions(List<ScienceQuestion> qs) => qs.map((q) {
-      final options = List<String>.of(q.options)..shuffle(_random);
-      return ScienceQuestion(
-        id: q.id,
-        skillId: q.skillId,
-        question: q.question,
-        options: options,
-        correctIndex: options.indexOf(q.options[q.correctIndex]),
-        difficulty: q.difficulty,
-        topic: q.topic,
-        explanation: q.explanation,
-        hint: q.hint,
-      );
-    }).toList();
-    if (filtered.length >= count) return withShuffledOptions(filtered.take(count).toList());
+    List<ScienceQuestion> withShuffledOptions(List<ScienceQuestion> qs) =>
+        qs.map((q) {
+          final options = List<String>.of(q.options)..shuffle(_random);
+          return ScienceQuestion(
+            id: q.id,
+            skillId: q.skillId,
+            question: q.question,
+            options: options,
+            correctIndex: options.indexOf(q.options[q.correctIndex]),
+            difficulty: q.difficulty,
+            topic: q.topic,
+            explanation: q.explanation,
+            hint: q.hint,
+          );
+        }).toList();
+    if (filtered.length >= count) {
+      return withShuffledOptions(filtered.take(count).toList());
+    }
 
     // Fall back to all questions for the skill if not enough at this difficulty
     final fallback = _all.where((q) {

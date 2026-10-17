@@ -289,8 +289,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
                           onPressed: widget.onExit,
                           backgroundColor: Colors.grey.shade400,
                           // Grey400 + white measured ~1.8:1; derive the ink.
-                          foregroundColor:
-                              InkTokens.on(Colors.grey.shade400),
+                          foregroundColor: InkTokens.on(Colors.grey.shade400),
                           borderColor: Colors.grey.shade500,
                           tokenBackgroundColor:
                               Colors.white.withValues(alpha: 0.16),
@@ -413,18 +412,18 @@ class _QuizResultsScreenState extends State<QuizResultsScreen>
         children: [
           Icon(icon, color: color, size: 26),
           const SizedBox(height: 6),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            // 18 px bold is normal-size text (AA 4.5:1): the accent itself
-            // fails on white for bright tokens (success ≈ 2.2:1, amber ≈
-            // 3.1:1, warm zone colours ≈ 3.0–4.0:1). Ink derives from the
-            // tint instead; the icon keeps the accent.
-            color: InkTokens.onTint(color),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              // 18 px bold is normal-size text (AA 4.5:1): the accent itself
+              // fails on white for bright tokens (success ≈ 2.2:1, amber ≈
+              // 3.1:1, warm zone colours ≈ 3.0–4.0:1). Ink derives from the
+              // tint instead; the icon keeps the accent.
+              color: InkTokens.onTint(color),
+            ),
           ),
-        ),
           Text(
             label,
             style: TextStyle(

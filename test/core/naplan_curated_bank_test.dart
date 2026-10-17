@@ -57,8 +57,7 @@ void main() {
 
   test('NUM-Y3-011 regression: correct article for echidna', () {
     final q = bank.questions.firstWhere((q) => q.id == 'NUM-Y3-011');
-    expect(
-        q.options.any((o) => o.contains('an echidna')), isTrue,
+    expect(q.options.any((o) => o.contains('an echidna')), isTrue,
         reason: 'expected "an echidna", got: ${q.options}');
     expect(q.options.any((o) => o.contains('a echidna')), isFalse);
   });
@@ -96,9 +95,7 @@ void main() {
   test('topic matching covers every bank topic', () {
     final topics = bank.questions.map((q) => q.topic).toSet();
     for (final topic in topics) {
-      expect(
-          NaplanCuratedBank.topicSkillHints
-              .containsKey(topic.toLowerCase()),
+      expect(NaplanCuratedBank.topicSkillHints.containsKey(topic.toLowerCase()),
           isTrue,
           reason: 'unroutable topic "$topic"');
     }

@@ -98,8 +98,8 @@ class _ShopScreenState extends State<ShopScreen>
               children: [
                 Text(
                   '🛍️ Star Shop',
-                  textScaler: MediaQuery.textScalerOf(context).clamp(
-                      maxScaleFactor: 1.3),
+                  textScaler: MediaQuery.textScalerOf(context)
+                      .clamp(maxScaleFactor: 1.3),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -108,8 +108,8 @@ class _ShopScreenState extends State<ShopScreen>
                 ),
                 Text(
                   'Buy cool items with your stars!',
-                  textScaler: MediaQuery.textScalerOf(context).clamp(
-                      maxScaleFactor: 1.3),
+                  textScaler: MediaQuery.textScalerOf(context)
+                      .clamp(maxScaleFactor: 1.3),
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 14,
@@ -144,8 +144,8 @@ class _ShopScreenState extends State<ShopScreen>
                     const SizedBox(width: 8),
                     Text(
                       '${shop.starBalance}',
-                      textScaler: MediaQuery.textScalerOf(context).clamp(
-                          maxScaleFactor: 1.3),
+                      textScaler: MediaQuery.textScalerOf(context)
+                          .clamp(maxScaleFactor: 1.3),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,

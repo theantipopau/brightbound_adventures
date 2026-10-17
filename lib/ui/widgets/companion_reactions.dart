@@ -185,8 +185,8 @@ class _MotionLayer extends StatelessWidget {
             return Transform(
               alignment: Alignment.bottomCenter,
               transform: Matrix4.identity()
-                ..translateByDouble(0.0, -size * 0.28 * math.sin(t * math.pi),
-                    0.0, 1.0)
+                ..translateByDouble(
+                    0.0, -size * 0.28 * math.sin(t * math.pi), 0.0, 1.0)
                 ..rotateZ(math.sin(t * math.pi * 2) * 0.12)
                 ..scaleByDouble(1.0 + 0.12 * math.sin(t * math.pi),
                     1.0 + 0.12 * math.sin(t * math.pi), 1.0, 1.0),
@@ -210,8 +210,8 @@ class _MotionLayer extends StatelessWidget {
               transform: Matrix4.identity()
                 ..translateByDouble(0.0, size * 0.12 * droop, 0.0, 1.0)
                 ..rotateZ(0.10 * droop)
-                ..scaleByDouble(1.0 - 0.08 * droop, 1.0 + 0.10 * droop, 1.0,
-                    1.0),
+                ..scaleByDouble(
+                    1.0 - 0.08 * droop, 1.0 + 0.10 * droop, 1.0, 1.0),
               child: child,
             );
           },
@@ -222,7 +222,9 @@ class _MotionLayer extends StatelessWidget {
           duration: const Duration(milliseconds: 1200),
           curve: Curves.elasticOut,
           builder: (context, t, _) {
-            final hop = math.sin(t * math.pi * 2) * -size * 0.4 *
+            final hop = math.sin(t * math.pi * 2) *
+                -size *
+                0.4 *
                 (1 - t).clamp(0.05, 1.0);
             return Transform(
               alignment: Alignment.bottomCenter,
@@ -243,8 +245,8 @@ class _MotionLayer extends StatelessWidget {
             return Transform(
               alignment: Alignment.bottomCenter,
               transform: Matrix4.identity()
-                ..translateByDouble(0.0, -size * 0.2 * math.sin(t * math.pi),
-                    0.0, 1.0)
+                ..translateByDouble(
+                    0.0, -size * 0.2 * math.sin(t * math.pi), 0.0, 1.0)
                 ..scaleByDouble(1.0 + 0.2 * Curves.easeOutBack.transform(t),
                     1.0 + 0.2 * Curves.easeOutBack.transform(t), 1.0, 1.0),
               child: child,
@@ -363,8 +365,8 @@ class _StarBurstWrapper extends CustomPainter {
     for (var i = 0; i < 8; i++) {
       final angle = (i / 8) * 2 * math.pi + t * 0.6;
       final radius = 14 + t * size.shortestSide * 0.45;
-      final point = centre.translate(math.cos(angle) * radius,
-          math.sin(angle) * radius);
+      final point =
+          centre.translate(math.cos(angle) * radius, math.sin(angle) * radius);
       canvas.drawCircle(point, 2.5 * (1 - t) + 1, paint);
     }
   }

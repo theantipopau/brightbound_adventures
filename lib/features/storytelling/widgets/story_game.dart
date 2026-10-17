@@ -776,9 +776,7 @@ class _StoryGameState extends State<StoryGame> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _isCorrect
-            ? Colors.green.shade900
-            : Colors.deepOrange.shade900,
+        color: _isCorrect ? Colors.green.shade900 : Colors.deepOrange.shade900,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _isCorrect ? Colors.green : Colors.orange,

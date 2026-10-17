@@ -46,10 +46,22 @@ mixin GameKeyboardHandler {
     // 1-4: jump directly to an option (PC shortcut, incl. numpad).
     if (!isAnswered) {
       int? digit;
-      if (key == LogicalKeyboardKey.digit1 || key == LogicalKeyboardKey.numpad1) digit = 0;
-      if (key == LogicalKeyboardKey.digit2 || key == LogicalKeyboardKey.numpad2) digit = 1;
-      if (key == LogicalKeyboardKey.digit3 || key == LogicalKeyboardKey.numpad3) digit = 2;
-      if (key == LogicalKeyboardKey.digit4 || key == LogicalKeyboardKey.numpad4) digit = 3;
+      if (key == LogicalKeyboardKey.digit1 ||
+          key == LogicalKeyboardKey.numpad1) {
+        digit = 0;
+      }
+      if (key == LogicalKeyboardKey.digit2 ||
+          key == LogicalKeyboardKey.numpad2) {
+        digit = 1;
+      }
+      if (key == LogicalKeyboardKey.digit3 ||
+          key == LogicalKeyboardKey.numpad3) {
+        digit = 2;
+      }
+      if (key == LogicalKeyboardKey.digit4 ||
+          key == LogicalKeyboardKey.numpad4) {
+        digit = 3;
+      }
       if (digit != null && digit < optionCount) {
         onSelectOption(digit);
         return true;
@@ -57,7 +69,9 @@ mixin GameKeyboardHandler {
     }
 
     // Left/Right also move between options for PC users.
-    if ((key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.arrowRight) && !isAnswered) {
+    if ((key == LogicalKeyboardKey.arrowLeft ||
+            key == LogicalKeyboardKey.arrowRight) &&
+        !isAnswered) {
       final delta = key == LogicalKeyboardKey.arrowRight ? 1 : -1;
       if (selectedIndex == null) {
         onSelectOption(delta > 0 ? 0 : optionCount - 1);

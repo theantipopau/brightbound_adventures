@@ -76,8 +76,10 @@ class _DragToOrderQuestionState extends State<DragToOrderQuestion> {
             physics: const NeverScrollableScrollPhysics(),
             buildDefaultDragHandles: false,
             itemCount: _order.length,
-            onReorder: (oldIndex, newIndex) {
-              if (newIndex > oldIndex) newIndex -= 1;
+            // onReorderItem (not the deprecated onReorder): newIndex is
+            // already adjusted for the removed item, so no manual -1 fixup
+            // — _moveItem takes final removeAt/insert indices directly.
+            onReorderItem: (oldIndex, newIndex) {
               _moveItem(oldIndex, newIndex);
             },
             itemBuilder: (context, position) {

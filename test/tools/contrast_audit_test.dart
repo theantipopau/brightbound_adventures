@@ -392,6 +392,76 @@ void main() {
     });
   });
 
+  // Avatar-creator name-status chip (AA 4.5:1). The old inks — raw
+  // success-green (#00C853 ≈ 2:1) and orange.shade800 (≈ 3.4:1) on the
+  // 12% tinted chip, grey.shade700 counter in dark mode — all missed AA
+  // for this small text, so the chip now uses theme-aware inks pinned
+  // here against the same lerp composites the widget paints.
+  group('Avatar name-status chip inks (AA 4.5:1, both modes)', () {
+    const success = Color(0xFF00C853);
+    const lightOk = Color(0xFF0B6B32);
+    const lightPending = Color(0xFF8D4E00);
+    const lightBase = Color(0xFFFFFFFF);
+    const darkBase = Color(0xFF131625); // AppTheme's darkBackground
+
+    test('measured ratios', () {
+      checkPair(
+        label: 'chip ok ink on light success tint',
+        foreground: lightOk,
+        background: Color.lerp(lightBase, success, 0.12)!,
+        minRatio: 4.5,
+      );
+      checkPair(
+        label: 'chip pending ink on light orange tint',
+        foreground: lightPending,
+        background: Color.lerp(lightBase, Colors.orange, 0.12)!,
+        minRatio: 4.5,
+      );
+      checkPair(
+        label: 'chip ok ink on dark success tint',
+        foreground: SemanticColors.dark.success,
+        background: Color.lerp(darkBase, success, 0.12)!,
+        minRatio: 4.5,
+      );
+      checkPair(
+        label: 'chip pending ink on dark orange tint',
+        foreground: SemanticColors.dark.warning,
+        background: Color.lerp(darkBase, Colors.orange, 0.12)!,
+        minRatio: 4.5,
+      );
+      checkPair(
+        label: 'chip counter on light orange tint',
+        foreground: SemanticColors.light.textSecondary,
+        background: Color.lerp(lightBase, Colors.orange, 0.12)!,
+        minRatio: 4.5,
+      );
+      checkPair(
+        label: 'chip counter on dark orange tint',
+        foreground: SemanticColors.dark.textSecondary,
+        background: Color.lerp(darkBase, Colors.orange, 0.12)!,
+        minRatio: 4.5,
+      );
+    });
+
+    // Large display headlines use WCAG's 3:1 large-text bar instead of
+    // 4.5:1 (all pinned text here is ≥20px bold).
+    test('welcome gradient ends on the light step tint', () {
+      final stepTint = Color.lerp(lightBase, const Color(0xFFFF4081), 0.15)!;
+      checkPair(
+        label: 'gradient start (primaryDark) on step tint',
+        foreground: const Color(0xFFC51162),
+        background: stepTint,
+        minRatio: 3.0,
+      );
+      checkPair(
+        label: 'gradient end (secondary) on step tint',
+        foreground: const Color(0xFF7C4DFF),
+        background: stepTint,
+        minRatio: 3.0,
+      );
+    });
+  });
+
   group('Science results screen flips (AA 4.5:1)', () {
     test('Back-to-Zone: ink on solid themeColor fill', () {
       final science = WorldTokens.fromZoneId('science_explorers');
@@ -407,7 +477,8 @@ void main() {
       final accents = <String, Color>{
         'green': Colors.green,
         'amber700': Colors.amber.shade700,
-        'science theme': WorldTokens.fromZoneId('science_explorers').primaryColor,
+        'science theme':
+            WorldTokens.fromZoneId('science_explorers').primaryColor,
       };
       accents.forEach((name, accent) {
         checkPair(

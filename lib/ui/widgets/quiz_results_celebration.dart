@@ -273,147 +273,148 @@ class _QuizResultsCelebrationState extends State<QuizResultsCelebration>
       ),
       child: SingleChildScrollView(
         child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Result emoji with pulse
-          Transform.scale(
-            scale: 1 + _pulseController.value * 0.1,
-            child: Text(
-              _getResultEmoji(),
-              style: const TextStyle(fontSize: 64),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Result message
-          Text(
-            _getResultMessage(),
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: InkTokens.onTint(resultColor),
-            ),
-          ),
-
-          if (widget.isNewBest) ...[
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.amber[100],
-                borderRadius: BorderRadius.circular(12),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Result emoji with pulse
+            Transform.scale(
+              scale: 1 + _pulseController.value * 0.1,
+              child: Text(
+                _getResultEmoji(),
+                style: const TextStyle(fontSize: 64),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('🏆', style: TextStyle(fontSize: 16)),
-                  const SizedBox(width: 4),
-                  Text(
-                    'NEW BEST!',
-                    // Not const: the amber-100 pill takes the tint-derived
-                    // ink (amber label measured < 3:1 on the pale chip).
-                    style: TextStyle(
-                      color: InkTokens.onTint(Colors.amber),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+            ),
+
+            const SizedBox(height: 8),
+
+            // Result message
+            Text(
+              _getResultMessage(),
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: InkTokens.onTint(resultColor),
+              ),
+            ),
+
+            if (widget.isNewBest) ...[
+              const SizedBox(height: 4),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.amber[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🏆', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 4),
+                    Text(
+                      'NEW BEST!',
+                      // Not const: the amber-100 pill takes the tint-derived
+                      // ink (amber label measured < 3:1 on the pale chip).
+                      style: TextStyle(
+                        color: InkTokens.onTint(Colors.amber),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
+                  ],
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 20),
+
+            // Score display
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Wrap(
+                alignment: WrapAlignment.spaceAround,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                runSpacing: 12,
+                children: [
+                  _buildScoreStat(
+                    '${widget.correctAnswers}/${widget.totalQuestions}',
+                    'Correct',
+                    Colors.blue,
+                  ),
+                  Container(width: 1, height: 40, color: Colors.grey[300]),
+                  _buildScoreStat(
+                    '${_getScorePercentage()}%',
+                    'Score',
+                    resultColor,
                   ),
                 ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Stars earned
+            _buildStarsDisplay(),
+
+            const SizedBox(height: 12),
+
+            // XP earned
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.purple.shade600, Colors.blue.shade700],
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('✨', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    Text(
+                      '+${widget.xpEarned} XP',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Continue button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: widget.onContinue,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: resultColor,
+                  foregroundColor: InkTokens.on(resultColor),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Continue',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
-
-          const SizedBox(height: 20),
-
-          // Score display
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Wrap(
-              alignment: WrapAlignment.spaceAround,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              runSpacing: 12,
-              children: [
-                _buildScoreStat(
-                  '${widget.correctAnswers}/${widget.totalQuestions}',
-                  'Correct',
-                  Colors.blue,
-                ),
-                Container(width: 1, height: 40, color: Colors.grey[300]),
-                _buildScoreStat(
-                  '${_getScorePercentage()}%',
-                  'Score',
-                  resultColor,
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Stars earned
-          _buildStarsDisplay(),
-
-          const SizedBox(height: 12),
-
-          // XP earned
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.purple.shade600, Colors.blue.shade700],
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('✨', style: TextStyle(fontSize: 18)),
-                  const SizedBox(width: 8),
-                  Text(
-                    '+${widget.xpEarned} XP',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Continue button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: widget.onContinue,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: resultColor,
-                foregroundColor: InkTokens.on(resultColor),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: const Text(
-                'Continue',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
         ),
       ),
     );

@@ -727,9 +727,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
           children: [
             Text(
               'Recommended Next',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(                  color: InkTokens.on(worldTokens.primaryColor),
-                  fontWeight: FontWeight.w900,
-                ),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: InkTokens.on(worldTokens.primaryColor),
+                    fontWeight: FontWeight.w900,
+                  ),
             ),
             const SizedBox(height: 6),
             Text(
@@ -961,20 +962,20 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  worldTokens.primaryColor,
-                  // Capped at the InkTokens luminance floor where the card
-                  // ink flips: red/deep-orange secondaries dip below it and
-                  // would drop the black ink under 4.5:1 (measured 3.9:1).
-                  InkTokens.lerpWithinInkFloor(
-                    worldTokens.primaryColor,
-                    worldTokens.secondaryColor,
+                  gradient: LinearGradient(
+                    colors: [
+                      worldTokens.primaryColor,
+                      // Capped at the InkTokens luminance floor where the card
+                      // ink flips: red/deep-orange secondaries dip below it and
+                      // would drop the black ink under 4.5:1 (measured 3.9:1).
+                      InkTokens.lerpWithinInkFloor(
+                        worldTokens.primaryColor,
+                        worldTokens.secondaryColor,
+                      ),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -992,10 +993,10 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
                   children: [
                     Text(
                       widget.zoneName,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: InkTokens.onTint(worldTokens.primaryColor),
-                  ),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: InkTokens.onTint(worldTokens.primaryColor),
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(

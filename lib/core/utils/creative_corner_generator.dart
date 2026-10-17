@@ -581,8 +581,8 @@ class CreativeCornerQuestions {
         famousArtists;
 
     final filtered = all.where((q) => q.difficulty <= difficulty + 1).toList();
-    final sampled =
-        List.of(filtered.isEmpty ? all : filtered)..shuffle(_random);
+    final sampled = List.of(filtered.isEmpty ? all : filtered)
+      ..shuffle(_random);
     // Shuffle option order per question: the authored banks pin most
     // answers to slot 1/2, which is position-guessable without this.
     return sampled.map((q) {

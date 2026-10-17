@@ -145,16 +145,16 @@ class WorldMapQuestLens extends StatelessWidget {
             flex: 2,
             child: Text(
               'Quest Board',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.7,
-              color: selected.color,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.7,
+                color: selected.color,
+              ),
             ),
           ),
-        ),
         const SizedBox(width: 6),
         Flexible(
           flex: 3,
@@ -470,18 +470,16 @@ class WorldMapCompactBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final actionLabel = !isUnlocked
-        ? 'Locked'
-        : (isCurrentZone ? 'Enter' : 'Go');
+    final actionLabel =
+        !isUnlocked ? 'Locked' : (isCurrentZone ? 'Enter' : 'Go');
     // Fixed section heights keep the island safe-field math exact at every
     // text scale: a free-height bar once grew to ~87px at 200% and
     // overlapped the bottom-row islands by ~2px. Quest text is capped at
     // 1.3x so it always fits (full-scale text lives one tap away in the
     // details sheet); dock buttons keep full scale and shrink their own
     // labels instead of overflowing (see JuicyButton).
-    final chromeScaler = MediaQuery.textScalerOf(context)
-        .scale(1.0)
-        .clamp(1.0, 1.3);
+    final chromeScaler =
+        MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.3);
     // Slim padding: the JuicyButton default 28px horizontal padding left
     // 'Achievements' exactly its content width and clipped it to
     // 'My Achieve…' (same fix as the old standalone dock).
@@ -548,14 +546,12 @@ class WorldMapCompactBottomSheet extends StatelessWidget {
                             ),
                             child: Center(
                                 child: Text(selected.emoji,
-                                    style:
-                                        const TextStyle(fontSize: 19))),
+                                    style: const TextStyle(fontSize: 19))),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
@@ -593,10 +589,9 @@ class WorldMapCompactBottomSheet extends StatelessWidget {
                               backgroundColor: selected.color,
                               foregroundColor: scheme.onPrimary,
                               minimumSize: const Size(64, 40),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12),
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             child: Text(actionLabel),
                           ),
@@ -607,8 +602,7 @@ class WorldMapCompactBottomSheet extends StatelessWidget {
                             constraints: const BoxConstraints(
                                 minWidth: 36, minHeight: 36),
                             visualDensity: VisualDensity.compact,
-                            icon:
-                                const Icon(Icons.expand_less_rounded),
+                            icon: const Icon(Icons.expand_less_rounded),
                           ),
                         ],
                       ),

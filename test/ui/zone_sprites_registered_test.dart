@@ -19,8 +19,7 @@ void main() {
       () async {
     for (final zone in zones) {
       for (final kind in ['tile_base', 'landmark', 'path', 'accent']) {
-        final path =
-            'assets/images/zones/$zone/zone_${zone}_$kind.webp';
+        final path = 'assets/images/zones/$zone/zone_${zone}_$kind.webp';
         final data =
             await rootBundle.load(path.replaceFirst('assets/', 'assets/'));
         expect(data.lengthInBytes, greaterThan(0), reason: path);

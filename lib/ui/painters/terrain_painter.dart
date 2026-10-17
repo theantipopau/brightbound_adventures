@@ -156,10 +156,9 @@ class TerrainPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     final speckleSeed = zoneId.hashCode;
     for (int i = 0; i < 9; i++) {
-      final sx = floorCenter.dx +
-          (((speckleSeed >> (i * 3)) & 15) - 7.5) * 12;
-      final sy = floorCenter.dy +
-          (((speckleSeed >> (i * 2 + 1)) & 7) - 3.5) * 10;
+      final sx = floorCenter.dx + (((speckleSeed >> (i * 3)) & 15) - 7.5) * 12;
+      final sy =
+          floorCenter.dy + (((speckleSeed >> (i * 2 + 1)) & 7) - 3.5) * 10;
       canvas.drawCircle(Offset(sx, sy), 2.2, specklePaint);
     }
 
@@ -271,8 +270,7 @@ class TerrainPainter extends CustomPainter {
         final x = center.dx + (i % 4 - 1.5) * 38;
         final y = center.dy + (i ~/ 4 - 1.5) * 26;
         final dotPaint = Paint()
-          ..color = (i.isEven ? Colors.white : color)
-              .withValues(alpha: 0.30)
+          ..color = (i.isEven ? Colors.white : color).withValues(alpha: 0.30)
           ..style = PaintingStyle.fill;
         canvas.drawCircle(Offset(x, y), i.isEven ? 3.5 : 2.5, dotPaint);
         if (i % 4 == 0) {
@@ -293,8 +291,7 @@ class TerrainPainter extends CustomPainter {
         final x = center.dx + (i % 4 - 1.5) * 38;
         final y = center.dy + (i ~/ 4 - 1.5) * 26;
         final dotPaint = Paint()
-          ..color = (i.isEven ? color : Colors.white)
-              .withValues(alpha: 0.32)
+          ..color = (i.isEven ? color : Colors.white).withValues(alpha: 0.32)
           ..style = PaintingStyle.fill;
         canvas.drawCircle(Offset(x, y), 3.5, dotPaint);
       }
@@ -303,8 +300,7 @@ class TerrainPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3
         ..strokeCap = StrokeCap.round;
-      final wave = Path()
-        ..moveTo(center.dx - 60, center.dy + 18);
+      final wave = Path()..moveTo(center.dx - 60, center.dy + 18);
       for (int j = 0; j < 5; j++) {
         final x = center.dx - 60 + j * 26;
         wave.quadraticBezierTo(x + 8, center.dy + 8, x + 16, center.dy + 18);

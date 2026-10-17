@@ -69,7 +69,8 @@ class MotionTokens {
   double get juiceOvershoot => reduced ? 1.0 : 1.12;
 
   /// A5 button juice: total release-bounce duration (overshoot + settle).
-  Duration get juiceBounce => reduced ? _instant : const Duration(milliseconds: 450);
+  Duration get juiceBounce =>
+      reduced ? _instant : const Duration(milliseconds: 450);
 
   // --- Distances -----------------------------------------------------------
 

@@ -152,8 +152,8 @@ class BoardPath {
     final target = clamped * totalLength;
 
     var index = 0;
-    while (index < segments.length - 1 &&
-        _cumulativeLengths[index + 1] < target) {
+    while (
+        index < segments.length - 1 && _cumulativeLengths[index + 1] < target) {
       index++;
     }
     final segmentStart = _cumulativeLengths[index];

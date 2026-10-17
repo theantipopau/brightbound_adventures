@@ -108,8 +108,7 @@ void main() {
           screen.contains(entry.value.topLeft) &&
               screen.contains(entry.value.bottomRight),
           isTrue,
-          reason:
-              '${entry.key} ${entry.value} escapes the $label screen',
+          reason: '${entry.key} ${entry.value} escapes the $label screen',
         );
       }
 

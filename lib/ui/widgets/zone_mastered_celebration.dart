@@ -8,6 +8,7 @@ import 'package:brightbound_adventures/core/services/avatar_provider.dart';
 import 'package:brightbound_adventures/core/services/skill_provider.dart';
 import 'package:brightbound_adventures/ui/screens/mastery_certificate_screen.dart';
 import 'package:brightbound_adventures/ui/themes/index.dart';
+import 'package:brightbound_adventures/ui/transitions/app_routes.dart';
 
 // ─────────────────────────────────────────────
 //  Public API
@@ -204,168 +205,173 @@ class _ZoneMasteredDialogState extends State<_ZoneMasteredDialog>
               ),
               child: SingleChildScrollView(
                 child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Guardian emoji — bouncing
-                  AnimatedBuilder(
-                    animation: _guardianBounce,
-                    builder: (_, child) => Transform.translate(
-                      offset: Offset(0, _guardianBounce.value),
-                      child: child,
-                    ),
-                    child: Text(
-                      emoji,
-                      style: const TextStyle(fontSize: 72),
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // "ZONE MASTERED!" heading in gold gradient
-                  ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Color(0xFFFFD700), Color(0xFFFFA000)],
-                    ).createShader(bounds),
-                    child: const Text(
-                      'ZONE MASTERED!',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 1.8,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Guardian emoji — bouncing
+                    AnimatedBuilder(
+                      animation: _guardianBounce,
+                      builder: (_, child) => Transform.translate(
+                        offset: Offset(0, _guardianBounce.value),
+                        child: child,
+                      ),
+                      child: Text(
+                        emoji,
+                        style: const TextStyle(fontSize: 72),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 6),
+                    const SizedBox(height: 14),
 
-                  // Zone name
-                  Text(
-                    widget.zoneName,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: widget.themeColor,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // 3 gold stars with elastic pop-in
-                  ScaleTransition(
-                    scale: _starsScale,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        3,
-                        (i) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Icon(
-                            Icons.star_rounded,
-                            color: const Color(0xFFFFD700),
-                            size: 52,
-                            shadows: const [
-                              Shadow(
-                                color: Color(0x99FFA000),
-                                blurRadius: 14,
-                              ),
-                            ],
-                          ),
+                    // "ZONE MASTERED!" heading in gold gradient
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [Color(0xFFFFD700), Color(0xFFFFA000)],
+                      ).createShader(bounds),
+                      child: const Text(
+                        'ZONE MASTERED!',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 1.8,
                         ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 22),
+                    const SizedBox(height: 6),
 
-                  // Guardian complete message
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: widget.themeColor.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: widget.themeColor.withValues(alpha: 0.22),
-                      ),
-                    ),
-                    child: Text(
-                      message,
-                      textAlign: TextAlign.center,
+                    // Zone name
+                    Text(
+                      widget.zoneName,
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade700,
-                        height: 1.55,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: widget.themeColor,
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 26),
+                    const SizedBox(height: 20),
 
-                  // Continue button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        final nav = Navigator.of(context);
-                        nav.push(
-                          MaterialPageRoute(
-                            builder: (_) => MasteryCertificateScreen(
-                              zoneId: guardian?.zoneId ?? '',
-                              zoneName: widget.zoneName,
-                              themeColor: widget.themeColor,
+                    // 3 gold stars with elastic pop-in
+                    ScaleTransition(
+                      scale: _starsScale,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          3,
+                          (i) => Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Icon(
+                              Icons.star_rounded,
+                              color: const Color(0xFFFFD700),
+                              size: 52,
+                              shadows: const [
+                                Shadow(
+                                  color: Color(0x99FFA000),
+                                  blurRadius: 14,
+                                ),
+                              ],
                             ),
                           ),
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: InkTokens.onTint(widget.themeColor),
-                        side: BorderSide(color: widget.themeColor, width: 1.8),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
                         ),
-                      ),
-                      icon: const Icon(Icons.workspace_premium),
-                      label: const Text(
-                        'View Mastery Certificate',
-                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 22),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // A3: mastery now plays the star-burst pose rather
-                        // than the generic proud expression.
-                        context
-                            .read<AvatarProvider>()
-                            .setEmotion(AvatarEmotion.mastered);
-                        Navigator.of(context).pop();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.themeColor,
-                        foregroundColor: InkTokens.on(widget.themeColor),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                    // Guardian complete message
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: widget.themeColor.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: widget.themeColor.withValues(alpha: 0.22),
                         ),
-                        elevation: 4,
                       ),
-                      child: const Text(
-                        'Continue Adventure! 🗺️',
+                      child: Text(
+                        message,
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.grey.shade700,
+                          height: 1.55,
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+
+                    const SizedBox(height: 26),
+
+                    // Continue button
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          final nav = Navigator.of(context);
+                          // A reward reveal deserves the celebration entrance
+                          // (elastic scale-and-fade), not the stock platform
+                          // push — reduced motion still collapses to a fade.
+                          nav.push(
+                            CelebrationRoute(
+                              context: context,
+                              builder: (_) => MasteryCertificateScreen(
+                                zoneId: guardian?.zoneId ?? '',
+                                zoneName: widget.zoneName,
+                                themeColor: widget.themeColor,
+                              ),
+                            ),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: InkTokens.onTint(widget.themeColor),
+                          side:
+                              BorderSide(color: widget.themeColor, width: 1.8),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        icon: const Icon(Icons.workspace_premium),
+                        label: const Text(
+                          'View Mastery Certificate',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // A3: mastery now plays the star-burst pose rather
+                          // than the generic proud expression.
+                          context
+                              .read<AvatarProvider>()
+                              .setEmotion(AvatarEmotion.mastered);
+                          Navigator.of(context).pop();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: widget.themeColor,
+                          foregroundColor: InkTokens.on(widget.themeColor),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 4,
+                        ),
+                        child: const Text(
+                          'Continue Adventure! 🗺️',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
